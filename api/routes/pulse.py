@@ -133,15 +133,19 @@ def get_neighborhood_pulse(
 
     # --- Recent Evictions query ---
     # evictions_raw has zip_code and executed_date columns directly.
+    # DISTINCT ON (address, executed_date) deduplicates same-address same-day rows.
     eviction_rows = db.execute(
         text("""
-            SELECT
-                address,
-                eviction_type,
-                executed_date
-            FROM evictions_raw
-            WHERE zip_code = :zip
-              AND executed_date >= CURRENT_DATE - INTERVAL '90 days'
+            SELECT * FROM (
+                SELECT DISTINCT ON (address, executed_date)
+                    address,
+                    eviction_type,
+                    executed_date
+                FROM evictions_raw
+                WHERE zip_code = :zip
+                  AND executed_date >= CURRENT_DATE - INTERVAL '90 days'
+                ORDER BY address, executed_date DESC
+            ) deduped
             ORDER BY executed_date DESC
             LIMIT 25
         """),

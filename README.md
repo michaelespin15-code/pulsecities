@@ -41,5 +41,5 @@ Active development. Covers all NYC ZIP codes. Chicago and Los Angeles next.
 
 ## Built by
 
-Michael Espinal — CS/AI, Queens NY
+Michael Espin — CS/AI, Queens NY
 

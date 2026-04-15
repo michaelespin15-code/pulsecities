@@ -117,6 +117,65 @@ def get_neighborhood_score(
     }
 
 
+@router.get("/top-risk")
+@limiter.limit("60/minute")
+def get_top_risk_neighborhoods(
+    request: Request,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+):
+    """
+    Returns the top N zip codes by current displacement score.
+    Consumed by the landing page "Most at-risk neighborhoods right now" section.
+    limit is capped at 25 regardless of what the caller requests.
+    """
+    capped = min(max(1, limit), 25)
+
+    rows = db.execute(
+        text(
+            """
+            SELECT
+                ds.zip_code,
+                n.name,
+                n.borough,
+                ds.score,
+                ds.signal_breakdown
+            FROM displacement_scores ds
+            LEFT JOIN neighborhoods n ON ds.zip_code = n.zip_code
+            WHERE ds.score IS NOT NULL
+            ORDER BY ds.score DESC
+            LIMIT :limit
+            """
+        ),
+        {"limit": capped},
+    ).fetchall()
+
+    result = []
+    for i, row in enumerate(rows):
+        dominant, _ = _dominant_signal(row.signal_breakdown or {})
+        result.append(
+            {
+                "rank": i + 1,
+                "zip_code": row.zip_code,
+                "name": row.name,
+                "borough": row.borough,
+                "score": round(row.score, 1),
+                "dominant_signal": dominant,
+            }
+        )
+
+    return {"neighborhoods": result}
+
+
+def _dominant_signal(breakdown: dict) -> tuple:
+    """Returns (key, value) for the highest-scoring signal in the breakdown."""
+    valid = {k: v for k, v in breakdown.items() if isinstance(v, (int, float))}
+    if not valid:
+        return None, None
+    key = max(valid, key=valid.__getitem__)
+    return key, valid[key]
+
+
 # ---------------------------------------------------------------------------
 # Narrative summary
 # ---------------------------------------------------------------------------
