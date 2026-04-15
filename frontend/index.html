@@ -792,10 +792,12 @@
             const rows = document.getElementById('signal-rows');
             rows.innerHTML = '';
             if (breakdown) {
-                Object.entries(breakdown).sort(([, a], [, b]) => (b ?? -1) - (a ?? -1)).forEach(([key, val]) => {
+                Object.keys(breakdown)
+                    .sort((a, b) => (breakdown[b] ?? -1) - (breakdown[a] ?? -1))
+                    .forEach(key => {
+                    const numVal = typeof breakdown[key] === 'number' ? breakdown[key] : null;
                     const label = signalNames[key] || key;
                     const ts = slu[key] ? formatDate(slu[key]) : '';
-                    const numVal = val !== null && val !== undefined ? val : null;
                     const barPct = numVal !== null ? Math.max(0, Math.min(100, numVal)) : 0;
 
                     const row = document.createElement('div');
