@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulseCities</title>
+
+    <!-- Tailwind CSS (required by DaisyUI) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- DaisyUI 4.12.24 -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- MapLibre GL CSS 5.2.0 -->
+    <link href="https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.css" rel="stylesheet" />
+
+    <!-- Google Fonts: Inter + JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+        #map {
+            height: 100vh;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Prevent long LLC names / addresses from causing horizontal scroll in event list */
+        #block-events {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+        #block-panel {
+            overflow-wrap: anywhere;
+        }
+        /* Mobile: map shown by default, sidebar slides in after neighborhood tap */
+        @media (max-width: 767px) {
+            #sidebar { display: none; }
+            #sidebar.mobile-visible { display: flex; flex-direction: column; padding-bottom: 60px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="flex h-screen">
+        <!-- Map container: flex-1 fills remaining width -->
+        <div id="map" class="flex-1 relative">
+            <!-- Mobile: back button overlay — hidden on desktop -->
+            <button
+                onclick="showMobileSidebar()"
+                class="md:hidden absolute top-4 left-4 z-50 btn btn-sm shadow-lg"
+                style="background:#1e293b;color:#38bdf8;border:1px solid rgba(56,189,248,0.4);min-height:44px;"
+            >← Info</button>
+        </div>
+
+        <!-- Sidebar: full-width on mobile, fixed 288/320px on desktop -->
+        <aside id="sidebar" class="w-full md:w-72 lg:w-80 bg-base-200 p-6 overflow-y-auto flex flex-col">
+            <!-- Header -->
+            <div class="mb-6 flex items-start justify-between">
+                <div>
+                    <h1 class="text-xl font-semibold" style="color: #38bdf8;">PulseCities</h1>
+                    <p class="text-sm text-base-content/60 mt-1">NYC Displacement Risk</p>
+                </div>
+                <button id="lang-toggle" class="text-xs text-base-content/50 hover:text-base-content mt-1" style="min-height:44px;min-width:44px;">
+                    EN / ES
+                </button>
+            </div>
+
+            <!-- Empty state (hidden when a neighborhood is selected) -->
+            <div id="empty-state" class="flex-1 flex flex-col justify-center items-center text-center px-4">
+                <h2 class="text-base font-semibold text-base-content mb-2">No neighborhood selected</h2>
+                <p class="text-sm text-base-content/60 leading-relaxed">
+                    Click a neighborhood on the map to see its displacement risk score and signal breakdown.
+                </p>
+            </div>
+
+            <!-- Neighborhood detail panel (hidden by default) -->
+            <div id="detail-panel" class="hidden flex-1 flex flex-col gap-4">
+                <!-- Zip + score -->
+                <div class="bg-base-300 rounded-xl p-4">
+                    <div class="flex items-baseline justify-between mb-1">
+                        <span id="detail-zip" class="font-mono text-lg font-semibold text-base-content"></span>
+                        <span id="detail-score" class="font-mono text-3xl font-semibold"></span>
+                    </div>
+                    <div class="flex justify-between text-xs text-base-content/50 mt-1">
+                        <span>Displacement Risk</span>
+                        <span id="detail-updated" class="text-right"></span>
+                    </div>
+                    <p id="detail-summary" class="hidden text-xs text-base-content/70 mt-3 leading-relaxed"></p>
+                </div>
+
+                <!-- Renovation-Flip Pattern alert (Phase 6: Plan 04) — hidden by default -->
+                <div id="renovation-flip-alert" class="hidden rounded-xl p-4 border border-amber-500/40 bg-amber-500/10">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <p class="text-sm font-semibold text-amber-400">Renovation-Flip Pattern Detected</p>
+                            <p id="renovation-flip-count" class="text-xs text-base-content/60 mt-0.5"></p>
+                        </div>
+                        <button id="renovation-flip-toggle" class="text-xs text-amber-400/70 hover:text-amber-400 whitespace-nowrap" style="min-height:44px;">See addresses</button>
+                    </div>
+                    <div id="renovation-flip-list" class="hidden mt-3 flex flex-col gap-1 text-sm"></div>
+                    <p class="text-xs text-base-content/40 mt-3 italic">Based on LLC acquisitions followed by renovation permits (A1/A2) within 60 days. Affordable housing LLCs and seasonal construction may produce false positives.</p>
+                </div>
+
+                <!-- Neighborhood Pulse feed (Phase 6: Plan 03) -->
+                <div id="pulse-section" class="bg-base-300 rounded-xl p-4 hidden">
+                    <details open>
+                        <summary class="text-xs font-semibold text-base-content/60 uppercase tracking-wider cursor-pointer select-none mb-3 flex items-center justify-between">
+                            <span id="pulse-section-title">Neighborhood Pulse</span>
+                            <span id="pulse-last-days" class="text-base-content/30 text-xs normal-case tracking-normal font-normal">last 90 days</span>
+                        </summary>
+
+                        <!-- LLC Acquisitions subsection -->
+                        <div id="pulse-llc-section" class="hidden mb-4">
+                            <h4 id="pulse-llc-header" class="text-xs font-semibold text-amber-400/70 uppercase tracking-wider mb-2">LLC Acquisitions</h4>
+                            <div id="pulse-llc-list" class="flex flex-col gap-1 text-sm"></div>
+                        </div>
+
+                        <!-- Recent Permits subsection -->
+                        <div id="pulse-permits-section" class="hidden mb-4">
+                            <h4 id="pulse-permits-header" class="text-xs font-semibold text-sky-400/70 uppercase tracking-wider mb-2">Recent Permits</h4>
+                            <div id="pulse-permits-list" class="flex flex-col gap-1 text-sm"></div>
+                        </div>
+
+                        <!-- Recent Evictions subsection -->
+                        <div id="pulse-evictions-section" class="hidden">
+                            <h4 id="pulse-evictions-header" class="text-xs font-semibold text-red-400/70 uppercase tracking-wider mb-2">Recent Evictions</h4>
+                            <div id="pulse-evictions-list" class="flex flex-col gap-1 text-sm"></div>
+                        </div>
+
+                        <!-- Empty state -->
+                        <p id="pulse-empty" class="hidden text-sm text-base-content/50 text-center py-2">
+                            No recent activity in this ZIP.
+                        </p>
+                    </details>
+                </div>
+
+                <!-- Signal breakdown -->
+                <div class="bg-base-300 rounded-xl p-4">
+                    <h3 class="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-1">Signal Breakdown</h3>
+                    <p class="text-xs text-base-content/40 mb-3">Scores are 0–100 relative to all NYC neighborhoods, normalized per residential unit.</p>
+                    <div id="signal-rows" class="flex flex-col gap-2"></div>
+                </div>
+
+                <!-- No score state -->
+                <div id="no-score-msg" class="hidden text-sm text-base-content/50 text-center px-2">
+                    No score computed yet for this zip code.
+                </div>
+
+                <!-- Methodology trigger (scope addition C) -->
+                <button
+                    id="methodology-trigger"
+                    class="text-xs text-sky-400/70 hover:text-sky-400 text-left underline"
+                    style="min-height: 44px;"
+                    onclick="document.getElementById('methodology-modal').classList.remove('hidden')"
+                >
+                    How scores work
+                </button>
+
+                <!-- Address search — resolves to block detail panel (D-07) -->
+                <div class="bg-base-300 rounded-xl p-4">
+                    <h3 class="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-3">Look Up a Building</h3>
+                    <div class="flex gap-2">
+                        <input
+                            id="address-input"
+                            type="text"
+                            placeholder="e.g. 123 Broadway, Brooklyn"
+                            class="input input-sm input-bordered flex-1 text-sm font-mono break-all"
+                            style="min-height: 44px;"
+                        />
+                        <button
+                            id="address-search-btn"
+                            class="btn btn-sm btn-primary"
+                            style="min-height: 44px;"
+                        >Search</button>
+                    </div>
+                    <div id="address-error" class="hidden text-xs text-error mt-2"></div>
+                </div>
+
+                <!-- Skeleton loading state (scope addition A) — shown during BBL resolution -->
+                <div id="block-skeleton" class="hidden bg-base-300 rounded-xl p-4 flex flex-col gap-3">
+                    <div class="h-4 bg-base-content/10 rounded animate-pulse w-3/4"></div>
+                    <div class="h-4 bg-base-content/10 rounded animate-pulse w-1/2"></div>
+                    <div class="h-4 bg-base-content/10 rounded animate-pulse w-5/6"></div>
+                </div>
+            </div>
+
+            <!-- Block detail panel — shown after address search resolves (D-08, D-09, D-10) -->
+            <div id="block-panel" class="hidden flex-1 flex flex-col gap-4">
+                <!-- Back navigation (D-10) -->
+                <button id="back-btn" class="text-sm text-sky-400 text-left hover:underline" style="min-height: 44px;">
+                    &#8592; Back to &#8212;
+                </button>
+
+                <!-- Block score card -->
+                <div class="bg-base-300 rounded-xl p-4">
+                    <div class="flex items-baseline justify-between mb-1">
+                        <span id="block-bbl" class="font-mono text-sm text-base-content/60"></span>
+                        <span id="block-score" class="font-mono text-3xl font-semibold"></span>
+                    </div>
+                    <div class="text-xs text-base-content/50 mt-1">Displacement Risk</div>
+                </div>
+
+                <!-- Block event list — civic events, newest first (D-09, D-16) -->
+                <div class="bg-base-300 rounded-xl p-4">
+                    <h3 class="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-3">Civic Events</h3>
+                    <div id="block-events" class="flex flex-col gap-2 text-sm break-words"></div>
+                    <!-- Empty state (scope addition B) -->
+                    <div id="block-empty-state" class="hidden text-sm text-base-content/50 text-center py-4">
+                        No recorded activity for this address
+                    </div>
+                </div>
+            </div>
+            <!-- Attribution -->
+            <div class="mt-auto pt-4 border-t border-base-content/10 text-xs text-base-content/30 text-center">
+                Built by <a href="https://linkedin.com/in/michael-espinal" target="_blank" rel="noopener" class="hover:text-sky-400 underline">Michael Espinal</a>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Methodology modal (scope addition C) — accessible: Escape closes, backdrop click closes -->
+    <div
+        id="methodology-modal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+        onclick="if(event.target===this)this.classList.add('hidden')"
+    >
+        <div class="bg-base-200 rounded-2xl p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-lg font-semibold" style="color: #38bdf8;">How Scores Work</h2>
+                <button
+                    class="text-base-content/50 hover:text-base-content text-xl leading-none"
+                    style="min-height: 44px; min-width: 44px;"
+                    onclick="document.getElementById('methodology-modal').classList.add('hidden')"
+                >&#10005;</button>
+            </div>
+            <p class="text-sm text-base-content/70 mb-4">
+                Each neighborhood receives a displacement risk score from 1&ndash;100, computed nightly from six public data signals. Methodology follows
+                <a href="https://anhd.org" target="_blank" class="text-sky-400 underline">ANHD (Association for Neighborhood and Housing Development)</a>
+                displacement risk indicators.
+            </p>
+            <div class="flex flex-col gap-4 text-sm">
+                <div>
+                    <h3 class="font-semibold text-base-content mb-1">LLC Acquisitions <span class="text-base-content/50 font-normal">(weight: 26%)</span></h3>
+                    <p class="text-base-content/70">Deed transfers to limited liability companies via ACRIS. LLC ownership is associated with speculative purchasing patterns and rapid rent increases. Financial institution transfers (mortgage servicers, foreclosure deeds) are excluded. Source: NYC ACRIS (bnx9-e6tj, 636b-3b5g, 8h5j-fqxa).</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-base-content mb-1">Permit Filings <span class="text-base-content/50 font-normal">(weight: 21%)</span></h3>
+                    <p class="text-base-content/70">DOB building permit applications &mdash; renovation and alteration permits signal landlord investment that often precedes tenant displacement. Source: NYC Department of Buildings (Socrata ipu4-2q9a).</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-base-content mb-1">Complaint Rate <span class="text-base-content/50 font-normal">(weight: 17%)</span></h3>
+                    <p class="text-base-content/70">311 housing complaints (heat, hot water, pests, mold) per residential unit &mdash; a proxy for deteriorating conditions that precede forced moves. Source: NYC 311 (erm2-nwe9).</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-base-content mb-1">Eviction Executions <span class="text-base-content/50 font-normal">(weight: 13%)</span></h3>
+                    <p class="text-base-content/70">Residential evictions carried out by NYC marshals (executed evictions, not filings). Filed cases often resolve without execution &mdash; this signal tracks actual removals. OCA data lags executed date by 2&ndash;4 weeks. Source: NYC Open Data (6z8x-wfk4).</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-base-content mb-1">Assessment Spike <span class="text-base-content/50 font-normal">(weight: 8%)</span></h3>
+                    <p class="text-base-content/70">Year-over-year increase in NYC Department of Finance property assessment &mdash; a leading indicator of market pressure. Currently dormant &mdash; requires two consecutive years of DOF assessment history. Source: NYC Department of Finance (w7rz-68fs).</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-base-content mb-1">RS Unit Loss <span class="text-base-content/50 font-normal">(weight: 15%)</span></h3>
+                    <p class="text-base-content/70">Year-over-year loss in rent-stabilized units per building via DHCR registration data. The single most direct signal of affordable housing erosion. Currently in data collection phase &mdash; signal becomes active after two consecutive annual snapshots. Source: DHCR Building Registrations (kj4p-ruqc).</p>
+                </div>
+            </div>
+            <p class="text-xs text-base-content/50 mt-4">Scores are normalized per residential unit using MapPLUTO unit counts to prevent bias toward dense commercial areas. All data is public record.</p>
+        </div>
+    </div>
+
+    <!-- Mobile: fixed "View Map" bar — stays at bottom while scrolling sidebar -->
+    <button
+        id="view-map-btn"
+        onclick="showMobileMap()"
+        style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:40;min-height:48px;background:#0f172a;color:#38bdf8;border-top:1px solid rgba(56,189,248,0.25);font-size:0.875rem;font-weight:600;"
+    >View Map →</button>
+
+    <!-- Sparkline tooltip div — positioned absolutely, shown on SVG hover -->
+    <div id="sparkline-tip" style="display:none;position:absolute;pointer-events:none;background:#1e293b;color:#f1f5f9;font-size:11px;padding:3px 7px;border-radius:4px;white-space:nowrap;z-index:1000;"></div>
+
+    <!-- MapLibre GL JS 5.2.0 -->
+    <script src="https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.js"></script>
+    <script>
+        // --- Sparkline helpers (Phase 6, Plan 02) ---
+
+        function sparkline(scores, { width = 60, height = 20, strokeWidth = 1.5 } = {}) {
+            if (!scores || scores.length < 2) return '';
+            const min = Math.min(...scores), max = Math.max(...scores);
+            const range = max - min || 1;
+            const pad = strokeWidth;
+            const points = scores.map((v, i) => {
+                const x = pad + (i / (scores.length - 1)) * (width - pad * 2);
+                const y = pad + (1 - (v - min) / range) * (height - pad * 2);
+                return `${x.toFixed(1)},${y.toFixed(1)}`;
+            }).join(' ');
+            const win = Math.min(7, Math.floor(scores.length / 2));
+            const recentAvg = scores.slice(-win).reduce((a, b) => a + b, 0) / win;
+            const earlyAvg  = scores.slice(0, win).reduce((a, b) => a + b, 0) / win;
+            const color = scores.length < 7 ? '#94a3b8'
+                        : recentAvg > earlyAvg + 2 ? '#f97316'
+                        : recentAvg < earlyAvg - 2 ? '#22c55e'
+                        : '#94a3b8';
+            const dashAttr = scores.length < 7 ? 'stroke-dasharray="3,3"' : '';
+            return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" class="sparkline" data-scores='${JSON.stringify(scores)}' style="vertical-align:middle;margin-right:6px;" ${scores.length < 7 ? 'data-sparse="true"' : ''}><polyline points="${points}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linejoin="round" stroke-linecap="round" ${dashAttr}/></svg>`;
+        }
+
+        function wireSparklineTooltips(dateLabels) {
+            const tip = document.getElementById('sparkline-tip');
+            document.querySelectorAll('svg.sparkline').forEach(svg => {
+                const scores = JSON.parse(svg.dataset.scores);
+                svg.addEventListener('mousemove', (e) => {
+                    const rect = svg.getBoundingClientRect();
+                    const relX = e.clientX - rect.left;
+                    const idx = Math.max(0, Math.min(scores.length - 1, Math.round((relX / rect.width) * (scores.length - 1))));
+                    const label = dateLabels && dateLabels[idx] ? dateLabels[idx] : `Day ${idx + 1}`;
+                    tip.textContent = `Score: ${scores[idx].toFixed(1)} \u2014 ${label}`;
+                    tip.style.left = `${e.pageX + 8}px`;
+                    tip.style.top  = `${e.pageY - 24}px`;
+                    tip.style.display = 'block';
+                });
+                svg.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+            });
+        }
+
+        // --- End sparkline helpers ---
+
+        // ---- i18n: lightweight EN/ES support ----
+        const STRINGS = {
+            en: {
+                signals: {
+                    permits:           'Permit Filings',
+                    evictions:         'Evictions',
+                    llc_acquisitions:  'LLC Acquisitions',
+                    assessment_spike:  'Assessment Spike',
+                    complaint_rate:    'Complaints',
+                    rs_unit_loss:      'RS Unit Loss'
+                },
+                pulse: {
+                    section_title:    'Neighborhood Pulse',
+                    last_n_days:      'last 90 days',
+                    llc_header:       'LLC Acquisitions',
+                    permits_header:   'Recent Permits',
+                    evictions_header: 'Recent Evictions',
+                    acquired_by:      'acquired by',
+                    filed:            'filed',
+                    executed:         'executed',
+                    empty:            'No recent activity in this ZIP.'
+                }
+            },
+            es: {
+                signals: {
+                    permits:           'Solicitudes de Permisos',
+                    evictions:         'Desalojos',
+                    llc_acquisitions:  'Adquisiciones por LLC',
+                    assessment_spike:  'Aumento de Valuaci\u00f3n',
+                    complaint_rate:    'Quejas al 311',
+                    rs_unit_loss:      'Pérdida de Estabilización'
+                },
+                pulse: {
+                    section_title:    'Pulso del Vecindario',
+                    last_n_days:      '\u00faltimos 90 d\u00edas',
+                    llc_header:       'Adquisiciones por LLC',
+                    permits_header:   'Permisos Recientes',
+                    evictions_header: 'Desalojos Recientes',
+                    acquired_by:      'adquirido por',
+                    filed:            'presentado',
+                    executed:         'ejecutado',
+                    empty:            'Sin actividad reciente en este c\u00f3digo postal.'
+                }
+            }
+        };
+
+        let lang = localStorage.getItem('pulsecities_lang') || 'en';
+
+        function t(section, key) {
+            const lang_strings = STRINGS[lang] || STRINGS['en'];
+            const section_strings = lang_strings[section] || STRINGS['en'][section] || {};
+            return section_strings[key] || (STRINGS['en'][section] || {})[key] || key;
+        }
+        // ---- end i18n ----
+
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+            center: [-74.0060, 40.7128],
+            zoom: 11
+        });
+
+        map.on('load', function () {
+            // Load neighborhood boundaries from the API
+            map.addSource('neighborhoods', {
+                type: 'geojson',
+                data: '/api/neighborhoods'
+            });
+
+            // Choropleth fill layer — green to red by displacement score
+            map.addLayer({
+                id: 'neighborhood-fill',
+                type: 'fill',
+                source: 'neighborhoods',
+                paint: {
+                    'fill-color': [
+                        'case',
+                        ['==', ['get', 'score'], null], '#94a3b8',
+                        [
+                            'interpolate', ['linear'], ['get', 'score'],
+                            0,   '#22c55e',
+                            40,  '#eab308',
+                            70,  '#f97316',
+                            100, '#ef4444'
+                        ]
+                    ],
+                    'fill-opacity': 0.65
+                }
+            });
+
+            // Neighborhood boundary outlines
+            map.addLayer({
+                id: 'neighborhood-outline',
+                type: 'line',
+                source: 'neighborhoods',
+                paint: {
+                    'line-color': '#1e293b',
+                    'line-width': 0.5
+                }
+            });
+
+            // Pointer cursor on hover
+            map.on('mouseenter', 'neighborhood-fill', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+            map.on('mouseleave', 'neighborhood-fill', () => {
+                map.getCanvas().style.cursor = '';
+            });
+
+            // Click -> fetch score and populate sidebar
+            map.on('click', 'neighborhood-fill', async (e) => {
+                const props = e.features[0].properties;
+                const zip = props.zip_code;
+
+                // Cache zip immediately for back navigation (D-10); clear stale data
+                _cachedZip = zip;
+                _cachedZipData = null;  // prevent stale data showing if new fetch fails
+                // Update URL to ?zip={zip_code} for shareable links (scope addition D)
+                history.pushState(null, '', '?zip=' + zip);
+
+                showDetail(zip, null, null);  // show panel immediately with loading state
+                if (window.innerWidth < 768) showMobileSidebar();
+
+                try {
+                    const resp = await fetch(`/api/neighborhoods/${zip}/score`);
+                    if (resp.status === 404) {
+                        showDetail(zip, null, null);
+                    } else if (!resp.ok) {
+                        // Show neighborhood panel with no score rather than freezing on error
+                        showDetail(zip, null, null);
+                        console.error('Score fetch returned', resp.status);
+                    } else {
+                        const data = await resp.json();
+                        // Cache for back navigation (D-10)
+                        _cachedZip = zip;
+                        _cachedZipData = {
+                            score: data.score,
+                            breakdown: data.signal_breakdown,
+                            summaryText: data.summary_text,
+                            lastUpdated: data.last_updated,
+                            signalLastUpdated: data.signal_last_updated
+                        };
+                        showDetail(zip, data.score, data.signal_breakdown, data.last_updated, data.signal_last_updated, data.summary_text);
+                        renderPulse(zip);
+                        renderRenovationFlip(zip);
+                        // Fetch score history for sparkline (best-effort, non-blocking)
+                        fetch(`/api/score-history/${zip}?days=90`)
+                            .then(r => r.ok ? r.json() : [])
+                            .then(history => {
+                                if (!history || history.length < 2) return;
+                                const scores = history.map(h => h.score);
+                                const dates = history.map(h => {
+                                    const d = new Date(h.date + 'T00:00:00');
+                                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                });
+                                const svgStr = sparkline(scores);
+                                if (!svgStr) return;
+                                // Inject sparkline before the score number in the score card
+                                const scoreEl = document.getElementById('detail-score');
+                                // Remove any existing sparkline first (navigation back/forth)
+                                const existing = scoreEl.parentElement.querySelector('svg.sparkline');
+                                if (existing) existing.remove();
+                                scoreEl.insertAdjacentHTML('beforebegin', svgStr);
+                                wireSparklineTooltips(dates);
+                            })
+                            .catch(() => {}); // silently ignore sparkline fetch failures
+                    }
+                } catch (err) {
+                    console.error('Score fetch failed:', err);
+                }
+            });
+        });
+
+        function scoreColor(score) {
+            if (score === null) return '#94a3b8';
+            if (score >= 70) return '#ef4444';
+            if (score >= 40) return '#f97316';
+            if (score >= 15) return '#eab308';
+            return '#22c55e';
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return '';
+            const d = new Date(isoString);
+            const now = new Date();
+            const opts = { month: 'short', day: 'numeric' };
+            if (d.getFullYear() !== now.getFullYear()) opts.year = 'numeric';
+            return d.toLocaleDateString('en-US', opts);
+        }
+
+        function renderPulse(zip) {
+            const section = document.getElementById('pulse-section');
+            section.classList.add('hidden');  // hide while loading
+            // TODO: pass lang=${lang} to summary API when endpoint is added
+
+            fetch(`/api/neighborhoods/${zip}/pulse`)
+                .then(r => r.ok ? r.json() : null)
+                .then(data => {
+                    if (!data) return;
+                    // Update translatable section headers
+                    const sectionTitle = document.getElementById('pulse-section-title');
+                    if (sectionTitle) sectionTitle.textContent = t('pulse', 'section_title');
+                    const lastDays = document.getElementById('pulse-last-days');
+                    if (lastDays) lastDays.textContent = t('pulse', 'last_n_days');
+                    const llcHeader = document.getElementById('pulse-llc-header');
+                    if (llcHeader) llcHeader.textContent = t('pulse', 'llc_header');
+                    const permHeader = document.getElementById('pulse-permits-header');
+                    if (permHeader) permHeader.textContent = t('pulse', 'permits_header');
+                    const evictHeader = document.getElementById('pulse-evictions-header');
+                    if (evictHeader) evictHeader.textContent = t('pulse', 'evictions_header');
+                    const llcList = document.getElementById('pulse-llc-list');
+                    const permList = document.getElementById('pulse-permits-list');
+                    const evictList = document.getElementById('pulse-evictions-list');
+                    const llcSec = document.getElementById('pulse-llc-section');
+                    const permSec = document.getElementById('pulse-permits-section');
+                    const evictSec = document.getElementById('pulse-evictions-section');
+                    const emptyEl = document.getElementById('pulse-empty');
+
+                    llcList.innerHTML = '';
+                    permList.innerHTML = '';
+                    evictList.innerHTML = '';
+
+                    const hasLLC = data.llc_acquisitions && data.llc_acquisitions.length > 0;
+                    const hasPerm = data.recent_permits && data.recent_permits.length > 0;
+                    const hasEvict = data.recent_evictions && data.recent_evictions.length > 0;
+
+                    if (hasLLC) {
+                        llcSec.classList.remove('hidden');
+                        data.llc_acquisitions.forEach(item => {
+                            const el = document.createElement('div');
+                            el.className = 'py-1 border-b border-base-content/10 last:border-0 overflow-wrap-anywhere';
+                            const dateStr = item.doc_date ? new Date(item.doc_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+                            const addr = document.createElement('div');
+                            addr.className = 'text-base-content font-medium';
+                            addr.textContent = item.address || item.bbl;
+                            const detail = document.createElement('div');
+                            detail.className = 'text-xs text-base-content/50';
+                            detail.textContent = `${t('pulse', 'acquired_by')} ${item.buyer_name}` + (dateStr ? ` \u2014 ${dateStr}` : '');
+                            el.appendChild(addr);
+                            el.appendChild(detail);
+                            llcList.appendChild(el);
+                        });
+                    } else {
+                        llcSec.classList.add('hidden');
+                    }
+
+                    if (hasPerm) {
+                        permSec.classList.remove('hidden');
+                        data.recent_permits.forEach(item => {
+                            const el = document.createElement('div');
+                            el.className = 'py-1 border-b border-base-content/10 last:border-0 overflow-wrap-anywhere';
+                            const dateStr = item.filing_date ? new Date(item.filing_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+                            const addr = document.createElement('div');
+                            addr.className = 'text-base-content font-medium';
+                            addr.textContent = item.address || item.bbl;
+                            const detail = document.createElement('div');
+                            detail.className = 'text-xs text-base-content/50';
+                            detail.textContent = `${item.permit_type_label || item.permit_type} ${t('pulse', 'filed')}` + (dateStr ? ` ${dateStr}` : '');
+                            el.appendChild(addr);
+                            el.appendChild(detail);
+                            permList.appendChild(el);
+                        });
+                    } else {
+                        permSec.classList.add('hidden');
+                    }
+
+                    if (hasEvict) {
+                        evictSec.classList.remove('hidden');
+                        data.recent_evictions.forEach(item => {
+                            const el = document.createElement('div');
+                            el.className = 'py-1 border-b border-base-content/10 last:border-0 overflow-wrap-anywhere';
+                            const dateStr = item.executed_date ? new Date(item.executed_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+                            const addr = document.createElement('div');
+                            addr.className = 'text-base-content font-medium';
+                            addr.textContent = item.address || 'Unknown address';
+                            const detail = document.createElement('div');
+                            detail.className = 'text-xs text-base-content/50';
+                            detail.textContent = (item.eviction_type || t('pulse', 'executed')) + (dateStr ? ` \u2014 ${dateStr}` : '');
+                            el.appendChild(addr);
+                            el.appendChild(detail);
+                            evictList.appendChild(el);
+                        });
+                    } else {
+                        evictSec.classList.add('hidden');
+                    }
+
+                    emptyEl.textContent = t('pulse', 'empty');
+                    emptyEl.classList.toggle('hidden', hasLLC || hasPerm || hasEvict);
+                    section.classList.remove('hidden');
+                })
+                .catch(() => {}); // best-effort, silently ignore
+        }
+
+        function renderRenovationFlip(zip) {
+            const alertEl = document.getElementById('renovation-flip-alert');
+            alertEl.classList.add('hidden');
+
+            fetch(`/api/neighborhoods/${zip}/renovation-flip`)
+                .then(r => r.ok ? r.json() : null)
+                .then(data => {
+                    if (!data || !data.detected) {
+                        alertEl.classList.add('hidden');
+                        return;
+                    }
+                    // Populate and show
+                    const countEl = document.getElementById('renovation-flip-count');
+                    countEl.textContent = `${data.count} propert${data.count === 1 ? 'y' : 'ies'} with LLC acquisition + renovation permit within 60 days`;
+
+                    const list = document.getElementById('renovation-flip-list');
+                    list.innerHTML = '';
+                    (data.properties || []).forEach(p => {
+                        const el = document.createElement('div');
+                        el.className = 'py-1 border-b border-base-content/10 last:border-0';
+                        const addr = document.createElement('div');
+                        addr.className = 'text-base-content font-medium';
+                        addr.textContent = p.address || p.bbl;
+                        const detail = document.createElement('div');
+                        detail.className = 'text-xs text-base-content/50';
+                        const transferDate = p.transfer_date ? new Date(p.transfer_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+                        const days = p.days_between != null ? `${p.days_between}d later` : '';
+                        detail.textContent = `${p.buyer || ''}` + (transferDate ? ` \u2014 ${transferDate}` : '') + (days ? ` \u2014 permit ${days}` : '');
+                        el.appendChild(addr);
+                        el.appendChild(detail);
+                        list.appendChild(el);
+                    });
+
+                    alertEl.classList.remove('hidden');
+                })
+                .catch(() => {}); // best-effort
+        }
+
+        // Toggle address list visibility
+        document.getElementById('renovation-flip-toggle').addEventListener('click', function() {
+            const list = document.getElementById('renovation-flip-list');
+            const isHidden = list.classList.contains('hidden');
+            list.classList.toggle('hidden', !isHidden);
+            this.textContent = isHidden ? 'Hide addresses' : 'See addresses';
+        });
+
+        function showDetail(zip, score, breakdown, lastUpdated, signalLastUpdated, summaryText) {
+            document.getElementById('empty-state').classList.add('hidden');
+            // Clear stale sparkline on new neighborhood selection
+            const staleSparkline = document.querySelector('#detail-score')?.parentElement?.querySelector('svg.sparkline');
+            if (staleSparkline) staleSparkline.remove();
+            // Clear pulse section and renovation-flip alert while new neighborhood data loads
+            document.getElementById('pulse-section').classList.add('hidden');
+            document.getElementById('renovation-flip-alert').classList.add('hidden');
+            // Hide block panel if visible
+            document.getElementById('block-panel').classList.add('hidden');
+            document.getElementById('block-panel').classList.remove('flex');
+            const panel = document.getElementById('detail-panel');
+            panel.classList.remove('hidden');
+            panel.classList.add('flex');
+
+            document.getElementById('detail-zip').textContent = zip;
+
+            const scoreEl = document.getElementById('detail-score');
+            if (score !== null && score !== undefined) {
+                scoreEl.textContent = score.toFixed(1);
+                scoreEl.style.color = scoreColor(score);
+                document.getElementById('no-score-msg').classList.add('hidden');
+            } else {
+                scoreEl.textContent = '\u2014';
+                scoreEl.style.color = '#94a3b8';
+                document.getElementById('no-score-msg').classList.remove('hidden');
+            }
+
+            const updatedEl = document.getElementById('detail-updated');
+            if (lastUpdated) {
+                const d = new Date(lastUpdated);
+                updatedEl.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            } else {
+                updatedEl.textContent = '';
+            }
+
+            const summaryEl = document.getElementById('detail-summary');
+            if (summaryText) {
+                summaryEl.textContent = summaryText;
+                summaryEl.classList.remove('hidden');
+            } else {
+                summaryEl.textContent = '';
+                summaryEl.classList.add('hidden');
+            }
+
+            const signalNames = {
+                permits:           t('signals', 'permits'),
+                evictions:         t('signals', 'evictions'),
+                llc_acquisitions:  t('signals', 'llc_acquisitions'),
+                assessment_spike:  t('signals', 'assessment_spike'),
+                complaint_rate:    t('signals', 'complaint_rate'),
+                rs_unit_loss:      t('signals', 'rs_unit_loss')
+            };
+            const slu = signalLastUpdated || {};
+
+            const rows = document.getElementById('signal-rows');
+            rows.innerHTML = '';
+            if (breakdown) {
+                Object.entries(breakdown).forEach(([key, val]) => {
+                    const label = signalNames[key] || key;
+                    const ts = slu[key] ? `<span class="text-xs text-sky-400/70">Updated ${formatDate(slu[key])}</span>` : '';
+
+                    const row = document.createElement('div');
+                    row.className = 'flex justify-between items-start text-sm gap-2 py-2 min-h-[44px]';
+                    row.innerHTML = `
+                        <div class="flex flex-col">
+                            <span class="text-base-content/60">${label}</span>
+                            ${ts ? `<div class="mt-0.5">${ts}</div>` : ''}
+                        </div>
+                        <span class="font-mono text-base-content">${val ?? '\u2014'}</span>
+                    `;
+                    rows.appendChild(row);
+
+                    // Eviction lag note — always visible, directly after evictions row (D-18)
+                    if (key === 'evictions') {
+                        const lagNote = document.createElement('div');
+                        lagNote.className = 'text-xs text-base-content/50 italic px-2 pb-1';
+                        lagNote.textContent = 'Eviction filings typically appear 2\u20134 weeks after they occur.';
+                        rows.appendChild(lagNote);
+                    }
+                });
+            }
+        }
+
+        // --- Language toggle handler ---
+        document.getElementById('lang-toggle').addEventListener('click', function() {
+            lang = lang === 'en' ? 'es' : 'en';
+            localStorage.setItem('pulsecities_lang', lang);
+            this.textContent = lang === 'es' ? 'ES / EN' : 'EN / ES';
+            // Re-render currently displayed content if a neighborhood is selected
+            const detailPanel = document.getElementById('detail-panel');
+            if (!detailPanel.classList.contains('hidden') && _cachedZipData) {
+                showDetail(
+                    _cachedZip,
+                    _cachedZipData.score,
+                    _cachedZipData.breakdown,
+                    _cachedZipData.lastUpdated,
+                    _cachedZipData.signalLastUpdated,
+                    _cachedZipData.summaryText
+                );
+                renderPulse(_cachedZip);
+            }
+        });
+
+        // --- Address Search and Block Panel Logic ---
+
+        // State for back-navigation (D-10: restore without re-fetching)
+        let _cachedZip = null;
+        let _cachedZipData = null;  // { score, breakdown, lastUpdated, signalLastUpdated }
+
+        function showBlockPanel(bbl, data) {
+            // Hide neighborhood panel, show block panel
+            document.getElementById('detail-panel').classList.add('hidden');
+            document.getElementById('detail-panel').classList.remove('flex');
+            document.getElementById('block-panel').classList.remove('hidden');
+            document.getElementById('block-panel').classList.add('flex');
+            document.getElementById('empty-state').classList.add('hidden');
+
+            // Back button shows current zip (D-10)
+            document.getElementById('back-btn').textContent = '\u2190 Back to ' + (_cachedZip || '');
+
+            // BBL display
+            document.getElementById('block-bbl').textContent = 'BBL: ' + bbl;
+
+            // Score
+            const scoreEl = document.getElementById('block-score');
+            if (data.score !== null && data.score !== undefined) {
+                scoreEl.textContent = data.score.toFixed(1);
+                scoreEl.style.color = scoreColor(data.score);
+            } else {
+                scoreEl.textContent = '\u2014';
+                scoreEl.style.color = '#94a3b8';
+            }
+
+            // Events list (D-09, D-15, D-16: journalism-first raw data)
+            const eventsContainer = document.getElementById('block-events');
+            const emptyState = document.getElementById('block-empty-state');
+            eventsContainer.innerHTML = '';
+
+            if (!data.events || data.events.length === 0) {
+                emptyState.classList.remove('hidden');
+                eventsContainer.classList.add('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                eventsContainer.classList.remove('hidden');
+                data.events.forEach(ev => {
+                    const item = document.createElement('div');
+                    item.className = 'flex flex-col gap-0.5 py-2 border-b border-base-content/10 last:border-0 break-words';
+
+                    // Event type badge — keys from local dict are safe; ev.type fallback uses textContent
+                    const typeColors = {
+                        permit: 'text-sky-400',
+                        eviction: 'text-red-400',
+                        ownership_transfer: 'text-amber-400',
+                        complaint: 'text-orange-400'
+                    };
+                    const typeLabels = {
+                        permit: 'Permit',
+                        eviction: 'Eviction',
+                        ownership_transfer: 'LLC Transfer',
+                        complaint: '311 Complaint'
+                    };
+                    const typeClass = typeColors[ev.type] || 'text-base-content/60';
+                    const typeLabel = typeLabels[ev.type] || ev.type;
+
+                    // Build header row with DOM methods to prevent XSS from API strings
+                    const headerRow = document.createElement('div');
+                    headerRow.className = 'flex justify-between items-start gap-2';
+
+                    const badgeEl = document.createElement('span');
+                    badgeEl.className = 'text-xs font-semibold ' + typeClass + ' uppercase tracking-wide';
+                    badgeEl.textContent = typeLabel;
+                    headerRow.appendChild(badgeEl);
+
+                    const dateEl = document.createElement('span');
+                    dateEl.className = 'text-xs text-base-content/50 whitespace-nowrap font-mono';
+                    dateEl.textContent = ev.date || '\u2014';
+                    headerRow.appendChild(dateEl);
+
+                    item.appendChild(headerRow);
+
+                    const descEl = document.createElement('span');
+                    descEl.className = 'text-sm text-base-content';
+                    descEl.textContent = ev.description || '';
+                    item.appendChild(descEl);
+
+                    if (ev.detail) {
+                        const detailEl = document.createElement('span');
+                        detailEl.className = 'text-xs text-base-content/50';
+                        detailEl.textContent = ev.detail;
+                        item.appendChild(detailEl);
+                    }
+
+                    eventsContainer.appendChild(item);
+                });
+            }
+        }
+
+        function restoreNeighborhoodPanel() {
+            // Restore neighborhood panel from cache (D-10: no re-fetch)
+            document.getElementById('block-panel').classList.add('hidden');
+            document.getElementById('block-panel').classList.remove('flex');
+            if (_cachedZipData) {
+                showDetail(
+                    _cachedZip,
+                    _cachedZipData.score,
+                    _cachedZipData.breakdown,
+                    _cachedZipData.lastUpdated,
+                    _cachedZipData.signalLastUpdated,
+                    _cachedZipData.summaryText
+                );
+            } else {
+                // Fallback: show neighborhood panel empty
+                document.getElementById('detail-panel').classList.remove('hidden');
+                document.getElementById('detail-panel').classList.add('flex');
+                document.getElementById('empty-state').classList.add('hidden');
+            }
+        }
+
+        // Back button click handler
+        document.getElementById('back-btn').addEventListener('click', restoreNeighborhoodPanel);
+
+        // Address search handler
+        document.getElementById('address-search-btn').addEventListener('click', async function() {
+            const input = document.getElementById('address-input');
+            const errEl = document.getElementById('address-error');
+            const skeleton = document.getElementById('block-skeleton');
+            const address = input.value.trim();
+
+            if (!address) return;
+
+            // Show skeleton immediately — panel must never be blank (scope addition A)
+            errEl.classList.add('hidden');
+            skeleton.classList.remove('hidden');
+            this.disabled = true;
+            this.textContent = 'Looking up...';
+
+            try {
+                // Step 1: Resolve address -> BBL via GeoSearch-backed endpoint
+                const searchResp = await fetch(`/api/properties/search?address=${encodeURIComponent(address)}`);
+                if (!searchResp.ok) {
+                    skeleton.classList.add('hidden');
+                    errEl.textContent = 'Address not found. Try including borough (e.g. "123 Main St, Brooklyn").';
+                    errEl.classList.remove('hidden');
+                    return;
+                }
+                let searchData;
+                try {
+                    searchData = await searchResp.json();
+                } catch {
+                    skeleton.classList.add('hidden');
+                    errEl.textContent = 'Unexpected server response \u2014 please try again.';
+                    errEl.classList.remove('hidden');
+                    return;
+                }
+                const bbl = searchData.bbl;
+
+                if (!bbl) {
+                    skeleton.classList.add('hidden');
+                    errEl.textContent = 'Could not resolve address to a BBL.';
+                    errEl.classList.remove('hidden');
+                    return;
+                }
+
+                // Step 2: Fetch block events
+                const blockResp = await fetch(`/api/blocks/${bbl}`);
+                skeleton.classList.add('hidden');
+
+                if (!blockResp.ok) {
+                    errEl.textContent = 'Could not load block data.';
+                    errEl.classList.remove('hidden');
+                    return;
+                }
+                const blockData = await blockResp.json();
+
+                // Show block panel (empty state if no events — scope addition B)
+                showBlockPanel(bbl, blockData);
+
+            } catch (err) {
+                skeleton.classList.add('hidden');
+                errEl.textContent = 'Network error \u2014 please try again.';
+                errEl.classList.remove('hidden');
+                console.error('Address search error:', err);
+            } finally {
+                this.disabled = false;
+                this.textContent = 'Search';
+            }
+        });
+
+        // Allow pressing Enter in the address input to trigger search
+        document.getElementById('address-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('address-search-btn').click();
+            }
+        });
+
+        // Methodology modal — close on Escape (scope addition C)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('methodology-modal').classList.add('hidden');
+            }
+        });
+
+        // Auto-open neighborhood panel from ?zip= URL param on page load (scope addition D)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Restore lang toggle label from localStorage
+            const toggleBtn = document.getElementById('lang-toggle');
+            if (toggleBtn) toggleBtn.textContent = lang === 'es' ? 'ES / EN' : 'EN / ES';
+
+            const zip = new URLSearchParams(window.location.search).get('zip');
+            if (zip) {
+                // Auto-open the neighborhood panel for this zip code
+                showDetail(zip, null, null);
+                fetch(`/api/neighborhoods/${zip}/score`)
+                    .then(async r => {
+                        if (!r.ok) return null;
+                        try { return await r.json(); } catch { return null; }
+                    })
+                    .then(data => {
+                        if (data) {
+                            showDetail(zip, data.score, data.signal_breakdown, data.last_updated, data.signal_last_updated, data.summary_text);
+                            renderPulse(zip);
+                            renderRenovationFlip(zip);
+                            // Fetch score history for sparkline (best-effort, non-blocking)
+                            fetch(`/api/score-history/${zip}?days=90`)
+                                .then(r => r.ok ? r.json() : [])
+                                .then(history => {
+                                    if (!history || history.length < 2) return;
+                                    const scores = history.map(h => h.score);
+                                    const dates = history.map(h => {
+                                        const d = new Date(h.date + 'T00:00:00');
+                                        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                    });
+                                    const svgStr = sparkline(scores);
+                                    if (!svgStr) return;
+                                    const scoreEl = document.getElementById('detail-score');
+                                    const existing = scoreEl.parentElement.querySelector('svg.sparkline');
+                                    if (existing) existing.remove();
+                                    scoreEl.insertAdjacentHTML('beforebegin', svgStr);
+                                    wireSparklineTooltips(dates);
+                                })
+                                .catch(() => {}); // silently ignore sparkline fetch failures
+                        }
+                    })
+                    .catch(err => console.error('Auto-open zip fetch failed:', err));
+            }
+        });
+
+        function showMobileMap() {
+            document.getElementById('sidebar').classList.remove('mobile-visible');
+            document.getElementById('map').style.display = '';
+            document.getElementById('view-map-btn').style.display = 'none';
+            if (typeof map !== 'undefined') map.resize();
+        }
+
+        function showMobileSidebar() {
+            document.getElementById('sidebar').classList.add('mobile-visible');
+            document.getElementById('map').style.display = 'none';
+            document.getElementById('view-map-btn').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
