@@ -16,7 +16,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from api.routes import health, neighborhoods, properties, blocks, score_history, pulse
+from api.routes import health, neighborhoods, properties, blocks, score_history, pulse, search, subscribe
 from config.logging_config import configure_logging
 from scheduler.manager import lifespan
 
@@ -38,7 +38,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Tighten to specific origins before launch
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -48,6 +48,8 @@ app.include_router(properties.router, prefix="/api")
 app.include_router(blocks.router, prefix="/api")
 app.include_router(score_history.router, prefix="/api")
 app.include_router(pulse.router, prefix="/api")
+app.include_router(search.router, prefix="/api")
+app.include_router(subscribe.router, prefix="/api")
 
 # Static file serving — MUST come after all API routes
 # FastAPI route matching is first-match; mounting at "/" before API routes

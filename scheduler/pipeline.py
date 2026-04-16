@@ -10,6 +10,7 @@ Run order (sequential — no parallel to avoid DB contention):
 
 After all scrapers complete:
   6. Scoring engine   — recomputes displacement scores per zip code
+  7. MTEK monitor     — flags new violations/permits/evictions on MTEK portfolio
 
 Each scraper is wrapped with tenacity retries (3 attempts).
 A failing scraper logs the failure to ScraperRun and continues — we do not
@@ -32,6 +33,7 @@ from scrapers.evictions import EvictionsScraper
 from scrapers.ownership import OwnershipScraper
 from scrapers.permits import PermitsScraper
 from scrapers.pluto import PlutoScraper
+from scripts.mtek_monitor import run_mtek_monitor
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +99,9 @@ def run_nightly_pipeline() -> bool:
 
     # Scoring engine runs after all scrapers complete
     _run_scoring()
+
+    # MTEK portfolio monitor — needs fresh violations/permits/evictions data
+    _run_mtek_monitor()
 
     elapsed = (datetime.now(timezone.utc) - started).total_seconds()
     logger.info("=== Nightly pipeline complete in %.0fs ===", elapsed)
@@ -219,3 +224,13 @@ def _run_scoring() -> None:
         logger.info("Scoring engine: scored %d zip codes", n)
     except Exception as exc:
         logger.error("Scoring engine failed: %s", exc)
+
+
+def _run_mtek_monitor() -> None:
+    try:
+        with get_scraper_db() as db:
+            n = run_mtek_monitor(db)
+        logger.info("MTEK monitor: %d new alerts", n)
+    except Exception as exc:
+        logger.error("MTEK monitor failed (non-fatal): %s", exc)
+        send_alert("MTEK monitor failed", str(exc))

@@ -12,8 +12,9 @@ Weights (ANHD Displacement Alert Project methodology, rebalanced Phase 6-06):
 Rebalancing: existing 5 signals scaled by 0.85 multiplier so all 6 sum to 1.0.
   0.26 + 0.21 + 0.17 + 0.13 + 0.08 + 0.15 = 1.00 ✓
 
-TODO: Phase 6+ — implement assessment_spike YoY comparison once 2+ months
-      of DOF history exists (successive annual assessments per parcel).
+Assessment spike: active when assessment_history has ≥2 distinct tax years.
+Dormant (0.0) until the second annual MapPLUTO run writes tax_year=2027.
+See scrapers/pluto.py _write_assessment_snapshot and scripts/backfill_assessment_2026.py.
 
 Per-unit normalization uses DOF residential unit counts from the parcels table.
 Zero-unit and null-unit parcels fall back to the borough median units_res.
@@ -24,7 +25,8 @@ compute_scores(db) is the main entry point:
   2. Pre-compute borough median units_res for the fallback denominator.
   3. Divide each signal count by per-unit denominator (borough median fallback).
   4. Normalize each per-unit signal to 0–100 via independent linear min-max.
-  5. Compute weighted sum → clamp to [1, 100].
+  5. Redistribute dormant-signal weight proportionally to active signals (Step 5.5).
+  5b. Compute weighted sum using effective weights → clamp to [1, 100].
   6. Upsert to displacement_scores on uq_displacement_scores_zip_code.
   7. Propagate scores to neighborhoods.current_score.
   8. Return the number of zip codes scored.
@@ -35,7 +37,7 @@ Run standalone:
 
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy import text
@@ -103,14 +105,16 @@ def _assert_score_valid(zip_code: str, score: float, breakdown: dict) -> None:
 # All filter zip_code IS NOT NULL to prevent NULL grouping artifacts.
 # ---------------------------------------------------------------------------
 
-def _aggregate_permits(db: Session) -> List[Tuple[str, int]]:
+def _aggregate_permits(db: Session, cutoff: date | None = None) -> List[Tuple[str, int]]:
     """
     Return (zip_code, count) for permits filed in the past 365 days,
     restricted to residential parcels (parcels.units_res > 0).
     Commercial permits (office towers, retail) are excluded — they inflate
     scores for mixed-use and already-gentrified zips (e.g. 10018, 10013).
     Permits without a BBL match in parcels are excluded (can't confirm residential).
+    cutoff: explicit start-of-window date; defaults to today - 365 days when None.
     """
+    effective = cutoff if cutoff is not None else (date.today() - timedelta(days=365))
     rows = db.execute(
         text(
             """
@@ -119,40 +123,44 @@ def _aggregate_permits(db: Session) -> List[Tuple[str, int]]:
             JOIN parcels p ON pr.bbl = p.bbl
             WHERE pr.zip_code IS NOT NULL
               AND pr.bbl IS NOT NULL
-              AND pr.filing_date >= CURRENT_DATE - INTERVAL '365 days'
+              AND pr.filing_date >= :cutoff
               AND p.units_res > 0
             GROUP BY pr.zip_code
             ORDER BY permit_count DESC
             """
-        )
+        ),
+        {"cutoff": effective},
     ).fetchall()
     return [(str(r[0]), int(r[1])) for r in rows]
 
 
-def _aggregate_evictions(db: Session) -> List[Tuple[str, int]]:
+def _aggregate_evictions(db: Session, cutoff: date | None = None) -> List[Tuple[str, int]]:
     """
     Return (zip_code, count) for residential evictions executed in the past 365 days.
     Note: OCA data lags executed_date by 2–4 weeks (documented in evictions_raw model).
     eviction_type = 'R' (residential) excludes commercial tenant evictions.
     ILIKE 'R%' handles both 'R' and 'Residential' across OCA dataset versions.
+    cutoff: explicit start-of-window date; defaults to today - 365 days when None.
     """
+    effective = cutoff if cutoff is not None else (date.today() - timedelta(days=365))
     rows = db.execute(
         text(
             """
             SELECT zip_code, COUNT(*) AS eviction_count
             FROM evictions_raw
             WHERE zip_code IS NOT NULL
-              AND executed_date >= CURRENT_DATE - INTERVAL '365 days'
+              AND executed_date >= :cutoff
               AND eviction_type ILIKE 'R%'
             GROUP BY zip_code
             ORDER BY eviction_count DESC
             """
-        )
+        ),
+        {"cutoff": effective},
     ).fetchall()
     return [(str(r[0]), int(r[1])) for r in rows]
 
 
-def _aggregate_llc_acquisitions(db: Session) -> List[Tuple[str, int]]:
+def _aggregate_llc_acquisitions(db: Session, cutoff: date | None = None) -> List[Tuple[str, int]]:
     """
     Return (zip_code, count) of LLC acquisitions (GRANTEE with LLC in normalized name)
     in the past 365 days, restricted to residential parcels (units_res > 0).
@@ -166,7 +174,9 @@ def _aggregate_llc_acquisitions(db: Session) -> List[Tuple[str, int]]:
     scores in lower-income neighborhoods, inverting the displacement signal.
     Excluded patterns (case-insensitive substring): MORTGAGE, LOAN SERVICING,
     LOAN SERVICE, FEDERAL SAVINGS, CREDIT UNION.
+    cutoff: explicit start-of-window date; defaults to today - 365 days when None.
     """
+    effective = cutoff if cutoff is not None else (date.today() - timedelta(days=365))
     rows = db.execute(
         text(
             """
@@ -175,7 +185,7 @@ def _aggregate_llc_acquisitions(db: Session) -> List[Tuple[str, int]]:
             JOIN parcels p ON o.bbl = p.bbl
             WHERE o.party_type = '2'
               AND o.party_name_normalized LIKE '%LLC%'
-              AND o.doc_date >= CURRENT_DATE - INTERVAL '365 days'
+              AND o.doc_date >= :cutoff
               AND p.zip_code IS NOT NULL
               AND p.units_res > 0
               AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
@@ -186,19 +196,22 @@ def _aggregate_llc_acquisitions(db: Session) -> List[Tuple[str, int]]:
             GROUP BY p.zip_code
             ORDER BY llc_count DESC
             """
-        )
+        ),
+        {"cutoff": effective},
     ).fetchall()
     return [(str(r[0]), int(r[1])) for r in rows]
 
 
-def _aggregate_complaints(db: Session) -> List[Tuple[str, int]]:
+def _aggregate_complaints(db: Session, cutoff: date | None = None) -> List[Tuple[str, int]]:
     """
     Return (zip_code, count) for displacement-relevant 311 complaints
     (filtered to DISPLACEMENT_COMPLAINT_TYPES at query time) in the past 365 days.
     Raw complaints_raw table retains all complaint types — filtering here only.
     Named parameter :types is passed as a list; SQLAlchemy maps it to a PostgreSQL
     array, preventing any SQL injection from the constant values.
+    cutoff: explicit start-of-window date; defaults to today - 365 days when None.
     """
+    effective = cutoff if cutoff is not None else (date.today() - timedelta(days=365))
     rows = db.execute(
         text(
             """
@@ -206,14 +219,74 @@ def _aggregate_complaints(db: Session) -> List[Tuple[str, int]]:
             FROM complaints_raw
             WHERE zip_code IS NOT NULL
               AND complaint_type = ANY(:types)
-              AND created_date >= CURRENT_DATE - INTERVAL '365 days'
+              AND created_date >= :cutoff
             GROUP BY zip_code
             ORDER BY complaint_count DESC
             """
         ),
-        {"types": list(DISPLACEMENT_COMPLAINT_TYPES)},
+        {"types": list(DISPLACEMENT_COMPLAINT_TYPES), "cutoff": effective},
     ).fetchall()
     return [(str(r[0]), int(r[1])) for r in rows]
+
+
+def _aggregate_assessment_spike(db: Session) -> List[Tuple[str, float]]:
+    """
+    Compute YoY assessment spike per ZIP, weighted by units_res.
+
+    Joins assessment_history for the two most recent tax years on the same BBL,
+    computes (current - prior) / prior as spike_pct per BBL, then aggregates
+    to ZIP level as a units_res-weighted average (COALESCE zero-unit parcels to 1).
+
+    Only positive spikes are counted — assessment decreases do not contribute.
+    Returns [] if fewer than 2 distinct tax years exist in assessment_history,
+    keeping the signal dormant until the second annual MapPLUTO run.
+    """
+    year_count = db.execute(
+        text("SELECT COUNT(DISTINCT tax_year) FROM assessment_history")
+    ).scalar() or 0
+
+    if year_count < 2:
+        return []
+
+    rows = db.execute(
+        text("""
+            WITH two_years AS (
+                SELECT tax_year,
+                       ROW_NUMBER() OVER (ORDER BY tax_year DESC) AS rn
+                FROM (SELECT DISTINCT tax_year FROM assessment_history) t
+            ),
+            current_h AS (
+                SELECT bbl, assessed_total
+                FROM assessment_history
+                WHERE tax_year = (SELECT tax_year FROM two_years WHERE rn = 1)
+            ),
+            prior_h AS (
+                SELECT bbl, assessed_total
+                FROM assessment_history
+                WHERE tax_year = (SELECT tax_year FROM two_years WHERE rn = 2)
+            ),
+            spike_per_bbl AS (
+                SELECT c.bbl,
+                       GREATEST(0.0,
+                           (c.assessed_total - p.assessed_total)::float / p.assessed_total
+                       ) AS spike_pct
+                FROM current_h c
+                JOIN prior_h p ON c.bbl = p.bbl
+                WHERE p.assessed_total > 0
+                  AND c.assessed_total > p.assessed_total
+            )
+            SELECT par.zip_code,
+                   SUM(s.spike_pct * COALESCE(NULLIF(par.units_res, 0), 1)) /
+                   NULLIF(SUM(COALESCE(NULLIF(par.units_res, 0), 1)), 0) AS weighted_spike
+            FROM spike_per_bbl s
+            JOIN parcels par ON par.bbl = s.bbl
+            WHERE par.zip_code IS NOT NULL
+            GROUP BY par.zip_code
+            ORDER BY weighted_spike DESC
+        """)
+    ).fetchall()
+
+    return [(str(r[0]), float(r[1])) for r in rows]
 
 
 def _aggregate_rs_unit_loss(db: Session) -> List[Tuple[str, float]]:
@@ -378,21 +451,37 @@ def _per_unit(count: int, zip_code: str,
 # Main entry point
 # ---------------------------------------------------------------------------
 
-def compute_scores(db: Session) -> int:
+def compute_scores(db: Session, as_of_date: date | None = None) -> int:
     """
     Compute full six-signal composite displacement scores for all zip codes.
     Returns the number of zip codes scored and upserted.
+
+    as_of_date: when provided, scores are computed as if today were that date
+    (signals use a 365-day window ending on as_of_date). Used by the backfill
+    script to populate score_history for historical dates. When None (default),
+    the current date is used — standard nightly pipeline behavior.
 
     The 6th signal (rs_unit_loss) is stored in signal_breakdown JSONB only —
     no separate float column added to displacement_scores (JSONB is sufficient
     for the API response and score panel).
     """
+    cutoff = (as_of_date - timedelta(days=365)) if as_of_date is not None else None
+
     # --- Step 1: Aggregate all signals ---
-    permit_rows = _aggregate_permits(db)
-    eviction_rows = _aggregate_evictions(db)
-    llc_rows = _aggregate_llc_acquisitions(db)
-    complaint_rows = _aggregate_complaints(db)
+    permit_rows = _aggregate_permits(db, cutoff=cutoff)
+    eviction_rows = _aggregate_evictions(db, cutoff=cutoff)
+    llc_rows = _aggregate_llc_acquisitions(db, cutoff=cutoff)
+    complaint_rows = _aggregate_complaints(db, cutoff=cutoff)
+    assessment_spike_rows = _aggregate_assessment_spike(db)
     rs_loss_rows = _aggregate_rs_unit_loss(db)
+    # Dormancy check: warn when assessment spike has fewer than 2 tax years.
+    # _aggregate_assessment_spike already ran the year count internally and
+    # returned [] — no need for a second COUNT query here.
+    if not assessment_spike_rows:
+        logger.warning(
+            "Assessment spike signal is dormant: assessment_history has <2 tax years."
+            " Signal activates after the second annual MapPLUTO run."
+        )
     # Dormancy check: warn when prior-year DHCR data is absent (expected until 2027).
     if not rs_loss_rows:
         # Only fire when current-year data exists — confirms the gap is a data issue,
@@ -428,6 +517,8 @@ def compute_scores(db: Session) -> int:
     eviction_map: Dict[str, int] = dict(eviction_rows)
     llc_map: Dict[str, int] = dict(llc_rows)
     complaint_map: Dict[str, int] = dict(complaint_rows)
+    # assessment_spike_map: (zip_code -> weighted avg spike pct) — dormant until 2 years exist
+    assessment_spike_map: Dict[str, float] = dict(assessment_spike_rows)
     # rs_loss_map: (zip_code -> avg_pct_loss float 0.0–1.0) — not per-unit
     rs_loss_map: Dict[str, float] = dict(rs_loss_rows)
 
@@ -450,6 +541,8 @@ def compute_scores(db: Session) -> int:
     eviction_pu: Dict[str, float] = {}
     llc_pu: Dict[str, float] = {}
     complaint_pu: Dict[str, float] = {}
+    # Assessment spike is already a weighted-avg rate — no per-unit division needed
+    assessment_spike_pu: Dict[str, float] = {z: assessment_spike_map.get(z, 0.0) for z in all_zips}
     # RS unit loss is already a rate (pct 0.0–1.0) — no per-unit division needed
     rs_loss_pu: Dict[str, float] = {z: rs_loss_map.get(z, 0.0) for z in all_zips}
 
@@ -476,10 +569,20 @@ def compute_scores(db: Session) -> int:
     def _norm_map(pu_dict: Dict[str, float]) -> Dict[str, float]:
         vals = sorted(pu_dict.values())
         n = len(vals)
-        if n < 2:
-            return {z: 50.0 for z in pu_dict}
+        if n == 0:
+            return {}
+        if n == 1:
+            # Single data point: zero means no activity (stay at 0.0 so dormancy
+            # detection works correctly); non-zero gets 50.0 (can't rank it).
+            return {z: (0.0 if vals[0] == 0.0 else 50.0) for z in pu_dict}
         p5  = vals[max(0, int(n * 0.05))]
         p95 = vals[min(n - 1, int(n * 0.95))]
+        # Degenerate range: happens when the signal is sparse (95%+ of ZIPs have
+        # zero activity) or when both percentiles land on the same value.
+        # Fall back to absolute min-max so ZIPs with real activity still score
+        # above zero instead of silently collapsing the entire signal to dormant.
+        if p5 == p95:
+            p5, p95 = vals[0], vals[-1]
         return {
             z: max(0.0, min(100.0, _normalize(v, p5, p95)))
             for z, v in pu_dict.items()
@@ -489,7 +592,50 @@ def compute_scores(db: Session) -> int:
     eviction_norm = _norm_map(eviction_pu)
     llc_norm = _norm_map(llc_pu)
     complaint_norm = _norm_map(complaint_pu)
+    assessment_spike_norm = _norm_map(assessment_spike_pu)
     rs_loss_norm = _norm_map(rs_loss_pu)
+
+    # --- Step 5.5: Effective weights — redistribute dormant signal weight ---
+    # A signal is dormant when every zip has a normalized value of 0.0 (no data).
+    # Without redistribution, the two currently dormant signals (assessment_spike=8%,
+    # rs_unit_loss=15%) cap the achievable composite at 77, deflating all scores
+    # by ~23% versus the ANHD methodology intent. Active-signal weights are rescaled
+    # to sum to 1.0 so the full 1–100 range is reachable with whatever data exists.
+    # When a dormant signal comes online the redistribution shrinks automatically.
+    _raw_weights: Dict[str, float] = {
+        "llc_acquisitions":  WEIGHT_LLC_ACQUISITIONS,
+        "permits":           WEIGHT_PERMITS,
+        "complaint_rate":    WEIGHT_COMPLAINTS,
+        "evictions":         WEIGHT_EVICTIONS,
+        "assessment_spike":  WEIGHT_ASSESSMENT_SPIKE,
+        "rs_unit_loss":      WEIGHT_RS_UNIT_LOSS,
+    }
+    _norms_by_key: Dict[str, Dict[str, float]] = {
+        "llc_acquisitions":  llc_norm,
+        "permits":           permit_norm,
+        "complaint_rate":    complaint_norm,
+        "evictions":         eviction_norm,
+        "assessment_spike":  assessment_spike_norm,
+        "rs_unit_loss":      rs_loss_norm,
+    }
+    _active_signals: set = {
+        k for k, norm in _norms_by_key.items()
+        if any(v > 0.0 for v in norm.values())
+    }
+    _active_weight_sum: float = sum(_raw_weights[k] for k in _active_signals) or 1.0
+    effective_weights: Dict[str, float] = {
+        k: (_raw_weights[k] / _active_weight_sum) if k in _active_signals else 0.0
+        for k in _raw_weights
+    }
+    if len(_active_signals) < len(_raw_weights):
+        _dormant = sorted(set(_raw_weights) - _active_signals)
+        logger.info(
+            "Weight redistribution: %d dormant signal(s) %s (%.0f%% of mass) "
+            "redistributed proportionally to %d active signals.",
+            len(_dormant), _dormant,
+            (1.0 - _active_weight_sum) * 100,
+            len(_active_signals),
+        )
 
     # --- Step 6: Upsert to displacement_scores ---
     now = datetime.now(timezone.utc)
@@ -504,25 +650,29 @@ def compute_scores(db: Session) -> int:
 
     # Track validation failures to detect systemic scoring issues
     skipped_zips: list = []
+    # Cache computed scores so Step 7 (score_history) reuses them instead of
+    # re-deriving the composite — prevents silent divergence if weights change.
+    computed_scores: Dict[str, float] = {}
 
     for zip_code in sorted(all_zips):
         p_norm = permit_norm.get(zip_code, 0.0)
         e_norm = eviction_norm.get(zip_code, 0.0)
         l_norm = llc_norm.get(zip_code, 0.0)
         c_norm = complaint_norm.get(zip_code, 0.0)
-        a_norm = 0.0  # assessment spike dormant
+        a_norm = assessment_spike_norm.get(zip_code, 0.0)
         rs_norm = rs_loss_norm.get(zip_code, 0.0)
 
         composite = (
-            WEIGHT_LLC_ACQUISITIONS * l_norm
-            + WEIGHT_PERMITS * p_norm
-            + WEIGHT_COMPLAINTS * c_norm
-            + WEIGHT_EVICTIONS * e_norm
-            + WEIGHT_ASSESSMENT_SPIKE * a_norm
-            + WEIGHT_RS_UNIT_LOSS * rs_norm
+            effective_weights["llc_acquisitions"] * l_norm
+            + effective_weights["permits"] * p_norm
+            + effective_weights["complaint_rate"] * c_norm
+            + effective_weights["evictions"] * e_norm
+            + effective_weights["assessment_spike"] * a_norm
+            + effective_weights["rs_unit_loss"] * rs_norm
         )
         # Clamp to [1, 100] — minimum 1 so no zip ever shows "0 risk"
         score = max(1.0, min(100.0, round(composite, 1)))
+        computed_scores[zip_code] = score
 
         breakdown = {
             "permits": p_norm,
@@ -545,46 +695,49 @@ def compute_scores(db: Session) -> int:
             skipped_zips.append(zip_code)
             continue  # skip this zip, do not write to DB
 
-        db.execute(
-            text(
-                """
-                INSERT INTO displacement_scores
-                    (zip_code, score, signal_breakdown, permit_intensity,
-                     eviction_rate, llc_acquisition_rate, assessment_spike,
-                     complaint_rate, cache_generated_at, signal_last_updated,
-                     created_at, updated_at)
-                VALUES
-                    (:zip_code, :score, CAST(:breakdown AS jsonb), :permit_intensity,
-                     :eviction_rate, :llc_acquisition_rate, :assessment_spike,
-                     :complaint_rate, :now, CAST(:sig_updated AS jsonb),
-                     :now, :now)
-                ON CONFLICT ON CONSTRAINT uq_displacement_scores_zip_code
-                DO UPDATE SET
-                    score                = EXCLUDED.score,
-                    signal_breakdown     = EXCLUDED.signal_breakdown,
-                    permit_intensity     = EXCLUDED.permit_intensity,
-                    eviction_rate        = EXCLUDED.eviction_rate,
-                    llc_acquisition_rate = EXCLUDED.llc_acquisition_rate,
-                    assessment_spike     = EXCLUDED.assessment_spike,
-                    complaint_rate       = EXCLUDED.complaint_rate,
-                    cache_generated_at   = EXCLUDED.cache_generated_at,
-                    signal_last_updated  = EXCLUDED.signal_last_updated,
-                    updated_at           = EXCLUDED.updated_at
-                """
-            ),
-            {
-                "zip_code": zip_code,
-                "score": score,
-                "breakdown": json.dumps(breakdown),
-                "permit_intensity": p_norm,
-                "eviction_rate": e_norm,
-                "llc_acquisition_rate": l_norm,
-                "assessment_spike": a_norm,
-                "complaint_rate": c_norm,
-                "now": now,
-                "sig_updated": json.dumps(sig_updated),
-            },
-        )
+        # Backfill runs skip the current-score tables — writing historical scores
+        # to displacement_scores would overwrite live data.
+        if as_of_date is None:
+            db.execute(
+                text(
+                    """
+                    INSERT INTO displacement_scores
+                        (zip_code, score, signal_breakdown, permit_intensity,
+                         eviction_rate, llc_acquisition_rate, assessment_spike,
+                         complaint_rate, cache_generated_at, signal_last_updated,
+                         created_at, updated_at)
+                    VALUES
+                        (:zip_code, :score, CAST(:breakdown AS jsonb), :permit_intensity,
+                         :eviction_rate, :llc_acquisition_rate, :assessment_spike,
+                         :complaint_rate, :now, CAST(:sig_updated AS jsonb),
+                         :now, :now)
+                    ON CONFLICT ON CONSTRAINT uq_displacement_scores_zip_code
+                    DO UPDATE SET
+                        score                = EXCLUDED.score,
+                        signal_breakdown     = EXCLUDED.signal_breakdown,
+                        permit_intensity     = EXCLUDED.permit_intensity,
+                        eviction_rate        = EXCLUDED.eviction_rate,
+                        llc_acquisition_rate = EXCLUDED.llc_acquisition_rate,
+                        assessment_spike     = EXCLUDED.assessment_spike,
+                        complaint_rate       = EXCLUDED.complaint_rate,
+                        cache_generated_at   = EXCLUDED.cache_generated_at,
+                        signal_last_updated  = EXCLUDED.signal_last_updated,
+                        updated_at           = EXCLUDED.updated_at
+                    """
+                ),
+                {
+                    "zip_code": zip_code,
+                    "score": score,
+                    "breakdown": json.dumps(breakdown),
+                    "permit_intensity": p_norm,
+                    "eviction_rate": e_norm,
+                    "llc_acquisition_rate": l_norm,
+                    "assessment_spike": a_norm,
+                    "complaint_rate": c_norm,
+                    "now": now,
+                    "sig_updated": json.dumps(sig_updated),
+                },
+            )
 
     # Systemic failure detection: if >50% of zips failed validation,
     # something is wrong with normalization — abort and return 0.
@@ -611,7 +764,9 @@ def compute_scores(db: Session) -> int:
     scored_count = total_attempted - len(skipped_zips)
 
     # --- Step 7: Write daily snapshot to score_history ---
-    # ON CONFLICT DO NOTHING — if scoring runs multiple times today, only keep first.
+    # ON CONFLICT DO NOTHING — if scoring runs multiple times on the same date, only keep first.
+    # When as_of_date is provided (backfill), use it as scored_at; otherwise use today.
+    scored_at = as_of_date if as_of_date is not None else date.today()
     skipped_set = set(skipped_zips)
     for zip_code in sorted(all_zips):
         if zip_code in skipped_set:   # don't snapshot invalid scores
@@ -620,17 +775,8 @@ def compute_scores(db: Session) -> int:
         e_norm = eviction_norm.get(zip_code, 0.0)
         l_norm = llc_norm.get(zip_code, 0.0)
         c_norm = complaint_norm.get(zip_code, 0.0)
-        a_norm = 0.0
-        rs_norm = rs_loss_norm.get(zip_code, 0.0)
-        composite = (
-            WEIGHT_LLC_ACQUISITIONS * l_norm
-            + WEIGHT_PERMITS * p_norm
-            + WEIGHT_COMPLAINTS * c_norm
-            + WEIGHT_EVICTIONS * e_norm
-            + WEIGHT_ASSESSMENT_SPIKE * a_norm
-            + WEIGHT_RS_UNIT_LOSS * rs_norm
-        )
-        score = max(1.0, min(100.0, round(composite, 1)))
+        a_norm = assessment_spike_norm.get(zip_code, 0.0)
+        score = computed_scores[zip_code]
         db.execute(
             text(
                 """
@@ -639,7 +785,7 @@ def compute_scores(db: Session) -> int:
                      eviction_rate, llc_acquisition_rate, assessment_spike,
                      complaint_rate, created_at, updated_at)
                 VALUES
-                    (:zip_code, CURRENT_DATE, :composite_score, :permit_intensity,
+                    (:zip_code, :scored_at, :composite_score, :permit_intensity,
                      :eviction_rate, :llc_acquisition_rate, :assessment_spike,
                      :complaint_rate, :now, :now)
                 ON CONFLICT ON CONSTRAINT uq_score_history_zip_date DO NOTHING
@@ -647,6 +793,7 @@ def compute_scores(db: Session) -> int:
             ),
             {
                 "zip_code": zip_code,
+                "scored_at": scored_at,
                 "composite_score": score,
                 "permit_intensity": p_norm,
                 "eviction_rate": e_norm,
@@ -659,17 +806,19 @@ def compute_scores(db: Session) -> int:
     db.commit()
 
     # --- Step 8: Propagate scores to neighborhoods.current_score ---
-    db.execute(
-        text(
-            """
-            UPDATE neighborhoods n
-            SET current_score = ds.score
-            FROM displacement_scores ds
-            WHERE n.zip_code = ds.zip_code
-            """
+    # Skipped during backfill — historical scores must not overwrite live data.
+    if as_of_date is None:
+        db.execute(
+            text(
+                """
+                UPDATE neighborhoods n
+                SET current_score = ds.score
+                FROM displacement_scores ds
+                WHERE n.zip_code = ds.zip_code
+                """
+            )
         )
-    )
-    db.commit()
+        db.commit()
 
     return scored_count
 

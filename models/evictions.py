@@ -51,6 +51,8 @@ class EvictionRaw(TimestampMixin, Base):
         Index("idx_evictions_raw_zip_code", "zip_code"),
         Index("idx_evictions_raw_executed_date", "executed_date"),
         Index("idx_evictions_raw_created_at", "created_at"),  # for 90-day cleanup
+        # Composite: pulse + scoring queries filter WHERE zip_code = :zip AND executed_date >= X
+        Index("idx_evictions_raw_zip_executed", "zip_code", "executed_date"),
     )
 
     def __repr__(self) -> str:
