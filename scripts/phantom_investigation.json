@@ -1,0 +1,4131 @@
+{
+  "generated_at": "2026-04-16",
+  "subject": "PHANTOM CAPITAL",
+  "llc_entities": [
+    "PHANTOM & Z CAPITAL LLC",
+    "PHANTOM AFFORDABLE HOUSING LLC",
+    "PHANTOM CAP HOLDINGS 206 LLC",
+    "PHANTOM CAP MAP LLC",
+    "PHANTOM CAPITAL 10 LLC",
+    "PHANTOM CAPITAL 107 LLC",
+    "PHANTOM CAPITAL 11 LLC",
+    "PHANTOM CAPITAL 12 LLC",
+    "PHANTOM CAPITAL 161 LLC",
+    "PHANTOM CAPITAL 21 LLC",
+    "PHANTOM CAPITAL 22 LLC",
+    "PHANTOM CAPITAL 350 LLC",
+    "PHANTOM CAPITAL 44 LLC",
+    "PHANTOM CAPITAL 53 LLC",
+    "PHANTOM CAPITAL 55 LLC",
+    "PHANTOM CAPITAL 71 LLC",
+    "PHANTOM CAPITAL 800 LLC",
+    "PHANTOM CAPITAL ACQUISITIONS LLC",
+    "PHANTOM CAPITAL BX LLC",
+    "PHANTOM HOUSING LLC",
+    "PHANTOM KOACH LLC",
+    "PHANTOM LANDLORDS LLC",
+    "PHANTOM NYC HOLDINGS LLC",
+    "PHANTOM PARTNERS 89 LLC",
+    "PHANTOM PARTNERS BH LLC",
+    "PHANTOM PARTNERS PROPERTIES LLC",
+    "PHANTOM PARTNERS RE LLC",
+    "PHANTOM RISE LLC",
+    "PHANTOM TERRITORY LLC",
+    "PHANTOM TITANS LLC",
+    "PHANTOM TOWN LLC",
+    "PHANTOM TROPHIES LLC"
+  ],
+  "llc_count": 32,
+  "active_entities": [
+    "PHANTOM & Z CAPITAL LLC",
+    "PHANTOM AFFORDABLE HOUSING LLC",
+    "PHANTOM CAP HOLDINGS 206 LLC",
+    "PHANTOM CAP MAP LLC",
+    "PHANTOM CAPITAL 10 LLC",
+    "PHANTOM CAPITAL 107 LLC",
+    "PHANTOM CAPITAL 11 LLC",
+    "PHANTOM CAPITAL 12 LLC",
+    "PHANTOM CAPITAL 161 LLC",
+    "PHANTOM CAPITAL 21 LLC",
+    "PHANTOM CAPITAL 22 LLC",
+    "PHANTOM CAPITAL 350 LLC",
+    "PHANTOM CAPITAL 44 LLC",
+    "PHANTOM CAPITAL 53 LLC",
+    "PHANTOM CAPITAL 55 LLC",
+    "PHANTOM CAPITAL 71 LLC",
+    "PHANTOM CAPITAL 800 LLC",
+    "PHANTOM CAPITAL ACQUISITIONS LLC",
+    "PHANTOM CAPITAL BX LLC",
+    "PHANTOM HOUSING LLC",
+    "PHANTOM KOACH LLC",
+    "PHANTOM LANDLORDS LLC",
+    "PHANTOM NYC HOLDINGS LLC",
+    "PHANTOM PARTNERS 89 LLC",
+    "PHANTOM PARTNERS BH LLC",
+    "PHANTOM PARTNERS PROPERTIES LLC",
+    "PHANTOM PARTNERS RE LLC",
+    "PHANTOM RISE LLC",
+    "PHANTOM TERRITORY LLC",
+    "PHANTOM TITANS LLC",
+    "PHANTOM TOWN LLC",
+    "PHANTOM TROPHIES LLC"
+  ],
+  "numbered_llc_count": 15,
+  "named_llc_count": 17,
+  "llc_breakdown": {
+    "PHANTOM & Z CAPITAL LLC": 6,
+    "PHANTOM AFFORDABLE HOUSING LLC": 2,
+    "PHANTOM CAP HOLDINGS 206 LLC": 1,
+    "PHANTOM CAP MAP LLC": 1,
+    "PHANTOM CAPITAL 10 LLC": 2,
+    "PHANTOM CAPITAL 107 LLC": 2,
+    "PHANTOM CAPITAL 11 LLC": 2,
+    "PHANTOM CAPITAL 12 LLC": 2,
+    "PHANTOM CAPITAL 161 LLC": 3,
+    "PHANTOM CAPITAL 21 LLC": 2,
+    "PHANTOM CAPITAL 22 LLC": 2,
+    "PHANTOM CAPITAL 350 LLC": 2,
+    "PHANTOM CAPITAL 44 LLC": 2,
+    "PHANTOM CAPITAL 53 LLC": 3,
+    "PHANTOM CAPITAL 55 LLC": 2,
+    "PHANTOM CAPITAL 71 LLC": 2,
+    "PHANTOM CAPITAL 800 LLC": 1,
+    "PHANTOM CAPITAL ACQUISITIONS LLC": 2,
+    "PHANTOM CAPITAL BX LLC": 2,
+    "PHANTOM HOUSING LLC": 1,
+    "PHANTOM KOACH LLC": 2,
+    "PHANTOM LANDLORDS LLC": 2,
+    "PHANTOM NYC HOLDINGS LLC": 2,
+    "PHANTOM PARTNERS 89 LLC": 3,
+    "PHANTOM PARTNERS BH LLC": 2,
+    "PHANTOM PARTNERS PROPERTIES LLC": 2,
+    "PHANTOM PARTNERS RE LLC": 2,
+    "PHANTOM RISE LLC": 2,
+    "PHANTOM TERRITORY LLC": 2,
+    "PHANTOM TITANS LLC": 2,
+    "PHANTOM TOWN LLC": 1,
+    "PHANTOM TROPHIES LLC": 1
+  },
+  "total_properties": 64,
+  "total_acquisitions": 65,
+  "total_spend": 49640500.0,
+  "avg_acquisition_price": 827341.67,
+  "properties_with_price": 60,
+  "first_acquisition": "2025-05-01",
+  "last_acquisition": "2026-03-12",
+  "span_days": 315,
+  "acquisitions_per_month": 6.1,
+  "monthly_pace": {
+    "2025-05": 6,
+    "2025-06": 3,
+    "2025-07": 9,
+    "2025-08": 5,
+    "2025-09": 3,
+    "2025-10": 7,
+    "2025-11": 6,
+    "2025-12": 5,
+    "2026-01": 11,
+    "2026-02": 5,
+    "2026-03": 4
+  },
+  "hpd_violations": {
+    "total": 151,
+    "class_a": 42,
+    "class_b": 57,
+    "class_c": 52,
+    "bbls_with_class_bc": 11,
+    "bc_per_property": 1.7
+  },
+  "eviction_then_buy": {
+    "total_matches": 4,
+    "lookback_days": 365,
+    "matches": [
+      {
+        "bbl": "2050840054",
+        "address": null,
+        "zip_code": null,
+        "acquiring_entity": "PHANTOM CAPITAL 161 LLC",
+        "eviction_date": "2025-04-21",
+        "acquisition_date": "2025-07-08",
+        "gap_days": 78,
+        "price_paid": 500000.0,
+        "docket_number": "007406",
+        "eviction_type": "Residential",
+        "displacement_score": null
+      },
+      {
+        "bbl": "2048260038",
+        "address": "637 EAST 224 STREET",
+        "zip_code": "10466",
+        "acquiring_entity": "PHANTOM AFFORDABLE HOUSING LLC",
+        "eviction_date": "2025-09-11",
+        "acquisition_date": "2026-01-08",
+        "gap_days": 119,
+        "price_paid": 1450000.0,
+        "docket_number": "144753",
+        "eviction_type": "Residential",
+        "displacement_score": 67.2
+      },
+      {
+        "bbl": "2050840054",
+        "address": null,
+        "zip_code": null,
+        "acquiring_entity": "PHANTOM CAPITAL 161 LLC",
+        "eviction_date": "2025-01-13",
+        "acquisition_date": "2025-07-08",
+        "gap_days": 176,
+        "price_paid": 500000.0,
+        "docket_number": "115398",
+        "eviction_type": "Residential",
+        "displacement_score": null
+      },
+      {
+        "bbl": "2047830038",
+        "address": null,
+        "zip_code": null,
+        "acquiring_entity": "PHANTOM CAPITAL BX LLC",
+        "eviction_date": "2025-07-22",
+        "acquisition_date": "2026-01-23",
+        "gap_days": 185,
+        "price_paid": 650000.0,
+        "docket_number": "006426",
+        "eviction_type": "Residential",
+        "displacement_score": null
+      }
+    ]
+  },
+  "geographic_concentration": [
+    {
+      "zip_code": "10466",
+      "properties": 7,
+      "displacement_score": 67.2,
+      "eviction_rate": 77.9,
+      "llc_acq_rate": 100.0
+    },
+    {
+      "zip_code": "10459",
+      "properties": 5,
+      "displacement_score": 56.8,
+      "eviction_rate": 90.6,
+      "llc_acq_rate": 57.8
+    },
+    {
+      "zip_code": "10456",
+      "properties": 4,
+      "displacement_score": 54.5,
+      "eviction_rate": 100.0,
+      "llc_acq_rate": 48.0
+    },
+    {
+      "zip_code": "10457",
+      "properties": 2,
+      "displacement_score": 59.7,
+      "eviction_rate": 100.0,
+      "llc_acq_rate": 44.9
+    },
+    {
+      "zip_code": "11207",
+      "properties": 2,
+      "displacement_score": 59.7,
+      "eviction_rate": 73.9,
+      "llc_acq_rate": 80.8
+    },
+    {
+      "zip_code": "10473",
+      "properties": 2,
+      "displacement_score": 28.6,
+      "eviction_rate": 45.1,
+      "llc_acq_rate": 33.3
+    },
+    {
+      "zip_code": "10469",
+      "properties": 1,
+      "displacement_score": 51.5,
+      "eviction_rate": 40.9,
+      "llc_acq_rate": 77.4
+    },
+    {
+      "zip_code": "11210",
+      "properties": 1,
+      "displacement_score": 52.4,
+      "eviction_rate": 60.1,
+      "llc_acq_rate": 62.1
+    },
+    {
+      "zip_code": "10455",
+      "properties": 1,
+      "displacement_score": 45.7,
+      "eviction_rate": 91.5,
+      "llc_acq_rate": 29.6
+    },
+    {
+      "zip_code": "10470",
+      "properties": 1,
+      "displacement_score": 60.3,
+      "eviction_rate": 67.2,
+      "llc_acq_rate": 54.5
+    },
+    {
+      "zip_code": "10472",
+      "properties": 1,
+      "displacement_score": 42.9,
+      "eviction_rate": 71.5,
+      "llc_acq_rate": 47.3
+    },
+    {
+      "zip_code": "10454",
+      "properties": 1,
+      "displacement_score": 29.5,
+      "eviction_rate": 55.0,
+      "llc_acq_rate": 13.4
+    },
+    {
+      "zip_code": "10460",
+      "properties": 1,
+      "displacement_score": 58.5,
+      "eviction_rate": 100.0,
+      "llc_acq_rate": 39.4
+    },
+    {
+      "zip_code": "10467",
+      "properties": 1,
+      "displacement_score": 45.3,
+      "eviction_rate": 78.8,
+      "llc_acq_rate": 38.2
+    },
+    {
+      "zip_code": "11212",
+      "properties": 1,
+      "displacement_score": 49.0,
+      "eviction_rate": 85.1,
+      "llc_acq_rate": 54.9
+    },
+    {
+      "zip_code": "10474",
+      "properties": 1,
+      "displacement_score": 65.1,
+      "eviction_rate": 89.5,
+      "llc_acq_rate": 58.8
+    },
+    {
+      "zip_code": "11421",
+      "properties": 1,
+      "displacement_score": 37.8,
+      "eviction_rate": 42.9,
+      "llc_acq_rate": 68.8
+    },
+    {
+      "zip_code": "10462",
+      "properties": 1,
+      "displacement_score": 36.7,
+      "eviction_rate": 72.8,
+      "llc_acq_rate": 26.6
+    }
+  ],
+  "properties": [
+    {
+      "bbl": "2048300049",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM HOUSING LLC",
+      "acquisition_date": "2025-05-01",
+      "price_paid": 655000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025050900456001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2046390011",
+      "address": "3312 LURTING AVENUE",
+      "zip_code": "10469",
+      "acquiring_entity": "PHANTOM TITANS LLC",
+      "acquisition_date": "2025-05-08",
+      "price_paid": 715000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025051200412001"
+      ],
+      "displacement_score": 51.5,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17959662",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2030300027",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM TITANS LLC",
+      "acquisition_date": "2025-05-12",
+      "price_paid": 565000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025051600178001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2046760021",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM TERRITORY LLC",
+      "acquisition_date": "2025-05-21",
+      "price_paid": 550000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025052800525001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2027540022",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM CAPITAL 53 LLC",
+      "acquisition_date": "2025-05-28",
+      "price_paid": 630000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025060400850001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2027580010",
+      "address": "1144 LONGFELLOW AVENUE",
+      "zip_code": "10459",
+      "acquiring_entity": "PHANTOM TERRITORY LLC",
+      "acquisition_date": "2025-05-28",
+      "price_paid": 1100000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025060400821001"
+      ],
+      "displacement_score": 56.8,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17956372",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2031100083",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM KOACH LLC",
+      "acquisition_date": "2025-06-10",
+      "price_paid": 955000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025062300356001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2048490006",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM CAPITAL 53 LLC",
+      "acquisition_date": "2025-06-10",
+      "price_paid": 257500.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025062400827001",
+        "2025062400827002"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "4110730006",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM KOACH LLC",
+      "acquisition_date": "2025-06-17",
+      "price_paid": 700000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025062500269001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2050840054",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM CAPITAL 161 LLC",
+      "acquisition_date": "2025-07-08",
+      "price_paid": 500000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025071500436001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [
+        {
+          "eviction_date": "2025-01-13",
+          "docket_number": "115398",
+          "eviction_type": "Residential",
+          "days_before_acquisition": 176
+        },
+        {
+          "eviction_date": "2025-04-21",
+          "docket_number": "007406",
+          "eviction_type": "Residential",
+          "days_before_acquisition": 78
+        }
+      ],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2050820028",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM CAP MAP LLC",
+      "acquisition_date": "2025-07-15",
+      "price_paid": 1300000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025072400423001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "4122390020",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM & Z CAPITAL LLC",
+      "acquisition_date": "2025-07-16",
+      "price_paid": null,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025072900097004"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "4122390026",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM & Z CAPITAL LLC",
+      "acquisition_date": "2025-07-16",
+      "price_paid": null,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025072900097003"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "2048370012",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM CAPITAL 161 LLC",
+      "acquisition_date": "2025-07-17",
+      "price_paid": 790000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025073000467001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "3040890008",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM LANDLORDS LLC",
+      "acquisition_date": "2025-07-17",
+      "price_paid": 650000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025073000293001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "4122390027",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM & Z CAPITAL LLC",
+      "acquisition_date": "2025-07-22",
+      "price_paid": null,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025072900097002"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "4122390028",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM & Z CAPITAL LLC",
+      "acquisition_date": "2025-07-22",
+      "price_paid": null,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025072900097001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "3052290072",
+      "address": "1299 ROGERS AVENUE",
+      "zip_code": "11210",
+      "acquiring_entity": "PHANTOM LANDLORDS LLC",
+      "acquisition_date": "2025-07-28",
+      "price_paid": 860000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025080500289001"
+      ],
+      "displacement_score": 52.4,
+      "hpd_violations": {
+        "total": 5,
+        "class_a": 1,
+        "class_b": 4,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17991684",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-10",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "18034899",
+            "class": "B",
+            "description": "\u00a7 300, 301, 302, M/D LAW FILE PLANS AND OBTAIN A CERTIFICATE OF OCCUPANCY TO LEGALIZE THE FOLLOWING ALTERATION OR RESTORE PREMISES TO PRIOR LEGAL CONDITION PARTITIONS ERRECTED CREATING ROOMS. AT CELLAR",
+            "inspection_date": "2025-06-12",
+            "nov_issued_date": "2025-06-16",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "18034907",
+            "class": "B",
+            "description": "\u00a7 27-2070 ADM CODE DISCONTINUE UNLAWFUL COOKING SPACE OR FILE PLANS AND APPLICATION WITH THIS DEPARTMENT TO LEGALIZE SAME, IF LAWFULLY FEASIBLE, THE GAS RANGE AT KITCHEN AT CELLAR",
+            "inspection_date": "2025-06-12",
+            "nov_issued_date": "2025-06-16",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "18010274",
+            "class": "B",
+            "description": "\u00a7 27-2037 ADM CODE PROVIDE ADEQUATE LIGHTING .... AT CELLAR",
+            "inspection_date": "2025-06-12",
+            "nov_issued_date": "2025-06-16",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "18034911",
+            "class": "B",
+            "description": "\u00a7 27-2081 ADM CODE DISCONTINUE USE OF ROOMS FOR LIVING, DISCONNECT PLUMBING FIXTURES AND PROPERLY SEAL PIPE CONNECTIONS AT KITCHEN SINK, WASHBASIN, WATERCLOSET, SHOWER STALL AT BATHROOM AT CELLAR",
+            "inspection_date": "2025-06-12",
+            "nov_issued_date": "2025-06-16",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2027650214",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM CAPITAL ACQUISITIONS LLC",
+      "acquisition_date": "2025-08-11",
+      "price_paid": 780000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025081800915001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2045440056",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM CAPITAL ACQUISITIONS LLC",
+      "acquisition_date": "2025-08-11",
+      "price_paid": 530000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025081900065002"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2046990022",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM CAPITAL 22 LLC",
+      "acquisition_date": "2025-08-21",
+      "price_paid": 585000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025091501087001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2027010052",
+      "address": "735 KELLY STREET",
+      "zip_code": "10455",
+      "acquiring_entity": "PHANTOM CAPITAL 71 LLC",
+      "acquisition_date": "2025-08-26",
+      "price_paid": 900000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025090500889001"
+      ],
+      "displacement_score": 45.7,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17955184",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2050870014",
+      "address": "4625 FURMAN AVENUE",
+      "zip_code": "10470",
+      "acquiring_entity": "PHANTOM CAPITAL 71 LLC",
+      "acquisition_date": "2025-08-26",
+      "price_paid": 1070000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025090300443001"
+      ],
+      "displacement_score": 60.3,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17959909",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2029350020",
+      "address": "1385 CLINTON AVENUE",
+      "zip_code": "10456",
+      "acquiring_entity": "PHANTOM CAPITAL 11 LLC",
+      "acquisition_date": "2025-09-04",
+      "price_paid": 999000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025091500458001"
+      ],
+      "displacement_score": 54.5,
+      "hpd_violations": {
+        "total": 10,
+        "class_a": 4,
+        "class_b": 4,
+        "class_c": 2,
+        "records": [
+          {
+            "violation_id": "16905966",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2024-04-17",
+            "nov_issued_date": "2024-04-17",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17760341",
+            "class": "B",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LESS THAN 10SQ FT AT CEILING IN THE 1st BATHROOM FROM NORTH LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH ORIGINAL VIOLATION 17410733 ISSUED 10-NOV-24 HAS BEEN UPGRADED TO CLASS B PER ADMINISTRATIVE CODE \u00a727-2017.3a(3)(a) or (b).",
+            "inspection_date": "2024-11-10",
+            "nov_issued_date": "2025-03-12",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17410733",
+            "class": "A",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LESS THAN 10SQ FT AT CEILING IN THE 1st BATHROOM FROM NORTH LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-11-10",
+            "nov_issued_date": "2024-11-12",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17760340",
+            "class": "B",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LESS THAN 10SQ FT AT CEILING AND EAST WALL IN THE 2nd BATHROOM FROM NORTH LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH ORIGINAL VIOLATION 17410731 ISSUED 10-NOV-24 HAS BEEN UPGRADED TO CLASS B PER ADMINISTRATIVE CODE \u00a727-2017.3a(3)(a) or (b).",
+            "inspection_date": "2024-11-10",
+            "nov_issued_date": "2025-03-12",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17410732",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR WALLS AND CEILING IN THE PRIVATE HALLWAY LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-11-10",
+            "nov_issued_date": "2024-11-12",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17410734",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR EAST WALL (BUBBLING AND SAGGING) IN THE 1st BATHROOM FROM NORTH LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-11-10",
+            "nov_issued_date": "2024-11-12",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17410730",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE & 309 M/D LAW ABATE THE NUISANCE CONSISTING OF SCALDING HOT WATER 155F DEGREES AT KITCHEN AND ALL BATHROOM FIXTURES TAKEN WITH THERMOMETER #7026 IN THE ENTIRE APARTMENT LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-11-10",
+            "nov_issued_date": "2024-11-19",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17410729",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGE AT APARTMENT ENTRANCE DOOR IN THE ENTRANCE LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-11-10",
+            "nov_issued_date": "2024-11-12",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17410731",
+            "class": "A",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LESS THAN 10SQ FT AT CEILING AND EAST WALL IN THE 2nd BATHROOM FROM NORTH LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-11-10",
+            "nov_issued_date": "2024-11-12",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "18026603",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-13",
+            "nov_issued_date": "2025-06-13",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2027190046",
+      "address": "1140 FOX STREET",
+      "zip_code": "10459",
+      "acquiring_entity": "PHANTOM CAPITAL 107 LLC",
+      "acquisition_date": "2025-09-26",
+      "price_paid": 990000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025100601056001"
+      ],
+      "displacement_score": 56.8,
+      "hpd_violations": {
+        "total": 18,
+        "class_a": 1,
+        "class_b": 11,
+        "class_c": 6,
+        "records": [
+          {
+            "violation_id": "16951651",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-05-07",
+            "nov_issued_date": "2024-05-08",
+            "current_status": "NOTICE OF ISSUANCE SENT TO TENANT"
+          },
+          {
+            "violation_id": "17158786",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE CEILING LIGHT FIXTURE. IN THE PRIVATE HALLWAY LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-07-31",
+            "nov_issued_date": "2024-08-05",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17190654",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-08-13",
+            "nov_issued_date": "2024-08-14",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17284029",
+            "class": "B",
+            "description": "\u00a7 27-2010, 2011, 2012 ADM CODE REMOVE THE ACCUMULATION OF REFUSE AND/OR RUBBISH AND MAINTAIN IN A CLEAN CONDITION THE EXCESSIVE GARBAGE",
+            "inspection_date": "2024-09-15",
+            "nov_issued_date": "2024-09-17",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17284030",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF RODENTS RATS",
+            "inspection_date": "2024-09-15",
+            "nov_issued_date": "2024-09-17",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17276005",
+            "class": "B",
+            "description": "\u00a7 27-2010, 2011, 2012 ADM CODE REMOVE THE ACCUMULATION OF REFUSE AND/OR RUBBISH AND MAINTAIN IN A CLEAN CONDITION THE EXCESSIVE GARBAGE AND LIVE RATS",
+            "inspection_date": "2024-09-15",
+            "nov_issued_date": "2024-09-17",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17276004",
+            "class": "B",
+            "description": "\u00a7 27-2021 ADM CODE PROVIDE SUFFICIENT, PROPER AND SEPARATE METAL RECEPTACLES FOR THE DEPOSIT OF GARBAGE, RUBBISH AND OTHER WASTE MATERIAL AND ARRANGE FOR COLLECTION AND DISPOSAL OF SUCH MATERIAL.",
+            "inspection_date": "2024-09-15",
+            "nov_issued_date": "2024-09-17",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17723133",
+            "class": "B",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LESS THAN TEN SQUARE FEET AT NORTH WALL IN THE 2nd ROOM FROM EAST LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM NORTH AT EAST ORIGINAL VIOLATION 17358473 ISSUED 20-OCT-24 HAS BEEN UPGRADED TO CLASS B PER ADMINISTRATIVE CODE \u00a727-2017.3a(3)(a) or (b).",
+            "inspection_date": "2024-10-20",
+            "nov_issued_date": "2025-02-25",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17358476",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT BUILDING ENTRANCE , 1st STORY",
+            "inspection_date": "2024-10-20",
+            "nov_issued_date": "2024-10-28",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17358473",
+            "class": "A",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LESS THAN TEN SQUARE FEET AT NORTH WALL IN THE 2nd ROOM FROM EAST LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-10-20",
+            "nov_issued_date": "2024-10-28",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17358475",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE & 309 M/D LAW ABATE THE NUISANCE CONSISTING OF MOTION ACTIVATED SENSOR AT CEILING LIGHT FIXTURE MAKING IT TURN OFF COMPLETELY AT PUBLIC HALL, 2nd STORY",
+            "inspection_date": "2024-10-20",
+            "nov_issued_date": "2024-10-30",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17385897",
+            "class": "B",
+            "description": "\u00a7 27-2039 ADM CODE PROVIDE ADEQUATE LIGHT OF NOT LESS THAN 60 WATTS INCANDESCENT OR EQUIVALENT ILLUMINATION AT CEILING AT PUBLIC HALL, 2nd STORY",
+            "inspection_date": "2024-10-20",
+            "nov_issued_date": "2024-10-30",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17358474",
+            "class": "B",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF VERMIN GNATS IN THE ENTIRE APARTMENT LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-10-20",
+            "nov_issued_date": "2024-10-28",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17666201",
+            "class": "B",
+            "description": "\u00a7 27-2010, 2011, 2012 ADM CODE REMOVE THE ACCUMULATION OF REFUSE AND/OR RUBBISH AND MAINTAIN IN A CLEAN CONDITION THE GARBAGE AT EAST FRONT YARD AT BUILDING FRONT AT PUBLIC HALL",
+            "inspection_date": "2025-02-02",
+            "nov_issued_date": "2025-02-03",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17666202",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES DOOR FROM STREET TO 1ST STORY AT PUBLIC HALL",
+            "inspection_date": "2025-02-02",
+            "nov_issued_date": "2025-02-03",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17666200",
+            "class": "B",
+            "description": "\u00a7 27-2053 ADM CODE PROVIDE DWELLING WITH A JANITOR OR RESPONSIBLE PERSON OR JANITORIAL SERVICE.",
+            "inspection_date": "2025-02-02",
+            "nov_issued_date": "2025-02-03",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17853596",
+            "class": "B",
+            "description": "\u00a7 27-2021 ADM CODE PROVIDE SUFFICIENT, PROPER AND SEPARATE METAL RECEPTACLES FOR THE DEPOSIT OF GARBAGE, RUBBISH AND OTHER WASTE MATERIAL AND ARRANGE FOR COLLECTION AND DISPOSAL OF SUCH MATERIAL.",
+            "inspection_date": "2025-04-26",
+            "nov_issued_date": "2025-04-28",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17853595",
+            "class": "B",
+            "description": "\u00a7 27-2010, 2011, 2012 ADM CODE REMOVE THE ACCUMULATION OF REFUSE AND/OR RUBBISH AND MAINTAIN IN A CLEAN CONDITION THE FRONT YARD 1st YARD FROM EAST",
+            "inspection_date": "2025-04-26",
+            "nov_issued_date": "2025-04-28",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2030990124",
+      "address": "718 GARDEN STREET",
+      "zip_code": "10457",
+      "acquiring_entity": "PHANTOM CAPITAL 22 LLC",
+      "acquisition_date": "2025-09-26",
+      "price_paid": 825000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025100900191001"
+      ],
+      "displacement_score": 59.7,
+      "hpd_violations": {
+        "total": 12,
+        "class_a": 1,
+        "class_b": 5,
+        "class_c": 6,
+        "records": [
+          {
+            "violation_id": "17284655",
+            "class": "C",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE BUILDING ENTRANCE DOOR MORTISE LOCK , 1st STORY",
+            "inspection_date": "2024-09-16",
+            "nov_issued_date": "2024-09-18",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17284617",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE BASE CABINET DOOR IN THE KITCHEN LOCATED AT APT 1A, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-09-16",
+            "nov_issued_date": "2024-09-18",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17284582",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE RUBBER GASKET SEAL AROUND THE REFRIGERATOR DOOR . IN THE KITCHEN LOCATED AT APT 1A, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-09-16",
+            "nov_issued_date": "2024-09-18",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17284579",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 1A, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-09-16",
+            "nov_issued_date": "2024-09-18",
+            "current_status": "NOTICE OF ISSUANCE SENT TO TENANT"
+          },
+          {
+            "violation_id": "17284577",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR AT CEILING IN THE KITCHEN LOCATED AT APT 1A, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-09-16",
+            "nov_issued_date": "2024-09-18",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17284628",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE VINYL FLOOR TILE IN THE 2nd ROOM FROM NORTH LOCATED AT APT 1A, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-09-16",
+            "nov_issued_date": "2024-09-18",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17284589",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE SAGGING FLOOR IN THE PRIVATE HALLWAY LOCATED AT APT 1A, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-09-16",
+            "nov_issued_date": "2024-09-18",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17284571",
+            "class": "C",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE APT ENTRANCE DOOR PANEL IN THE ENTRANCE LOCATED AT APT 1A, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-09-16",
+            "nov_issued_date": "2024-09-18",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17284563",
+            "class": "C",
+            "description": "\u00a7 27-2026 ADM CODE REMOVE ALL OBSTRUCTIONS AND REPAIR ALL DEFECTS IN THE WATER TANK WASTE LINE PIPE . IN THE BATHROOM LOCATED AT APT 1A, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-09-16",
+            "nov_issued_date": "2024-09-18",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17284613",
+            "class": "C",
+            "description": "\u00a7 27-2026 ADM CODE REPAIR THE BROKEN OR DEFECTIVE CONNECTION WASTE LINE PIPE AT WASH BASIN IN THE BATHROOM LOCATED AT APT 1A, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-09-16",
+            "nov_issued_date": "2024-09-18",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17284621",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR AT CEILING IN THE BATHROOM LOCATED AT APT 1A, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-09-16",
+            "nov_issued_date": "2024-09-18",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "18026668",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-13",
+            "nov_issued_date": "2025-06-13",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2037160012",
+      "address": "1022 WARD AVENUE",
+      "zip_code": "10472",
+      "acquiring_entity": "PHANTOM CAPITAL 107 LLC",
+      "acquisition_date": "2025-10-16",
+      "price_paid": 1080000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025102800114001"
+      ],
+      "displacement_score": 42.9,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17960666",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2027560038",
+      "address": "1039 LONGFELLOW AVENUE",
+      "zip_code": "10459",
+      "acquiring_entity": "PHANTOM RISE LLC",
+      "acquisition_date": "2025-10-20",
+      "price_paid": 1175000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025102700381001"
+      ],
+      "displacement_score": 56.8,
+      "hpd_violations": {
+        "total": 30,
+        "class_a": 6,
+        "class_b": 13,
+        "class_c": 11,
+        "records": [
+          {
+            "violation_id": "16917295",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE IN THE ENTIRE APARTMENT LOCATED AT APT 2R, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-04-21",
+            "nov_issued_date": "2024-04-22",
+            "current_status": "NOT COMPLIED WITH"
+          },
+          {
+            "violation_id": "16917294",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 2R, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-04-21",
+            "nov_issued_date": "2024-04-22",
+            "current_status": "NOT COMPLIED WITH"
+          },
+          {
+            "violation_id": "16917296",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE WOOD HAND RAIL AT PUBLIC HALL STAIRS, 2nd STORY",
+            "inspection_date": "2024-04-21",
+            "nov_issued_date": "2024-04-22",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "16917293",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE SPRING BALANCE AT LOWER WINDOW SASH AT 2ND WINDOW FROM SOUTH AT WEST IN THE 3rd ROOM FROM EAST LOCATED AT APT 2R, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-04-21",
+            "nov_issued_date": "2024-04-22",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "16917292",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE SPRING BALANCE AT LOWER WINDOW SASH AT 2ND WINDOW FROM EAST AT SOUTH IN THE 2nd ROOM FROM EAST LOCATED AT APT 2R, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-04-21",
+            "nov_issued_date": "2024-04-22",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "16917291",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR AT CEILING IN THE FOYER LOCATED AT APT 2R, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-04-21",
+            "nov_issued_date": "2024-04-22",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "16977177",
+            "class": "B",
+            "description": "\u00a7 27-2046.1 HMC: REPAIR OR REPLACE THE CARBON MONOXIDE DETECTING DEVICE(S). DEFFECTIVE LOCATED AT APT 2R, 2nd STORY",
+            "inspection_date": "2024-05-13",
+            "nov_issued_date": "2024-05-15",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "16977179",
+            "class": "B",
+            "description": "\u00a7 27-2045 ADM CODE REPAIR OR REPLACE THE SMOKE DETECTOR DEFFECTIVE LOCATED AT APT 2R, 2nd STORY",
+            "inspection_date": "2024-05-13",
+            "nov_issued_date": "2024-05-15",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17102363",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE ...CLOSET DOOR AT NORTH WALL IN THE FOYER LOCATED AT APT 1R, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-07-07",
+            "nov_issued_date": "2024-07-08",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17102362",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 1R, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-07-07",
+            "nov_issued_date": "2024-07-08",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17139861",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR THE EAST WALL AND THE WEST WALL IN THE 3rd ROOM FROM EAST AT SOUTH LOCATED AT APT 2, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-07-25",
+            "nov_issued_date": "2024-07-26",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17139862",
+            "class": "A",
+            "description": "\u00a7 27-2011 ADM CODE CLEANSE TO THE SATISFACTION OF THIS DEPARTMENT THE SHOWER STALL WALLS TILES IN THE BATHROOM LOCATED AT APT 2, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-07-25",
+            "nov_issued_date": "2024-07-29",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17354893",
+            "class": "A",
+            "description": "\u00a7 27-2013 ADM CODE PAINT WITH LIGHT COLORED PAINT TO THE SATISFACTION OF THIS DEPARTMENT ALL PEELING PAINT SURFACES IN THE FOYER , THE 5th ROOM FROM EAST, THE PRIVATE HALLWAY , THE 3rd ROOM FROM EAST, THE 1st ROOM FROM EAST, THE BATHROOM LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-10-15",
+            "nov_issued_date": "2024-10-16",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17350141",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-10-15",
+            "nov_issued_date": "2024-10-16",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17350140",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE IN THE ENTIRE APARTMENT LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-10-15",
+            "nov_issued_date": "2024-10-16",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17350139",
+            "class": "A",
+            "description": "\u00a7 27-2026, 2027 HMC: PROPERLY REPAIR THE SOURCE AND ABATE THE EVIDENCE OF A WATER LEAK AT CEILING IN THE BATHROOM LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-10-15",
+            "nov_issued_date": "2024-10-16",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17508587",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES IN THE ENTRANCE LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-12-04",
+            "nov_issued_date": "2024-12-05",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17508585",
+            "class": "A",
+            "description": "\u00a7 27-2013 ADM CODE PAINT WITH LIGHT COLORED PAINT TO THE SATISFACTION OF THIS DEPARTMENT THE CEILING IN THE BATHROOM LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-12-04",
+            "nov_issued_date": "2024-12-05",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17508586",
+            "class": "A",
+            "description": "\u00a7 27-2013 ADM CODE PAINT WITH LIGHT COLORED PAINT TO THE SATISFACTION OF THIS DEPARTMENT THE EAST WALL IN THE 1st ROOM FROM EAST LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-12-04",
+            "nov_issued_date": "2024-12-05",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17577598",
+            "class": "C",
+            "description": "\u00a7 27-2033 ADM CODE PROVIDE READY ACCESS TO BUILDINGS HEATING SYSTEM BOILER ROOM DOOR LOCKED AT BOILER ROOM",
+            "inspection_date": "2024-12-21",
+            "nov_issued_date": "2024-12-23",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17577597",
+            "class": "C",
+            "description": "\u00a7 27-2031 ADM CODE PROVIDE HOT WATER AT ALL HOT WATER FIXTURES IN THE ENTIRE APARTMENT LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-12-21",
+            "nov_issued_date": "2024-12-23",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17577596",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE IN THE ENTIRE APARTMENT LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-12-21",
+            "nov_issued_date": "2024-12-23",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17591634",
+            "class": "B",
+            "description": "\u00a7 27-2026 ADM CODE REMOVE ALL OBSTRUCTIONS AND REPAIR ALL DEFECTS IN WASTE LINE AT WASH BASIN IN THE BATHROOM LOCATED AT APT 1F, 1st STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-12-30",
+            "nov_issued_date": "2025-01-02",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17721577",
+            "class": "C",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE AIR VALVE AT RADIATOR IN THE 3rd ROOM FROM EAST LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2025-02-21",
+            "nov_issued_date": "2025-02-25",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17721572",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR AT WEST WALL IN THE KITCHEN LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2025-02-21",
+            "nov_issued_date": "2025-02-25",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17721571",
+            "class": "C",
+            "description": "567 (C) \u00a7 27-2017, 27-2017.1, 27-2017.4, 27-2017.5, 27-2017.8, 27-2019, 27-2021 HMC: ABATE THE NUISANCE CONSISTING OF EVIDENCE OF RATS AND ALL UNDERLYING CAUSES CREATING THE PEST INFESTATIONS, BY USING INTEGRATED PEST MANAGEMENT (IPM), ELIMINATE ALL BURROW ENTRY AND PASSAGEWAYS, PEST NESTS, HOLES, GAPS OR CRACKS IN WALLS, CEILINGS, FLOORS, FIXING LEAKS AND MANAGING GARBAGE IN PUBLIC AREAS. EVIDENCE FOUND AT RATS IN THE ENTIRE APARTMENT LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM EAST AT SOU",
+            "inspection_date": "2025-02-21",
+            "nov_issued_date": "2025-02-25",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17878506",
+            "class": "B",
+            "description": "\u00a7 27-2026 ADM CODE REPAIR THE LEAKY AND/OR DEFECTIVE FAUCETS AT BATH TUB IN THE BATHROOM LOCATED AT APT 2F, 2nd STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-05-07",
+            "nov_issued_date": "2025-05-08",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17878507",
+            "class": "B",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LESS THAN 30 SQ. FT. AT WEST WALL AND CEILING IN THE BATHROOM LOCATED AT APT 2F, 2nd STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-05-07",
+            "nov_issued_date": "2025-05-08",
+            "current_status": "DEFECT LETTER ISSUED"
+          },
+          {
+            "violation_id": "17878509",
+            "class": "A",
+            "description": "\u00a7 27-2013 ADM CODE PAINT WITH LIGHT COLORED PAINT TO THE SATISFACTION OF THIS DEPARTMENT WALLS AND CEILING IN THE ENTIRE APARTMENT LOCATED AT APT 2F, 2nd STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-05-07",
+            "nov_issued_date": "2025-05-08",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17878508",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE ELECTRICAL OUTLET AT EAST WALL IN THE 2nd ROOM FROM EAST LOCATED AT APT 2F, 2nd STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-05-07",
+            "nov_issued_date": "2025-05-08",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 4
+        },
+        "data_note": "DOF 2026 assessment shows 4 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 4,
+        "latest_units": 4,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 4
+      }
+    },
+    {
+      "bbl": "2050590072",
+      "address": "4315 MURDOCK AVENUE",
+      "zip_code": "10466",
+      "acquiring_entity": "PHANTOM CAPITAL 10 LLC",
+      "acquisition_date": "2025-10-22",
+      "price_paid": 680000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025111800802001"
+      ],
+      "displacement_score": 67.2,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17958583",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "3038260005",
+      "address": "593 WYONA STREET",
+      "zip_code": "11207",
+      "acquiring_entity": "PHANTOM CAPITAL 10 LLC",
+      "acquisition_date": "2025-10-22",
+      "price_paid": 1050000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025103000637001"
+      ],
+      "displacement_score": 59.7,
+      "hpd_violations": {
+        "total": 10,
+        "class_a": 0,
+        "class_b": 1,
+        "class_c": 9,
+        "records": [
+          {
+            "violation_id": "17406355",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES IN THE ENTRANCE LOCATED AT APT 1R, 1st STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-11-04",
+            "nov_issued_date": "2024-11-07",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17406371",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT DOOR LEADING FROM CELLAR TO PUBLIC HALL AT CELLAR STORY AT CELLAR",
+            "inspection_date": "2024-11-04",
+            "nov_issued_date": "2024-11-07",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17406362",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE LATCH AT DOOR LEADING TO CELLAR AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2024-11-04",
+            "nov_issued_date": "2024-11-07",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17406369",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT BOILER ROOM DOOR AT BOILER ROOM",
+            "inspection_date": "2024-11-04",
+            "nov_issued_date": "2024-11-07",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17406367",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT BULKHEAD DOOR AT PUBLIC HALL STAIRS, 2nd STORY",
+            "inspection_date": "2024-11-04",
+            "nov_issued_date": "2024-11-07",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17406360",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT DOOR LEADING TO SOUTH YARD AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2024-11-04",
+            "nov_issued_date": "2024-11-07",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17406358",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT VESTIBULE DOOR , 1st STORY",
+            "inspection_date": "2024-11-04",
+            "nov_issued_date": "2024-11-07",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17406356",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT BUILDING ENTRANCE DOOR , 1st STORY",
+            "inspection_date": "2024-11-04",
+            "nov_issued_date": "2024-11-07",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17406375",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT DOOR LEADING FROM CELLAR TO FRONT YARD AT CELLAR STORY AT CELLAR",
+            "inspection_date": "2024-11-04",
+            "nov_issued_date": "2024-11-07",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17406364",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE LATCH AT DOOR LEADING TO CELLAR AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2024-11-04",
+            "nov_issued_date": "2024-11-07",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 4
+        },
+        "data_note": "DOF 2026 assessment shows 4 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 4,
+        "latest_units": 4,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 4
+      }
+    },
+    {
+      "bbl": "2038810004",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM CAPITAL 12 LLC",
+      "acquisition_date": "2025-10-23",
+      "price_paid": 360000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025112500348001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "4135570084",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM RISE LLC",
+      "acquisition_date": "2025-10-24",
+      "price_paid": 650000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025102700138001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "2033750006",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM & Z CAPITAL LLC",
+      "acquisition_date": "2025-10-28",
+      "price_paid": 680000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025110500212001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "2022780019",
+      "address": "422 EAST 134 STREET",
+      "zip_code": "10454",
+      "acquiring_entity": "PHANTOM PARTNERS 89 LLC",
+      "acquisition_date": "2025-11-05",
+      "price_paid": 999000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025111300258001"
+      ],
+      "displacement_score": 29.5,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17954895",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2031100082",
+      "address": "2139 MAPES AVENUE",
+      "zip_code": "10460",
+      "acquiring_entity": "PHANTOM CAPITAL 12 LLC",
+      "acquisition_date": "2025-11-05",
+      "price_paid": 730000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025111800903001"
+      ],
+      "displacement_score": 58.5,
+      "hpd_violations": {
+        "total": 28,
+        "class_a": 7,
+        "class_b": 12,
+        "class_c": 9,
+        "records": [
+          {
+            "violation_id": "17473513",
+            "class": "B",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LESS THAN 10 SQUARE FEET OF MOLD AT WEST WALL IN THE BATHROOM LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH ORIGINAL VIOLATION 17151076 ISSUED 29-JUL-24 HAS BEEN UPGRADED TO CLASS B PER ADMINISTRATIVE CODE \u00a727-2017.3a(3)(a) or (b).",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-11-27",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17473539",
+            "class": "B",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LAST THAN 10 SQUARE FEET AT WEST WALL, CEILING IN THE BATHROOM LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH ORIGINAL VIOLATION 17157714 ISSUED 29-JUL-24 HAS BEEN UPGRADED TO CLASS B PER ADMINISTRATIVE CODE \u00a727-2017.3a(3)(a) or (b).",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-11-27",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17165779",
+            "class": "C",
+            "description": "\u00a7 27-2056.6 ADM CODE - CORRECT THE LEAD-BASED PAINT HAZARD - PAINT THAT TESTED POSITIVE FOR LEAD CONTENT AND THAT IS PEELING OR ON A DETERIORATED SUBSURFACE - USING WORK PRACTICES SET FORTH IN 28 RCNY \u00a711-06(B)(2) 1st DOOR FROM WEST AT NORTH WALL, 1st DOOR FRAME FROM WEST AT NORTH WALL IN THE 2nd ROOM FROM EAST AT SOUTH LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-08-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17158017",
+            "class": "C",
+            "description": "\u00a7 27-2056.7, 27-2056.8, 27-2056.9 ADM CODE -CERTIFY COMPLIANCE WITH LEAD-BASED PAINT HAZARD CONTROL REQUIREMENTS DURING PERIOD OF UNIT VACANCY BY PERFORMING ACTIVITIES NECESSARY TO ABATE TESTED LEAD-BASED PAINT FROM REQUIRED WINDOW AND/OR DOOR FRICTION SURFACES FOR APARTMENT AND MAKE FLOORS SMOOTH AND CLEANABLE, POSITIVE LEAD-BASED PAINT IN AN APARTMENT WITH A CHILD UNDER SIX LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-31",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17157926",
+            "class": "C",
+            "description": "\u00a7 27-2056.6 ADM CODE - CORRECT THE LEAD-BASED PAINT HAZARD - PAINT THAT TESTED POSITIVE FOR LEAD CONTENT AND THAT IS PEELING OR ON A DETERIORATED SUBSURFACE - USING WORK PRACTICES SET FORTH IN 28 RCNY \u00a711-06(B)(2) 1st CLOSET FROM WEST AT NORTH WALL CEILING, 1st CLOSET FROM WEST AT NORTH WALL WALL, 1st DOOR FROM SOUTH AT WEST WALL, 1st DOOR FRAME FROM SOUTH AT WEST WALL IN THE 1st ROOM FROM EAST LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17157712",
+            "class": "A",
+            "description": "\u00a7 27-2005 ADM CODE PAINT METAL IN ACCORDANCE WITH DEPT. REGULATION THE 1st RISER FROM EAST AT SOUTH WALL IN THE 1st ROOM FROM EAST LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17151085",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADMIN. CODE: PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE WEST WALL CERAMIC TILES IN THE BATHROOM LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17151084",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE WATER DAMAGED WOOD BASE CABINET AT WASHBASIN IN THE BATHROOM LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17151083",
+            "class": "B",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17151082",
+            "class": "B",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE IN THE ENTIRE APARTMENT LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17151081",
+            "class": "C",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE WOOD DOOR IN THE ENTRANCE LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17151080",
+            "class": "C",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... MORE THAN 30 SQUARE FEET AT 1st CLOSET FROM WEST AT NORTH WALL WALL IN THE 1st ROOM FROM EAST LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17151076",
+            "class": "A",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LESS THAN 10 SQUARE FEET OF MOLD AT WEST WALL IN THE BATHROOM LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17151075",
+            "class": "A",
+            "description": "\u00a7 27-2005 ADMIN. CODE: REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN UNIFORM COLOR AT SOUTH WALL IN THE BATHROOM LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17151074",
+            "class": "A",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LESS THAN 10 SQUARE FEET OF MOLD AT SOUTH WALL IN THE BATHROOM LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17151086",
+            "class": "B",
+            "description": "\u00a7 27-2046.1 HMC: REPAIR OR REPLACE THE CARBON MONOXIDE DETECTING DEVICE(S). MISSING IN THE ENTIRE APARTMENT LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17157707",
+            "class": "A",
+            "description": "\u00a7 27-2026, 2027 HMC: PROPERLY REPAIR THE SOURCE AND ABATE THE EVIDENCE OF A WATER LEAK AT CEILING IN THE BATHROOM LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17157706",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADMIN. CODE: REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN UNIFORM COLOR THE EAST WALL, SOUTH WALL, WEST WALL, CEILING, EAST WALL, SOUTH WALL, WEST WALL, CEILING IN THE BATHROOM LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17157710",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR THE NORTH WALL, SOUTH WALL, WEST WALL, CEILING IN THE KITCHEN LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17157708",
+            "class": "A",
+            "description": "\u00a7 27-2005 ADM CODE PAINT METAL IN ACCORDANCE WITH DEPT. REGULATION THE 1st RISER FROM WEST AT NORTH WALL IN THE BATHROOM LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17473512",
+            "class": "B",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LESS THAN 10 SQUARE FEET OF MOLD AT SOUTH WALL IN THE BATHROOM LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH ORIGINAL VIOLATION 17151074 ISSUED 29-JUL-24 HAS BEEN UPGRADED TO CLASS B PER ADMINISTRATIVE CODE \u00a727-2017.3a(3)(a) or (b).",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-11-27",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17157714",
+            "class": "A",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LAST THAN 10 SQUARE FEET AT WEST WALL, CEILING IN THE BATHROOM LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17157929",
+            "class": "C",
+            "description": "\u00a7 27-2056.6 ADM CODE - CORRECT THE LEAD-BASED PAINT HAZARD - PAINT THAT TESTED POSITIVE FOR LEAD CONTENT AND THAT IS PEELING OR ON A DETERIORATED SUBSURFACE - USING WORK PRACTICES SET FORTH IN 28 RCNY \u00a711-06(B)(2) 1st DOOR FRAME FROM EAST AT SOUTH WALL IN THE KITCHEN LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17157928",
+            "class": "C",
+            "description": "\u00a7 27-2056.6 ADM CODE - CORRECT THE LEAD-BASED PAINT HAZARD - PAINT THAT TESTED POSITIVE FOR LEAD CONTENT AND THAT IS PEELING OR ON A DETERIORATED SUBSURFACE - USING WORK PRACTICES SET FORTH IN 28 RCNY \u00a711-06(B)(2) 1st DOOR FRAME FROM NORTH AT EAST WALL, 1st WINDOW FRAME FROM WEST AT NORTH WALL IN THE BATHROOM LOCATED AT APT 1FL, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-29",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17574748",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADMIN. CODE: REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN UNIFORM COLOR AT CEILING IN THE BATHROOM LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-12-23",
+            "nov_issued_date": "2024-12-24",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17583420",
+            "class": "C",
+            "description": "\u00a7 27-2029 ADMIN. CODE: PROVIDE AN ADEQUATE SUPPLY OF HEAT FOR THE APARTMENT IN THE ENTIRE APARTMENT LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-12-23",
+            "nov_issued_date": "2024-12-24",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17574747",
+            "class": "B",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE IN THE ENTIRE APARTMENT LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-12-23",
+            "nov_issued_date": "2024-12-24",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17574746",
+            "class": "B",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-12-23",
+            "nov_issued_date": "2024-12-24",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2055930090",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM PARTNERS 89 LLC",
+      "acquisition_date": "2025-11-06",
+      "price_paid": 650000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025111800391001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2055930091",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM PARTNERS 89 LLC",
+      "acquisition_date": "2025-11-06",
+      "price_paid": 605000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025111800382001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2035550037",
+      "address": "1754 SEWARD AVENUE",
+      "zip_code": "10473",
+      "acquiring_entity": "PHANTOM PARTNERS PROPERTIES LLC",
+      "acquisition_date": "2025-11-14",
+      "price_paid": 1035000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025112100310001"
+      ],
+      "displacement_score": 28.6,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17960894",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 4
+        },
+        "data_note": "DOF 2026 assessment shows 4 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 4,
+        "latest_units": 4,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 4
+      }
+    },
+    {
+      "bbl": "2027910130",
+      "address": "1678 MONROE AVENUE",
+      "zip_code": "10457",
+      "acquiring_entity": "PHANTOM PARTNERS PROPERTIES LLC",
+      "acquisition_date": "2025-11-21",
+      "price_paid": 1025000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025120200533001"
+      ],
+      "displacement_score": 59.7,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "18016572",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-12",
+            "nov_issued_date": "2025-06-12",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2050370052",
+      "address": "4346 CARPENTER AVENUE",
+      "zip_code": "10466",
+      "acquiring_entity": "PHANTOM CAPITAL 44 LLC",
+      "acquisition_date": "2025-12-08",
+      "price_paid": 615000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025121500341001"
+      ],
+      "displacement_score": 67.2,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2027820033",
+      "address": "1358 FINDLAY AVENUE",
+      "zip_code": "10456",
+      "acquiring_entity": "PHANTOM CAPITAL 11 LLC",
+      "acquisition_date": "2025-12-10",
+      "price_paid": 889000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025121900658001"
+      ],
+      "displacement_score": 54.5,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "18026515",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-13",
+            "nov_issued_date": "2025-06-13",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "3040890030",
+      "address": "603 NEW LOTS AVENUE",
+      "zip_code": "11207",
+      "acquiring_entity": "PHANTOM CAPITAL 44 LLC",
+      "acquisition_date": "2025-12-10",
+      "price_paid": 920000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025121900478001"
+      ],
+      "displacement_score": 59.7,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17991017",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-10",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2024360077",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM CAPITAL 161 LLC",
+      "acquisition_date": "2025-12-17",
+      "price_paid": 700000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025122300401002"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2027820039",
+      "address": "1377 TELLER AVE",
+      "zip_code": "10456",
+      "acquiring_entity": "PHANTOM CAPITAL 21 LLC",
+      "acquisition_date": "2025-12-22",
+      "price_paid": 996000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025123100121001"
+      ],
+      "displacement_score": 54.5,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2048260038",
+      "address": "637 EAST 224 STREET",
+      "zip_code": "10466",
+      "acquiring_entity": "PHANTOM AFFORDABLE HOUSING LLC",
+      "acquisition_date": "2026-01-08",
+      "price_paid": 1450000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026011600237001"
+      ],
+      "displacement_score": 67.2,
+      "hpd_violations": {
+        "total": 2,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 1,
+        "records": [
+          {
+            "violation_id": "17423523",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE FIRE RETARDANT MATERIAL AT CEILING AT PUBLIC HALL STAIRS, 4th STORY",
+            "inspection_date": "2024-11-16",
+            "nov_issued_date": "2024-11-18",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17423524",
+            "class": "A",
+            "description": "\u00a7 27-2013 ADM CODE PAINT WITH LIGHT COLORED PAINT TO THE SATISFACTION OF THIS DEPARTMENT AT CEILING AT PUBLIC HALL STAIRS, 4th STORY",
+            "inspection_date": "2024-11-16",
+            "nov_issued_date": "2024-11-18",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [
+        {
+          "eviction_date": "2025-09-11",
+          "docket_number": "144753",
+          "eviction_type": "Residential",
+          "days_before_acquisition": 119
+        }
+      ],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2019": 8,
+          "2023": 8,
+          "2026": 8
+        },
+        "data_note": "8 units in 2019 \u2192 8 units in 2023",
+        "earliest_year": 2019,
+        "latest_year": 2023,
+        "earliest_units": 8,
+        "latest_units": 8,
+        "unit_loss": 0,
+        "pct_loss": 0.0,
+        "loss_category": "stable",
+        "has_historical_trend": true,
+        "current_unit_count_2026": 8
+      }
+    },
+    {
+      "bbl": "2045980019",
+      "address": "762 SOUTH OAK DRIVE",
+      "zip_code": "10467",
+      "acquiring_entity": "PHANTOM AFFORDABLE HOUSING LLC",
+      "acquisition_date": "2026-01-12",
+      "price_paid": 950000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026012200351001"
+      ],
+      "displacement_score": 45.3,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2049760010",
+      "address": "1774 EDENWALD AVENUE",
+      "zip_code": "10466",
+      "acquiring_entity": "PHANTOM CAPITAL 21 LLC",
+      "acquisition_date": "2026-01-12",
+      "price_paid": 800000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026011500394001"
+      ],
+      "displacement_score": 67.2,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17958492",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2027820041",
+      "address": "1373 TELLER AVENUE",
+      "zip_code": "10456",
+      "acquiring_entity": "PHANTOM PARTNERS BH LLC",
+      "acquisition_date": "2026-01-14",
+      "price_paid": 850000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026021701104001"
+      ],
+      "displacement_score": 54.5,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2029790122",
+      "address": "1237 HOE AVENUE",
+      "zip_code": "10459",
+      "acquiring_entity": "PHANTOM PARTNERS RE LLC",
+      "acquisition_date": "2026-01-15",
+      "price_paid": 950000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026012300710001"
+      ],
+      "displacement_score": 56.8,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "18026861",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-13",
+            "nov_issued_date": "2025-06-13",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2048550049",
+      "address": "4132 BARNES AVENUE",
+      "zip_code": "10466",
+      "acquiring_entity": "PHANTOM PARTNERS BH LLC",
+      "acquisition_date": "2026-01-15",
+      "price_paid": 900000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026012300388001"
+      ],
+      "displacement_score": 67.2,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17952587",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-04",
+            "nov_issued_date": "2025-06-04",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "3045280053",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM PARTNERS RE LLC",
+      "acquisition_date": "2026-01-21",
+      "price_paid": 575000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026020600207001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2047830038",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM CAPITAL BX LLC",
+      "acquisition_date": "2026-01-23",
+      "price_paid": 650000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026020500770001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [
+        {
+          "eviction_date": "2025-07-22",
+          "docket_number": "006426",
+          "eviction_type": "Residential",
+          "days_before_acquisition": 185
+        }
+      ],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2049570036",
+      "address": "2062 STRANG AVENUE",
+      "zip_code": "10466",
+      "acquiring_entity": "PHANTOM CAPITAL BX LLC",
+      "acquisition_date": "2026-01-28",
+      "price_paid": 875000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026020500850001"
+      ],
+      "displacement_score": 67.2,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17958670",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2054080283",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM & Z CAPITAL LLC",
+      "acquisition_date": "2026-01-30",
+      "price_paid": 585000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026021801025001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "3046280054",
+      "address": "251 EAST 92 STREET",
+      "zip_code": "11212",
+      "acquiring_entity": "PHANTOM CAP HOLDINGS 206 LLC",
+      "acquisition_date": "2026-01-30",
+      "price_paid": 810000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026020900366001"
+      ],
+      "displacement_score": 49.0,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17982633",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-09",
+            "nov_issued_date": "2025-06-09",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 4
+        },
+        "data_note": "DOF 2026 assessment shows 4 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 4,
+        "latest_units": 4,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 4
+      }
+    },
+    {
+      "bbl": "2035950001",
+      "address": "1757 SEWARD AVENUE",
+      "zip_code": "10473",
+      "acquiring_entity": "PHANTOM NYC HOLDINGS LLC",
+      "acquisition_date": "2026-02-10",
+      "price_paid": 1300000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026021800607001"
+      ],
+      "displacement_score": 28.6,
+      "hpd_violations": {
+        "total": 4,
+        "class_a": 0,
+        "class_b": 1,
+        "class_c": 3,
+        "records": [
+          {
+            "violation_id": "17425327",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES IN THE ENTRANCE LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-11-17",
+            "nov_issued_date": "2024-11-18",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17425329",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE IN THE ENTIRE APARTMENT LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-11-17",
+            "nov_issued_date": "2024-11-18",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17425328",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-11-17",
+            "nov_issued_date": "2024-11-18",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17425326",
+            "class": "B",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... GREATER THAN 10 SQUARE FEET AT WEST WALL AMD CEILING IN THE BATHROOM LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-11-17",
+            "nov_issued_date": "2024-11-18",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 5
+        },
+        "data_note": "DOF 2026 assessment shows 5 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 5,
+        "latest_units": 5,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 5
+      }
+    },
+    {
+      "bbl": "2048360053",
+      "address": "710 EAST 223 STREET",
+      "zip_code": "10466",
+      "acquiring_entity": "PHANTOM NYC HOLDINGS LLC",
+      "acquisition_date": "2026-02-10",
+      "price_paid": 780000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026022500102001"
+      ],
+      "displacement_score": 67.2,
+      "hpd_violations": {
+        "total": 5,
+        "class_a": 1,
+        "class_b": 3,
+        "class_c": 1,
+        "records": [
+          {
+            "violation_id": "17030650",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE LOWER SASH WINDOW FRAME AT 1ST WINDOW FROM SOUTH AT WEST IN THE 4th ROOM FROM NORTH LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-06-07",
+            "nov_issued_date": "2024-06-10",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17030648",
+            "class": "B",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE IN THE ENTIRE APARTMENT LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-06-07",
+            "nov_issued_date": "2024-06-10",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17030649",
+            "class": "B",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-06-07",
+            "nov_issued_date": "2024-06-10",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17200004",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF RODENTS RATS AT FRONT YARD",
+            "inspection_date": "2024-08-16",
+            "nov_issued_date": "2024-08-19",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17200003",
+            "class": "A",
+            "description": "\u00a7 27-2023 ADMIN. CODE: PROVIDE SUFFICIENT,PROPER AND SEPARATE METAL RECEPTACLES FOR THE DEPOSIT OF GARBAGE, RUBBISH AND OTHER WASTE MATERIAL AND ARRANGE FOR COLLECTION AND DISPOSAL OF SUCH MATERIAL.",
+            "inspection_date": "2024-08-16",
+            "nov_issued_date": "2024-08-19",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2027660071",
+      "address": "653 BRYANT AVENUE",
+      "zip_code": "10474",
+      "acquiring_entity": "PHANTOM TROPHIES LLC",
+      "acquisition_date": "2026-02-12",
+      "price_paid": 655000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026021800251001"
+      ],
+      "displacement_score": 65.1,
+      "hpd_violations": {
+        "total": 8,
+        "class_a": 1,
+        "class_b": 3,
+        "class_c": 4,
+        "records": [
+          {
+            "violation_id": "17251700",
+            "class": "B",
+            "description": "\u00a7 27-2026 ADM CODE REPAIR THE LEAKY AND/OR DEFECTIVE FAUCETS AT BATHTUB IN THE BATHROOM LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-09-06",
+            "nov_issued_date": "2024-09-10",
+            "current_status": "INVALID CERTIFICATION"
+          },
+          {
+            "violation_id": "17251698",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-09-06",
+            "nov_issued_date": "2024-09-10",
+            "current_status": "NOTICE OF ISSUANCE SENT TO TENANT"
+          },
+          {
+            "violation_id": "17251699",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE IN THE ENTIRE APARTMENT LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-09-06",
+            "nov_issued_date": "2024-09-10",
+            "current_status": "NOTICE OF ISSUANCE SENT TO TENANT"
+          },
+          {
+            "violation_id": "17251701",
+            "class": "B",
+            "description": "\u00a7 27-2045 ADM CODE REPAIR OR REPLACE THE SMOKE DETECTOR DEFECTIVE IN THE ENTIRE APARTMENT LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-09-06",
+            "nov_issued_date": "2024-09-10",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17251702",
+            "class": "B",
+            "description": "\u00a7 27-2046.1 HMC: REPAIR OR REPLACE THE CARBON MONOXIDE DETECTING DEVICE(S). IN THE ENTIRE APARTMENT LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-09-06",
+            "nov_issued_date": "2024-09-10",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17512283",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE IN THE ENTIRE APARTMENT LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-12-05",
+            "nov_issued_date": "2024-12-06",
+            "current_status": "NOTICE OF ISSUANCE SENT TO TENANT"
+          },
+          {
+            "violation_id": "17512284",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-12-05",
+            "nov_issued_date": "2024-12-06",
+            "current_status": "NOTICE OF ISSUANCE SENT TO TENANT"
+          },
+          {
+            "violation_id": "17953212",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-04",
+            "nov_issued_date": "2025-06-04",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "2055970014",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM TOWN LLC",
+      "acquisition_date": "2026-02-18",
+      "price_paid": 550000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026022700291001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "4088390009",
+      "address": "85-02 76 STREET",
+      "zip_code": "11421",
+      "acquiring_entity": "PHANTOM CAPITAL 350 LLC",
+      "acquisition_date": "2026-02-27",
+      "price_paid": 1040000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026031000166001"
+      ],
+      "displacement_score": 37.8,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "18008972",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-11",
+            "nov_issued_date": "2025-06-11",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2027820090",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM CAPITAL 350 LLC",
+      "acquisition_date": "2026-03-02",
+      "price_paid": 960000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026031100425001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "2027560067",
+      "address": "1032 LONGFELLOW AVENUE",
+      "zip_code": "10459",
+      "acquiring_entity": "PHANTOM CAPITAL 55 LLC",
+      "acquisition_date": "2026-03-10",
+      "price_paid": 1200000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026031900124001"
+      ],
+      "displacement_score": 56.8,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17956353",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 4
+        },
+        "data_note": "DOF 2026 assessment shows 4 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 4,
+        "latest_units": 4,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 4
+      }
+    },
+    {
+      "bbl": "2042600007",
+      "address": "1914 HOLLAND AVENUE",
+      "zip_code": "10462",
+      "acquiring_entity": "PHANTOM CAPITAL 55 LLC",
+      "acquisition_date": "2026-03-12",
+      "price_paid": 1200000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026031800620001"
+      ],
+      "displacement_score": 36.7,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17957462",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 4
+        },
+        "data_note": "DOF 2026 assessment shows 4 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 4,
+        "latest_units": 4,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 4
+      }
+    },
+    {
+      "bbl": "3015590037",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "PHANTOM CAPITAL 800 LLC",
+      "acquisition_date": "2026-03-12",
+      "price_paid": 815000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026032000155005"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    }
+  ],
+  "rs_analysis": {
+    "source": "nycdb rentstab_v2 (2018-2023) + DOF 2026 assessment",
+    "bbls_total": 64,
+    "bbls_in_rentstab_dataset": 55,
+    "bbls_with_2018_2023_trend": 1,
+    "bbls_current_only_no_trend": 54,
+    "bbls_not_in_dataset": 9,
+    "total_unit_loss_2018_2023": 0,
+    "critical_loss_bbls": [],
+    "high_loss_bbls": [],
+    "note": "Properties acquired 2025-2026 often lack pre-2024 rentstab history; DOF 2026 count shows current stabilized units"
+  }
+}
