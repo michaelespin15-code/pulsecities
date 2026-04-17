@@ -239,6 +239,10 @@
 
         <!-- 3 live ZIP cards (D-03, D-16): clickable, call selectNeighborhood(zip) -->
         <div id="hero-zip-cards" class="flex flex-wrap gap-3 justify-center w-full max-w-2xl"></div>
+
+        <button onclick="hideHero()" class="mt-6 text-xs text-slate-500 hover:text-slate-300 transition-colors underline underline-offset-2">
+            Explore the map
+        </button>
     </div>
 
     <div class="flex h-screen">
@@ -1931,7 +1935,7 @@
                         return;
                     }
                     const searchData = await searchResp.json();
-                    const zip = searchData.zip_code || (searchData.results && searchData.results[0] && searchData.results[0].zip_code);
+                    const zip = (searchData.parcel && searchData.parcel.zip_code) || searchData.zip_code || (searchData.results && searchData.results[0] && searchData.results[0].zip_code);
                     if (zip) {
                         hideHero(() => selectNeighborhood(zip));
                     } else {
