@@ -1083,6 +1083,46 @@
             return '#22c55e';
         }
 
+        function riskLabel(score) {
+            if (score === null || score === undefined) return '';
+            if (score >= 70) return 'CRITICAL RISK';
+            if (score >= 40) return 'HIGH RISK';
+            if (score >= 15) return 'MODERATE RISK';
+            return 'LOW RISK';
+        }
+
+        function countUp(el, target, color, duration) {
+            const startTime = performance.now();
+            el.style.color = color;
+            function step(now) {
+                const p = Math.min((now - startTime) / duration, 1);
+                const eased = 1 - Math.pow(1 - p, 3);
+                el.textContent = (target * eased).toFixed(1);
+                if (p < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        function relativeTime(isoString) {
+            if (!isoString) return '';
+            const diffDays = Math.floor((Date.now() - new Date(isoString).getTime()) / 86400000);
+            if (diffDays === 0) return 'today';
+            if (diffDays === 1) return 'yesterday';
+            if (diffDays < 7) return `${diffDays}d ago`;
+            if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+            if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`;
+            return `${Math.floor(diffDays / 365)}y ago`;
+        }
+
+        const SIGNAL_DESCRIPTIONS = {
+            permits:          'Renovation permit filings signal landlords preparing to flip or push out tenants',
+            evictions:        'Court-ordered eviction filings — a direct measure of tenant displacement',
+            llc_acquisitions: 'Buildings acquired by LLCs face higher rates of rent increase and harassment',
+            complaint_rate:   'High 311 complaint volume (heat, leaks, pests) indicates pressure to vacate',
+            rs_unit_loss:     'Net loss of rent-stabilized apartments — affordable housing permanently removed',
+            assessment_spike: 'Sharp property tax assessment increases signal speculative acquisition activity'
+        };
+
         function truncate(str, n) {
             return str && str.length > n ? str.slice(0, n) + '\u2026' : (str || '');
         }
@@ -1273,23 +1313,29 @@
             document.getElementById('detail-zip').textContent = zip;
 
             const scoreEl = document.getElementById('detail-score');
+            const riskLabelEl = document.getElementById('detail-risk-label');
             if (score !== null && score !== undefined) {
-                scoreEl.textContent = score.toFixed(1);
-                scoreEl.style.color = scoreColor(score);
+                countUp(scoreEl, score, scoreColor(score), 600);
                 document.getElementById('no-score-msg').classList.add('hidden');
+                if (riskLabelEl) {
+                    const tier = riskLabel(score);
+                    riskLabelEl.textContent = tier ? tier + ' \u00b7 ' + t('ui', 'displacement_risk') : t('ui', 'displacement_risk');
+                    riskLabelEl.style.color = scoreColor(score);
+                    riskLabelEl.style.opacity = '0.8';
+                }
             } else {
                 scoreEl.textContent = '\u2014';
                 scoreEl.style.color = '#94a3b8';
                 document.getElementById('no-score-msg').classList.remove('hidden');
+                if (riskLabelEl) {
+                    riskLabelEl.textContent = t('ui', 'displacement_risk');
+                    riskLabelEl.style.color = '';
+                    riskLabelEl.style.opacity = '';
+                }
             }
 
             const updatedEl = document.getElementById('detail-updated');
-            if (lastUpdated) {
-                const d = new Date(lastUpdated);
-                updatedEl.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            } else {
-                updatedEl.textContent = '';
-            }
+            updatedEl.textContent = lastUpdated ? relativeTime(lastUpdated) : '';
 
             const summaryEl = document.getElementById('detail-summary');
             if (summaryText) {
@@ -1325,7 +1371,7 @@
                     row.className = 'py-2 border-b border-base-content/[0.06] last:border-0';
                     row.innerHTML = `
                         <div class="flex justify-between items-baseline mb-1">
-                            <span class="text-xs text-base-content/60">${label}</span>
+                            <span class="text-xs text-base-content/60" title="${SIGNAL_DESCRIPTIONS[key] || ''}">${label}</span>
                             <span class="font-mono text-sm text-base-content">${numVal !== null ? numVal : '\u2014'}</span>
                         </div>
                         <div style="height:3px;border-radius:2px;background:rgba(148,163,184,0.12);">
@@ -1980,6 +2026,14 @@
 
             // Results list — each row clicks to select zip AND fly to the property
             list.innerHTML = '';
+            if (!data.results || data.results.length === 0) {
+                const emptyEl = document.createElement('p');
+                emptyEl.className = 'text-xs text-base-content/40 py-2 text-center';
+                emptyEl.textContent = `No properties found for "${data.query || 'that search'}" in ACRIS records.`;
+                list.appendChild(emptyEl);
+                resultsEl.classList.remove('hidden');
+                return;
+            }
             data.results.forEach(r => {
                 const row = document.createElement('button');
                 row.className = 'w-full text-left py-2 px-1 border-b border-base-content/[0.06] last:border-0 hover:bg-base-content/5 rounded transition-colors';
