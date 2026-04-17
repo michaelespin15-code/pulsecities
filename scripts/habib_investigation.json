@@ -1,0 +1,332 @@
+{
+  "generated_at": "2026-04-16",
+  "subject": "HABIB",
+  "classification": "MIXED \u2014 bank false positive + individual landlord network",
+  "bank_false_positive": {
+    "entities": [
+      "HABIB AMERICAN BANK",
+      "HABIB AMERICAN BANK A/K/A HAB BANK",
+      "HABIB AMERICAN BANK AKA HAB BANK",
+      "HABIB AMERICAN BANK ISAOA/ATIMA",
+      "HABIB BANK"
+    ],
+    "total_records": 40,
+    "unique_bbls": 35,
+    "doc_type_breakdown": {
+      "ASST": 40
+    },
+    "entity_breakdown": {
+      "HABIB AMERICAN BANK": 30,
+      "HABIB AMERICAN BANK AKA HAB BANK": 5,
+      "HABIB AMERICAN BANK A/K/A HAB BANK": 2,
+      "HABIB BANK": 1,
+      "HABIB AMERICAN BANK ISAOA/ATIMA": 2
+    },
+    "determination": "exclude",
+    "reason": "HABIB AMERICAN BANK (dba HAB Bank) is a New York-chartered commercial bank. All 39 records are ASST (mortgage assignment) with zero recorded consideration \u2014 the bank is receiving mortgage assignments as a lender, not acquiring properties. These records inflate the HABIB operator's BBL count and displacement metrics and should be filtered from the pipeline."
+  },
+  "individual_network": {
+    "entities": [
+      "HABIB AHSAN",
+      "HABIB AYESHA",
+      "HABIB MOHAMMAD A",
+      "HABIB SHAHINA",
+      "HABIB SHIMUL"
+    ],
+    "total_deeds": 5,
+    "unique_bbls": 5,
+    "total_spend": 3957000.0,
+    "entity_breakdown": {
+      "HABIB AYESHA": {
+        "deeds": 1,
+        "unique_bbls": 1,
+        "total_spend": 0.0
+      },
+      "HABIB MOHAMMAD A": {
+        "deeds": 1,
+        "unique_bbls": 1,
+        "total_spend": 1452000.0
+      },
+      "HABIB SHIMUL": {
+        "deeds": 1,
+        "unique_bbls": 1,
+        "total_spend": 1100000.0
+      },
+      "HABIB AHSAN": {
+        "deeds": 1,
+        "unique_bbls": 1,
+        "total_spend": 835000.0
+      },
+      "HABIB SHAHINA": {
+        "deeds": 1,
+        "unique_bbls": 1,
+        "total_spend": 570000.0
+      }
+    },
+    "determination": "monitor",
+    "reason": "Five individuals sharing the HABIB surname made residential deed purchases between 2025 and 2026. Prices ($570K\u2013$1.45M) and borough distribution suggest a family operating as small-scale landlords. Portfolio size (5 properties) is below the operator monitoring threshold but the shared surname pattern warrants flagging for re-evaluation if additional purchases appear."
+  },
+  "total_properties": 5,
+  "total_spend": 3957000.0,
+  "first_acquisition": "2025-07-23",
+  "last_acquisition": "2026-02-10",
+  "geographic_concentration": [
+    {
+      "zip_code": "10472",
+      "properties": 1,
+      "displacement_score": 42.9
+    },
+    {
+      "zip_code": "11428",
+      "properties": 1,
+      "displacement_score": 42.0
+    }
+  ],
+  "hpd_violations": {
+    "total": 17,
+    "class_a": 2,
+    "class_b": 0,
+    "class_c": 15,
+    "bbls_with_class_bc": 1,
+    "bc_per_property": 3.0
+  },
+  "eviction_then_buy": {
+    "total_matches": 0,
+    "lookback_days": 365,
+    "matches": []
+  },
+  "properties": [
+    {
+      "bbl": "3009001013",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "HABIB AYESHA",
+      "acquisition_date": "2025-07-23",
+      "price_paid": null,
+      "doc_type": "DEED",
+      "document_id": "2025072900854001",
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": []
+    },
+    {
+      "bbl": "4097270035",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "HABIB MOHAMMAD A",
+      "acquisition_date": "2025-07-30",
+      "price_paid": 1452000.0,
+      "doc_type": "DEED",
+      "document_id": "2025081200225001",
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": []
+    },
+    {
+      "bbl": "2037560050",
+      "address": "1171 LELAND AVENUE",
+      "zip_code": "10472",
+      "acquiring_entity": "HABIB SHIMUL",
+      "acquisition_date": "2025-10-22",
+      "price_paid": 1100000.0,
+      "doc_type": "DEED",
+      "document_id": "2025103000238001",
+      "displacement_score": 42.9,
+      "hpd_violations": {
+        "total": 17,
+        "class_a": 2,
+        "class_b": 0,
+        "class_c": 15,
+        "records": [
+          {
+            "violation_id": "17542587",
+            "class": "C",
+            "description": "\u00a7 27-2033 ADM CODE PROVIDE READY ACCESS TO BUILDINGS HEATING SYSTEM DOOR LOCKED AT BOILER ROOM",
+            "inspection_date": "2024-12-09",
+            "nov_issued_date": "2024-12-10",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17542586",
+            "class": "C",
+            "description": "\u00a7 27-2029 ADM CODE PROVIDE AN ADEQUATE SUPPLY OF HEAT FOR THE APARTMENT IN THE ENTIRE APARTMENT LOCATED AT APT 1R, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-12-09",
+            "nov_issued_date": "2024-12-10",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17731100",
+            "class": "C",
+            "description": "\u00a7 27-2070 ADM CODE PROVIDE AN ADEQUATE SUPPLY OF GAS TO THE FIXTURES AT RANGE IN THE KITCHEN LOCATED AT APT 1R, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2025-03-01",
+            "nov_issued_date": "2025-03-03",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17731097",
+            "class": "C",
+            "description": "\u00a7 27-2031 ADM CODE PROVIDE HOT WATER AT ALL HOT WATER FIXTURES IN THE ENTIRE APARTMENT LOCATED AT APT 1R, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2025-03-01",
+            "nov_issued_date": "2025-03-03",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17731098",
+            "class": "C",
+            "description": "\u00a7 27-2029 ADM CODE PROVIDE AN ADEQUATE SUPPLY OF HEAT FOR THE APARTMENT IN THE ENTIRE APARTMENT LOCATED AT APT 1R, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2025-03-01",
+            "nov_issued_date": "2025-03-03",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17731099",
+            "class": "C",
+            "description": "\u00a7 27-2033 ADM CODE PROVIDE READY ACCESS TO BUILDINGS HEATING SYSTEM DOOR LOCKED AT BOILER ROOM",
+            "inspection_date": "2025-03-01",
+            "nov_issued_date": "2025-03-03",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17731102",
+            "class": "A",
+            "description": "\u00a7 27-2013 ADM CODE PAINT WITH LIGHT COLORED PAINT TO THE SATISFACTION OF THIS DEPARTMENT AT CEILING AT 2ND STORY AT PUBLIC HALL",
+            "inspection_date": "2025-03-01",
+            "nov_issued_date": "2025-03-03",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17739484",
+            "class": "C",
+            "description": "\u00a7 27-2031 ADM CODE PROVIDE HOT WATER AT ALL HOT WATER FIXTURES IN THE ENTIRE APARTMENT LOCATED AT APT 1R, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2025-03-05",
+            "nov_issued_date": "2025-03-06",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17739485",
+            "class": "C",
+            "description": "\u00a7 27-2029 ADM CODE PROVIDE AN ADEQUATE SUPPLY OF HEAT FOR THE APARTMENT IN THE ENTIRE APARTMENT LOCATED AT APT 1R, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2025-03-05",
+            "nov_issued_date": "2025-03-06",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17739480",
+            "class": "C",
+            "description": "\u00a7 27-2029 ADM CODE PROVIDE AN ADEQUATE SUPPLY OF HEAT FOR THE APARTMENT IN THE ENTIRE APARTMENT LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2025-03-05",
+            "nov_issued_date": "2025-03-06",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17739481",
+            "class": "C",
+            "description": "\u00a7 27-2031 ADM CODE PROVIDE HOT WATER AT ALL HOT WATER FIXTURES IN THE ENTIRE APARTMENT LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2025-03-05",
+            "nov_issued_date": "2025-03-06",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17739486",
+            "class": "C",
+            "description": "\u00a7 27-2070 ADM CODE PROVIDE AN ADEQUATE SUPPLY OF GAS TO THE FIXTURES AT RANGE IN THE KITCHEN LOCATED AT APT 1R, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2025-03-05",
+            "nov_issued_date": "2025-03-06",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17739482",
+            "class": "C",
+            "description": "\u00a7 27-2033 ADM CODE PROVIDE READY ACCESS TO BUILDINGS HEATING SYSTEM DOOR LOCKED AT BOILER ROOM",
+            "inspection_date": "2025-03-05",
+            "nov_issued_date": "2025-03-06",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17739483",
+            "class": "C",
+            "description": "\u00a7 27-2070 ADM CODE PROVIDE AN ADEQUATE SUPPLY OF GAS TO THE FIXTURES AT RANGE IN THE KITCHEN LOCATED AT APT 1F, 1st STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2025-03-05",
+            "nov_issued_date": "2025-03-06",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17743227",
+            "class": "C",
+            "description": "\u00a7 27-2031 ADM CODE PROVIDE HOT WATER AT ALL HOT WATER FIXTURES IN THE ENTIRE APARTMENT LOCATED AT APT 1R, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2025-03-07",
+            "nov_issued_date": "2025-03-10",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17743228",
+            "class": "C",
+            "description": "\u00a7 27-2029 ADM CODE PROVIDE AN ADEQUATE SUPPLY OF HEAT FOR THE APARTMENT IN THE ENTIRE APARTMENT LOCATED AT APT 1R, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2025-03-07",
+            "nov_issued_date": "2025-03-10",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17960372",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": []
+    },
+    {
+      "bbl": "4105470076",
+      "address": "93-48 207 STREET",
+      "zip_code": "11428",
+      "acquiring_entity": "HABIB AHSAN",
+      "acquisition_date": "2026-01-09",
+      "price_paid": 835000.0,
+      "doc_type": "DEED",
+      "document_id": "2026011401019001",
+      "displacement_score": 42.0,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": []
+    },
+    {
+      "bbl": "4160320036",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "HABIB SHAHINA",
+      "acquisition_date": "2026-02-10",
+      "price_paid": 570000.0,
+      "doc_type": "DEED",
+      "document_id": "2026022200017001",
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": []
+    }
+  ]
+}

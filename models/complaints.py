@@ -54,6 +54,8 @@ class ComplaintRaw(TimestampMixin, Base):
         Index("idx_complaints_raw_created_date", "created_date"),
         Index("idx_complaints_raw_created_at", "created_at"),  # for 90-day cleanup
         Index("idx_complaints_raw_location", "location", postgresql_using="gist"),
+        # Composite: scoring query filters WHERE complaint_type = ANY(:types) AND created_date >= X
+        Index("idx_complaints_raw_type_date", "complaint_type", "created_date"),
     )
 
     def __repr__(self) -> str:

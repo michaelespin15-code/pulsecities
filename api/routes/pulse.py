@@ -31,7 +31,7 @@ Security:
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy import text
@@ -41,7 +41,7 @@ from models.database import get_db
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/neighborhoods", tags=["pulse"])
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
 PERMIT_TYPE_LABELS = {
     "A1": "Major Renovation",
@@ -54,6 +54,7 @@ PERMIT_TYPE_LABELS = {
 @limiter.limit("60/minute")
 def get_neighborhood_pulse(
     request: Request,
+    response: Response,
     zip_code: str,
     db: Session = Depends(get_db),
 ):
@@ -78,27 +79,32 @@ def get_neighborhood_pulse(
     # Joins ownership_raw to parcels on BBL to get street address.
     # party_type = '2' is the ACRIS numeric code for GRANTEE (buyer).
     # doc_type IN ('DEED','DEEDP','ASST') covers direct deeds and assignments.
+    # DISTINCT ON (o.bbl) keeps the most recent acquisition per building — a BBL
+    # that had two transfers in 90 days (rare but possible) only surfaces once.
     llc_rows = db.execute(
         text("""
-            SELECT
-                o.bbl,
-                p.address,
-                o.party_name_normalized AS buyer_name,
-                o.doc_date,
-                o.doc_amount
-            FROM ownership_raw o
-            LEFT JOIN parcels p ON p.bbl = o.bbl
-            WHERE p.zip_code = :zip
-              AND o.party_type = '2'
-              AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
-              AND o.party_name_normalized LIKE '%LLC%'
-              AND o.doc_date >= CURRENT_DATE - INTERVAL '90 days'
-              AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
-              AND o.party_name_normalized NOT ILIKE '%LOAN SERVICING%'
-              AND o.party_name_normalized NOT ILIKE '%LOAN SERVICE%'
-              AND o.party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
-              AND o.party_name_normalized NOT ILIKE '%CREDIT UNION%'
-            ORDER BY o.doc_date DESC
+            SELECT * FROM (
+                SELECT DISTINCT ON (o.bbl)
+                    o.bbl,
+                    p.address,
+                    o.party_name_normalized AS buyer_name,
+                    o.doc_date,
+                    o.doc_amount
+                FROM ownership_raw o
+                LEFT JOIN parcels p ON p.bbl = o.bbl
+                WHERE p.zip_code = :zip
+                  AND o.party_type = '2'
+                  AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
+                  AND o.party_name_normalized LIKE '%LLC%'
+                  AND o.doc_date >= CURRENT_DATE - INTERVAL '90 days'
+                  AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
+                  AND o.party_name_normalized NOT ILIKE '%LOAN SERVICING%'
+                  AND o.party_name_normalized NOT ILIKE '%LOAN SERVICE%'
+                  AND o.party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
+                  AND o.party_name_normalized NOT ILIKE '%CREDIT UNION%'
+                ORDER BY o.bbl, o.doc_date DESC
+            ) deduped
+            ORDER BY doc_date DESC
             LIMIT 25
         """),
         {"zip": zip_code},
@@ -107,14 +113,14 @@ def get_neighborhood_pulse(
     # --- Recent Permits query ---
     # permits_raw has zip_code column directly — no join needed.
     # permit_type IN ('A1','A2','NB') covers major renovation, alteration, new building.
-    # DISTINCT ON (bbl, filing_date, permit_type) guards against duplicate rows that
-    # can exist in permits_raw when work_type is NULL (NULL != NULL in unique indexes).
-    # permit_type column stores DOB permit codes (AL, EW, NB, etc.).
+    # DISTINCT ON (bbl) keeps only the most recent permit per building — a building that
+    # filed three alterations in 90 days (common for staged renos) only surfaces once,
+    # preventing the same address from repeating in the activity feed.
     # The A1/A2/NB job classification is in raw_data->>'job_type'.
     permit_rows = db.execute(
         text("""
             SELECT * FROM (
-                SELECT DISTINCT ON (bbl, filing_date, (raw_data->>'job_type'))
+                SELECT DISTINCT ON (bbl)
                     bbl,
                     address,
                     raw_data->>'job_type' AS permit_type,
@@ -123,7 +129,7 @@ def get_neighborhood_pulse(
                 WHERE zip_code = :zip
                   AND raw_data->>'job_type' IN ('A1', 'A2', 'NB')
                   AND filing_date >= CURRENT_DATE - INTERVAL '90 days'
-                ORDER BY bbl, filing_date, (raw_data->>'job_type')
+                ORDER BY bbl, filing_date DESC
             ) deduped
             ORDER BY filing_date DESC
             LIMIT 25
@@ -133,15 +139,19 @@ def get_neighborhood_pulse(
 
     # --- Recent Evictions query ---
     # evictions_raw has zip_code and executed_date columns directly.
+    # DISTINCT ON (address, executed_date) deduplicates same-address same-day rows.
     eviction_rows = db.execute(
         text("""
-            SELECT
-                address,
-                eviction_type,
-                executed_date
-            FROM evictions_raw
-            WHERE zip_code = :zip
-              AND executed_date >= CURRENT_DATE - INTERVAL '90 days'
+            SELECT * FROM (
+                SELECT DISTINCT ON (address, executed_date)
+                    address,
+                    eviction_type,
+                    executed_date
+                FROM evictions_raw
+                WHERE zip_code = :zip
+                  AND executed_date >= CURRENT_DATE - INTERVAL '90 days'
+                ORDER BY address, executed_date DESC
+            ) deduped
             ORDER BY executed_date DESC
             LIMIT 25
         """),
@@ -185,6 +195,7 @@ def get_neighborhood_pulse(
 @limiter.limit("60/minute")
 def get_renovation_flip(
     request: Request,
+    response: Response,
     zip_code: str,
     db: Session = Depends(get_db),
 ):

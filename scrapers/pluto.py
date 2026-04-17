@@ -39,6 +39,7 @@ from datetime import datetime, timezone
 
 from geoalchemy2.shape import from_shape
 from shapely.geometry import shape
+from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import insert
 
 from models.bbl import normalize_bbl
@@ -85,9 +86,33 @@ class PlutoScraper(BaseScraper):
         if batch:
             records_processed += self._upsert_batch(db, batch)
 
+        self._write_assessment_snapshot(db)
+
         logger.info("PLUTO load complete: %d upserted, %d failed", records_processed, records_failed)
         # No watermark for PLUTO — it's a full refresh
         return records_processed, records_failed, None
+
+    def _write_assessment_snapshot(self, db) -> None:
+        """
+        Copy assessed_total from parcels into assessment_history for the current calendar year.
+        ON CONFLICT DO NOTHING makes this idempotent — re-running PLUTO in the same year
+        leaves existing history rows untouched, which is intentional: the first run of the
+        year captures the DOF fiscal-year assessment, and mid-year re-runs don't overwrite it.
+        """
+        tax_year = datetime.now(timezone.utc).year
+        db.execute(
+            text("""
+                INSERT INTO assessment_history (bbl, assessed_total, tax_year, created_at)
+                SELECT bbl, assessed_total, :tax_year, NOW()
+                FROM parcels
+                WHERE assessed_total IS NOT NULL
+                  AND bbl IS NOT NULL
+                ON CONFLICT DO NOTHING
+            """),
+            {"tax_year": tax_year},
+        )
+        db.commit()
+        logger.info("Assessment history snapshot written for tax_year=%d", tax_year)
 
     def _parse(self, db, raw: dict) -> dict | None:
         # BBL — try direct field first, then construct from parts

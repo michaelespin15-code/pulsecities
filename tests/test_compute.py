@@ -57,7 +57,7 @@ def _insert_test_permits(db, rows):
 
 
 def _cleanup_test_data(db, zip_codes):
-    """Remove test data from permits_raw and displacement_scores."""
+    """Remove test data from permits_raw, displacement_scores, and score_history."""
     for zip_code in zip_codes:
         db.execute(
             text("DELETE FROM permits_raw WHERE zip_code = :zip_code"),
@@ -65,6 +65,10 @@ def _cleanup_test_data(db, zip_codes):
         )
         db.execute(
             text("DELETE FROM displacement_scores WHERE zip_code = :zip_code"),
+            {"zip_code": zip_code},
+        )
+        db.execute(
+            text("DELETE FROM score_history WHERE zip_code = :zip_code"),
             {"zip_code": zip_code},
         )
     db.commit()
@@ -125,11 +129,15 @@ class TestScoreNormalization:
         try:
             _cleanup_test_data(db, [zip_code])
 
-            # Patch all signals: only permits has data (single zip → min==max → 50.0 normalized)
+            # Patch all six signals: only permits has data (single zip → 0.0-guard → 50.0 normalized).
+            # assessment_spike and rs_unit_loss are patched dormant so the dormancy
+            # check fires correctly and their weights are redistributed to permits.
             with patch("scoring.compute._aggregate_permits", return_value=[(zip_code, 25)]), \
                  patch("scoring.compute._aggregate_evictions", return_value=[]), \
                  patch("scoring.compute._aggregate_llc_acquisitions", return_value=[]), \
                  patch("scoring.compute._aggregate_complaints", return_value=[]), \
+                 patch("scoring.compute._aggregate_assessment_spike", return_value=[]), \
+                 patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]), \
                  patch("scoring.compute._compute_borough_medians", return_value={"1": 10.0, "2": 8.0, "3": 15.0, "4": 12.0, "5": 5.0}), \
                  patch("scoring.compute._get_zip_units", return_value={}), \
                  patch("scoring.compute._get_zip_borough", return_value={}):
@@ -144,10 +152,17 @@ class TestScoreNormalization:
             assert row is not None, "No displacement_scores row written"
             score = row[0]
             breakdown = row[1]
-            # Single zip → permits_norm == 50.0 → composite == 0.25 * 50.0 == 12.5 → clamped to 12.5
+            # Single zip, only permits active → permits normalized to 50.0 (zero-guard),
+            # all other signals 0.0 (dormant). Only permits weight is active (redistributed
+            # to 1.0), so composite = 1.0 * 50.0 = 50.0.
             assert 1.0 <= score <= 100.0, f"Score {score} is outside [1, 100]"
-            # The permits signal should be 50.0 (min==max guard)
             assert breakdown["permits"] == 50.0, f"Expected permits breakdown 50.0, got {breakdown['permits']}"
+            assert breakdown["assessment_spike"] == 0.0, (
+                f"Dormant assessment_spike should be 0.0, got {breakdown['assessment_spike']}"
+            )
+            assert breakdown["rs_unit_loss"] == 0.0, (
+                f"Dormant rs_unit_loss should be 0.0, got {breakdown['rs_unit_loss']}"
+            )
         finally:
             _cleanup_test_data(db, [zip_code])
             db.close()
@@ -170,6 +185,8 @@ class TestScoreNormalization:
                  patch("scoring.compute._aggregate_evictions", return_value=[]), \
                  patch("scoring.compute._aggregate_llc_acquisitions", return_value=[]), \
                  patch("scoring.compute._aggregate_complaints", return_value=[]), \
+                 patch("scoring.compute._aggregate_assessment_spike", return_value=[]), \
+                 patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]), \
                  patch("scoring.compute._compute_borough_medians", return_value={"1": 10.0, "2": 8.0, "3": 15.0, "4": 12.0, "5": 5.0}), \
                  patch("scoring.compute._get_zip_units", return_value={}), \
                  patch("scoring.compute._get_zip_borough", return_value={}):
@@ -216,11 +233,13 @@ class TestScoreNormalization:
 
             mock_db = MagicMock()
             mock_db.execute.return_value.fetchall.return_value = []
+            mock_db.execute.return_value.scalar.return_value = 0
 
             with patch("scoring.compute._aggregate_permits", return_value=[]), \
                  patch("scoring.compute._aggregate_evictions", return_value=[]), \
                  patch("scoring.compute._aggregate_llc_acquisitions", return_value=[]), \
-                 patch("scoring.compute._aggregate_complaints", return_value=[]):
+                 patch("scoring.compute._aggregate_complaints", return_value=[]), \
+                 patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]):
                 result = compute_scores(mock_db)
 
             assert result == 0, f"Expected 0 for empty data, got {result}"
@@ -253,8 +272,11 @@ class TestScoreNormalization:
                 )
             db.commit()
 
-            # Patch other signals to isolate; permits normalized to 50.0 (single zip min==max guard)
-            with patch("scoring.compute._aggregate_evictions", return_value=[]), \
+            # Patch other signals to isolate; permits normalized to 50.0 (single zip min==max guard).
+            # _aggregate_permits is patched directly because its JOIN on parcels requires
+            # residential parcel rows that aren't part of this test fixture.
+            with patch("scoring.compute._aggregate_permits", return_value=[(zip_code, 12)]), \
+                 patch("scoring.compute._aggregate_evictions", return_value=[]), \
                  patch("scoring.compute._aggregate_llc_acquisitions", return_value=[]), \
                  patch("scoring.compute._aggregate_complaints", return_value=[]), \
                  patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]), \
@@ -306,18 +328,23 @@ class TestScoreNormalization:
                 )
             db.commit()
 
-            # Patch other signals to keep the test deterministic regardless of DB state
+            # Patch all signal aggregators for determinism. _aggregate_permits is patched
+            # because its JOIN on parcels requires residential parcel rows absent here.
             patches = dict(
+                _aggregate_permits=[(zip_code, 5)],
                 _aggregate_evictions=[],
                 _aggregate_llc_acquisitions=[],
                 _aggregate_complaints=[],
+                _aggregate_rs_unit_loss=[],
                 _compute_borough_medians={"1": 10.0, "2": 8.0, "3": 15.0, "4": 12.0, "5": 5.0},
                 _get_zip_units={},
                 _get_zip_borough={},
             )
-            with patch("scoring.compute._aggregate_evictions", return_value=patches["_aggregate_evictions"]), \
+            with patch("scoring.compute._aggregate_permits", return_value=patches["_aggregate_permits"]), \
+                 patch("scoring.compute._aggregate_evictions", return_value=patches["_aggregate_evictions"]), \
                  patch("scoring.compute._aggregate_llc_acquisitions", return_value=patches["_aggregate_llc_acquisitions"]), \
                  patch("scoring.compute._aggregate_complaints", return_value=patches["_aggregate_complaints"]), \
+                 patch("scoring.compute._aggregate_rs_unit_loss", return_value=patches["_aggregate_rs_unit_loss"]), \
                  patch("scoring.compute._compute_borough_medians", return_value=patches["_compute_borough_medians"]), \
                  patch("scoring.compute._get_zip_units", return_value=patches["_get_zip_units"]), \
                  patch("scoring.compute._get_zip_borough", return_value=patches["_get_zip_borough"]):
@@ -535,7 +562,9 @@ class TestScoreValidation:
             with patch("scoring.compute._aggregate_permits", return_value=permit_patch), \
                  patch("scoring.compute._aggregate_evictions", return_value=[]), \
                  patch("scoring.compute._aggregate_llc_acquisitions", return_value=[]), \
-                 patch("scoring.compute._aggregate_complaints", return_value=[]):
+                 patch("scoring.compute._aggregate_complaints", return_value=[]), \
+                 patch("scoring.compute._aggregate_assessment_spike", return_value=[]), \
+                 patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]):
                 count = compute_scores(db)
 
             assert count >= 5, f"Expected at least 5 zip codes scored, got {count}"
@@ -621,3 +650,112 @@ class TestScoreSanityCheck:
         """Maximum valid score (100.0) passes validation."""
         from scoring.compute import _assert_score_valid
         _assert_score_valid("10001", 100.0, self.VALID_BREAKDOWN)
+
+
+class TestAssessmentSpike:
+    """
+    Unit tests for _aggregate_assessment_spike().
+
+    Uses a real DB connection but restricts all fixture data to bbl values
+    prefixed "99" (non-NYC) so they never collide with production parcels.
+    Each test cleans up after itself.
+    """
+
+    # BBLs and zip used across tests — 99xxx range, no production overlap
+    ZIP = "99901"
+    BBLS = ["9990100001", "9990100002"]
+
+    def _cleanup(self, db):
+        db.execute(
+            text("DELETE FROM assessment_history WHERE bbl LIKE '9990%'")
+        )
+        db.execute(
+            text("DELETE FROM parcels WHERE bbl LIKE '9990%'")
+        )
+        db.commit()
+
+    def _insert_parcel(self, db, bbl, zip_code, units_res):
+        db.execute(
+            text("""
+                INSERT INTO parcels (bbl, zip_code, units_res, on_speculation_watch_list,
+                                     created_at, updated_at)
+                VALUES (:bbl, :zip_code, :units_res, FALSE, NOW(), NOW())
+                ON CONFLICT ON CONSTRAINT uq_parcels_bbl DO UPDATE SET
+                    zip_code  = EXCLUDED.zip_code,
+                    units_res = EXCLUDED.units_res
+            """),
+            {"bbl": bbl, "zip_code": zip_code, "units_res": units_res},
+        )
+
+    def _insert_history(self, db, bbl, assessed_total, tax_year):
+        db.execute(
+            text("""
+                INSERT INTO assessment_history (bbl, assessed_total, tax_year)
+                VALUES (:bbl, :assessed_total, :tax_year)
+                ON CONFLICT DO NOTHING
+            """),
+            {"bbl": bbl, "assessed_total": assessed_total, "tax_year": tax_year},
+        )
+
+    def test_dormant_when_table_empty(self):
+        """Returns [] when assessment_history has no rows at all."""
+        from scoring.compute import _aggregate_assessment_spike
+        db = SessionLocal()
+        try:
+            self._cleanup(db)
+            result = _aggregate_assessment_spike(db)
+            assert result == [], f"Expected [] for empty table, got {result}"
+        finally:
+            self._cleanup(db)
+            db.close()
+
+    def test_dormant_when_single_year(self):
+        """Returns [] when assessment_history has only one distinct tax_year."""
+        from scoring.compute import _aggregate_assessment_spike
+        db = SessionLocal()
+        try:
+            self._cleanup(db)
+            self._insert_parcel(db, self.BBLS[0], self.ZIP, 10)
+            self._insert_history(db, self.BBLS[0], 100_000, 2026)
+            db.commit()
+
+            result = _aggregate_assessment_spike(db)
+            assert result == [], (
+                f"Expected [] with only 1 tax year, got {result}"
+            )
+        finally:
+            self._cleanup(db)
+            db.close()
+
+    def test_correct_value_two_years(self):
+        """
+        With two known BBLs across two tax years, the returned weighted spike
+        matches the manually computed units_res-weighted average.
+
+        BBL 1: prior=100_000, current=120_000, spike=0.20, units_res=10
+        BBL 2: prior=200_000, current=220_000, spike=0.10, units_res=5
+        Expected weighted spike for ZIP = (0.20*10 + 0.10*5) / (10+5) = 2.5/15 ≈ 0.1667
+        """
+        from scoring.compute import _aggregate_assessment_spike
+        db = SessionLocal()
+        try:
+            self._cleanup(db)
+            self._insert_parcel(db, self.BBLS[0], self.ZIP, 10)
+            self._insert_parcel(db, self.BBLS[1], self.ZIP, 5)
+            self._insert_history(db, self.BBLS[0], 100_000, 2025)
+            self._insert_history(db, self.BBLS[0], 120_000, 2026)
+            self._insert_history(db, self.BBLS[1], 200_000, 2025)
+            self._insert_history(db, self.BBLS[1], 220_000, 2026)
+            db.commit()
+
+            result = _aggregate_assessment_spike(db)
+            assert len(result) == 1, f"Expected 1 ZIP result, got {result}"
+            zip_code, spike = result[0]
+            assert zip_code == self.ZIP
+            expected = (0.20 * 10 + 0.10 * 5) / (10 + 5)  # 2.5/15 ≈ 0.1667
+            assert abs(spike - expected) < 0.001, (
+                f"Expected spike ≈ {expected:.4f}, got {spike:.4f}"
+            )
+        finally:
+            self._cleanup(db)
+            db.close()

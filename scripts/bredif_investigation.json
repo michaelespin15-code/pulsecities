@@ -1,0 +1,4474 @@
+{
+  "generated_at": "2026-04-16",
+  "subject": "BREDIF",
+  "llc_entities": [
+    "BREDIF CO SELLER LLC",
+    "BREDIF JPM SELLER LLC",
+    "BREDIF LPA LLC"
+  ],
+  "llc_breakdown": {
+    "BREDIF CO SELLER LLC": 1,
+    "BREDIF JPM SELLER LLC": 2,
+    "BREDIF LPA LLC": 64
+  },
+  "total_properties": 66,
+  "total_acquisitions": 67,
+  "total_spend": 0,
+  "avg_acquisition_price": 0,
+  "properties_with_price": 0,
+  "first_acquisition": "2025-06-10",
+  "last_acquisition": "2026-01-09",
+  "span_days": 213,
+  "acquisitions_per_month": 9.3,
+  "monthly_pace": {
+    "2025-06": 1,
+    "2025-12": 1,
+    "2026-01": 64
+  },
+  "hpd_violations": {
+    "total": 181,
+    "class_a": 26,
+    "class_b": 92,
+    "class_c": 63,
+    "bbls_with_class_bc": 10,
+    "bc_per_property": 2.35
+  },
+  "eviction_then_buy": {
+    "total_matches": 6,
+    "lookback_days": 365,
+    "matches": [
+      {
+        "bbl": "1000930028",
+        "address": "45 BEEKMAN STREET",
+        "zip_code": "10038",
+        "acquiring_entity": "BREDIF LPA LLC",
+        "eviction_date": "2025-12-02",
+        "acquisition_date": "2026-01-09",
+        "gap_days": 38,
+        "price_paid": null,
+        "docket_number": "124039",
+        "eviction_type": "Residential",
+        "displacement_score": 12.7
+      },
+      {
+        "bbl": "1010720050",
+        "address": "546 WEST 44 STREET",
+        "zip_code": "10036",
+        "acquiring_entity": "BREDIF CO SELLER LLC",
+        "eviction_date": "2025-07-18",
+        "acquisition_date": "2025-12-12",
+        "gap_days": 147,
+        "price_paid": null,
+        "docket_number": "148454",
+        "eviction_type": "Residential",
+        "displacement_score": 21.4
+      },
+      {
+        "bbl": "4108910021",
+        "address": "104-36 196 STREET",
+        "zip_code": "11412",
+        "acquiring_entity": "BREDIF LPA LLC",
+        "eviction_date": "2025-08-04",
+        "acquisition_date": "2026-01-09",
+        "gap_days": 158,
+        "price_paid": null,
+        "docket_number": "031343",
+        "eviction_type": "Residential",
+        "displacement_score": 54.6
+      },
+      {
+        "bbl": "4108910021",
+        "address": "104-36 196 STREET",
+        "zip_code": "11412",
+        "acquiring_entity": "BREDIF LPA LLC",
+        "eviction_date": "2025-06-26",
+        "acquisition_date": "2026-01-09",
+        "gap_days": 197,
+        "price_paid": null,
+        "docket_number": "037332",
+        "eviction_type": "Residential",
+        "displacement_score": 54.6
+      },
+      {
+        "bbl": "1008230079",
+        "address": "688 6TH AVENUE",
+        "zip_code": "10010",
+        "acquiring_entity": "BREDIF LPA LLC",
+        "eviction_date": "2025-03-19",
+        "acquisition_date": "2026-01-09",
+        "gap_days": 296,
+        "price_paid": null,
+        "docket_number": "007704",
+        "eviction_type": "Commercial",
+        "displacement_score": 17.8
+      },
+      {
+        "bbl": "3013130046",
+        "address": "140 EMPIRE BLVD",
+        "zip_code": "11225",
+        "acquiring_entity": "BREDIF LPA LLC",
+        "eviction_date": "2025-02-04",
+        "acquisition_date": "2026-01-09",
+        "gap_days": 339,
+        "price_paid": null,
+        "docket_number": "41395",
+        "eviction_type": "Commercial",
+        "displacement_score": 44.1
+      }
+    ]
+  },
+  "geographic_concentration": [
+    {
+      "zip_code": "11222",
+      "properties": 4,
+      "displacement_score": 50.4,
+      "eviction_rate": 8.4,
+      "llc_acq_rate": 80.0
+    },
+    {
+      "zip_code": "11206",
+      "properties": 3,
+      "displacement_score": 38.6,
+      "eviction_rate": 23.8,
+      "llc_acq_rate": 52.9
+    },
+    {
+      "zip_code": "10011",
+      "properties": 2,
+      "displacement_score": 34.4,
+      "eviction_rate": 4.6,
+      "llc_acq_rate": 25.2
+    },
+    {
+      "zip_code": "10022",
+      "properties": 2,
+      "displacement_score": 15.7,
+      "eviction_rate": 2.0,
+      "llc_acq_rate": 15.3
+    },
+    {
+      "zip_code": "10028",
+      "properties": 2,
+      "displacement_score": 16.0,
+      "eviction_rate": 2.8,
+      "llc_acq_rate": 13.5
+    },
+    {
+      "zip_code": "10461",
+      "properties": 2,
+      "displacement_score": 49.9,
+      "eviction_rate": 45.5,
+      "llc_acq_rate": 73.8
+    },
+    {
+      "zip_code": "11201",
+      "properties": 2,
+      "displacement_score": 30.5,
+      "eviction_rate": 8.7,
+      "llc_acq_rate": 35.6
+    },
+    {
+      "zip_code": "11237",
+      "properties": 2,
+      "displacement_score": 47.8,
+      "eviction_rate": 23.8,
+      "llc_acq_rate": 88.7
+    },
+    {
+      "zip_code": "10036",
+      "properties": 1,
+      "displacement_score": 21.4,
+      "eviction_rate": 34.7,
+      "llc_acq_rate": 22.4
+    },
+    {
+      "zip_code": "10038",
+      "properties": 1,
+      "displacement_score": 12.7,
+      "eviction_rate": 4.6,
+      "llc_acq_rate": 6.2
+    },
+    {
+      "zip_code": "10002",
+      "properties": 1,
+      "displacement_score": 18.3,
+      "eviction_rate": 11.2,
+      "llc_acq_rate": 14.1
+    },
+    {
+      "zip_code": "10010",
+      "properties": 1,
+      "displacement_score": 17.8,
+      "eviction_rate": 3.3,
+      "llc_acq_rate": 12.8
+    },
+    {
+      "zip_code": "10001",
+      "properties": 1,
+      "displacement_score": 17.7,
+      "eviction_rate": 14.1,
+      "llc_acq_rate": 22.7
+    },
+    {
+      "zip_code": "10016",
+      "properties": 1,
+      "displacement_score": 11.1,
+      "eviction_rate": 3.9,
+      "llc_acq_rate": 15.5
+    },
+    {
+      "zip_code": "10454",
+      "properties": 1,
+      "displacement_score": 29.5,
+      "eviction_rate": 55.0,
+      "llc_acq_rate": 13.4
+    },
+    {
+      "zip_code": "10455",
+      "properties": 1,
+      "displacement_score": 45.7,
+      "eviction_rate": 91.5,
+      "llc_acq_rate": 29.6
+    },
+    {
+      "zip_code": "10451",
+      "properties": 1,
+      "displacement_score": 43.2,
+      "eviction_rate": 89.2,
+      "llc_acq_rate": 14.5
+    },
+    {
+      "zip_code": "10457",
+      "properties": 1,
+      "displacement_score": 59.7,
+      "eviction_rate": 100.0,
+      "llc_acq_rate": 44.9
+    },
+    {
+      "zip_code": "10467",
+      "properties": 1,
+      "displacement_score": 45.3,
+      "eviction_rate": 78.8,
+      "llc_acq_rate": 38.2
+    },
+    {
+      "zip_code": "11220",
+      "properties": 1,
+      "displacement_score": 36.6,
+      "eviction_rate": 22.2,
+      "llc_acq_rate": 56.6
+    },
+    {
+      "zip_code": "11217",
+      "properties": 1,
+      "displacement_score": 32.6,
+      "eviction_rate": 10.2,
+      "llc_acq_rate": 61.1
+    },
+    {
+      "zip_code": "11215",
+      "properties": 1,
+      "displacement_score": 44.6,
+      "eviction_rate": 0.3,
+      "llc_acq_rate": 68.5
+    },
+    {
+      "zip_code": "11225",
+      "properties": 1,
+      "displacement_score": 44.1,
+      "eviction_rate": 44.9,
+      "llc_acq_rate": 44.9
+    },
+    {
+      "zip_code": "11216",
+      "properties": 1,
+      "displacement_score": 79.6,
+      "eviction_rate": 44.3,
+      "llc_acq_rate": 100.0
+    },
+    {
+      "zip_code": "11238",
+      "properties": 1,
+      "displacement_score": 46.4,
+      "eviction_rate": 13.1,
+      "llc_acq_rate": 62.0
+    },
+    {
+      "zip_code": "11205",
+      "properties": 1,
+      "displacement_score": 42.3,
+      "eviction_rate": 14.9,
+      "llc_acq_rate": 67.4
+    },
+    {
+      "zip_code": "11211",
+      "properties": 1,
+      "displacement_score": 56.1,
+      "eviction_rate": 9.5,
+      "llc_acq_rate": 72.1
+    },
+    {
+      "zip_code": "11221",
+      "properties": 1,
+      "displacement_score": 70.5,
+      "eviction_rate": 37.2,
+      "llc_acq_rate": 100.0
+    },
+    {
+      "zip_code": "11212",
+      "properties": 1,
+      "displacement_score": 49.0,
+      "eviction_rate": 85.1,
+      "llc_acq_rate": 54.9
+    },
+    {
+      "zip_code": "11368",
+      "properties": 1,
+      "displacement_score": 41.2,
+      "eviction_rate": 75.1,
+      "llc_acq_rate": 49.5
+    },
+    {
+      "zip_code": "11374",
+      "properties": 1,
+      "displacement_score": 18.6,
+      "eviction_rate": 28.4,
+      "llc_acq_rate": 19.7
+    },
+    {
+      "zip_code": "11375",
+      "properties": 1,
+      "displacement_score": 22.3,
+      "eviction_rate": 24.3,
+      "llc_acq_rate": 21.1
+    },
+    {
+      "zip_code": "11385",
+      "properties": 1,
+      "displacement_score": 40.9,
+      "eviction_rate": 35.6,
+      "llc_acq_rate": 77.8
+    },
+    {
+      "zip_code": "11040",
+      "properties": 1,
+      "displacement_score": 42.4,
+      "eviction_rate": 0.0,
+      "llc_acq_rate": 44.5
+    },
+    {
+      "zip_code": "11433",
+      "properties": 1,
+      "displacement_score": 71.4,
+      "eviction_rate": 99.9,
+      "llc_acq_rate": 90.2
+    },
+    {
+      "zip_code": "11412",
+      "properties": 1,
+      "displacement_score": 54.6,
+      "eviction_rate": 73.1,
+      "llc_acq_rate": 100.0
+    },
+    {
+      "zip_code": "11417",
+      "properties": 1,
+      "displacement_score": 33.8,
+      "eviction_rate": 65.5,
+      "llc_acq_rate": 55.7
+    }
+  ],
+  "properties": [
+    {
+      "bbl": "4150000012",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF JPM SELLER LLC",
+      "acquisition_date": "2025-06-10",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2025061801037002",
+        "2025061801037001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "1010720050",
+      "address": "546 WEST 44 STREET",
+      "zip_code": "10036",
+      "acquiring_entity": "BREDIF CO SELLER LLC",
+      "acquisition_date": "2025-12-12",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2025122900336001"
+      ],
+      "displacement_score": 21.4,
+      "hpd_violations": {
+        "total": 2,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 2,
+        "records": [
+          {
+            "violation_id": "16959826",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 1HN, 1st STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-05-03",
+            "nov_issued_date": "2024-05-08",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "16959819",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 5DN, 5th STORY, 6th APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-05-03",
+            "nov_issued_date": "2024-05-08",
+            "current_status": "VIOLATION CLOSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [
+        {
+          "eviction_date": "2025-07-18",
+          "docket_number": "148454",
+          "eviction_type": "Residential",
+          "days_before_acquisition": 147
+        }
+      ],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2018": 279,
+          "2019": 280,
+          "2020": 280,
+          "2021": 280,
+          "2022": 280,
+          "2023": 280,
+          "2026": 280
+        },
+        "data_note": "279 units in 2018 \u2192 280 units in 2023",
+        "earliest_year": 2018,
+        "latest_year": 2023,
+        "earliest_units": 279,
+        "latest_units": 280,
+        "unit_loss": -1,
+        "pct_loss": -0.4,
+        "loss_category": "gained_or_stable",
+        "has_historical_trend": true,
+        "current_unit_count_2026": 280
+      }
+    },
+    {
+      "bbl": "1000071102",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012900212001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "1000930028",
+      "address": "45 BEEKMAN STREET",
+      "zip_code": "10038",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012800876001"
+      ],
+      "displacement_score": 12.7,
+      "hpd_violations": {
+        "total": 4,
+        "class_a": 0,
+        "class_b": 1,
+        "class_c": 3,
+        "records": [
+          {
+            "violation_id": "17047156",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: REFIT\u001a THE FIREDOOR AT PUBLIC HALL, 5th STORY",
+            "inspection_date": "2024-06-10",
+            "nov_issued_date": "2024-06-13",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17047153",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE DOOR FRAME AT FIREDOOR AT PUBLIC HALL, 5th STORY",
+            "inspection_date": "2024-06-10",
+            "nov_issued_date": "2024-06-13",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17047174",
+            "class": "C",
+            "description": "\u00a7 27-2005, 2007 ADM CODE REMOVE DEVICE PREVENTING DOOR FROM BEING SELF-CLOSING MAGNETIC STOPPER INSTALLED AT FIRE DOOR AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2024-06-10",
+            "nov_issued_date": "2024-06-13",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17105861",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT FIRE DOOR AT SOUTH AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2024-07-06",
+            "nov_issued_date": "2024-07-08",
+            "current_status": "VIOLATION CLOSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [
+        {
+          "eviction_date": "2025-12-02",
+          "docket_number": "124039",
+          "eviction_type": "Residential",
+          "days_before_acquisition": 38
+        }
+      ],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 8
+        },
+        "data_note": "DOF 2026 assessment shows 8 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 8,
+        "latest_units": 8,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 8
+      }
+    },
+    {
+      "bbl": "1003500037",
+      "address": "154 STANTON STREET",
+      "zip_code": "10002",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200032001"
+      ],
+      "displacement_score": 18.3,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 1
+        },
+        "data_note": "DOF 2026 assessment shows 1 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 1,
+        "latest_units": 1,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 1
+      }
+    },
+    {
+      "bbl": "1005720062",
+      "address": "37 WEST 8 ST",
+      "zip_code": "10011",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200761001"
+      ],
+      "displacement_score": 34.4,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2018": 8,
+          "2019": 8,
+          "2020": 8,
+          "2021": 8,
+          "2022": 8,
+          "2023": 8,
+          "2026": 15
+        },
+        "data_note": "8 units in 2018 \u2192 8 units in 2023",
+        "earliest_year": 2018,
+        "latest_year": 2023,
+        "earliest_units": 8,
+        "latest_units": 8,
+        "unit_loss": 0,
+        "pct_loss": 0.0,
+        "loss_category": "stable",
+        "has_historical_trend": true,
+        "current_unit_count_2026": 15
+      }
+    },
+    {
+      "bbl": "1006951301",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200758001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "1007991001",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012600138001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "1008180078",
+      "address": "50 WEST 17TH STREET",
+      "zip_code": "10011",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012200794001"
+      ],
+      "displacement_score": 34.4,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "1008230079",
+      "address": "688 6TH AVENUE",
+      "zip_code": "10010",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012100203001"
+      ],
+      "displacement_score": 17.8,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [
+        {
+          "eviction_date": "2025-03-19",
+          "docket_number": "007704",
+          "eviction_type": "Commercial",
+          "days_before_acquisition": 296
+        }
+      ],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "1008300030",
+      "address": "15 WEST 28TH STREET",
+      "zip_code": "10001",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012200819001"
+      ],
+      "displacement_score": 17.7,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "1009070042",
+      "address": "228 EAST 27 STREET",
+      "zip_code": "10016",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012600353001"
+      ],
+      "displacement_score": 11.1,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17946387",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-04",
+            "nov_issued_date": "2025-06-04",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 11
+        },
+        "data_note": "DOF 2026 assessment shows 11 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 11,
+        "latest_units": 11,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 11
+      }
+    },
+    {
+      "bbl": "1013260021",
+      "address": "253 EAST 52ND STREET",
+      "zip_code": "10022",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012000439001"
+      ],
+      "displacement_score": 15.7,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2018": 2,
+          "2019": 2,
+          "2020": 2,
+          "2021": 2,
+          "2022": 2,
+          "2026": 16
+        },
+        "data_note": "2 units in 2018 \u2192 2 units in 2022",
+        "earliest_year": 2018,
+        "latest_year": 2022,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": 0,
+        "pct_loss": 0.0,
+        "loss_category": "stable",
+        "has_historical_trend": true,
+        "current_unit_count_2026": 16
+      }
+    },
+    {
+      "bbl": "1014140012",
+      "address": "223 EAST 59 STREET",
+      "zip_code": "10022",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200373001"
+      ],
+      "displacement_score": 15.7,
+      "hpd_violations": {
+        "total": 3,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 3,
+        "records": [
+          {
+            "violation_id": "16903548",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE & 309 M/D LAW ABATE THE NUISANCE CONSISTING OF HOT WATER EXCEEDING 130 DEGREES AT ALL HOT WATER FIXTURES IN THE ENTIRE APARTMENT LOCATED AT APT 3, 3rd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-04-19",
+            "nov_issued_date": "2024-04-22",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "16903549",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT BULKHEAD DOOR, ROOF",
+            "inspection_date": "2024-04-19",
+            "nov_issued_date": "2024-04-22",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17319382",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE & 309 M/D LAW ABATE THE NUISANCE CONSISTING OF HOT WATER EXCEEDING 130 DEGREES AT ALL HOT WATER FIXTURES THROUGHOUT IN THE ENTIRE APARTMENT LOCATED AT APT 3, 3rd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-10-03",
+            "nov_issued_date": "2024-10-07",
+            "current_status": "VIOLATION CLOSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 4
+        },
+        "data_note": "DOF 2026 assessment shows 4 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 4,
+        "latest_units": 4,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 4
+      }
+    },
+    {
+      "bbl": "1015450022",
+      "address": "351 EAST 82ND STREET",
+      "zip_code": "10028",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012600789001"
+      ],
+      "displacement_score": 16.0,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2018": 8,
+          "2023": 7,
+          "2026": 26
+        },
+        "data_note": "8 units in 2018 \u2192 7 units in 2023",
+        "earliest_year": 2018,
+        "latest_year": 2023,
+        "earliest_units": 8,
+        "latest_units": 7,
+        "unit_loss": 1,
+        "pct_loss": 12.5,
+        "loss_category": "moderate",
+        "has_historical_trend": true,
+        "current_unit_count_2026": 26
+      }
+    },
+    {
+      "bbl": "1015770044",
+      "address": "512 EAST 81ST STREET",
+      "zip_code": "10028",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012700620001"
+      ],
+      "displacement_score": 16.0,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 15
+        },
+        "data_note": "DOF 2026 assessment shows 15 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 15,
+        "latest_units": 15,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 15
+      }
+    },
+    {
+      "bbl": "1021530047",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012100991001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "2022610005",
+      "address": "500 EAST 134 STREET",
+      "zip_code": "10454",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012300114001"
+      ],
+      "displacement_score": 29.5,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17954900",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "2023620041",
+      "address": "2942 THIRD AVENUE",
+      "zip_code": "10455",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012600302001"
+      ],
+      "displacement_score": 45.7,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "2024060003",
+      "address": "828 COURTLANDT AVENUE",
+      "zip_code": "10451",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012300913001"
+      ],
+      "displacement_score": 43.2,
+      "hpd_violations": {
+        "total": 4,
+        "class_a": 1,
+        "class_b": 1,
+        "class_c": 2,
+        "records": [
+          {
+            "violation_id": "16999369",
+            "class": "B",
+            "description": "\u00a7 27-2026, 2027 HMC: PROPERLY REPAIR THE SOURCE AND ABATE THE EVIDENCE OF A WATER LEAK ...AT CEILING IN THE BATHROOM LOCATED AT APT B2, 2nd STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-05-26",
+            "nov_issued_date": "2024-05-28",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "16999370",
+            "class": "A",
+            "description": "\u00a7 27-2013 ADM CODE PAINT WITH LIGHT COLORED PAINT TO THE SATISFACTION OF THIS DEPARTMENT ...AT WEST WALL IN THE BATHROOM LOCATED AT APT B2, 2nd STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-05-26",
+            "nov_issued_date": "2024-05-28",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17734230",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE & 309 M/D LAW ABATE THE NUISANCE CONSISTING OF HOT WATER EXCEEDING 130 DEGREES IN THE KITCHENETTE LOCATED AT APT B2, 2nd STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2025-03-04",
+            "nov_issued_date": "2025-03-05",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17734231",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE & 309 M/D LAW ABATE THE NUISANCE CONSISTING OF HOT WATER EXCEEDING 130 DEGREES IN THE KITCHENETTE LOCATED AT APT D2, 4th STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2025-03-04",
+            "nov_issued_date": "2025-03-05",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 16
+        },
+        "data_note": "DOF 2026 assessment shows 16 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 16,
+        "latest_units": 16,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 16
+      }
+    },
+    {
+      "bbl": "2030930032",
+      "address": "743 EAST 178TH STREET",
+      "zip_code": "10457",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012300799001"
+      ],
+      "displacement_score": 59.7,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 36
+        },
+        "data_note": "DOF 2026 assessment shows 36 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 36,
+        "latest_units": 36,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 36
+      }
+    },
+    {
+      "bbl": "2041560011",
+      "address": "2826 WESTCHESTER AVENUE",
+      "zip_code": "10461",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200022001"
+      ],
+      "displacement_score": 49.9,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "2041700020",
+      "address": "1752 CROSBY AVENUE",
+      "zip_code": "10461",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012900228001"
+      ],
+      "displacement_score": 49.9,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "2044260032",
+      "address": "682 MACE AVE",
+      "zip_code": "10467",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012900140001"
+      ],
+      "displacement_score": 45.3,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "3000511068",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012800867001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "3001540017",
+      "address": "372 FULTON STREET",
+      "zip_code": "11201",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012600264001"
+      ],
+      "displacement_score": 30.5,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 4
+        },
+        "data_note": "DOF 2026 assessment shows 4 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 4,
+        "latest_units": 4,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 4
+      }
+    },
+    {
+      "bbl": "3002490032",
+      "address": "142 MONTAGUE STREET",
+      "zip_code": "11201",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200031001"
+      ],
+      "displacement_score": 30.5,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 6
+        },
+        "data_note": "DOF 2026 assessment shows 6 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 6,
+        "latest_units": 6,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 6
+      }
+    },
+    {
+      "bbl": "3008160001",
+      "address": "5323 FIFTH AVENUE",
+      "zip_code": "11220",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012100762001"
+      ],
+      "displacement_score": 36.6,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "3009470001",
+      "address": "1 LINCOLN PLACE",
+      "zip_code": "11217",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012100790001"
+      ],
+      "displacement_score": 32.6,
+      "hpd_violations": {
+        "total": 3,
+        "class_a": 1,
+        "class_b": 2,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17076403",
+            "class": "B",
+            "description": "\u00a7 27-2010, 2011, 2012 ADM CODE REMOVE THE ACCUMULATION OF REFUSE AND/OR RUBBISH AND MAINTAIN IN A CLEAN CONDITION THE SOUTH YARD",
+            "inspection_date": "2024-06-26",
+            "nov_issued_date": "2024-06-28",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17076404",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE FIRE ESCAPE DEFECTIVE. ADJUST THE DROPLADDER SO THAT IT WILL SLIDE EASILY IN THE GUIDE RODS AT BUILDING FRONT. AT FIRE ESCAPE",
+            "inspection_date": "2024-06-26",
+            "nov_issued_date": "2024-06-28",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "18017589",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-12",
+            "nov_issued_date": "2025-06-12",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 9
+        },
+        "data_note": "DOF 2026 assessment shows 9 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 9,
+        "latest_units": 9,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 9
+      }
+    },
+    {
+      "bbl": "3010140062",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200025001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "3010320025",
+      "address": "126 13TH STREET",
+      "zip_code": "11215",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012600787001"
+      ],
+      "displacement_score": 44.6,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "3011490006",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020300796001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 16
+        },
+        "data_note": "DOF 2026 assessment shows 16 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 16,
+        "latest_units": 16,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 16
+      }
+    },
+    {
+      "bbl": "3013130046",
+      "address": "140 EMPIRE BLVD",
+      "zip_code": "11225",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200027001"
+      ],
+      "displacement_score": 44.1,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [
+        {
+          "eviction_date": "2025-02-04",
+          "docket_number": "41395",
+          "eviction_type": "Commercial",
+          "days_before_acquisition": 339
+        }
+      ],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "3014870024",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200074001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 6
+        },
+        "data_note": "DOF 2026 assessment shows 6 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 6,
+        "latest_units": 6,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 6
+      }
+    },
+    {
+      "bbl": "3017600043",
+      "address": "268A THROOP AVENUE",
+      "zip_code": "11206",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012700763001"
+      ],
+      "displacement_score": 38.6,
+      "hpd_violations": {
+        "total": 3,
+        "class_a": 1,
+        "class_b": 1,
+        "class_c": 1,
+        "records": [
+          {
+            "violation_id": "16907545",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2024-04-17",
+            "nov_issued_date": "2024-04-17",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17214067",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE LATCH AT BUILDING FRONT ENTRANCE DOOR , 1st STORY",
+            "inspection_date": "2024-08-22",
+            "nov_issued_date": "2024-08-27",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17214066",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE LATCH AT BUILDING FRONT ENTRANCE DOOR , 1st STORY",
+            "inspection_date": "2024-08-22",
+            "nov_issued_date": "2024-08-27",
+            "current_status": "VIOLATION CLOSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "3017920065",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200033001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 7
+        },
+        "data_note": "DOF 2026 assessment shows 7 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 7,
+        "latest_units": 7,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 7
+      }
+    },
+    {
+      "bbl": "3019860024",
+      "address": "298 GATES AVE",
+      "zip_code": "11216",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200206001"
+      ],
+      "displacement_score": 79.6,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 4
+        },
+        "data_note": "DOF 2026 assessment shows 4 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 4,
+        "latest_units": 4,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 4
+      }
+    },
+    {
+      "bbl": "3020150020",
+      "address": "1002 FULTON ST",
+      "zip_code": "11238",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200021001"
+      ],
+      "displacement_score": 46.4,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 4
+        },
+        "data_note": "DOF 2026 assessment shows 4 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 4,
+        "latest_units": 4,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 4
+      }
+    },
+    {
+      "bbl": "3020190075",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200023001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "3020740024",
+      "address": "368 MYRTLE AVE",
+      "zip_code": "11205",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012600430001"
+      ],
+      "displacement_score": 42.3,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 4
+        },
+        "data_note": "DOF 2026 assessment shows 4 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 4,
+        "latest_units": 4,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 4
+      }
+    },
+    {
+      "bbl": "3022640074",
+      "address": "285 LEE AVENUE",
+      "zip_code": "11206",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012900113001"
+      ],
+      "displacement_score": 38.6,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 12
+        },
+        "data_note": "DOF 2026 assessment shows 12 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 12,
+        "latest_units": 12,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 12
+      }
+    },
+    {
+      "bbl": "3025130001",
+      "address": "1020 MANHATTAN AVENUE",
+      "zip_code": "11222",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012900089001"
+      ],
+      "displacement_score": 50.4,
+      "hpd_violations": {
+        "total": 4,
+        "class_a": 1,
+        "class_b": 2,
+        "class_c": 1,
+        "records": [
+          {
+            "violation_id": "17545631",
+            "class": "C",
+            "description": "\u00a7 27-2005, 2007 ADM CODE REMOVE THE ILLEGAL FASTENING DOUBLE CYLINDER LOCK AT VESTIBULE DOOR AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2024-12-11",
+            "nov_issued_date": "2024-12-12",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17545632",
+            "class": "B",
+            "description": "\u00a7 27-2005, 2007 ADM CODE REMOVE ALL ENCUMBRANCES CONSISTING OF HOUSEHOLD ITEMS AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2024-12-11",
+            "nov_issued_date": "2024-12-12",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "18011550",
+            "class": "A",
+            "description": "\u00a7 27-2010, 2011, 2012 ADM CODE REMOVE THE ACCUMULATION OF REFUSE AND/OR RUBBISH AND MAINTAIN IN A CLEAN CONDITION THE YARD AT BUILDING FRONT",
+            "inspection_date": "2025-06-14",
+            "nov_issued_date": "2025-06-16",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "18011551",
+            "class": "B",
+            "description": "\u00a7 27-2021 ADM CODE PROVIDE SUFFICIENT, PROPER AND SEPARATE METAL RECEPTACLES FOR THE DEPOSIT OF GARBAGE, RUBBISH AND OTHER WASTE MATERIAL AND ARRANGE FOR COLLECTION AND DISPOSAL OF SUCH MATERIAL.",
+            "inspection_date": "2025-06-14",
+            "nov_issued_date": "2025-06-16",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2018": 5,
+          "2019": 11,
+          "2021": 6,
+          "2023": 11,
+          "2026": 7
+        },
+        "data_note": "5 units in 2018 \u2192 11 units in 2023",
+        "earliest_year": 2018,
+        "latest_year": 2023,
+        "earliest_units": 5,
+        "latest_units": 11,
+        "unit_loss": -6,
+        "pct_loss": -120.0,
+        "loss_category": "gained_or_stable",
+        "has_historical_trend": true,
+        "current_unit_count_2026": 7
+      }
+    },
+    {
+      "bbl": "3025620010",
+      "address": "58 GREENPOINT AVENUE",
+      "zip_code": "11222",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200028001"
+      ],
+      "displacement_score": 50.4,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2021": 5,
+          "2023": 5,
+          "2026": 14
+        },
+        "data_note": "5 units in 2021 \u2192 5 units in 2023",
+        "earliest_year": 2021,
+        "latest_year": 2023,
+        "earliest_units": 5,
+        "latest_units": 5,
+        "unit_loss": 0,
+        "pct_loss": 0.0,
+        "loss_category": "stable",
+        "has_historical_trend": true,
+        "current_unit_count_2026": 14
+      }
+    },
+    {
+      "bbl": "3026830019",
+      "address": "33 NEWEL STREET",
+      "zip_code": "11222",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200075001"
+      ],
+      "displacement_score": 50.4,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "3026830035",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012300931001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 5
+        },
+        "data_note": "DOF 2026 assessment shows 5 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 5,
+        "latest_units": 5,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 5
+      }
+    },
+    {
+      "bbl": "3026910046",
+      "address": "735 MEEKER AVENUE",
+      "zip_code": "11222",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026021900313001"
+      ],
+      "displacement_score": 50.4,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "3028340001",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012800848001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "3029210012",
+      "address": "312 DEVOE STREET",
+      "zip_code": "11211",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012900079001"
+      ],
+      "displacement_score": 56.1,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 22
+        },
+        "data_note": "DOF 2026 assessment shows 22 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 22,
+        "latest_units": 22,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 22
+      }
+    },
+    {
+      "bbl": "3031580046",
+      "address": "323 MELROSE STREET",
+      "zip_code": "11237",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012600816001"
+      ],
+      "displacement_score": 47.8,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 6
+        },
+        "data_note": "DOF 2026 assessment shows 6 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 6,
+        "latest_units": 6,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 6
+      }
+    },
+    {
+      "bbl": "3031710068",
+      "address": "33 TROUTMAN STREET",
+      "zip_code": "11206",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012100470001"
+      ],
+      "displacement_score": 38.6,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2019": 3,
+          "2020": 3,
+          "2021": 3,
+          "2022": 3,
+          "2023": 3,
+          "2026": 9
+        },
+        "data_note": "3 units in 2019 \u2192 3 units in 2023",
+        "earliest_year": 2019,
+        "latest_year": 2023,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": 0,
+        "pct_loss": 0.0,
+        "loss_category": "stable",
+        "has_historical_trend": true,
+        "current_unit_count_2026": 9
+      }
+    },
+    {
+      "bbl": "3031750052",
+      "address": "285 TROUTMAN STREET",
+      "zip_code": "11237",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200029001"
+      ],
+      "displacement_score": 47.8,
+      "hpd_violations": {
+        "total": 5,
+        "class_a": 2,
+        "class_b": 3,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17891240",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE ELECTRICAL LIGHT FIXTURE AT CEILING AND ALL OUTLETS IN THE 1st ROOM FROM EAST AT NORTH LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2025-05-13",
+            "nov_issued_date": "2025-05-14",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17891242",
+            "class": "B",
+            "description": "566 (B) 27-2021.4 HMC: ABATE THE NUISANCE CONSISTING OF PESTS. EVIDENCE OF FLIES AT CELLAR",
+            "inspection_date": "2025-05-13",
+            "nov_issued_date": "2025-05-14",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17891244",
+            "class": "A",
+            "description": "\u00a7 27-2005 HMC: POST, IN A FORM APPROVED BY THE COMMISSIONER, AND MAINTAIN A NOTICE IN A COMMON AREA OF THE BUILDING REGARDING THE PROCEDURES THAT SHOULD BE FOLLOWED WHEN A GAS LEAK IS SUSPECTED AT PUBLIC HALL",
+            "inspection_date": "2025-05-13",
+            "nov_issued_date": "2025-05-14",
+            "current_status": "NOT COMPLIED WITH"
+          },
+          {
+            "violation_id": "17891243",
+            "class": "A",
+            "description": "\u00a7 26-1103 ADMIN. CODE: POST AND MAINTAIN A PROPER NOTICE ON WALL OF THE ENTRANCE STORY IN ENGLISH AND SPANISH ON THE AVAILABILITY OF THE AGENCY\u001aS HOUSING INFORMATION GUIDE. A SAMPLE NOTICE CAN BE FOUND AT WWW.NYC.GOV/HPD. AT PUBLIC HALL",
+            "inspection_date": "2025-05-13",
+            "nov_issued_date": "2025-05-14",
+            "current_status": "NOT COMPLIED WITH"
+          },
+          {
+            "violation_id": "17891241",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE ELECTRICAL OUTLET AT EAST AND NORTH WALLS IN THE KITCHEN LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2025-05-13",
+            "nov_issued_date": "2025-05-14",
+            "current_status": "VIOLATION CLOSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 5
+        },
+        "data_note": "DOF 2026 assessment shows 5 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 5,
+        "latest_units": 5,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 5
+      }
+    },
+    {
+      "bbl": "3032580040",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200139001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 6
+        },
+        "data_note": "DOF 2026 assessment shows 6 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 6,
+        "latest_units": 6,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 6
+      }
+    },
+    {
+      "bbl": "3033490033",
+      "address": "524 EVERGREEN AVENUE",
+      "zip_code": "11221",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200051001"
+      ],
+      "displacement_score": 70.5,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "3046330045",
+      "address": "241 ROCKAWAY PARKWAY",
+      "zip_code": "11212",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012100081001"
+      ],
+      "displacement_score": 49.0,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "3052900001",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020300809001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 5
+        },
+        "data_note": "DOF 2026 assessment shows 5 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 5,
+        "latest_units": 5,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 5
+      }
+    },
+    {
+      "bbl": "3056670010",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020300842001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 4
+        },
+        "data_note": "DOF 2026 assessment shows 4 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 4,
+        "latest_units": 4,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 4
+      }
+    },
+    {
+      "bbl": "3075580029",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020200111001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "4019960011",
+      "address": "108-18 ROOSEVELT AVENUE",
+      "zip_code": "11368",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012100628001"
+      ],
+      "displacement_score": 41.2,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 2
+        },
+        "data_note": "DOF 2026 assessment shows 2 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 2,
+        "latest_units": 2,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 2
+      }
+    },
+    {
+      "bbl": "4029740137",
+      "address": "62-16 WOODHAVEN BLVD",
+      "zip_code": "11374",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012100399001"
+      ],
+      "displacement_score": 18.6,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "4032340173",
+      "address": "70-20 AUSTIN STREET",
+      "zip_code": "11375",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012700607001"
+      ],
+      "displacement_score": 22.3,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "4033880059",
+      "address": "1917 GREENE AVENUE",
+      "zip_code": "11385",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012900062001"
+      ],
+      "displacement_score": 40.9,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 1,
+        "records": [
+          {
+            "violation_id": "18053047",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT BUILDING ENTRANCE DOOR AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2025-06-21",
+            "nov_issued_date": "2025-06-27",
+            "current_status": "VIOLATION CLOSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 4
+        },
+        "data_note": "DOF 2026 assessment shows 4 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 4,
+        "latest_units": 4,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 4
+      }
+    },
+    {
+      "bbl": "4036210021",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026021900327001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "4085550075",
+      "address": "271-09 UNION TURNPIKE",
+      "zip_code": "11040",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020300670001"
+      ],
+      "displacement_score": 42.4,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    },
+    {
+      "bbl": "4102190209",
+      "address": "170-24 PARK CIRCLE",
+      "zip_code": "11433",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026020300755001"
+      ],
+      "displacement_score": 71.4,
+      "hpd_violations": {
+        "total": 2,
+        "class_a": 2,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "16911886",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2024-04-17",
+            "nov_issued_date": "2024-04-17",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "18034333",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-13",
+            "nov_issued_date": "2025-06-13",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2026": 3
+        },
+        "data_note": "DOF 2026 assessment shows 3 stabilized units; no 2018-2023 rentstab record",
+        "earliest_year": 2026,
+        "latest_year": 2026,
+        "earliest_units": 3,
+        "latest_units": 3,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "current_only_no_historical",
+        "has_historical_trend": false,
+        "current_unit_count_2026": 3
+      }
+    },
+    {
+      "bbl": "4108910021",
+      "address": "104-36 196 STREET",
+      "zip_code": "11412",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012001020001"
+      ],
+      "displacement_score": 54.6,
+      "hpd_violations": {
+        "total": 148,
+        "class_a": 16,
+        "class_b": 82,
+        "class_c": 50,
+        "records": [
+          {
+            "violation_id": "16974405",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE DOOR LOCK IN THE ENTRANCE LOCATED AT APT 3D, 3rd STORY, 1st APARTMENT FROM NORTH AT EAST , SECTION ''104-25''",
+            "inspection_date": "2024-05-15",
+            "nov_issued_date": "2024-05-16",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "16974404",
+            "class": "C",
+            "description": "\u00a7 27-2031 ADM CODE PROVIDE HOT WATER AT ALL HOT WATER FIXTURES IN THE ENTIRE APARTMENT LOCATED AT APT 3D, 3rd STORY, 1st APARTMENT FROM NORTH AT EAST , SECTION ''104-25''",
+            "inspection_date": "2024-05-15",
+            "nov_issued_date": "2024-05-16",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "16974406",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES VESTIBULE DOOR LEADING TO AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2024-05-15",
+            "nov_issued_date": "2024-05-16",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17009837",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE LATCH SET AT BUILDING SIDE ENTRANCE DOOR (HOLLIS AVE) LEADING TO LAUNDRY ROOM",
+            "inspection_date": "2024-05-24",
+            "nov_issued_date": "2024-05-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17009852",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE FIRE ESCAPE DEFECTIVE. ADJUST THE DROPLADDER SO THAT IT WILL SLIDE EASILY IN THE GUIDE RODS , OFF HOOK AND FALL ON GROUND AT FIRST STACK FROM NORTH AT EAST AT FIRE ESCAPE",
+            "inspection_date": "2024-05-24",
+            "nov_issued_date": "2024-05-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17009797",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 6E, 6th STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-05-24",
+            "nov_issued_date": "2024-05-30",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17009814",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE DEFECTIVE LATCH CAUSE COMPACTOR CLOSET DOOR NOT TO SELF CLOSE AT PUBLIC HALL 1ST STORY SECTION AT EAST 104-36 AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2024-05-24",
+            "nov_issued_date": "2024-05-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17009829",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT LAUNDRY ROOM DOOR AT LAUNDRY ROOM",
+            "inspection_date": "2024-05-24",
+            "nov_issued_date": "2024-05-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17009794",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE ROOF SO THAT IT WILL NOT LEAK CEILING AND SOUTH WALL IN THE 1st ROOM FROM NORTH LOCATED AT APT 6E, 6th STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-05-24",
+            "nov_issued_date": "2024-05-30",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17009795",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR CEILING AND SOUTH WALL IN THE 1st ROOM FROM NORTH LOCATED AT APT 6E, 6th STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-05-24",
+            "nov_issued_date": "2024-05-30",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17009796",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR CEILING AND ALL WALLS IN THE 3rd ROOM FROM NORTH AT WEST LOCATED AT APT 6E, 6th STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-05-24",
+            "nov_issued_date": "2024-05-30",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17009798",
+            "class": "B",
+            "description": "\u00a7 27-2045 ADM CODE REPAIR OR REPLACE THE SMOKE DETECTOR MISSING IN THE ENTIRE APARTMENT LOCATED AT APT 6E, 6th STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-05-24",
+            "nov_issued_date": "2024-05-30",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17009799",
+            "class": "B",
+            "description": "\u00a7 27-2046.1 HMC: REPAIR OR REPLACE THE CARBON MONOXIDE DETECTING DEVICE(S). IN THE ENTIRE APARTMENT LOCATED AT APT 6E, 6th STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-05-24",
+            "nov_issued_date": "2024-05-30",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17009836",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE LATCH AND HINGES AT BUILDING SIDE ENTRANCE DOOR (HOLLIS AVE) LEADING TO LAUNDRY ROOM",
+            "inspection_date": "2024-05-24",
+            "nov_issued_date": "2024-05-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17009810",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE LATCH AT COMPACTOR CLOSET DOOR AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2024-05-24",
+            "nov_issued_date": "2024-05-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17086799",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE 2ND CLOSET DOOR AT WEST IN THE FOYER LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17086789",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE ROOF SO THAT IT WILL NOT LEAK OVER THE CEILING IN THE 2nd ROOM FROM EAST LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17086796",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE CERAMIC FLOOR TILE APPROX 6 SQ FEET IN THE KITCHEN LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17086794",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE IN THE ENTIRE APARTMENT LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17086788",
+            "class": "B",
+            "description": "\u00a7 27-2026, 2027 HMC: PROPERLY REPAIR THE SOURCE AND ABATE THE EVIDENCE OF A WATER LEAK AT THE WEST AND SOUTH WALL IN THE 3rd ROOM FROM EAST AT SOUTH LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17086792",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE ROOF SO THAT IT WILL NOT LEAK OVER THE CEILING IN THE BATHROOM LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17086797",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE BASE CABINET DOOR AT THE WEST WALL IN THE KITCHEN LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17086800",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE DOOR AT NORTH IN THE 3rd ROOM FROM EAST AT SOUTH LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17086798",
+            "class": "B",
+            "description": "\u00a7 27-2037, 2038 HMC: PROVIDE A SAFE AND ADEQUATE SUPPLY OF ELECTRIC SERVICE TO THE FIXTURES LIGHT AT THE CEILING IN THE FOYER LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17086791",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR AT THE CEILING IN THE FOYER LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17086787",
+            "class": "B",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... GREATER THAN 20 SQ FEET AT THE WEST AND SOUTH WALL IN THE 3rd ROOM FROM EAST AT SOUTH LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17086790",
+            "class": "B",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... GREATER THAN 10 SQ FEET SOUTH WALL IN THE 2nd ROOM FROM EAST LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17086793",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17086795",
+            "class": "B",
+            "description": "\u00a7 27-2005, 2006, 2037 HMC: PROPERLY REPAIR AND ABATE UNSAFE ELECTRIC WIRING CONDITION CONSISTING OF EXPOSTED WIRES AT THE EAST WALL IN THE KITCHEN LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17086801",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE DOOR AT EAST IN THE BATHROOM LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17096288",
+            "class": "A",
+            "description": "\u00a7 27-2013 ADM CODE PAINT WITH LIGHT COLORED PAINT TO THE SATISFACTION OF THIS DEPARTMENT ALL PEELING PAINT SURFACES IN THE BATHROOM , THE PRIVATE HALLWAY , THE 3rd ROOM FROM EAST AT SOUTH, THE 2nd ROOM FROM EAST, THE FOYER , THE KITCHEN LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-07-01",
+            "nov_issued_date": "2024-07-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17134567",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE SELF CLOSING HINGES IN THE ENTRANCE LOCATED AT APT 6F, 6th STORY, 3rd APARTMENT FROM WEST AT NORTH , SECTION ''104-36''",
+            "inspection_date": "2024-07-19",
+            "nov_issued_date": "2024-07-22",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17134569",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE & 309 M/D LAW ABATE THE NUISANCE CONSISTING OF REFRIGERATOR WITH DOOR INTACT AT REAR YARD",
+            "inspection_date": "2024-07-19",
+            "nov_issued_date": "2024-07-22",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17134564",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE SELF CLOSING HINGES IN THE ENTRANCE LOCATED AT APT 5G, 5th STORY",
+            "inspection_date": "2024-07-19",
+            "nov_issued_date": "2024-07-22",
+            "current_status": "NOT COMPLIED WITH"
+          },
+          {
+            "violation_id": "17134555",
+            "class": "C",
+            "description": "\u00a7 27-2031 ADM CODE PROVIDE HOT WATER AT ALL HOT WATER FIXTURES IN THE ENTIRE APARTMENT LOCATED AT APT 3D, 3rd STORY, 1st APARTMENT FROM SOUTH AT WEST , SECTION ''104-25''",
+            "inspection_date": "2024-07-19",
+            "nov_issued_date": "2024-07-22",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17135317",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR EAST WALL EAST WALL IN THE KITCHEN LOCATED AT APT 4E, 4th STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-22",
+            "nov_issued_date": "2024-07-23",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17141437",
+            "class": "A",
+            "description": "\u00a7 27-2013 ADM CODE PAINT WITH LIGHT COLORED PAINT TO THE SATISFACTION OF THIS DEPARTMENT ALL PEELING PAINT SURFACES IN THE KITCHEN , THE BATHROOM , THE BATHROOM LOCATED AT APT 4E, 4th STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-22",
+            "nov_issued_date": "2024-07-23",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17135316",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR AT THE CEILING IN THE BATHROOM LOCATED AT APT 4E, 4th STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-22",
+            "nov_issued_date": "2024-07-23",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17135319",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE DOOR HINGES IN THE ENTRANCE LOCATED AT APT 4E, 4th STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-22",
+            "nov_issued_date": "2024-07-23",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17135315",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR AT THE SOUTH WALL IN THE BATHROOM LOCATED AT APT 4E, 4th STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-22",
+            "nov_issued_date": "2024-07-23",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17135318",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 4E, 4th STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-22",
+            "nov_issued_date": "2024-07-23",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17157235",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR CEILING AND SOUTH WALL IN THE KITCHEN LOCATED AT APT 4A, 4th STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17157138",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES.. IN THE ENTIRE APARTMENT LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17157172",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE WOOD ENTRANCE DOOR IN THE 1st ROOM FROM NORTH AT EAST LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17157141",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "NOT COMPLIED WITH"
+          },
+          {
+            "violation_id": "17157231",
+            "class": "B",
+            "description": "\u00a7 27-2026, 2027 HMC: PROPERLY REPAIR THE SOURCE AND ABATE THE EVIDENCE OF A WATER LEAK CEILING AND SOUTH WALL IN THE KITCHEN LOCATED AT APT 4A, 4th STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17157239",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR CEILING IN THE BATHROOM LOCATED AT APT 4A, 4th STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17157171",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE WOOD DOOR EAST BASE CABINET IN THE KITCHEN LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17157170",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE CERAMIC FLOOR TILES IN THE KITCHEN LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17157167",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY SECURE THE LOOSE 2ND ELECTRIC RECEPTICLE FROM SOUTH ON WEST WALL IN THE KITCHEN LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17157163",
+            "class": "B",
+            "description": "\u00a7 27-2005, 2006, 2037 HMC: PROPERLY REPAIR AND ABATE UNSAFE ELECTRIC WIRING CONDITION CONSISTING OF EXSPOSED WIRES WEST WALL IN THE KITCHEN LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17157253",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE LATCH COMPACTOR CLOSET DOOR AT PUBLIC HALL, 5th STORY",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17157237",
+            "class": "B",
+            "description": "\u00a7 27-2026, 2027 HMC: PROPERLY REPAIR THE SOURCE AND ABATE THE EVIDENCE OF A WATER LEAK CEILING IN THE BATHROOM LOCATED AT APT 4A, 4th STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17157256",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE LATCH COMPACTOR CLOSET DOOR AT PUBLIC HALL, 5th STORY",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17157249",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE LATCH COMPACTOR CLOSET DOOR AT PUBLIC HALL, 3rd STORY",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17157246",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES AT PUBLIC HALL, 3rd STORY",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17157241",
+            "class": "A",
+            "description": "\u00a7 27-2046.1 HMC: POST A PROPER NOTICE OF CARBON MONOXIDE DETECTING DEVICE REQUIREMENTS, IN A FORM APPROVED BY THE COMMISSIONER, IN A COMMON AREA OF A CLASS A MULTIPLE DWELLING NEAR INSPECTION CERTIFICATE OR PROVIDE NOTICE TO TENANTS IN A PRIVATE DWELLING.",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17157242",
+            "class": "B",
+            "description": "\u00a7 27-2045 ADM CODE REPAIR OR REPLACE THE SMOKE DETECTOR DEFECTIVE IN THE ENTIRE APARTMENT LOCATED AT APT 4A, 4th STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17157248",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE LATCH COMPACTOR CLOSET DOOR AT PUBLIC HALL, 3rd STORY",
+            "inspection_date": "2024-07-26",
+            "nov_issued_date": "2024-07-30",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17165303",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR AT NORTH WALL IN THE 2nd ROOM FROM EAST LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-31",
+            "nov_issued_date": "2024-08-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17165694",
+            "class": "C",
+            "description": "\u00a7 27-2043.1 HMC INSTALL THE MISSING OR REPAIR/REPLACE THE DEFECTIVE WINDOW GUARD(S) IN ACCORDANCE WITH THE SPECIFICATIONS OF THE NEW YORK CITY HEALTH CODE SECTION 24 RCNY CHAPTER 12. WG TO INSTALL = 0; WG TO REPLACE = 0; WG TO REPAIR = 1; IN THE ENTIRE APARTMENT LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-31",
+            "nov_issued_date": "2024-08-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17165687",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES IN THE ENTRANCE LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-31",
+            "nov_issued_date": "2024-08-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17165692",
+            "class": "B",
+            "description": "\u00a7 27-2005, 2006, 2037 HMC: PROPERLY REPAIR AND ABATE UNSAFE ELECTRIC WIRING CONDITION CONSISTING OF EXPLOSED ELECTRICAL WIRES AT WEST WALL IN THE KITCHEN LOCATED AT APT 6F, 6th STORY, 2nd APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2024-07-31",
+            "nov_issued_date": "2024-08-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17280630",
+            "class": "C",
+            "description": "\u00a7 27-2026, 2027 HMC: PROPERLY REPAIR THE SOURCE AND ABATE THE EVIDENCE OF A WATER LEAK CEILING IN THE BATHROOM LOCATED AT APT 4A, 4th STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-09-18",
+            "nov_issued_date": "2024-09-20",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17634878",
+            "class": "B",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... UNDER 10 SQ FT OF MOLD, CEILING AND WEST WALL IN THE KITCHEN LOCATED AT APT 4A, 4th STORY, 1st APARTMENT FROM SOUTH AT WEST ORIGINAL VIOLATION 17280628 ISSUED 18-SEP-24 HAS BEEN UPGRADED TO CLASS B PER ADMINISTRATIVE CODE \u00a727-2017.3a(3)(a) or (b).",
+            "inspection_date": "2024-09-18",
+            "nov_issued_date": "2025-01-21",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17280632",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE FIRE ESCAPE DEFECTIVE. ADJUST THE DROPLADDER SO THAT IT WILL SLIDE EASILY IN THE GUIDE RODS BUILDING EAST AT FIRE ESCAPE",
+            "inspection_date": "2024-09-18",
+            "nov_issued_date": "2024-09-20",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17280629",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR CEILING AND WEST WALL IN THE KITCHEN LOCATED AT APT 4A, 4th STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-09-18",
+            "nov_issued_date": "2024-09-20",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17280628",
+            "class": "A",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... UNDER 10 SQ FT OF MOLD, CEILING AND WEST WALL IN THE KITCHEN LOCATED AT APT 4A, 4th STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-09-18",
+            "nov_issued_date": "2024-09-20",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17280631",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY SECURE THE LOOSE HANDLE, VESTIBULE DOOR AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2024-09-18",
+            "nov_issued_date": "2024-09-20",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17280627",
+            "class": "B",
+            "description": "\u00a7 27-2026, 2027 HMC: PROPERLY REPAIR THE SOURCE AND ABATE THE EVIDENCE OF A WATER LEAK CEILING AND WEST WALL IN THE KITCHEN LOCATED AT APT 4A, 4th STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-09-18",
+            "nov_issued_date": "2024-09-20",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17289507",
+            "class": "A",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LESS THEN 10 SQ FEET EAST WALL AND AROUND WINDOW FRAME IN THE 1st ROOM FROM EAST LOCATED AT APT 6B, 6th STORY, 1st APARTMENT FROM NORTH AT EAST , SECTION ''10425-195s''",
+            "inspection_date": "2024-09-20",
+            "nov_issued_date": "2024-09-23",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17289511",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR EAST WALL IN THE 2nd ROOM FROM EAST LOCATED AT APT 6B, 6th STORY, 1st APARTMENT FROM NORTH AT EAST , SECTION ''10425-195s''",
+            "inspection_date": "2024-09-20",
+            "nov_issued_date": "2024-09-23",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17289508",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR CEILING AND EAST WALL IN THE 1st ROOM FROM EAST LOCATED AT APT 6B, 6th STORY, 1st APARTMENT FROM NORTH AT EAST , SECTION ''10425-195s''",
+            "inspection_date": "2024-09-20",
+            "nov_issued_date": "2024-09-23",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17289510",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 6B, 6th STORY, 1st APARTMENT FROM NORTH AT EAST , SECTION ''10425-195s''",
+            "inspection_date": "2024-09-20",
+            "nov_issued_date": "2024-09-23",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17289509",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE VINYL TILES FLOOR IN THE KITCHEN LOCATED AT APT 6B, 6th STORY, 1st APARTMENT FROM NORTH AT EAST , SECTION ''10425-195s''",
+            "inspection_date": "2024-09-20",
+            "nov_issued_date": "2024-09-23",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17299485",
+            "class": "B",
+            "description": "\u00a7 27-2005, 2007 ADM CODE AND DEPT. RULES AND REGULATIONS. REMOVE THE ENCUMBRANCE OBSTRUCTING EGRESS FROM FIRE ESCAPES FLOWERS POTS AT 3RD STORY BALCONY AT BUILDING FRONT AT FIRE ESCAPE",
+            "inspection_date": "2024-09-25",
+            "nov_issued_date": "2024-09-27",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17356224",
+            "class": "C",
+            "description": "\u00a7 27-2043.1 HMC INSTALL THE MISSING OR REPAIR/REPLACE THE DEFECTIVE WINDOW GUARD(S) IN ACCORDANCE WITH THE SPECIFICATIONS OF THE NEW YORK CITY HEALTH CODE SECTION 24 RCNY CHAPTER 12. WG TO INSTALL = 0, WG TO REPLACE = 0, WG TO REPAIR = 2 IN THE ENTIRE APARTMENT LOCATED AT APT 3C, 3rd STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-10-18",
+            "nov_issued_date": "2024-10-21",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17363296",
+            "class": "C",
+            "description": "\u00a7 27-2056.7, 27-2056.8, 27-2056.9 ADM CODE -CERTIFY COMPLIANCE WITH LEAD-BASED PAINT HAZARD CONTROL REQUIREMENTS DURING PERIOD OF UNIT VACANCY BY PERFORMING ACTIVITIES NECESSARY TO ABATE TESTED LEAD-BASED PAINT FROM REQUIRED WINDOW AND/OR DOOR FRICTION SURFACES FOR APARTMENT AND MAKE FLOORS SMOOTH AND CLEANABLE, POSITIVE LEAD-BASED PAINT IN AN APARTMENT WITH A CHILD UNDER SIX LOCATED AT APT 3C, 3rd STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-10-18",
+            "nov_issued_date": "2024-10-21",
+            "current_status": "CERTIFICATION POSTPONMENT GRANTED"
+          },
+          {
+            "violation_id": "17370168",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE FRAME AT BOILER ROOM, SECTION ''104-36 196''",
+            "inspection_date": "2024-10-18",
+            "nov_issued_date": "2024-10-24",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17371502",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES, AT LAUNDRY ROOM, SECTION ''CELLAR''",
+            "inspection_date": "2024-10-18",
+            "nov_issued_date": "2024-10-24",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17370163",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE FRAME AT BOILER ROOM, SECTION ''104-25 195''",
+            "inspection_date": "2024-10-18",
+            "nov_issued_date": "2024-10-23",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17370133",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE CERAMIC TILES FLOOR IN THE KITCHEN LOCATED AT APT 3G, 3rd STORY, 2nd APARTMENT FROM NORTH AT EAST , SECTION ''104-25 195''",
+            "inspection_date": "2024-10-18",
+            "nov_issued_date": "2024-10-23",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17363057",
+            "class": "C",
+            "description": "\u00a7 27-2056.6 ADM CODE - CORRECT THE LEAD-BASED PAINT HAZARD - PAINT THAT TESTED POSITIVE FOR LEAD CONTENT AND THAT IS PEELING OR ON A DETERIORATED SUBSURFACE - USING WORK PRACTICES SET FORTH IN 28 RCNY \u00a711-06(B)(2) 1st DOOR FRAME FROM WEST AT NORTH WALL IN THE FOYER LOCATED AT APT 3C, 3rd STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-10-18",
+            "nov_issued_date": "2024-10-21",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17356221",
+            "class": "B",
+            "description": "\u00a7 27-2026, 2027 HMC: PROPERLY REPAIR THE SOURCE AND ABATE THE EVIDENCE OF A WATER LEAK AT CEILING IN THE 1st ROOM FROM EAST AT SOUTH LOCATED AT APT 3C, 3rd STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-10-18",
+            "nov_issued_date": "2024-10-21",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17356223",
+            "class": "B",
+            "description": "\u00a7 27-2026 ADM CODE REPAIR THE LEAKY AND/OR DEFECTIVE FAUCETS AT BATHTUB IN THE BATHROOM LOCATED AT APT 3C, 3rd STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-10-18",
+            "nov_issued_date": "2024-10-21",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17356222",
+            "class": "A",
+            "description": "\u00a7 27-2005 ADM CODE PAINT METAL IN ACCORDANCE WITH DEPT. REGULATION AT 1st DOOR FROM WEST AT NORTH WALL IN THE FOYER LOCATED AT APT 3C, 3rd STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-10-18",
+            "nov_issued_date": "2024-10-21",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17356220",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR AT CEILING IN THE 1st ROOM FROM EAST AT SOUTH LOCATED AT APT 3C, 3rd STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-10-18",
+            "nov_issued_date": "2024-10-21",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17356225",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 3C, 3rd STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-10-18",
+            "nov_issued_date": "2024-10-21",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17363056",
+            "class": "A",
+            "description": "\u00a7 27-2013 ADM CODE PAINT WITH LIGHT COLORED PAINT TO THE SATISFACTION OF THIS DEPARTMENT ALL PEELING PAINT SURFACES IN THE 1st ROOM FROM EAST AT SOUTH, THE KITCHEN , THE BATHROOM , THE PRIVATE HALLWAY LOCATED AT APT 3C, 3rd STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2024-10-18",
+            "nov_issued_date": "2024-10-21",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17365962",
+            "class": "A",
+            "description": "\u00a7 27-2026 ADM CODE REPAIR THE FLUSHING APPARATUS AND MAINTAIN SAME SO AS TO FLUSH EFFECTIVELY THE WATER CLOSET , IN THE BATHROOM LOCATED AT APT 4E, 4th STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-10-23",
+            "nov_issued_date": "2024-10-24",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17365961",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 4E, 4th STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-10-23",
+            "nov_issued_date": "2024-10-24",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17365963",
+            "class": "A",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE REGLAZE BATHTUB IN THE BATHROOM LOCATED AT APT 4E, 4th STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-10-23",
+            "nov_issued_date": "2024-10-24",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17607946",
+            "class": "A",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LESS THAN 10SQ FEET AT THE 2nd WINDOW FRAME FROM WEST AT NORTH WALL IN THE 1st ROOM FROM NORTH AT EAST LOCATED AT APT 6G, 6th STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2025-01-09",
+            "nov_issued_date": "2025-01-10",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17607947",
+            "class": "A",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LESS THAN 10SQ FEET AT THE 1st WINDOW FRAME FROM WEST AT NORTH WALL IN THE 2nd ROOM FROM NORTH LOCATED AT APT 6G, 6th STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2025-01-09",
+            "nov_issued_date": "2025-01-10",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17607945",
+            "class": "B",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... GREAT THEN 10SQ FEET AT THE NORTH,WEST WALLS AND CEILING IN THE BATHROOM LOCATED AT APT 6G, 6th STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2025-01-09",
+            "nov_issued_date": "2025-01-10",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17613522",
+            "class": "A",
+            "description": "\u00a7 27-2013 ADM CODE PAINT WITH LIGHT COLORED PAINT TO THE SATISFACTION OF THIS DEPARTMENT ALL PEELING PAINT SURFACES IN THE 1st ROOM FROM NORTH AT EAST, THE 2nd ROOM FROM NORTH, THE BATHROOM LOCATED AT APT 6G, 6th STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2025-01-09",
+            "nov_issued_date": "2025-01-10",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17668796",
+            "class": "B",
+            "description": "\u00a7 27-2026, 2027 HMC: PROPERLY REPAIR THE SOURCE AND ABATE THE EVIDENCE OF A WATER LEAK AT CEILING IN THE 1st ROOM FROM EAST LOCATED AT APT 3C, 3rd STORY",
+            "inspection_date": "2025-01-30",
+            "nov_issued_date": "2025-02-03",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17668795",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR AT CEILING IN THE 1st ROOM FROM EAST LOCATED AT APT 3C, 3rd STORY",
+            "inspection_date": "2025-01-30",
+            "nov_issued_date": "2025-02-03",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17668793",
+            "class": "B",
+            "description": "\u00a7 27-2046.1 HMC: REPAIR OR REPLACE THE CARBON MONOXIDE DETECTING DEVICE(S). MISSING IN THE ENTIRE APARTMENT LOCATED AT APT 3C, 3rd STORY",
+            "inspection_date": "2025-01-30",
+            "nov_issued_date": "2025-02-03",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17668794",
+            "class": "B",
+            "description": "\u00a7 27-2045 ADM CODE REPAIR OR REPLACE THE SMOKE DETECTOR MISSING IN THE ENTIRE APARTMENT LOCATED AT APT 3C, 3rd STORY",
+            "inspection_date": "2025-01-30",
+            "nov_issued_date": "2025-02-03",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17695307",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE VINYL TILES FLOOR IN THE KITCHEN LOCATED AT APT 6B, 6th STORY, 1st APARTMENT FROM WEST AT NORTH , SECTION ''104-25''",
+            "inspection_date": "2025-02-14",
+            "nov_issued_date": "2025-02-20",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17695308",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 6B, 6th STORY, 1st APARTMENT FROM WEST AT NORTH , SECTION ''104-25''",
+            "inspection_date": "2025-02-14",
+            "nov_issued_date": "2025-02-18",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17695310",
+            "class": "A",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... LESS THAN 10 SQUARE FEET AROUND NORTH WINDOW FRAME AND WEST WINDOW FRAME IN THE 1st ROOM FROM NORTH LOCATED AT APT 6B, 6th STORY, 1st APARTMENT FROM WEST AT NORTH , SECTION ''104-25''",
+            "inspection_date": "2025-02-14",
+            "nov_issued_date": "2025-02-18",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17695309",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE IN THE ENTIRE APARTMENT LOCATED AT APT 6B, 6th STORY, 1st APARTMENT FROM WEST AT NORTH , SECTION ''104-25''",
+            "inspection_date": "2025-02-14",
+            "nov_issued_date": "2025-02-18",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17710224",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE WOOD BASE CABINETS IN THE KITCHEN LOCATED AT APT 5C, 5th STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2025-02-21",
+            "nov_issued_date": "2025-02-24",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17710225",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE CERAMIC FLOOR TILES IN THE KITCHEN LOCATED AT APT 5C, 5th STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2025-02-21",
+            "nov_issued_date": "2025-02-24",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17710227",
+            "class": "A",
+            "description": "\u00a7 27-2013 ADM CODE PAINT WITH LIGHT COLORED PAINT TO THE SATISFACTION OF THIS DEPARTMENT SOUTH AND WEST WALLS IN THE KITCHEN LOCATED AT APT 5C, 5th STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2025-02-21",
+            "nov_issued_date": "2025-02-24",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17710228",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE PORCELAIN ENAMEL GLAZE BATHTUB IN THE BATHROOM LOCATED AT APT 5C, 5th STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2025-02-21",
+            "nov_issued_date": "2025-02-24",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17710226",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE CERAMIC FLOOR TILES IN THE BATHROOM LOCATED AT APT 5C, 5th STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2025-02-21",
+            "nov_issued_date": "2025-02-24",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17710229",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE CERAMIC FLOOR SADDLE IN THE ENTRANCE IN THE BATHROOM LOCATED AT APT 5C, 5th STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2025-02-21",
+            "nov_issued_date": "2025-02-24",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17710233",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AND LATCH VESTIBULE DOOR TO PUBLIC HALL , 1st STORY, SECTION ''104-36'', AT NORTHWEST",
+            "inspection_date": "2025-02-21",
+            "nov_issued_date": "2025-02-24",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17710231",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE DOOR AND DOOR FRAME, LATCH COMPACTOR CLOSET DOOR AT PUBLIC HALL, 1st STORY, SECTION ''104-36'', AT NORTHWEST",
+            "inspection_date": "2025-02-21",
+            "nov_issued_date": "2025-02-24",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17710234",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE LATCH ASSEMBLY ON VESTIBULE DOOR TO PUBLIC HALL , 1st STORY, SECTION ''104-36'', AT NORTHWEST",
+            "inspection_date": "2025-02-21",
+            "nov_issued_date": "2025-02-24",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17710232",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE LATCH ASSEMBLY ON COMPACTOR CLOSET DOOR AT PUBLIC HALL, 1st STORY, SECTION ''104-36'', AT NORTHWEST",
+            "inspection_date": "2025-02-21",
+            "nov_issued_date": "2025-02-24",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17710230",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 5C, 5th STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2025-02-21",
+            "nov_issued_date": "2025-02-24",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17761975",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE & 309 M/D LAW ABATE THE NUISANCE CONSISTING OF REFRIGERATOR WITH DOOR INTACT STORED AT PUBLIC HALL, 1st STORY, SECTION ''104-36''",
+            "inspection_date": "2025-03-12",
+            "nov_issued_date": "2025-03-14",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17861361",
+            "class": "B",
+            "description": "\u00a7 27-2045 ADM CODE REPAIR OR REPLACE THE SMOKE DETECTOR DEFECTIVE IN THE ENTIRE APARTMENT LOCATED AT APT 1D, 1st STORY, 2nd APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-04-30",
+            "nov_issued_date": "2025-05-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17861360",
+            "class": "B",
+            "description": "\u00a7 27-2026 ADM CODE REPAIR THE LEAKY AND/OR DEFECTIVE FAUCETS AT BATHTUB IN THE BATHROOM LOCATED AT APT 1D, 1st STORY, 2nd APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-04-30",
+            "nov_issued_date": "2025-05-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17861362",
+            "class": "B",
+            "description": "\u00a7 27-2046.1 HMC: REPAIR OR REPLACE THE CARBON MONOXIDE DETECTING DEVICE(S). DEFECTIVE IN THE ENTIRE APARTMENT LOCATED AT APT 1D, 1st STORY, 2nd APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-04-30",
+            "nov_issued_date": "2025-05-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17861363",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES IN THE ENTRANCE LOCATED AT APT 1D, 1st STORY, 2nd APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-04-30",
+            "nov_issued_date": "2025-05-02",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17897627",
+            "class": "C",
+            "description": "\u00a7 27-2026, 2027 HMC: PROPERLY REPAIR THE SOURCE AND ABATE THE EVIDENCE OF A WATER LEAK AT CEILING IN THE BATHROOM LOCATED AT APT 4A, 4th STORY, SECTION ''104-36''",
+            "inspection_date": "2025-05-12",
+            "nov_issued_date": "2025-05-14",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17897625",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR THE CEILING IN THE BATHROOM LOCATED AT APT 4A, 4th STORY, SECTION ''104-36''",
+            "inspection_date": "2025-05-12",
+            "nov_issued_date": "2025-05-14",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17897629",
+            "class": "B",
+            "description": "\u00a7 27-2026, 2027 HMC: PROPERLY REPAIR THE SOURCE AND ABATE THE EVIDENCE OF A WATER LEAK AT CEILING AND NORTH WALL IN THE KITCHENETTE LOCATED AT APT 4A, 4th STORY, SECTION ''104-36''",
+            "inspection_date": "2025-05-12",
+            "nov_issued_date": "2025-05-14",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17897630",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR THE CEILING AND NORTH WALL IN THE KITCHENETTE LOCATED AT APT 4A, 4th STORY, SECTION ''104-36''",
+            "inspection_date": "2025-05-12",
+            "nov_issued_date": "2025-05-14",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17897640",
+            "class": "B",
+            "description": "\u00a7 27-2017.3 HMC: TRACE AND REPAIR THE SOURCE AND ABATE THE VISIBLE MOLD CONDITION... GREATER THAN 10 SQ.FT AT CEILING AND NORTH WALL IN THE KITCHENETTE LOCATED AT APT 4A, 4th STORY, SECTION ''104-36''",
+            "inspection_date": "2025-05-12",
+            "nov_issued_date": "2025-05-14",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17918550",
+            "class": "B",
+            "description": "\u00a7 27-2026, 2027 HMC: PROPERLY REPAIR THE SOURCE AND ABATE THE EVIDENCE OF A WATER LEAK AT CEILING IN THE BATHROOM LOCATED AT APT 1B, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2025-05-27",
+            "nov_issued_date": "2025-05-28",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17918547",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE IN THE ENTIRE APARTMENT LOCATED AT APT 1B, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2025-05-27",
+            "nov_issued_date": "2025-05-28",
+            "current_status": "NOT COMPLIED WITH"
+          },
+          {
+            "violation_id": "17918548",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 1B, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2025-05-27",
+            "nov_issued_date": "2025-05-28",
+            "current_status": "NOT COMPLIED WITH"
+          },
+          {
+            "violation_id": "17918549",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR AT CEILING IN THE BATHROOM LOCATED AT APT 1B, 1st STORY, 1st APARTMENT FROM EAST AT SOUTH",
+            "inspection_date": "2025-05-27",
+            "nov_issued_date": "2025-05-28",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17975838",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AND DOOR IN THE ENTRANCE LOCATED AT APT 3G, 3rd STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-12",
+            "current_status": "NOT COMPLIED WITH"
+          },
+          {
+            "violation_id": "17975839",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE FIRE RETARDANT MATERIAL AT CEILING AND NORTH WALL AT PUBLIC HALL, 6th STORY",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-12",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17975085",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR THE CEILING IN THE KITCHEN LOCATED AT APT 2G, 2nd STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-11",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17975835",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE WOOD SUB-FLOOR IN THE PRIVATE HALLWAY LOCATED AT APT 3G, 3rd STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-12",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17975088",
+            "class": "B",
+            "description": "\u00a7 27-2046.1 HMC: REPAIR OR REPLACE THE CARBON MONOXIDE DETECTING DEVICE(S). MISSING IN THE ENTIRE APARTMENT LOCATED AT APT 2G, 2nd STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-11",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "18009438",
+            "class": "A",
+            "description": "\u00a7 27-2013 ADM CODE PAINT WITH LIGHT COLORED PAINT TO THE SATISFACTION OF THIS DEPARTMENT AT CEILING AND NORTH WALL AT PUBLIC HALL, 6th STORY",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-12",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17975086",
+            "class": "A",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY SECURE THE LOOSE SHOWER CURTAIN ROD IN THE BATHROOM LOCATED AT APT 2G, 2nd STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-11",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17975837",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR AT NORTH WALL IN THE 2nd ROOM FROM NORTH AT WEST LOCATED AT APT 3G, 3rd STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-12",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17975836",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR AT ALL WALLS IN THE BATHROOM LOCATED AT APT 3G, 3rd STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-12",
+            "current_status": "NOT COMPLIED WITH"
+          },
+          {
+            "violation_id": "17975087",
+            "class": "B",
+            "description": "\u00a7 27-2045 ADM CODE REPAIR OR REPLACE THE SMOKE DETECTOR MISSING IN THE ENTIRE APARTMENT LOCATED AT APT 2G, 2nd STORY, 1st APARTMENT FROM WEST AT NORTH",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-11",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "18044112",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE DOOR AND FRAME AT COMPACTOR CLOSET DOOR AT PUBLIC HALL, 2nd STORY",
+            "inspection_date": "2025-06-16",
+            "nov_issued_date": "2025-06-18",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "18044114",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: REFIT\u001a DOOR AND FRAME AT COMPACTOR CLOSET DOOR AT PUBLIC HALL, 2nd STORY",
+            "inspection_date": "2025-06-16",
+            "nov_issued_date": "2025-06-18",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "18053250",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT DOOR AT COMPACTOR CLOSET, 2nd STORY",
+            "inspection_date": "2025-06-22",
+            "nov_issued_date": "2025-06-27",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "18053260",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE & 309 M/D LAW ABATE THE NUISANCE CONSISTING OF REFRIGERATOR AT VESTIBULE WITH DOORS INTACT",
+            "inspection_date": "2025-06-22",
+            "nov_issued_date": "2025-06-27",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "18053267",
+            "class": "B",
+            "description": "\u00a7 27-2005, 2007 ADM CODE AND DEPT. RULES AND REGULATIONS. REMOVE THE ENCUMBRANCE OBSTRUCTING EGRESS FROM FIRE ESCAPES CONSISTING OF FLOWERPOTS AT 3RD STORY BALCONY AT FIRE ESCAPE AT EAST EXTERIOR WALL",
+            "inspection_date": "2025-06-22",
+            "nov_issued_date": "2025-06-27",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "18057930",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE FIRE RETARDANT MATERIAL AT SOUTH WALL AT PUBLIC HALL, 6th STORY",
+            "inspection_date": "2025-06-29",
+            "nov_issued_date": "2025-06-30",
+            "current_status": "NOT COMPLIED WITH"
+          },
+          {
+            "violation_id": "18057931",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE FIRE RETARDANT MATERIAL AT CEILING AND NORTH WALL AT BULKHEAD AT PUBLIC HALL, 6th STORY",
+            "inspection_date": "2025-06-29",
+            "nov_issued_date": "2025-06-30",
+            "current_status": "NOT COMPLIED WITH"
+          },
+          {
+            "violation_id": "18065472",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 6B, 6th STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-07-02",
+            "nov_issued_date": "2025-07-07",
+            "current_status": "NOT COMPLIED WITH"
+          },
+          {
+            "violation_id": "18065471",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE IN THE ENTIRE APARTMENT LOCATED AT APT 6B, 6th STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-07-02",
+            "nov_issued_date": "2025-07-07",
+            "current_status": "NOT COMPLIED WITH"
+          }
+        ]
+      },
+      "eviction_then_buy": [
+        {
+          "eviction_date": "2025-06-26",
+          "docket_number": "037332",
+          "eviction_type": "Residential",
+          "days_before_acquisition": 197
+        },
+        {
+          "eviction_date": "2025-08-04",
+          "docket_number": "031343",
+          "eviction_type": "Residential",
+          "days_before_acquisition": 158
+        }
+      ],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": true,
+        "years": {
+          "2018": 82,
+          "2019": 83,
+          "2020": 82,
+          "2021": 82,
+          "2022": 83,
+          "2023": 83,
+          "2026": 87
+        },
+        "data_note": "82 units in 2018 \u2192 83 units in 2023",
+        "earliest_year": 2018,
+        "latest_year": 2023,
+        "earliest_units": 82,
+        "latest_units": 83,
+        "unit_loss": -1,
+        "pct_loss": -1.2,
+        "loss_category": "gained_or_stable",
+        "has_historical_trend": true,
+        "current_unit_count_2026": 87
+      }
+    },
+    {
+      "bbl": "4115440100",
+      "address": "150-29 CROSSBAY BLVD",
+      "zip_code": "11417",
+      "acquiring_entity": "BREDIF LPA LLC",
+      "acquisition_date": "2026-01-09",
+      "price_paid": null,
+      "doc_types": [
+        "ASST"
+      ],
+      "document_ids": [
+        "2026012100732001"
+      ],
+      "displacement_score": 33.8,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": [],
+      "rent_stabilization": {
+        "in_dataset": false,
+        "years": {},
+        "data_note": "BBL not found in rent stabilization records",
+        "earliest_year": null,
+        "latest_year": null,
+        "earliest_units": null,
+        "latest_units": null,
+        "unit_loss": null,
+        "pct_loss": null,
+        "loss_category": "not_stabilized"
+      }
+    }
+  ],
+  "rs_analysis": {
+    "source": "nycdb rentstab_v2 (2018-2023) + DOF 2026 assessment",
+    "bbls_total": 66,
+    "bbls_in_rentstab_dataset": 41,
+    "bbls_with_2018_2023_trend": 8,
+    "bbls_current_only_no_trend": 33,
+    "bbls_not_in_dataset": 25,
+    "total_unit_loss_2018_2023": 1,
+    "critical_loss_bbls": [],
+    "high_loss_bbls": [],
+    "note": "Properties acquired 2025-2026 often lack pre-2024 rentstab history; DOF 2026 count shows current stabilized units"
+  }
+}

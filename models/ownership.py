@@ -66,6 +66,10 @@ class OwnershipRaw(TimestampMixin, Base):
         Index("idx_ownership_raw_party_name_norm", "party_name_normalized"),
         Index("idx_ownership_raw_doc_type", "doc_type"),
         Index("idx_ownership_raw_created_at", "created_at"),  # for 90-day cleanup
+        # Composite: scoring query filters WHERE party_type = '2' AND doc_date >= X (before LIKE scan)
+        Index("idx_ownership_raw_party_type_date", "party_type", "doc_date"),
+        # Composite: pulse LLC query resolves bbl join then filters doc_date >= X
+        Index("idx_ownership_raw_bbl_date", "bbl", "doc_date"),
     )
 
     def __repr__(self) -> str:

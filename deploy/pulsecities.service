@@ -1,0 +1,31 @@
+[Unit]
+Description=PulseCities FastAPI Application
+After=network.target postgresql.service
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/pulsecities
+Environment="PATH=/root/pulsecities/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+
+ExecStart=/root/pulsecities/venv/bin/gunicorn \
+  --workers 2 \
+  --worker-class uvicorn.workers.UvicornWorker \
+  --bind unix:/tmp/gunicorn.sock \
+  --timeout 120 \
+  --graceful-timeout 30 \
+  --access-logfile /var/log/pulsecities/gunicorn-access.log \
+  --error-logfile /var/log/pulsecities/gunicorn-error.log \
+  --log-level info \
+  api.main:app
+
+ExecReload=/bin/kill -s HUP $MAINPID
+
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

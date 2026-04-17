@@ -34,6 +34,11 @@ class BaseScraper(ABC):
     # How far back to look on the very first run (no watermark in DB yet)
     INITIAL_LOOKBACK_DAYS: int = 365
 
+    # Extra lookback applied on top of the 10-minute clock-skew buffer when a
+    # watermark exists.  Datasets with known ingestion lag (e.g. OCA evictions)
+    # override this so late-arriving records aren't silently skipped.
+    WATERMARK_EXTRA_LOOKBACK_DAYS: int = 0
+
     PAGE_SIZE = 50_000
     PAGE_TIMEOUT: int = 60  # subclasses may override (e.g. slow Socrata endpoints)
 
@@ -125,7 +130,7 @@ class BaseScraper(ABC):
         """
         watermark = self.get_watermark(db)
         if watermark:
-            since = watermark - timedelta(minutes=10)
+            since = watermark - timedelta(minutes=10) - timedelta(days=self.WATERMARK_EXTRA_LOOKBACK_DAYS)
         else:
             since = datetime.now(timezone.utc) - timedelta(days=self.INITIAL_LOOKBACK_DAYS)
         return f"{date_field} > '{since.strftime('%Y-%m-%dT%H:%M:%S.000')}'"
@@ -193,6 +198,13 @@ class BaseScraper(ABC):
             scraper_run.status = "failure"
             scraper_run.error_message = str(exc)
             logger.exception("%s: failed: %s", self.SCRAPER_NAME, exc)
+            # A mid-scraper DB error (e.g. DataError) leaves PostgreSQL in an
+            # aborted transaction state.  Roll back now so the finally block
+            # can open a fresh transaction to persist the failure metadata.
+            try:
+                db.rollback()
+            except Exception:
+                pass
             raise
         finally:
             scraper_run.records_processed = records_processed

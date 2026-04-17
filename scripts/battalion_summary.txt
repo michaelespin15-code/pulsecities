@@ -1,0 +1,79 @@
+BATTALION OPERATOR INVESTIGATION
+Generated: 2026-04-16
+══════════════════════════════════════════════════════════════════════
+
+CLASSIFICATION: FALSE POSITIVE — mortgage lending company, no property acquisitions
+
+OVERVIEW
+--------
+BATTALION FUNDING LLC, BATTALION LENDING LLC, and BATTALION MORTGAGE LLC
+are a mortgage origination and servicing operation. Of the 92 ACRIS
+records where a BATTALION entity appears as grantee (party_type='2'), all
+92 are document type ASST (mortgage assignment). There are zero
+deed transfers — BATTALION has never acquired real property.
+
+When a mortgage lender appears as grantee on an ASST document in ACRIS, it
+means the lender received a mortgage note assignment, not a deed to the property.
+This is routine loan servicing activity. The high-displacement-zip concentration
+flagged in the operator profile (41.3%) reflects where BATTALION's borrowers live,
+not where BATTALION operates as a landlord.
+
+ENTITIES
+--------
+• BATTALION LENDING LLC: 88 record(s)
+• BATTALION MORTGAGE LLC: 3 record(s)
+• BATTALION FUNDING LLC: 1 record(s)
+
+DOCUMENT TYPE BREAKDOWN
+-----------------------
+• ASST: 92
+
+Deed count:  0  ← zero acquisitions
+ASST count:  92  ← mortgage assignments only
+
+ASSIGNMENT PACE (monthly)
+-------------------------
+2025-04: █████ (5)
+2025-05: ████████████████████████ (24)
+2025-06: ██████████ (10)
+2025-07: ████ (4)
+2025-08: ███████████ (11)
+2025-09: █████ (5)
+2025-10: ███████████ (11)
+2025-11: ██████████ (10)
+2025-12: ██████ (6)
+2026-01: █████ (5)
+2026-02: █ (1)
+
+GEOGRAPHIC CONTEXT (zip codes of assigned properties)
+-------------------------------------------------------
+11233: 4 BBL(s)  (displacement score 66.6)
+11212: 4 BBL(s)  (displacement score 49.0)
+10458: 2 BBL(s)  (displacement score 61.0)
+10472: 2 BBL(s)  (displacement score 42.9)
+10465: 2 BBL(s)  (displacement score 45.8)
+11221: 2 BBL(s)  (displacement score 70.5)
+11207: 2 BBL(s)  (displacement score 59.7)
+10456: 1 BBL(s)  (displacement score 54.5)
+
+Average displacement score across BBL zip codes: 56.0
+BBLs in high-displacement zips (score ≥40):      93.1%
+
+Note: these metrics describe BATTALION's borrower geography, not operator behavior.
+A mortgage company making loans in high-displacement neighborhoods is not itself
+a displacement actor.
+
+ASSESSMENT
+----------
+BATTALION is a clean false positive. The naming convention (Funding, Lending,
+Mortgage) is an unambiguous signal that operator_network_analysis.py's current
+exclusion logic does not catch. The script strips common terms like BANK and REALTY
+but does not strip FUNDING, LENDING, or MORTGAGE as operator roots.
+
+No eviction-then-buy analysis is possible or relevant — there are no deed
+acquisitions to cross-reference against eviction records.
+
+RECOMMENDATION: Exclude BATTALION from all operator monitoring. Add FUNDING,
+LENDING, and MORTGAGE as root-level exclusion terms alongside BANK in the
+operator detection pipeline.
+══════════════════════════════════════════════════════════════════════
