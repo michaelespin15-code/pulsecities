@@ -169,14 +169,19 @@
         </p>
 
         <!-- Centered search bar (D-05: search submits → hideHero → sidebar opens) -->
-        <div class="flex gap-2 w-full max-w-md mb-10">
-            <input id="hero-search-input"
-                   type="text"
-                   placeholder="Enter address, ZIP, or landlord name"
-                   class="input input-bordered flex-1 text-sm font-mono"
-                   style="background:rgba(30,41,59,0.9);"
-                   autocomplete="off" />
-            <button id="hero-search-btn" class="btn btn-primary shrink-0">Search</button>
+        <div class="flex flex-col items-center gap-2 w-full max-w-md mb-10">
+            <div class="flex gap-2 w-full">
+                <input id="hero-search-input"
+                       type="text"
+                       placeholder="Enter address, ZIP, or landlord name"
+                       class="input input-bordered flex-1 text-sm font-mono"
+                       style="background:rgba(30,41,59,0.9);"
+                       autocomplete="off" />
+                <button id="hero-search-btn" class="btn btn-primary shrink-0">Search</button>
+            </div>
+            <button onclick="hideHero()" class="text-sm text-slate-400 hover:text-slate-100 transition-colors">
+                or, explore the map →
+            </button>
         </div>
 
         <!-- 3-column editorial stat layout (D-07: no borders, whitespace only) -->
@@ -240,9 +245,6 @@
         <!-- 3 live ZIP cards (D-03, D-16): clickable, call selectNeighborhood(zip) -->
         <div id="hero-zip-cards" class="flex flex-wrap gap-3 justify-center w-full max-w-2xl"></div>
 
-        <button onclick="hideHero()" class="mt-6 text-xs text-slate-500 hover:text-slate-300 transition-colors underline underline-offset-2">
-            Explore the map
-        </button>
     </div>
 
     <div class="flex h-screen">
