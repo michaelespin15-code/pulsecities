@@ -139,6 +139,36 @@
                 height: 14px !important;
             }
         }
+        /* Mobile touch target and layout fixes */
+        @media (max-width: 767px) {
+            .borough-pill {
+                min-height: 36px;
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            .history-pill {
+                min-height: 36px;
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+            #subscribe-email,
+            #subscribe-btn {
+                min-height: 40px !important;
+                font-size: 12px !important;
+            }
+            #landlord-input,
+            #landlord-search-btn {
+                min-height: 44px !important;
+            }
+            #landlord-copy-btn,
+            #landlord-clear-btn {
+                min-height: 40px !important;
+            }
+            #hero-zip-cards {
+                gap: 8px;
+                padding: 0 4px;
+            }
+        }
         /* Pulse dot animation — hero overlay center stat (D-10) */
         @keyframes hero-pulse-dot {
             0%, 100% { opacity: 0.4; }
@@ -162,8 +192,15 @@
          class="fixed inset-0 flex flex-col items-center justify-center px-4 pointer-events-auto"
          style="z-index:40; background:rgba(15,23,42,0.72); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
 
+        <!-- Language toggle — top-right of hero, synced with sidebar toggle -->
+        <button id="hero-lang-toggle"
+                class="absolute top-4 right-4 font-mono text-xs text-slate-400 hover:text-slate-100 transition-colors"
+                style="min-height:36px;min-width:52px;">
+            EN / ES
+        </button>
+
         <!-- Title + tagline (D-02) -->
-        <h1 id="hero-title" class="text-3xl font-semibold mb-2" style="color:#38bdf8;">PulseCities</h1>
+        <h1 id="hero-title" class="text-2xl sm:text-3xl font-semibold mb-2" style="color:#38bdf8;">PulseCities</h1>
         <p id="hero-tagline" class="text-base text-slate-300 mb-8 text-center max-w-sm">
             The displacement story NYC doesn't officially tell.
         </p>
@@ -179,9 +216,18 @@
                        autocomplete="off" />
                 <button id="hero-search-btn" class="btn btn-primary shrink-0">Search</button>
             </div>
-            <button onclick="hideHero()" class="text-sm text-slate-400 hover:text-slate-100 transition-colors">
-                or, explore the map →
-            </button>
+            <div class="flex items-center justify-between w-full px-1">
+                <button onclick="hideHero()" class="text-sm text-slate-400 hover:text-slate-100 transition-colors">
+                    or, explore the map →
+                </button>
+                <a href="https://www.linkedin.com/in/michaelespin"
+                   target="_blank" rel="noopener noreferrer"
+                   class="flex items-center gap-1 text-xs text-slate-500 hover:text-[#0A66C2] transition-colors duration-150"
+                   aria-label="Michael Espin on LinkedIn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    Built by Michael Espin
+                </a>
+            </div>
         </div>
 
         <!-- 3-column editorial stat layout (D-07: no borders, whitespace only) -->
@@ -260,7 +306,7 @@
         </div>
 
         <!-- Sidebar: full-width on mobile, fixed 288/320px on desktop -->
-        <aside id="sidebar" class="w-full md:w-72 lg:w-80 bg-base-200 p-6 overflow-y-auto flex flex-col">
+        <aside id="sidebar" class="w-full md:w-72 lg:w-80 bg-base-200 p-4 md:p-6 overflow-y-auto flex flex-col">
             <!-- Header -->
             <div class="mb-3 md:mb-6 flex items-start justify-between">
                 <div>
@@ -968,6 +1014,23 @@
                     hook_ratio_tpl:    'LLC transfers outpace eviction filings {ratio}× this month.',
                     hook_neutral_a:    '{llc} buildings changed LLC hands.',
                     hook_neutral_b:    '{evictions} eviction filings recorded citywide this month.',
+                    citywide:          'citywide',
+                },
+                count_label: {
+                    permits:          'renovation permit filings',
+                    evictions:        'eviction filings',
+                    llc_acquisitions: 'LLC property acquisitions',
+                    complaint_rate:   'tenant complaints',
+                    rs_unit_loss:     'rent-stabilized unit loss',
+                    assessment_spike: 'tax assessment increases',
+                },
+                signal_short: {
+                    permits:          'permit filings',
+                    evictions:        'eviction cases',
+                    llc_acquisitions: 'LLC buys',
+                    complaint_rate:   'complaints',
+                    rs_unit_loss:     'RS unit loss',
+                    assessment_spike: 'tax spike',
                 }
             },
             es: {
@@ -1045,6 +1108,23 @@
                     hook_ratio_tpl:    'Las transferencias LLC superan los desalojos {ratio}× este mes.',
                     hook_neutral_a:    '{llc} edificios cambiaron de dueños LLC.',
                     hook_neutral_b:    '{evictions} desalojos registrados en toda la ciudad este mes.',
+                    citywide:          'en toda la ciudad',
+                },
+                count_label: {
+                    permits:          'solicitudes de permiso de renovación',
+                    evictions:        'desalojos',
+                    llc_acquisitions: 'adquisiciones de propiedad LLC',
+                    complaint_rate:   'quejas de inquilinos',
+                    rs_unit_loss:     'pérdida de unidades estabilizadas',
+                    assessment_spike: 'aumentos de valuación fiscal',
+                },
+                signal_short: {
+                    permits:          'permisos',
+                    evictions:        'desalojos',
+                    llc_acquisitions: 'compras LLC',
+                    complaint_rate:   'quejas',
+                    rs_unit_loss:     'pérdida RS',
+                    assessment_spike: 'valuación fiscal',
                 }
             }
         };
@@ -1057,6 +1137,12 @@
             return section_strings[key] || (STRINGS['en'][section] || {})[key] || key;
         }
         // ---- end i18n ----
+
+        const _prefetchStats   = fetch('/api/stats').then(r => r.ok ? r.json() : null).catch(() => null);
+        const _prefetchTopRisk = fetch('/api/neighborhoods/top-risk?limit=10').then(r => r.ok ? r.json() : null).catch(() => null);
+
+        let _heroLlcCount = 0;
+        let _heroEvictionCount = 0;
 
         // Updates every static text node that carries an i18n ID.
         // Called on page load and whenever the language toggles.
@@ -1102,6 +1188,10 @@
             for (const [id, text] of Object.entries(map)) {
                 const el = document.getElementById(id);
                 if (el) el.textContent = text;
+            }
+            if (_heroLlcCount || _heroEvictionCount) {
+                const hookEl = document.getElementById('hero-hook-line');
+                if (hookEl) hookEl.textContent = buildHookLine(_heroLlcCount, _heroEvictionCount);
             }
             // compare-btn shows 'Compare' unless comparison mode is active (showing 'Cancel')
             const cmpBtn = document.getElementById('compare-btn');
@@ -1535,13 +1625,18 @@
             }
         }
 
-        // --- Language toggle handler ---
-        document.getElementById('lang-toggle').addEventListener('click', function() {
-            lang = lang === 'en' ? 'es' : 'en';
+        // --- Language toggle — shared handler, updates both hero and sidebar buttons ---
+        function setLanguage(l) {
+            lang = l;
             localStorage.setItem('pulsecities_lang', lang);
-            this.textContent = lang === 'es' ? 'ES / EN' : 'EN / ES';
+            const label = lang === 'es' ? 'ES / EN' : 'EN / ES';
+            const sidebar = document.getElementById('lang-toggle');
+            const hero = document.getElementById('hero-lang-toggle');
+            if (sidebar) sidebar.textContent = label;
+            if (hero) hero.textContent = label;
             applyStaticTranslations();
-            // Re-render currently displayed content if a neighborhood is selected
+            renderHeroZipCards();
+            renderTopRisk();
             if (_currentPanel === 'detail' && _cachedZipData) {
                 showDetail(
                     _cachedZip,
@@ -1553,7 +1648,9 @@
                 );
                 renderPulse(_cachedZip);
             }
-        });
+        }
+        document.getElementById('lang-toggle').addEventListener('click', () => setLanguage(lang === 'en' ? 'es' : 'en'));
+        document.getElementById('hero-lang-toggle').addEventListener('click', () => setLanguage(lang === 'en' ? 'es' : 'en'));
 
         // --- Address Search and Block Panel Logic ---
 
@@ -1775,24 +1872,22 @@
             if (llcCount === 0 && evictionCount === 0) return '';
             if (evictionCount > 0 && (llcCount / evictionCount) > 1.5) {
                 const ratio = (llcCount / evictionCount).toFixed(1);
-                return `Ownership is shifting. LLC transfers outpace eviction filings ${ratio}\xD7 this month.`;
+                return t('hero', 'hook_shifting') + ' ' + t('hero', 'hook_ratio_tpl').replace('{ratio}', ratio);
             }
-            return `${llcCount.toLocaleString()} buildings changed LLC hands. ${evictionCount.toLocaleString()} eviction filings recorded citywide this month.`;
+            return t('hero', 'hook_neutral_a').replace('{llc}', llcCount.toLocaleString())
+                + ' '
+                + t('hero', 'hook_neutral_b').replace('{evictions}', evictionCount.toLocaleString());
         }
 
         // Fetches /api/stats once on hero reveal. Populates all three editorial stat columns
         // and triggers the cascade animation.
         async function initHeroStats() {
-            let data;
-            try {
-                const resp = await fetch('/api/stats');
-                if (!resp.ok) return;
-                data = await resp.json();
-            } catch {
-                return; // Silent fail — hero degrades gracefully with '—' placeholders
-            }
+            const data = await _prefetchStats;
+            if (!data) return;
 
             const { llc_transfers_30d: llcCount, evictions_30d: evictionCount, top_risk: topRisk } = data;
+            _heroLlcCount = llcCount;
+            _heroEvictionCount = evictionCount;
 
             // Populate flanking stats
             const llcEl = document.getElementById('hero-llc-count');
@@ -1825,7 +1920,7 @@
                     const dateStr = new Date(topRisk.last_updated).toLocaleDateString('en-US', {
                         month: 'short', day: 'numeric'
                     });
-                    pulseEl.title = `Scores updated ${dateStr} \xB7 nightly at 2am UTC`;
+                    pulseEl.title = `${t('hero', 'pulse_tooltip_pre')} ${dateStr} ${t('hero', 'pulse_tooltip_suf')}`;
                 }
             }
 
@@ -1963,7 +2058,7 @@
         function buildHeroZipCard(n) {
             const card = document.createElement('button');
             card.className = 'text-left rounded-lg border border-slate-700 px-4 py-3 hover:border-slate-500 transition-colors';
-            card.style.cssText = 'background:rgba(30,41,59,0.7); min-width:160px; max-width:200px;';
+            card.style.cssText = 'background:rgba(30,41,59,0.7); min-width:min(160px, calc(50vw - 24px)); max-width:200px;';
 
             // Rank + ZIP
             const topRow = document.createElement('div');
@@ -1988,11 +2083,17 @@
             scoreEl.style.color = scoreColor(n.score);
             scoreEl.textContent = n.score.toFixed(1);
 
-            // Dominant signal count + percentile (D-16)
-            if (n.raw_count && n.raw_count_label && n.percentile_tier) {
+            if (n.raw_count && n.dominant_signal) {
                 const sigEl = document.createElement('div');
-                sigEl.className = 'text-xs text-slate-500 mt-0.5';
-                sigEl.textContent = `${n.raw_count} ${n.raw_count_label} \xB7 ${n.percentile_tier} citywide`;
+                sigEl.className = 'mt-1.5 font-mono text-xs';
+                const countSpan = document.createElement('span');
+                countSpan.style.color = scoreColor(n.score);
+                countSpan.style.fontWeight = '600';
+                countSpan.textContent = n.raw_count;
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'text-slate-500';
+                labelSpan.textContent = ' ' + t('signal_short', n.dominant_signal);
+                sigEl.append(countSpan, labelSpan);
                 card.append(topRow, placeEl, scoreEl, sigEl);
             } else {
                 card.append(topRow, placeEl, scoreEl);
@@ -2006,12 +2107,11 @@
         function renderHeroZipCards() {
             const container = document.getElementById('hero-zip-cards');
             if (!container) return;
-            fetch('/api/neighborhoods/top-risk?limit=3')
-                .then(r => r.ok ? r.json() : null)
+            _prefetchTopRisk
                 .then(data => {
                     if (!data || !data.neighborhoods) return;
                     container.innerHTML = '';
-                    data.neighborhoods.forEach(n => container.appendChild(buildHeroZipCard(n)));
+                    data.neighborhoods.slice(0, 3).forEach(n => container.appendChild(buildHeroZipCard(n)));
                 })
                 .catch(() => { /* silent — ZIP cards are enhancement, not critical path */ });
         }
@@ -2233,8 +2333,11 @@
 
         // Initialize lang toggle label, load at-risk list, and restore ?zip= deep link
         document.addEventListener('DOMContentLoaded', function() {
+            const label = lang === 'es' ? 'ES / EN' : 'EN / ES';
             const toggleBtn = document.getElementById('lang-toggle');
-            if (toggleBtn) toggleBtn.textContent = lang === 'es' ? 'ES / EN' : 'EN / ES';
+            const heroToggle = document.getElementById('hero-lang-toggle');
+            if (toggleBtn) toggleBtn.textContent = label;
+            if (heroToggle) heroToggle.textContent = label;
             applyStaticTranslations();
 
             // Show hero overlay immediately on load (D-01)
@@ -2345,11 +2448,17 @@
             topRow.append(left, scoreEl);
             btn.appendChild(topRow);
 
-            // D-13: raw count + citywide percentile when available; falls back to signal label.
             const descEl = document.createElement('p');
-            descEl.className = 'text-xs text-base-content/40 mt-0.5 ml-6';
-            if (n.raw_count && n.raw_count_label && n.percentile_tier) {
-                descEl.textContent = `${n.raw_count} ${n.raw_count_label} \xB7 ${n.percentile_tier} citywide`;
+            descEl.className = 'text-xs font-mono mt-0.5 ml-6';
+            if (n.raw_count && n.dominant_signal) {
+                const countSpan = document.createElement('span');
+                countSpan.style.color = scoreColor(n.score);
+                countSpan.style.fontWeight = '600';
+                countSpan.textContent = n.raw_count;
+                const labelSpan = document.createElement('span');
+                labelSpan.style.color = 'rgba(148,163,184,0.45)';
+                labelSpan.textContent = ' ' + t('signal_short', n.dominant_signal);
+                descEl.append(countSpan, labelSpan);
             } else {
                 const fallback = _riskSignalLine(n.dominant_signal);
                 if (!fallback) {
@@ -2402,9 +2511,10 @@
 
         function renderTopRisk() {
             const qs = _selectedBorough ? `&borough=${encodeURIComponent(_selectedBorough)}` : '';
-            fetch(`/api/neighborhoods/top-risk?limit=10${qs}`)
-                .then(r => r.ok ? r.json() : null)
-                .then(data => {
+            const req = qs
+                ? fetch(`/api/neighborhoods/top-risk?limit=10${qs}`).then(r => r.ok ? r.json() : null)
+                : _prefetchTopRisk;
+            req.then(data => {
                     _populateTopRiskList('top-risk-list', 'top-risk-skeleton', data);
                     _populateTopRiskList('mobile-drawer-list', 'mobile-drawer-skeleton', data);
                 })

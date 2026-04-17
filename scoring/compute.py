@@ -184,6 +184,7 @@ def _aggregate_llc_acquisitions(db: Session, cutoff: date | None = None) -> List
             FROM ownership_raw o
             JOIN parcels p ON o.bbl = p.bbl
             WHERE o.party_type = '2'
+              AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
               AND o.party_name_normalized LIKE '%LLC%'
               AND o.doc_date >= :cutoff
               AND p.zip_code IS NOT NULL
@@ -776,6 +777,7 @@ def compute_scores(db: Session, as_of_date: date | None = None) -> int:
         l_norm = llc_norm.get(zip_code, 0.0)
         c_norm = complaint_norm.get(zip_code, 0.0)
         a_norm = assessment_spike_norm.get(zip_code, 0.0)
+        rs_norm = rs_loss_norm.get(zip_code, 0.0)
         score = computed_scores[zip_code]
         db.execute(
             text(
@@ -783,11 +785,11 @@ def compute_scores(db: Session, as_of_date: date | None = None) -> int:
                 INSERT INTO score_history
                     (zip_code, scored_at, composite_score, permit_intensity,
                      eviction_rate, llc_acquisition_rate, assessment_spike,
-                     complaint_rate, created_at, updated_at)
+                     complaint_rate, rs_unit_loss, created_at, updated_at)
                 VALUES
                     (:zip_code, :scored_at, :composite_score, :permit_intensity,
                      :eviction_rate, :llc_acquisition_rate, :assessment_spike,
-                     :complaint_rate, :now, :now)
+                     :complaint_rate, :rs_unit_loss, :now, :now)
                 ON CONFLICT ON CONSTRAINT uq_score_history_zip_date DO NOTHING
                 """
             ),
@@ -800,6 +802,7 @@ def compute_scores(db: Session, as_of_date: date | None = None) -> int:
                 "llc_acquisition_rate": l_norm,
                 "assessment_spike": a_norm,
                 "complaint_rate": c_norm,
+                "rs_unit_loss": rs_norm,
                 "now": now,
             },
         )

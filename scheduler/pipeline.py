@@ -205,36 +205,11 @@ def _run_dof_if_due(db) -> bool:
     return _run_scraper_with_retry("dof_assessments", DOFScraper)
 
 
-def snapshot_scores(db) -> None:
-    """
-    Append today's displacement scores to score_history. Idempotent.
-
-    Reads all rows from displacement_scores and inserts one snapshot row per
-    zip code into score_history for CURRENT_DATE.  ON CONFLICT DO NOTHING
-    guarantees that re-running the pipeline on the same calendar day produces
-    no duplicate rows — the second call simply inserts 0 rows.
-    """
-    db.execute(text("""
-        INSERT INTO score_history (
-            zip_code, scored_at, composite_score,
-            permit_intensity, eviction_rate, llc_acquisition_rate,
-            assessment_spike, complaint_rate, created_at, updated_at
-        )
-        SELECT
-            zip_code, CURRENT_DATE, score,
-            permit_intensity, eviction_rate, llc_acquisition_rate,
-            assessment_spike, complaint_rate, NOW(), NOW()
-        FROM displacement_scores
-        ON CONFLICT ON CONSTRAINT uq_score_history_zip_date DO NOTHING
-    """))
-    db.commit()
-
-
 def _run_scoring() -> None:
     """
     Trigger the scoring engine after all scrapers complete.
-    Calls compute_scores() to recompute all displacement scores, then
-    snapshot_scores() to append the results to score_history.
+    compute_scores() handles both displacement_scores upsert and score_history
+    snapshot in a single pass (Step 6 and Step 7 of compute.py).
     """
     try:
         logger.info("Scoring engine: starting...")
@@ -247,14 +222,7 @@ def _run_scoring() -> None:
                     "compute_scores() returned 0. Either no data in DB or >50% of zips "
                     "failed sanity checks. Check scoring/compute.py logs for details.",
                 )
-            try:
-                snapshot_scores(db)
-                logger.info("Score snapshot: saved %d zip-code snapshots for today", n)
-            except Exception as snap_exc:
-                logger.warning(
-                    "Score snapshot failed (non-fatal — pipeline continues): %s", snap_exc
-                )
-        logger.info("Scoring engine: scored %d zip codes", n)
+        logger.info("Scoring engine: scored and snapshotted %d zip codes", n)
     except Exception as exc:
         logger.error("Scoring engine failed: %s", exc)
 
