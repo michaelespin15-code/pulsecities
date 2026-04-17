@@ -258,7 +258,9 @@
             <!-- Header -->
             <div class="mb-3 md:mb-6 flex items-start justify-between">
                 <div>
-                    <h1 class="text-xl font-semibold" style="color: #38bdf8;">PulseCities</h1>
+                    <button onclick="resetToHero()" class="text-left leading-none" title="Return to home" style="background:none;border:none;padding:0;cursor:pointer;">
+                        <h1 class="text-xl font-semibold" style="color: #38bdf8;">PulseCities</h1>
+                    </button>
                     <p class="text-sm text-base-content/60 mt-1">NYC Displacement Risk</p>
                 </div>
                 <div class="flex items-center gap-1">
@@ -944,6 +946,22 @@
                     complaint_rate:   'High tenant complaint volume',
                     rs_unit_loss:     'Rent-stabilized unit loss',
                     assessment_spike: 'Tax assessment spike'
+                },
+                hero: {
+                    title:             'PulseCities',
+                    tagline:           "The displacement story NYC doesn't officially tell.",
+                    search_placeholder:'Enter address, ZIP, or landlord name',
+                    search_btn:        'Search',
+                    llc_label:         'LLC transfers (30d)',
+                    eviction_label:    'evictions (30d)',
+                    llc_tooltip:       'LLC property acquisitions tracked in NYC deed records in the last 30 days.',
+                    eviction_tooltip:  'Eviction cases filed in NYC Housing Court in the last 30 days.',
+                    pulse_tooltip_pre: 'Scores updated',
+                    pulse_tooltip_suf: '· nightly at 2am UTC',
+                    hook_shifting:     'Ownership is shifting.',
+                    hook_ratio_tpl:    'LLC transfers outpace eviction filings {ratio}× this month.',
+                    hook_neutral_a:    '{llc} buildings changed LLC hands.',
+                    hook_neutral_b:    '{evictions} eviction filings recorded citywide this month.',
                 }
             },
             es: {
@@ -1005,6 +1023,22 @@
                     complaint_rate:   'Alto volumen de quejas de inquilinos',
                     rs_unit_loss:     'Pérdida de unidades de renta estabilizada',
                     assessment_spike: 'Aumento en valuación fiscal'
+                },
+                hero: {
+                    title:             'PulseCities',
+                    tagline:           'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
+                    search_placeholder:'Ingrese dirección, código postal o nombre del propietario',
+                    search_btn:        'Buscar',
+                    llc_label:         'transferencias LLC (30d)',
+                    eviction_label:    'desalojos (30d)',
+                    llc_tooltip:       'Adquisiciones de propiedades LLC registradas en escrituras de NYC en los últimos 30 días.',
+                    eviction_tooltip:  'Casos de desalojo presentados en el Tribunal de Vivienda de NYC en los últimos 30 días.',
+                    pulse_tooltip_pre: 'Puntajes actualizados',
+                    pulse_tooltip_suf: '· cada noche a las 2am UTC',
+                    hook_shifting:     'La propiedad está cambiando de manos.',
+                    hook_ratio_tpl:    'Las transferencias LLC superan los desalojos {ratio}× este mes.',
+                    hook_neutral_a:    '{llc} edificios cambiaron de dueños LLC.',
+                    hook_neutral_b:    '{evictions} desalojos registrados en toda la ciudad este mes.',
                 }
             }
         };
@@ -1053,6 +1087,11 @@
                 'landlord-clear-btn':         t('ui', 'landlord_clear'),
                 'subscribe-btn':              t('ui', 'subscribe'),
                 'back-to-list-label':         t('ui', 'at_risk_list'),
+                'hero-title':                 t('hero', 'title'),
+                'hero-tagline':               t('hero', 'tagline'),
+                'hero-search-btn':            t('hero', 'search_btn'),
+                'hero-llc-label':             t('hero', 'llc_label'),
+                'hero-eviction-label':        t('hero', 'eviction_label'),
             };
             for (const [id, text] of Object.entries(map)) {
                 const el = document.getElementById(id);
@@ -1652,6 +1691,42 @@
         // ---------------------------------------------------------------------------
         let _currentPanel = 'empty'; // 'empty' | 'detail' | 'block' | 'comparison'
 
+        // --- Hero overlay state machine (D-01, D-05, D-06) ---
+        // Independent of setPanel() — the overlay sits on the map layer (z-40),
+        // not inside the sidebar panel system.
+        let _heroVisible = true;
+
+        function showHero() {
+            _heroVisible = true;
+            const el = document.getElementById('hero-overlay');
+            if (!el) return;
+            el.classList.remove('hidden');
+            el.style.opacity = '1';
+            el.style.pointerEvents = 'auto';
+        }
+
+        function hideHero(callback) {
+            _heroVisible = false;
+            const el = document.getElementById('hero-overlay');
+            if (!el) return;
+            el.style.transition = 'opacity 0.3s ease';
+            el.style.opacity = '0';
+            el.style.pointerEvents = 'none';
+            // After fade completes, fully remove from event flow (Pitfall 1 prevention)
+            setTimeout(() => {
+                el.classList.add('hidden');
+                if (typeof callback === 'function') callback();
+            }, 310);
+        }
+
+        // D-06: clicking the PulseCities h1 in the sidebar header returns to hero state.
+        // Called from the h1 onclick — clears sidebar selection, re-shows overlay.
+        function resetToHero() {
+            showEmptyState();
+            showHero();
+        }
+        // --- End hero state machine ---
+
         function setPanel(name) {
             const panels = { empty: 'empty-state', detail: 'detail-panel', block: 'block-panel', comparison: 'comparison-panel' };
             Object.entries(panels).forEach(([panelName, id]) => {
@@ -1870,6 +1945,9 @@
             const toggleBtn = document.getElementById('lang-toggle');
             if (toggleBtn) toggleBtn.textContent = lang === 'es' ? 'ES / EN' : 'EN / ES';
             applyStaticTranslations();
+
+            // Show hero overlay immediately on load (D-01)
+            showHero();
 
             renderTopRisk();
             _wireBoroughFilters();
