@@ -14,7 +14,7 @@ Security:
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy import text
@@ -24,14 +24,13 @@ from models.database import get_db
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/score-history", tags=["score-history"])
-limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.get("/{zip_code}")
 @limiter.limit("60/minute")
 def get_score_history(
     request: Request,
-    response: Response,
     zip_code: str,
     days: int = 90,
     db: Session = Depends(get_db),

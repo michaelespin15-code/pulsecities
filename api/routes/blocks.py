@@ -11,7 +11,7 @@ Capped at 50 total events. Rate-limited at 60/minute (API-04).
 import logging
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
@@ -26,14 +26,14 @@ from models.scores import PropertyScore
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/blocks", tags=["blocks"])
-limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
+limiter = Limiter(key_func=get_remote_address)
 
 MAX_EVENTS = 50
 
 
 @router.get("/{bbl}")
 @limiter.limit("60/minute")
-def get_block_events(request: Request, response: Response, bbl: str, db: Session = Depends(get_db)):
+def get_block_events(request: Request, bbl: str, db: Session = Depends(get_db)):
     """
     Returns up to 50 civic events for a BBL, sorted newest-first.
     Queries permits, evictions, ACRIS transfers, and 311 complaints.

@@ -47,8 +47,6 @@ class PermitRaw(TimestampMixin, Base):
         Index("idx_permits_raw_filing_date", "filing_date"),
         Index("idx_permits_raw_zip_code", "zip_code"),
         Index("idx_permits_raw_created_at", "created_at"),  # for 90-day cleanup
-        # Composite: pulse query filters WHERE zip_code = :zip AND filing_date >= X
-        Index("idx_permits_raw_zip_filing", "zip_code", "filing_date"),
     )
 
     def __repr__(self) -> str:

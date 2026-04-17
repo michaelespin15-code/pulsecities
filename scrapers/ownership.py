@@ -5,9 +5,7 @@ Sources (three datasets, joined client-side on document_id):
   Parties: 636b-3b5g  (buyer/seller names per document)
   Legals:  8h5j-fqxa  (BBL: borough/block/lot per document)
 
-Watermark field: recorded_datetime (from master dataset) — tracks when the deed
-  appeared in ACRIS, not when it was dated.  Late filings arrive with old
-  document_date values; filtering on recorded_datetime ensures they are never skipped.
+Watermark field: document_date (from master dataset)
 
 JOIN STRATEGY:
 1. Paginate master → filter by deed doc types → collect (document_id → master_fields)
@@ -60,7 +58,6 @@ class AcrisMasterInput(BaseModel):
 
     document_id: str = ""
     document_date: str | None = None
-    recorded_datetime: str | None = None
     doc_type: str | None = None
     document_amt: str | None = None
 
@@ -105,7 +102,7 @@ class OwnershipScraper(BaseScraper):
         # Accumulate master records page by page, batch-join, persist
         master_batch: dict[str, dict] = {}  # document_id → master fields
 
-        for raw in self.paginate(where, order="recorded_datetime ASC"):
+        for raw in self.paginate(where, order="document_date ASC"):
             try:
                 master_rec = AcrisMasterInput.model_validate(raw)
             except ValidationError as exc:
@@ -120,15 +117,11 @@ class OwnershipScraper(BaseScraper):
                 continue
 
             doc_date = _parse_date(master_rec.document_date)
-            # Watermark on recorded_datetime, not document_date — deeds frequently
-            # appear in ACRIS weeks after the document date (late filings), so
-            # filtering on document_date would silently skip backdated records.
-            recorded_dt = _parse_date(master_rec.recorded_datetime)
-            if recorded_dt and (
+            if doc_date and (
                 new_watermark is None
-                or _date_to_dt(recorded_dt) > new_watermark
+                or _date_to_dt(doc_date) > new_watermark
             ):
-                new_watermark = _date_to_dt(recorded_dt)
+                new_watermark = _date_to_dt(doc_date)
 
             master_batch[doc_id] = {
                 "doc_type": (master_rec.doc_type or "").strip(),
@@ -163,7 +156,7 @@ class OwnershipScraper(BaseScraper):
         # Build doc_type IN clause
         doc_types_sql = ", ".join(f"'{t}'" for t in ACRIS_TRANSFER_DOC_TYPES)
         return (
-            f"recorded_datetime > '{since_str}' "
+            f"document_date > '{since_str}' "
             f"AND doc_type IN ({doc_types_sql})"
         )
 

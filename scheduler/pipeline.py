@@ -3,7 +3,6 @@ Nightly scraper pipeline orchestrator.
 
 Run order (sequential — no parallel to avoid DB contention):
   1. MapPLUTO         — reference data (quarterly, skip if run < 30 days ago)
-  1b. DOF Assessments — annual full-refresh, skip if run < 30 days ago
   2. 311 Complaints   — daily
   3. DOB Permits      — daily
   4. Evictions        — weekly (lags 2-4 weeks by design)
@@ -11,7 +10,6 @@ Run order (sequential — no parallel to avoid DB contention):
 
 After all scrapers complete:
   6. Scoring engine   — recomputes displacement scores per zip code
-  7. MTEK monitor     — flags new violations/permits/evictions on MTEK portfolio
 
 Each scraper is wrapped with tenacity retries (3 attempts).
 A failing scraper logs the failure to ScraperRun and continues — we do not
@@ -32,16 +30,13 @@ from scrapers.dcwp_licenses import DcwpScraper
 from scrapers.dhcr_rs import DhcrRsScraper
 from scrapers.evictions import EvictionsScraper
 from scrapers.ownership import OwnershipScraper
-from scrapers.dof import DOFScraper
 from scrapers.permits import PermitsScraper
 from scrapers.pluto import PlutoScraper
-from scripts.mtek_monitor import run_mtek_monitor
 
 logger = logging.getLogger(__name__)
 
-# PLUTO and DOF are infrequent full-refresh scrapers — skip if run within this window
+# PLUTO is quarterly — skip the PLUTO run if it completed within this window
 PLUTO_MIN_INTERVAL_DAYS = 30
-DOF_MIN_INTERVAL_DAYS = 30
 
 
 def _cleanup_stale_runs(db) -> None:
@@ -87,10 +82,6 @@ def run_nightly_pipeline() -> bool:
         if not _run_pluto_if_due(db):
             had_failures = True
 
-    with get_scraper_db() as db:
-        if not _run_dof_if_due(db):
-            had_failures = True
-
     scrapers = [
         ("311_complaints", ComplaintsScraper),
         ("dob_permits", PermitsScraper),
@@ -106,9 +97,6 @@ def run_nightly_pipeline() -> bool:
 
     # Scoring engine runs after all scrapers complete
     _run_scoring()
-
-    # MTEK portfolio monitor — needs fresh violations/permits/evictions data
-    _run_mtek_monitor()
 
     elapsed = (datetime.now(timezone.utc) - started).total_seconds()
     logger.info("=== Nightly pipeline complete in %.0fs ===", elapsed)
@@ -179,32 +167,6 @@ def _run_pluto_if_due(db) -> bool:
     return _run_scraper_with_retry("mappluto", PlutoScraper)
 
 
-def _run_dof_if_due(db) -> bool:
-    """Only run DOF assessments if it hasn't completed successfully in the last 30 days.
-    DOF is an annual full-refresh dataset — running more often wastes API quota with no new data."""
-    last_dof = (
-        db.query(ScraperRun)
-        .filter(
-            ScraperRun.scraper_name == "dof_assessments",
-            ScraperRun.status == "success",
-        )
-        .order_by(ScraperRun.started_at.desc())
-        .first()
-    )
-
-    cutoff = datetime.now(timezone.utc) - timedelta(days=DOF_MIN_INTERVAL_DAYS)
-    if last_dof and last_dof.started_at > cutoff:
-        logger.info(
-            "DOF run skipped — last successful run was %s (within %d-day window)",
-            last_dof.started_at.date(),
-            DOF_MIN_INTERVAL_DAYS,
-        )
-        return True  # skip counts as success
-
-    logger.info("DOF run is due — starting...")
-    return _run_scraper_with_retry("dof_assessments", DOFScraper)
-
-
 def snapshot_scores(db) -> None:
     """
     Append today's displacement scores to score_history. Idempotent.
@@ -257,13 +219,3 @@ def _run_scoring() -> None:
         logger.info("Scoring engine: scored %d zip codes", n)
     except Exception as exc:
         logger.error("Scoring engine failed: %s", exc)
-
-
-def _run_mtek_monitor() -> None:
-    try:
-        with get_scraper_db() as db:
-            n = run_mtek_monitor(db)
-        logger.info("MTEK monitor: %d new alerts", n)
-    except Exception as exc:
-        logger.error("MTEK monitor failed (non-fatal): %s", exc)
-        send_alert("MTEK monitor failed", str(exc))

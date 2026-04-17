@@ -1727,6 +1727,178 @@
         }
         // --- End hero state machine ---
 
+        // --- Hero overlay dynamic behavior (Plan 03) ---
+
+        // Integer count-up for hero stat chips (LLC count, eviction count).
+        // countUp() uses .toFixed(1) — incompatible with display of whole-number counts.
+        // Do NOT modify countUp() — it serves score display elsewhere.
+        function countUpInt(el, target, color, duration) {
+            const startTime = performance.now();
+            el.style.color = color;
+            function step(now) {
+                const p = Math.min((now - startTime) / duration, 1);
+                const eased = 1 - Math.pow(1 - p, 3);
+                el.textContent = Math.round(target * eased).toLocaleString();
+                if (p < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        // Cascade: center fades in first (200ms), left 150ms after, right 150ms after that,
+        // hook line 150ms after right. Elements start at opacity:0 translateY(8px) (set in HTML).
+        function animateHeroStats() {
+            function fadeIn(el) {
+                if (!el) return;
+                el.style.transition = 'opacity 0.2s ease-out, transform 0.2s ease-out';
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }
+            // Center stat starts at time 0
+            setTimeout(() => fadeIn(document.getElementById('hero-stat-center')), 0);
+            // Left: 200ms (center duration) + 150ms delay
+            setTimeout(() => fadeIn(document.getElementById('hero-stat-left')),   350);
+            // Right: 350ms + 150ms
+            setTimeout(() => fadeIn(document.getElementById('hero-stat-right')),  500);
+            // Hook line: 500ms + 150ms
+            setTimeout(() => fadeIn(document.getElementById('hero-hook-line')),   650);
+        }
+
+        // D-11: two sentences, no em dashes, dynamically generated from live counts.
+        // Uses \xD7 (multiplication sign ×), NOT an em dash.
+        function buildHookLine(llcCount, evictionCount) {
+            if (llcCount === 0 && evictionCount === 0) return '';
+            if (evictionCount > 0 && (llcCount / evictionCount) > 1.5) {
+                const ratio = (llcCount / evictionCount).toFixed(1);
+                return `Ownership is shifting. LLC transfers outpace eviction filings ${ratio}\xD7 this month.`;
+            }
+            return `${llcCount.toLocaleString()} buildings changed LLC hands. ${evictionCount.toLocaleString()} eviction filings recorded citywide this month.`;
+        }
+
+        // Fetches /api/stats once on hero reveal. Populates all three editorial stat columns
+        // and triggers the cascade animation.
+        async function initHeroStats() {
+            let data;
+            try {
+                const resp = await fetch('/api/stats');
+                if (!resp.ok) return;
+                data = await resp.json();
+            } catch {
+                return; // Silent fail — hero degrades gracefully with '—' placeholders
+            }
+
+            const { llc_transfers_30d: llcCount, evictions_30d: evictionCount, top_risk: topRisk } = data;
+
+            // Populate flanking stats
+            const llcEl = document.getElementById('hero-llc-count');
+            if (llcEl) countUpInt(llcEl, llcCount, '#e2e8f0', 400);
+
+            const evEl = document.getElementById('hero-eviction-count');
+            if (evEl) countUpInt(evEl, evictionCount, '#e2e8f0', 400);
+
+            // Populate center stat (D-07/D-08: ZIP large, place small, score smallest + pulse)
+            if (topRisk) {
+                const zipEl = document.getElementById('hero-zip-code');
+                if (zipEl) zipEl.textContent = topRisk.zip_code;
+
+                const placeEl = document.getElementById('hero-zip-place');
+                if (placeEl) {
+                    const placeParts = [topRisk.name, topRisk.borough].filter(Boolean);
+                    placeEl.textContent = placeParts.join(', ');
+                }
+
+                const scoreEl = document.getElementById('hero-zip-score');
+                if (scoreEl) countUp(scoreEl, topRisk.score, '#f97316', 400);
+
+                // Store ZIP for sparkline hover (D-12)
+                const centerEl = document.getElementById('hero-stat-center');
+                if (centerEl) centerEl.dataset.zip = topRisk.zip_code;
+
+                // Pulse dot tooltip (D-10): "Scores updated Apr 17 · nightly at 2am UTC"
+                const pulseEl = centerEl ? centerEl.querySelector('.pulse-dot') : null;
+                if (pulseEl && topRisk.last_updated) {
+                    const dateStr = new Date(topRisk.last_updated).toLocaleDateString('en-US', {
+                        month: 'short', day: 'numeric'
+                    });
+                    pulseEl.title = `Scores updated ${dateStr} \xB7 nightly at 2am UTC`;
+                }
+            }
+
+            // Mirror values to mobile elements via data-hero-bind
+            document.querySelectorAll('[data-hero-bind]').forEach(el => {
+                const sourceId = el.dataset.heroBind;
+                const source = document.getElementById(sourceId);
+                if (source) el.textContent = source.textContent;
+            });
+
+            // Hook line (D-11)
+            const hookEl = document.getElementById('hero-hook-line');
+            if (hookEl) hookEl.textContent = buildHookLine(llcCount, evictionCount);
+
+            // Trigger cascade animation after data is rendered
+            animateHeroStats();
+        }
+
+        // D-12: On hover over center stat, fetch 7-day score history and render
+        // a 60x20px SVG sparkline using the existing sparkline() function.
+        async function showCenterStatSparkline(zip) {
+            if (!zip) return;
+            try {
+                const resp = await fetch(`/api/score-history/${zip}?days=7`);
+                if (!resp.ok) return;
+                const hist = await resp.json();
+                const scores = hist.map(h => h.score).filter(s => s != null);
+                if (scores.length < 2) return;
+                const el = document.getElementById('hero-stat-sparkline');
+                if (el) {
+                    el.innerHTML = sparkline(scores, { width: 60, height: 20 });
+                    el.classList.remove('hidden');
+                }
+            } catch { /* silent */ }
+        }
+
+        function wireHeroTooltips() {
+            const leftStat  = document.getElementById('hero-stat-left');
+            const rightStat = document.getElementById('hero-stat-right');
+            const leftTip   = document.getElementById('hero-llc-tooltip');
+            const rightTip  = document.getElementById('hero-eviction-tooltip');
+            const centerEl  = document.getElementById('hero-stat-center');
+
+            if (leftStat && leftTip) {
+                leftTip.textContent = 'LLC property acquisitions tracked in NYC deed records in the last 30 days.';
+                leftStat.addEventListener('mouseenter', () => {
+                    leftTip.classList.remove('hidden');
+                    leftTip.style.opacity = '0';
+                    leftTip.style.transition = 'opacity 0.15s ease';
+                    setTimeout(() => { leftTip.style.opacity = '1'; }, 10);
+                });
+                leftStat.addEventListener('mouseleave', () => { leftTip.classList.add('hidden'); });
+            }
+
+            if (rightStat && rightTip) {
+                rightTip.textContent = 'Eviction cases filed in NYC Housing Court in the last 30 days.';
+                rightStat.addEventListener('mouseenter', () => {
+                    rightTip.classList.remove('hidden');
+                    rightTip.style.opacity = '0';
+                    rightTip.style.transition = 'opacity 0.15s ease';
+                    setTimeout(() => { rightTip.style.opacity = '1'; }, 10);
+                });
+                rightStat.addEventListener('mouseleave', () => { rightTip.classList.add('hidden'); });
+            }
+
+            if (centerEl) {
+                centerEl.addEventListener('mouseenter', () => {
+                    const zip = centerEl.dataset.zip;
+                    if (zip) showCenterStatSparkline(zip);
+                });
+                centerEl.addEventListener('mouseleave', () => {
+                    const sparkEl = document.getElementById('hero-stat-sparkline');
+                    if (sparkEl) sparkEl.classList.add('hidden');
+                });
+            }
+        }
+
+        // --- End hero overlay dynamic behavior ---
+
         function setPanel(name) {
             const panels = { empty: 'empty-state', detail: 'detail-panel', block: 'block-panel', comparison: 'comparison-panel' };
             Object.entries(panels).forEach(([panelName, id]) => {
@@ -1948,6 +2120,11 @@
 
             // Show hero overlay immediately on load (D-01)
             showHero();
+
+            // Fetch /api/stats and populate hero stat chips + trigger cascade animation
+            initHeroStats();
+            // Wire hover tooltips for flanking stats and center sparkline
+            wireHeroTooltips();
 
             renderTopRisk();
             _wireBoroughFilters();

@@ -28,7 +28,7 @@ class DcwpLicense(TimestampMixin, Base):
     license_status: Mapped[str | None] = mapped_column(String(50), nullable=True)
     license_creation_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     lic_expir_dd: Mapped[date | None] = mapped_column(Date, nullable=True)
-    address_building: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    address_building: Mapped[str | None] = mapped_column(String(20), nullable=True)
     address_street_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
     address_zip: Mapped[str | None] = mapped_column(String(10), nullable=True)
     address_borough: Mapped[str | None] = mapped_column(String(50), nullable=True)

@@ -97,9 +97,6 @@ class EvictionsScraper(BaseScraper):
     SCRAPER_NAME = "evictions"
     DATASET_ID = DATASET_ID
     INITIAL_LOOKBACK_DAYS = INITIAL_LOOKBACK_DAYS
-    # OCA reports lag 2–4 weeks; re-scan the last 45 days on every incremental
-    # run so late-arriving eviction records aren't silently skipped.
-    WATERMARK_EXTRA_LOOKBACK_DAYS = 45
 
     def _run(self, db) -> tuple[int, int, datetime | None]:
         where = self.build_where_since(DATE_FIELD, db)
