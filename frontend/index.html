@@ -2107,13 +2107,13 @@
         function renderHeroZipCards() {
             const container = document.getElementById('hero-zip-cards');
             if (!container) return;
-            _prefetchTopRisk
+            _prefetchStats
                 .then(data => {
-                    if (!data || !data.neighborhoods) return;
+                    if (!data || !data.top_risk_list) return;
                     container.innerHTML = '';
-                    data.neighborhoods.slice(0, 3).forEach(n => container.appendChild(buildHeroZipCard(n)));
+                    data.top_risk_list.forEach(n => container.appendChild(buildHeroZipCard(n)));
                 })
-                .catch(() => { /* silent — ZIP cards are enhancement, not critical path */ });
+                .catch(() => {});
         }
 
         // --- End hero ZIP cards ---
