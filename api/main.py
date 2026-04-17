@@ -4,8 +4,8 @@ PulseCities FastAPI application entry point.
 Run (development):
     uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 
-Run (production — single worker required for APScheduler):
-    gunicorn -w 1 -k uvicorn.workers.UvicornWorker api.main:app
+Run (production):
+    gunicorn -w 2 -k uvicorn.workers.UvicornWorker api.main:app
 """
 
 import logging
@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from api.routes import health, neighborhoods, properties, blocks, score_history, pulse, search, subscribe
 from config.logging_config import configure_logging
@@ -35,6 +36,7 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["127.0.0.1"])
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Tighten to specific origins before launch
@@ -50,9 +52,3 @@ app.include_router(score_history.router, prefix="/api")
 app.include_router(pulse.router, prefix="/api")
 app.include_router(search.router, prefix="/api")
 app.include_router(subscribe.router, prefix="/api")
-
-# Static file serving — MUST come after all API routes
-# FastAPI route matching is first-match; mounting at "/" before API routes
-# would intercept /api/* requests and return 404 from StaticFiles.
-from starlette.staticfiles import StaticFiles  # noqa: E402
-app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
