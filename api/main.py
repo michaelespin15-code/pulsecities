@@ -17,7 +17,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
-from api.routes import health, neighborhoods, properties, blocks, score_history, pulse, search, subscribe
+from api.routes import health, neighborhoods, properties, blocks, score_history, pulse, search, subscribe, stats
 from config.logging_config import configure_logging
 from scheduler.manager import lifespan
 
@@ -52,3 +52,4 @@ app.include_router(score_history.router, prefix="/api")
 app.include_router(pulse.router, prefix="/api")
 app.include_router(search.router, prefix="/api")
 app.include_router(subscribe.router, prefix="/api")
+app.include_router(stats.router, prefix="/api")
