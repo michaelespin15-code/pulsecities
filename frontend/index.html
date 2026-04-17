@@ -139,9 +139,108 @@
                 height: 14px !important;
             }
         }
+        /* Pulse dot animation — hero overlay center stat (D-10) */
+        @keyframes hero-pulse-dot {
+            0%, 100% { opacity: 0.4; }
+            50%       { opacity: 1.0; }
+        }
+        .pulse-dot {
+            display: inline-block;
+            animation: hero-pulse-dot 2.5s ease-in-out infinite;
+        }
     </style>
 </head>
 <body>
+    <!-- =========================================================
+         Hero overlay — address-first entry (phase 999.1)
+         Fixed full-screen, z-40 (below z-50 sidebar).
+         Visible on load; dismissed by hideHero() after search.
+         D-01: map initializes behind this overlay — no lazy-loading.
+         D-02: contains only title, tagline, search, stats, ZIP cards.
+         ========================================================= -->
+    <div id="hero-overlay"
+         class="fixed inset-0 flex flex-col items-center justify-center px-4 pointer-events-auto"
+         style="z-index:40; background:rgba(15,23,42,0.72); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
+
+        <!-- Title + tagline (D-02) -->
+        <h1 id="hero-title" class="text-3xl font-semibold mb-2" style="color:#38bdf8;">PulseCities</h1>
+        <p id="hero-tagline" class="text-base text-slate-300 mb-8 text-center max-w-sm">
+            The displacement story NYC doesn't officially tell.
+        </p>
+
+        <!-- Centered search bar (D-05: search submits → hideHero → sidebar opens) -->
+        <div class="flex gap-2 w-full max-w-md mb-10">
+            <input id="hero-search-input"
+                   type="text"
+                   placeholder="Enter address, ZIP, or landlord name"
+                   class="input input-bordered flex-1 text-sm font-mono"
+                   style="background:rgba(30,41,59,0.9);"
+                   autocomplete="off" />
+            <button id="hero-search-btn" class="btn btn-primary shrink-0">Search</button>
+        </div>
+
+        <!-- 3-column editorial stat layout (D-07: no borders, whitespace only) -->
+        <!-- Mobile: flex-col, center first (Claude's Discretion) -->
+        <div class="hidden md:grid md:grid-cols-3 gap-8 mb-8 w-full max-w-2xl" id="hero-stats-desktop">
+            <!-- Left: LLC transfers (30d) -->
+            <div id="hero-stat-left" class="text-center" style="opacity:0; transform:translateY(8px);">
+                <div id="hero-llc-count" class="text-4xl font-mono font-bold text-slate-100" style="letter-spacing:-0.02em;">&#8212;</div>
+                <div id="hero-llc-label" class="text-xs text-slate-400 mt-1">LLC transfers (30d)</div>
+                <div id="hero-llc-tooltip" class="hidden absolute text-xs text-slate-300 bg-slate-800 border border-slate-700 rounded px-3 py-1.5 max-w-xs text-left mt-1" style="z-index:50;"></div>
+            </div>
+
+            <!-- Center: top-risk ZIP (2.5x size, orange) D-07/D-08 -->
+            <div id="hero-stat-center" class="text-center relative cursor-pointer" style="opacity:0; transform:translateY(8px);">
+                <div id="hero-zip-code" class="font-mono font-bold text-slate-100" style="font-size:2.8rem; letter-spacing:-0.02em;">&#8212;</div>
+                <div id="hero-zip-place" class="text-xs text-slate-400 mt-0.5">&#8212;</div>
+                <div class="flex items-center justify-center gap-1.5 mt-1">
+                    <span id="hero-zip-score" class="font-mono text-sm font-semibold" style="color:#f97316;">&#8212;</span>
+                    <!-- Pulse dot (D-10): CSS animation, orange, 2.5s period -->
+                    <span class="pulse-dot text-xs" style="color:#f97316;">&#9679;</span>
+                </div>
+                <!-- Hover sparkline container (D-12): hidden until hover -->
+                <div id="hero-stat-sparkline" class="hidden mt-2 flex justify-center" style="height:20px;"></div>
+            </div>
+
+            <!-- Right: eviction filings (30d) -->
+            <div id="hero-stat-right" class="text-center" style="opacity:0; transform:translateY(8px);">
+                <div id="hero-eviction-count" class="text-4xl font-mono font-bold text-slate-100" style="letter-spacing:-0.02em;">&#8212;</div>
+                <div id="hero-eviction-label" class="text-xs text-slate-400 mt-1">evictions (30d)</div>
+                <div id="hero-eviction-tooltip" class="hidden absolute text-xs text-slate-300 bg-slate-800 border border-slate-700 rounded px-3 py-1.5 max-w-xs text-left mt-1" style="z-index:50;"></div>
+            </div>
+        </div>
+
+        <!-- Mobile: stack vertically, center first (Claude's Discretion) -->
+        <div class="flex flex-col items-center gap-6 mb-8 w-full md:hidden" id="hero-stats-mobile">
+            <!-- Center first on mobile (D-07 priority) -->
+            <div id="hero-stat-center-mobile" class="text-center">
+                <div class="font-mono font-bold text-slate-100" style="font-size:2.2rem; letter-spacing:-0.02em;" data-hero-bind="hero-zip-code">&#8212;</div>
+                <div class="text-xs text-slate-400 mt-0.5" data-hero-bind="hero-zip-place">&#8212;</div>
+                <div class="flex items-center justify-center gap-1.5 mt-1">
+                    <span class="font-mono text-sm font-semibold" style="color:#f97316;" data-hero-bind="hero-zip-score">&#8212;</span>
+                    <span class="pulse-dot text-xs" style="color:#f97316;">&#9679;</span>
+                </div>
+            </div>
+            <div class="flex gap-8">
+                <div class="text-center">
+                    <div class="text-2xl font-mono font-bold text-slate-100" data-hero-bind="hero-llc-count">&#8212;</div>
+                    <div class="text-xs text-slate-400 mt-1">LLC transfers (30d)</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-mono font-bold text-slate-100" data-hero-bind="hero-eviction-count">&#8212;</div>
+                    <div class="text-xs text-slate-400 mt-1">evictions (30d)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hook line (D-11): two sentences, dynamically generated, no em dashes -->
+        <p id="hero-hook-line" class="text-sm text-slate-400 text-center max-w-sm mb-8 px-2"
+           style="opacity:0; transform:translateY(8px);"></p>
+
+        <!-- 3 live ZIP cards (D-03, D-16): clickable, call selectNeighborhood(zip) -->
+        <div id="hero-zip-cards" class="flex flex-wrap gap-3 justify-center w-full max-w-2xl"></div>
+    </div>
+
     <div class="flex h-screen">
         <!-- Map container: flex-1 fills remaining width -->
         <div id="map" class="flex-1 relative">
@@ -440,7 +539,7 @@
                         <input
                             id="subscribe-email"
                             type="email"
-                            placeholder="Weekly digest — your@email.com"
+                            placeholder="your@email.com"
                             class="input input-sm input-bordered flex-1 min-w-0"
                             style="min-height:30px;font-size:11px;"
                         />
