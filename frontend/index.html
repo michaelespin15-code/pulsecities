@@ -1897,7 +1897,120 @@
             }
         }
 
-        // --- End hero overlay dynamic behavior ---
+        // --- Hero search (D-05) ---
+        // On submit: resolve input to a zip_code, fade out hero, open in sidebar.
+        // Supports raw 5-digit ZIPs and full address strings.
+        (function wireHeroSearch() {
+            const input = document.getElementById('hero-search-input');
+            const btn   = document.getElementById('hero-search-btn');
+            if (!input || !btn) return;
+
+            async function handleHeroSearch() {
+                const query = input.value.trim();
+                if (!query) return;
+
+                btn.disabled = true;
+                btn.textContent = 'Looking up...';
+
+                // Fast path: 5-digit ZIP code entered directly
+                if (/^\d{5}$/.test(query)) {
+                    hideHero(() => selectNeighborhood(query));
+                    btn.disabled = false;
+                    btn.textContent = t('hero', 'search_btn') || 'Search';
+                    return;
+                }
+
+                // Address path: resolve address to property, extract zip_code
+                try {
+                    const searchResp = await fetch(`/api/properties/search?address=${encodeURIComponent(query)}`);
+                    if (!searchResp.ok) {
+                        // Fallback: show an error hint inside the hero (do not navigate away)
+                        input.placeholder = 'Address not found. Try "123 Main St, Brooklyn".';
+                        btn.disabled = false;
+                        btn.textContent = t('hero', 'search_btn') || 'Search';
+                        return;
+                    }
+                    const searchData = await searchResp.json();
+                    const zip = searchData.zip_code || (searchData.results && searchData.results[0] && searchData.results[0].zip_code);
+                    if (zip) {
+                        hideHero(() => selectNeighborhood(zip));
+                    } else {
+                        input.placeholder = 'ZIP not found. Try a 5-digit ZIP code.';
+                    }
+                } catch {
+                    input.placeholder = 'Network error. Try again.';
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = t('hero', 'search_btn') || 'Search';
+                }
+            }
+
+            btn.addEventListener('click', handleHeroSearch);
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') handleHeroSearch();
+            });
+        })();
+        // --- End hero search ---
+
+        // D-03: Each ZIP card calls selectNeighborhood(zip) on click, fading hero first.
+        // D-16: Same format as leaderboard rows — rank, ZIP, place, score, signal count+percentile.
+        function buildHeroZipCard(n) {
+            const card = document.createElement('button');
+            card.className = 'text-left rounded-lg border border-slate-700 px-4 py-3 hover:border-slate-500 transition-colors';
+            card.style.cssText = 'background:rgba(30,41,59,0.7); min-width:160px; max-width:200px;';
+
+            // Rank + ZIP
+            const topRow = document.createElement('div');
+            topRow.className = 'flex items-baseline gap-2 mb-0.5';
+            const rankEl = document.createElement('span');
+            rankEl.className = 'text-xs font-mono text-slate-500';
+            rankEl.textContent = `#${n.rank}`;
+            const zipEl = document.createElement('span');
+            zipEl.className = 'font-mono text-sm font-bold text-slate-100';
+            zipEl.textContent = n.zip_code;
+            topRow.append(rankEl, zipEl);
+
+            // Place (name + borough)
+            const placeEl = document.createElement('div');
+            placeEl.className = 'text-xs text-slate-400 truncate mb-1';
+            const placeParts = [n.name, n.borough].filter(Boolean);
+            placeEl.textContent = placeParts.join(', ');
+
+            // Score
+            const scoreEl = document.createElement('div');
+            scoreEl.className = 'font-mono text-sm font-semibold';
+            scoreEl.style.color = scoreColor(n.score);
+            scoreEl.textContent = n.score.toFixed(1);
+
+            // Dominant signal count + percentile (D-16)
+            if (n.raw_count && n.raw_count_label && n.percentile_tier) {
+                const sigEl = document.createElement('div');
+                sigEl.className = 'text-xs text-slate-500 mt-0.5';
+                sigEl.textContent = `${n.raw_count} ${n.raw_count_label} \xB7 ${n.percentile_tier} citywide`;
+                card.append(topRow, placeEl, scoreEl, sigEl);
+            } else {
+                card.append(topRow, placeEl, scoreEl);
+            }
+
+            // D-03: clicking fades hero and opens the ZIP in sidebar
+            card.addEventListener('click', () => hideHero(() => selectNeighborhood(n.zip_code)));
+            return card;
+        }
+
+        function renderHeroZipCards() {
+            const container = document.getElementById('hero-zip-cards');
+            if (!container) return;
+            fetch('/api/neighborhoods/top-risk?limit=3')
+                .then(r => r.ok ? r.json() : null)
+                .then(data => {
+                    if (!data || !data.neighborhoods) return;
+                    container.innerHTML = '';
+                    data.neighborhoods.forEach(n => container.appendChild(buildHeroZipCard(n)));
+                })
+                .catch(() => { /* silent — ZIP cards are enhancement, not critical path */ });
+        }
+
+        // --- End hero ZIP cards ---
 
         function setPanel(name) {
             const panels = { empty: 'empty-state', detail: 'detail-panel', block: 'block-panel', comparison: 'comparison-panel' };
@@ -2125,6 +2238,8 @@
             initHeroStats();
             // Wire hover tooltips for flanking stats and center sparkline
             wireHeroTooltips();
+            // Render 3 live ZIP cards from /api/neighborhoods/top-risk?limit=3
+            renderHeroZipCards();
 
             renderTopRisk();
             _wireBoroughFilters();
