@@ -177,38 +177,158 @@ def get_top_risk_neighborhoods(
         if borough
         else f"AND ({_VALID_NYC_ZIP_CLAUSE})"
     )
+    # When a borough filter is active the PERCENT_RANK() window covers only those ZIPs.
+    # For the un-filtered case the window covers all valid NYC ZIPs (D-15 denominator).
+    outer_where = f"WHERE ({_BOROUGH_ZIP_CLAUSE[borough]})" if borough else ""
 
     rows = db.execute(
         text(
             f"""
-            SELECT
-                ds.zip_code,
-                n.name,
-                {_BOROUGH_CASE} AS borough,
-                ds.score,
-                ds.signal_breakdown
-            FROM displacement_scores ds
-            LEFT JOIN neighborhoods n ON ds.zip_code = n.zip_code
-            WHERE ds.score IS NOT NULL
-              {zip_filter}
-            ORDER BY ds.score DESC
+            WITH
+            -- Actual 30-day raw counts per ZIP from source tables (Option B per RESEARCH.md).
+            -- ownership_raw has no zip_code column — join via parcels to resolve ZIP.
+            llc_counts AS (
+                SELECT p.zip_code, COUNT(*) AS cnt
+                FROM ownership_raw o
+                JOIN parcels p ON o.bbl = p.bbl
+                WHERE o.party_type = '2'
+                  AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
+                  AND o.party_name_normalized LIKE '%LLC%'
+                  AND o.doc_date >= CURRENT_DATE - INTERVAL '30 days'
+                  AND p.zip_code IS NOT NULL
+                  AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
+                  AND o.party_name_normalized NOT ILIKE '%LOAN SERVICING%'
+                  AND o.party_name_normalized NOT ILIKE '%LOAN SERVICE%'
+                  AND o.party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
+                  AND o.party_name_normalized NOT ILIKE '%CREDIT UNION%'
+                GROUP BY p.zip_code
+            ),
+            eviction_counts AS (
+                SELECT zip_code, COUNT(*) AS cnt
+                FROM evictions_raw
+                WHERE executed_date >= CURRENT_DATE - INTERVAL '30 days'
+                  AND zip_code IS NOT NULL
+                GROUP BY zip_code
+            ),
+            permit_counts AS (
+                SELECT zip_code, COUNT(*) AS cnt
+                FROM permits_raw
+                WHERE filing_date >= CURRENT_DATE - INTERVAL '30 days'
+                  AND zip_code IS NOT NULL
+                GROUP BY zip_code
+            ),
+            complaint_counts AS (
+                -- complaints_raw uses created_date (not open_date).
+                SELECT zip_code, COUNT(*) AS cnt
+                FROM complaints_raw
+                WHERE created_date >= CURRENT_DATE - INTERVAL '30 days'
+                  AND zip_code IS NOT NULL
+                GROUP BY zip_code
+            ),
+            rs_loss_counts AS (
+                -- rs_unit_loss: count RS buildings with unit loss in current vs prior year.
+                -- rs_buildings has no zip_code — join via parcels.
+                -- This is a point-in-time loss count, not a 30-day window.
+                SELECT par.zip_code, COUNT(*) AS cnt
+                FROM rs_buildings cur
+                JOIN rs_buildings prior ON cur.bbl = prior.bbl
+                    AND prior.year = cur.year - 1
+                    AND prior.rs_unit_count > cur.rs_unit_count
+                JOIN parcels par ON par.bbl = cur.bbl
+                WHERE cur.year = EXTRACT(YEAR FROM CURRENT_DATE)::int
+                  AND par.zip_code IS NOT NULL
+                GROUP BY par.zip_code
+            ),
+            -- Join all raw counts to each valid NYC ZIP, then compute PERCENT_RANK()
+            -- over actual counts. Window covers all valid ZIPs (D-15 denominator).
+            -- assessment_spike: fallback to signal_breakdown JSONB — assessment_history
+            -- lacks zip_code and requires a BBL-to-ZIP join plus YoY logic; the signal
+            -- is dormant (0.0) until the second annual DOF scraper run completes.
+            ranked AS (
+                SELECT
+                    ds.zip_code,
+                    n.name,
+                    {_BOROUGH_CASE} AS borough,
+                    ds.score,
+                    ds.signal_breakdown,
+                    COALESCE(lc.cnt, 0)  AS raw_llc,
+                    COALESCE(ec.cnt, 0)  AS raw_evictions,
+                    COALESCE(pc.cnt, 0)  AS raw_permits,
+                    COALESCE(cc.cnt, 0)  AS raw_complaint_rate,
+                    COALESCE(rl.cnt, 0)  AS raw_rs_unit_loss,
+                    -- assessment_spike: use normalized signal value from signal_breakdown
+                    -- as a proxy count (dormant signal — always 0 until 2027 at earliest).
+                    COALESCE((ds.signal_breakdown->>'assessment_spike')::float, 0)
+                                         AS raw_assessment_spike,
+                    PERCENT_RANK() OVER (ORDER BY COALESCE(lc.cnt,  0)) AS pct_llc_acquisitions,
+                    PERCENT_RANK() OVER (ORDER BY COALESCE(ec.cnt,  0)) AS pct_evictions,
+                    PERCENT_RANK() OVER (ORDER BY COALESCE(pc.cnt,  0)) AS pct_permits,
+                    PERCENT_RANK() OVER (ORDER BY COALESCE(cc.cnt,  0)) AS pct_complaint_rate,
+                    PERCENT_RANK() OVER (ORDER BY COALESCE(rl.cnt,  0)) AS pct_rs_unit_loss,
+                    PERCENT_RANK() OVER (
+                        ORDER BY COALESCE((ds.signal_breakdown->>'assessment_spike')::float, 0)
+                    ) AS pct_assessment_spike
+                FROM displacement_scores ds
+                LEFT JOIN neighborhoods n       ON ds.zip_code = n.zip_code
+                LEFT JOIN llc_counts lc         ON lc.zip_code = ds.zip_code
+                LEFT JOIN eviction_counts ec    ON ec.zip_code = ds.zip_code
+                LEFT JOIN permit_counts pc      ON pc.zip_code = ds.zip_code
+                LEFT JOIN complaint_counts cc   ON cc.zip_code = ds.zip_code
+                LEFT JOIN rs_loss_counts rl     ON rl.zip_code = ds.zip_code
+                WHERE ds.score IS NOT NULL
+                  AND ({_VALID_NYC_ZIP_CLAUSE})
+            )
+            SELECT * FROM ranked
+            {outer_where}
+            ORDER BY score DESC
             LIMIT :limit
             """
         ),
         params,
     ).fetchall()
 
+    # Raw count column map: dominant signal key -> actual 30-day count column from CTE.
+    # These are real event counts from source tables (Option B per RESEARCH.md).
+    RAW_COUNT_COLS = {
+        "llc_acquisitions": "raw_llc",
+        "evictions":        "raw_evictions",
+        "permits":          "raw_permits",
+        "complaint_rate":   "raw_complaint_rate",
+        "rs_unit_loss":     "raw_rs_unit_loss",
+        "assessment_spike": "raw_assessment_spike",
+    }
+    PCT_RANK_COLS = {
+        "llc_acquisitions": "pct_llc_acquisitions",
+        "evictions":        "pct_evictions",
+        "permits":          "pct_permits",
+        "complaint_rate":   "pct_complaint_rate",
+        "rs_unit_loss":     "pct_rs_unit_loss",
+        "assessment_spike": "pct_assessment_spike",
+    }
+
     result = []
     for i, row in enumerate(rows):
         dominant, _ = _dominant_signal(row.signal_breakdown or {})
+
+        raw_col = RAW_COUNT_COLS.get(dominant) if dominant else None
+        raw_count = int(getattr(row, raw_col, 0) or 0) if raw_col else 0
+
+        pct_col = PCT_RANK_COLS.get(dominant) if dominant else None
+        pct_rank = float(getattr(row, pct_col, 0.0) or 0.0) if pct_col else 0.0
+
+        raw_count_label = _SIGNAL_LABELS.get(dominant, dominant or "") if dominant else ""
+
         result.append(
             {
                 "rank": i + 1,
                 "zip_code": row.zip_code,
                 "name": row.name,
                 "borough": row.borough,
-                "score": round(row.score, 1),
+                "score": round(float(row.score), 1),
                 "dominant_signal": dominant,
+                "raw_count": raw_count,
+                "raw_count_label": raw_count_label,
+                "percentile_tier": _percentile_tier(pct_rank),
             }
         )
 
@@ -222,6 +342,21 @@ def _dominant_signal(breakdown: dict) -> tuple:
         return None, None
     key = max(valid, key=valid.__getitem__)
     return key, valid[key]
+
+
+def _percentile_tier(percent_rank: float) -> str:
+    """
+    Converts PERCENT_RANK() output (0.0-1.0) to a display tier label.
+    percent_rank = fraction of ZIPs with a LOWER raw event count for the signal.
+    So percent_rank=0.97 means 97% of ZIPs have fewer events -> top 3%.
+    """
+    pct = (1.0 - percent_rank) * 100.0
+    if pct <= 1:   return "top 1%"
+    if pct <= 3:   return "top 3%"
+    if pct <= 5:   return "top 5%"
+    if pct <= 10:  return "top 10%"
+    if pct <= 20:  return "top 20%"
+    return f"top {int(pct)}%"
 
 
 # ---------------------------------------------------------------------------

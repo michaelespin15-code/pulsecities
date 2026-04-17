@@ -211,3 +211,41 @@ class TestTopRiskNeighborhoods:
             assert isinstance(item["score"], (int, float)), (
                 f"score must be numeric, got {type(item['score'])}"
             )
+
+
+@pytest.mark.integration
+class TestTopRiskNewFields:
+    """Plan 999.1-01: GET /api/neighborhoods/top-risk must include raw_count + percentile_tier."""
+
+    def test_top_risk_has_raw_count(self):
+        resp = client.get("/api/neighborhoods/top-risk?limit=3")
+        assert resp.status_code == 200
+        items = resp.json().get("neighborhoods", [])
+        if not items:
+            pytest.skip("No neighborhoods in test DB")
+        for item in items:
+            assert "raw_count" in item, f"Missing raw_count in item: {list(item.keys())}"
+            assert isinstance(item["raw_count"], int), "raw_count must be int"
+
+    def test_top_risk_has_raw_count_label(self):
+        resp = client.get("/api/neighborhoods/top-risk?limit=3")
+        items = resp.json().get("neighborhoods", [])
+        if not items:
+            pytest.skip("No neighborhoods in test DB")
+        for item in items:
+            assert "raw_count_label" in item, f"Missing raw_count_label: {list(item.keys())}"
+            assert isinstance(item["raw_count_label"], str)
+
+    def test_top_risk_has_percentile_tier(self):
+        resp = client.get("/api/neighborhoods/top-risk?limit=3")
+        items = resp.json().get("neighborhoods", [])
+        if not items:
+            pytest.skip("No neighborhoods in test DB")
+        for item in items:
+            assert "percentile_tier" in item, f"Missing percentile_tier: {list(item.keys())}"
+            assert item["percentile_tier"].startswith("top "), (
+                f"percentile_tier should start with 'top ': {item['percentile_tier']}"
+            )
+            assert "%" in item["percentile_tier"], (
+                f"percentile_tier should contain '%': {item['percentile_tier']}"
+            )
