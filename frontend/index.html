@@ -2339,13 +2339,20 @@
             topRow.append(left, scoreEl);
             btn.appendChild(topRow);
 
-            const desc = _riskSignalLine(n.dominant_signal);
-            if (desc) {
-                const descEl = document.createElement('p');
-                descEl.className = 'text-xs text-base-content/40 mt-0.5 ml-6';
-                descEl.textContent = desc;
-                btn.appendChild(descEl);
+            // D-13: raw count + citywide percentile when available; falls back to signal label.
+            const descEl = document.createElement('p');
+            descEl.className = 'text-xs text-base-content/40 mt-0.5 ml-6';
+            if (n.raw_count && n.raw_count_label && n.percentile_tier) {
+                descEl.textContent = `${n.raw_count} ${n.raw_count_label} \xB7 ${n.percentile_tier} citywide`;
+            } else {
+                const fallback = _riskSignalLine(n.dominant_signal);
+                if (!fallback) {
+                    btn.addEventListener('click', () => { _navFromList = true; selectNeighborhood(n.zip_code); });
+                    return btn;
+                }
+                descEl.textContent = fallback;
             }
+            btn.appendChild(descEl);
 
             btn.addEventListener('click', () => { _navFromList = true; selectNeighborhood(n.zip_code); });
             return btn;
