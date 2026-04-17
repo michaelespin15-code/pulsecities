@@ -31,7 +31,7 @@ Security:
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy import text
@@ -41,7 +41,7 @@ from models.database import get_db
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/neighborhoods", tags=["pulse"])
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
 PERMIT_TYPE_LABELS = {
     "A1": "Major Renovation",
@@ -54,6 +54,7 @@ PERMIT_TYPE_LABELS = {
 @limiter.limit("60/minute")
 def get_neighborhood_pulse(
     request: Request,
+    response: Response,
     zip_code: str,
     db: Session = Depends(get_db),
 ):
@@ -194,6 +195,7 @@ def get_neighborhood_pulse(
 @limiter.limit("60/minute")
 def get_renovation_flip(
     request: Request,
+    response: Response,
     zip_code: str,
     db: Session = Depends(get_db),
 ):

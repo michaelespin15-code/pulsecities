@@ -24,7 +24,7 @@ from scheduler.manager import lifespan
 configure_logging()
 logger = logging.getLogger(__name__)
 
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
 app = FastAPI(
     title="PulseCities API",

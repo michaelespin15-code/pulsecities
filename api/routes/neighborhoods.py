@@ -9,7 +9,7 @@ import json
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy import text
@@ -20,12 +20,12 @@ from models.scores import DisplacementScore
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/neighborhoods", tags=["neighborhoods"])
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
 
 @router.get("")
 @limiter.limit("60/minute")
-def list_neighborhoods_geojson(request: Request, db: Session = Depends(get_db)):
+def list_neighborhoods_geojson(request: Request, response: Response, db: Session = Depends(get_db)):
     """
     Returns all neighborhoods as a GeoJSON FeatureCollection.
     Geometry is simplified via ST_SimplifyPreserveTopology for performance.
@@ -78,7 +78,7 @@ def list_neighborhoods_geojson(request: Request, db: Session = Depends(get_db)):
 @router.get("/{zip_code}/score")
 @limiter.limit("60/minute")
 def get_neighborhood_score(
-    request: Request, zip_code: str, db: Session = Depends(get_db)
+    request: Request, response: Response, zip_code: str, db: Session = Depends(get_db)
 ):
     """
     Returns displacement score + signal breakdown for a single zip code.
@@ -150,6 +150,7 @@ _VALID_NYC_ZIP_CLAUSE = " OR ".join(f"({v})" for v in _BOROUGH_ZIP_CLAUSE.values
 @limiter.limit("60/minute")
 def get_top_risk_neighborhoods(
     request: Request,
+    response: Response,
     limit: int = 10,
     borough: str | None = None,
     db: Session = Depends(get_db),

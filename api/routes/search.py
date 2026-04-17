@@ -38,7 +38,7 @@ Security:
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy import text
@@ -49,13 +49,14 @@ from models.database import get_db
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/search", tags=["search"])
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
 
 @router.get("/landlord")
 @limiter.limit("30/minute")
 def search_landlord(
     request: Request,
+    response: Response,
     q: str = "",
     db: Session = Depends(get_db),
 ):

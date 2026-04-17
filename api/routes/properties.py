@@ -12,7 +12,7 @@ import logging
 import os
 
 import requests
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
@@ -29,7 +29,7 @@ from models.scores import PropertyScore
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/properties", tags=["properties"])
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
 # How many months of raw signal data to return in the API response
 SIGNAL_WINDOW_MONTHS = 12
@@ -39,6 +39,7 @@ SIGNAL_WINDOW_MONTHS = 12
 @limiter.limit("30/minute")
 def search_by_address(
     request: Request,
+    response: Response,
     address: str = Query(..., min_length=5, description="Street address in NYC"),
     db: Session = Depends(get_db),
 ):
@@ -57,7 +58,7 @@ def search_by_address(
 
 @router.get("/{bbl}")
 @limiter.limit("60/minute")
-def get_property(request: Request, bbl: str, db: Session = Depends(get_db)):
+def get_property(request: Request, response: Response, bbl: str, db: Session = Depends(get_db)):
     """
     Returns all available signal data for a specific BBL.
     """

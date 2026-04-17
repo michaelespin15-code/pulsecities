@@ -6,7 +6,7 @@ POST /api/subscribe — save email + zip_code to the subscribers table.
 import logging
 import re
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, field_validator
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -19,7 +19,7 @@ from models.subscribers import Subscriber
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["subscribers"])
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
 _EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 _ZIP_RE   = re.compile(r'^\d{5}$')
@@ -50,6 +50,7 @@ class SubscribeRequest(BaseModel):
 @limiter.limit('10/minute')
 def subscribe(
     request: Request,
+    response: Response,
     body: SubscribeRequest,
     db: Session = Depends(get_db),
 ):
