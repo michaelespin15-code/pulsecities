@@ -52,6 +52,10 @@ class ScraperRun(TimestampMixin, Base):
         DateTime(timezone=True), nullable=True
     )
 
+    # Set when records_processed < 50% of the 14-day rolling average.
+    # Populated on successful runs only; never set on failure rows.
+    warning_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+
     __table_args__ = (
         Index("idx_scraper_runs_scraper_name", "scraper_name"),
         Index("idx_scraper_runs_started_at", "started_at"),
