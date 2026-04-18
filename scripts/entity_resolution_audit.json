@@ -1,0 +1,827 @@
+{
+  "generated_at": "2026-04-18",
+  "analysis_window": "18 months",
+  "signals_checked": [
+    "name_embedding",
+    "root_substring",
+    "shared_bbl",
+    "zip_jaccard"
+  ],
+  "signals_not_checked": [
+    "registered_address \u2014 party addresses not stored in ownership_raw (AcrisPartyInput captures only party_name, not addr_1/addr_2)",
+    "deed_signatory \u2014 signatories are on physical deed instruments, not ACRIS digital records"
+  ],
+  "total_candidates": 26,
+  "merge_candidates": 14,
+  "flag_for_review": 12,
+  "findings": [
+    {
+      "cluster_a": "ICECAP",
+      "cluster_b": "ICE",
+      "cluster_a_entities": [
+        "ICECAP FUND III SPV-C LLC",
+        "ICECAP REAL",
+        "ICECAP REAL ESTATE DEBT FUND 111 LLC",
+        "ICECAP REAL ESTATE DEBT FUND IHI LLC",
+        "ICECAP REAL ESTATE DEBT FUND III LLC",
+        "ICECAP SUB-REIT SPV I LLC",
+        "ICECAP SUB-REIT SPV-I LLC"
+      ],
+      "cluster_a_properties": 73,
+      "cluster_b_entities": [
+        "ICE CAP FUND III SPV-C LLC",
+        "ICE LENDER HOLDINGS",
+        "ICE LENDER HOLDINGS LLC",
+        "ICE LENDER HOLDINGS LLC ISAOA/ATIMA"
+      ],
+      "cluster_b_properties": 34,
+      "signals": [
+        {
+          "signal_type": "root_substring",
+          "confidence": 0.85,
+          "detail": "Root 'ICE' is a prefix of 'ICECAP' \u2014 possible whitespace normalization split. 1 entity name(s) confirm via whitespace collapse: ['ICECAPFUNDIIISPV-CLLC']"
+        },
+        {
+          "signal_type": "shared_bbl",
+          "confidence": 0.92,
+          "detail": "8 BBL(s) acquired by both clusters: ['1017200003', '2032950030', '2045730046', '3005860020', '3050390033'] (+ 3 more)"
+        }
+      ],
+      "combined_confidence": 0.988,
+      "recommended_action": "merge_candidate"
+    },
+    {
+      "cluster_a": "BCC",
+      "cluster_b": "BCC/ST",
+      "cluster_a_entities": [
+        "BCC 1375 BROADWAY 1 LLC",
+        "BCC 141 SECOND AVE LLC",
+        "BCC 205-207 EIGHTH AVE LLC",
+        "BCC FUNDING CRF LLC",
+        "BCC FUNDING II LLC",
+        "BCC LAKESIDE A LLC",
+        "BCC LOAN FUNDER III LLC"
+      ],
+      "cluster_a_properties": 13,
+      "cluster_b_entities": [
+        "BCC/ST LLC",
+        "BCC/ST LLC ISAOA/ATIMA"
+      ],
+      "cluster_b_properties": 4,
+      "signals": [
+        {
+          "signal_type": "name_embedding",
+          "confidence": 0.9,
+          "detail": "'BCC/ST LLC' (in BCC/ST cluster) embeds root 'BCC'; 'BCC/ST LLC ISAOA/ATIMA' (in BCC/ST cluster) embeds root 'BCC'"
+        },
+        {
+          "signal_type": "root_substring",
+          "confidence": 0.7,
+          "detail": "Root 'BCC' is a prefix of 'BCC/ST' \u2014 possible whitespace normalization split."
+        }
+      ],
+      "combined_confidence": 0.97,
+      "recommended_action": "merge_candidate"
+    },
+    {
+      "cluster_a": "BROAD",
+      "cluster_b": "CHURCHILL",
+      "cluster_a_entities": [
+        "BROAD X FUNDING II LLC",
+        "BROAD X FUNDING III LLC",
+        "BROAD X FUNDING LLC"
+      ],
+      "cluster_a_properties": 43,
+      "cluster_b_entities": [
+        "CHURCHILL DANIELE",
+        "CHURCHILL FUNDING I LLC",
+        "CHURCHILL MARA FUNDING I LLC",
+        "CHURCHILL MRA FUNDING I LLC",
+        "FB CHURCHILL FACILITY LLC"
+      ],
+      "cluster_b_properties": 86,
+      "signals": [
+        {
+          "signal_type": "shared_bbl",
+          "confidence": 0.92,
+          "detail": "11 BBL(s) acquired by both clusters: ['2024520014', '2024720004', '2028740044', '2028740045', '2028800333'] (+ 6 more)"
+        }
+      ],
+      "combined_confidence": 0.92,
+      "recommended_action": "merge_candidate"
+    },
+    {
+      "cluster_a": "CHURCHILL",
+      "cluster_b": "DERBY",
+      "cluster_a_entities": [
+        "CHURCHILL DANIELE",
+        "CHURCHILL FUNDING I LLC",
+        "CHURCHILL MARA FUNDING I LLC",
+        "CHURCHILL MRA FUNDING I LLC",
+        "FB CHURCHILL FACILITY LLC"
+      ],
+      "cluster_a_properties": 86,
+      "cluster_b_entities": [
+        "DERBY 538 LLC",
+        "DERBY BOW 9 LLC",
+        "DERBY DENVER 303 LENDER II LLC",
+        "DERBY FIG HOLDINGS 1 LP",
+        "DERBY FIG HOLDINGS I LLC",
+        "DERBY ROADRUNNER 355 LLC",
+        "DERBY SLED 580 LLC",
+        "DERBY WRIGHT 1571 LLC"
+      ],
+      "cluster_b_properties": 34,
+      "signals": [
+        {
+          "signal_type": "shared_bbl",
+          "confidence": 0.92,
+          "detail": "10 BBL(s) acquired by both clusters: ['1000780043', '1004880025', '3002410034', '3002640013', '3006490028'] (+ 5 more)"
+        }
+      ],
+      "combined_confidence": 0.92,
+      "recommended_action": "merge_candidate"
+    },
+    {
+      "cluster_a": "ALLISON",
+      "cluster_b": "HUNTINGTON",
+      "cluster_a_entities": [
+        "ALLISON A SYLVESTER AND ANSELM F SYLVESTER",
+        "ALLISON AMANDA",
+        "ALLISON DUSTIN",
+        "ALLISON LENDING LLC"
+      ],
+      "cluster_a_properties": 9,
+      "cluster_b_entities": [
+        "295 HUNTINGTON AVE LLC",
+        "HUNTINGTON CHASE ALLISON",
+        "HUNTINGTON NATIONAL BANK",
+        "THE HUNTINGTON NATIONAL BANK"
+      ],
+      "cluster_b_properties": 8,
+      "signals": [
+        {
+          "signal_type": "name_embedding",
+          "confidence": 0.9,
+          "detail": "'HUNTINGTON CHASE ALLISON' (in HUNTINGTON cluster) embeds root 'ALLISON'"
+        }
+      ],
+      "combined_confidence": 0.9,
+      "recommended_action": "merge_candidate"
+    },
+    {
+      "cluster_a": "METROPOLITAN",
+      "cluster_b": "TOWER",
+      "cluster_a_entities": [
+        "5549 METROPOLITAN LLC",
+        "C1 METROPOLITAN AVE LLC",
+        "C2 METROPOLITAN AVE LLC",
+        "EE METROPOLITAN LLC",
+        "HC METROPOLITAN LLC",
+        "METROPOLITAN COMERCIAL BANK",
+        "METROPOLITAN COMMERCIAL BANK",
+        "METROPOLITAN COMMERCIAL BANK ISAOA",
+        "METROPOLITAN LIFE INSURANCE COMPANY",
+        "METROPOLITAN NATIONAL BANK MORTGAGE COMPANY LLC",
+        "METROPOLITAN TOWER LIFE INSURANCE COMPANY"
+      ],
+      "cluster_a_properties": 62,
+      "cluster_b_entities": [
+        "859 TOWER LLC",
+        "NY TOWER CAPITAL LLC",
+        "NYC TOWER 2619 HOLDINGS LLC",
+        "SOUTH TOWER 121 LLC",
+        "TOWER 1014 LLC",
+        "TOWER 2055 REALTY LLC",
+        "TOWER 66 LLC"
+      ],
+      "cluster_b_properties": 25,
+      "signals": [
+        {
+          "signal_type": "name_embedding",
+          "confidence": 0.9,
+          "detail": "'METROPOLITAN TOWER LIFE INSURANCE COMPANY' (in METROPOLITAN cluster) embeds root 'TOWER'"
+        }
+      ],
+      "combined_confidence": 0.9,
+      "recommended_action": "merge_candidate"
+    },
+    {
+      "cluster_a": "TOMPKINS",
+      "cluster_b": "TOWNHOUSE",
+      "cluster_a_entities": [
+        "116 TOMPKINS AVENUE CORPORATION",
+        "145 TOMPKINS REALTY LLC",
+        "51 TOMPKINS TOWNHOUSE LLC",
+        "M TOMPKINS LLC",
+        "TOMPKINS & BALLONZOLI TRUST",
+        "TOMPKINS COMMUNITY BANK",
+        "TOMPKINS EUGENE"
+      ],
+      "cluster_a_properties": 14,
+      "cluster_b_entities": [
+        "M5 TOWNHOUSE 47 LLC",
+        "TOWNHOUSE RENTAL II LLC",
+        "TOWNHOUSE RENTAL IX LLC",
+        "TOWNHOUSE RENTAL LLC",
+        "TOWNHOUSE RENTAL VII LLC"
+      ],
+      "cluster_b_properties": 27,
+      "signals": [
+        {
+          "signal_type": "name_embedding",
+          "confidence": 0.9,
+          "detail": "'51 TOMPKINS TOWNHOUSE LLC' (in TOMPKINS cluster) embeds root 'TOWNHOUSE'"
+        }
+      ],
+      "combined_confidence": 0.9,
+      "recommended_action": "merge_candidate"
+    },
+    {
+      "cluster_a": "TOMPKINS",
+      "cluster_b": "COMMUNITY",
+      "cluster_a_entities": [
+        "116 TOMPKINS AVENUE CORPORATION",
+        "145 TOMPKINS REALTY LLC",
+        "51 TOMPKINS TOWNHOUSE LLC",
+        "M TOMPKINS LLC",
+        "TOMPKINS & BALLONZOLI TRUST",
+        "TOMPKINS COMMUNITY BANK",
+        "TOMPKINS EUGENE"
+      ],
+      "cluster_a_properties": 14,
+      "cluster_b_entities": [
+        "AMERICAN COMMUNITY BANK",
+        "AMERICAN COMMUNITY BANK ISAOA",
+        "COMMUNITY BANK NATIONAL ASSOCIATION",
+        "COMMUNITY FEDERAL SAVINGS BANK",
+        "COMMUNITY FEDERAL SAVINGS BANK ISAOA",
+        "COMMUNITY FEDERAL SAVINGS BANK ISAOA/ATIMA",
+        "COMMUNITY LOAN SERVICING LLC",
+        "FIRST COMMUNITY BANK",
+        "NORTHEAST COMMUNITY BANK",
+        "THE COMMUNITY PRESERVATION CORPORATION",
+        "THE COMMUNITY PRESERVATION CORPORTION"
+      ],
+      "cluster_b_properties": 62,
+      "signals": [
+        {
+          "signal_type": "name_embedding",
+          "confidence": 0.9,
+          "detail": "'TOMPKINS COMMUNITY BANK' (in TOMPKINS cluster) embeds root 'COMMUNITY'"
+        }
+      ],
+      "combined_confidence": 0.9,
+      "recommended_action": "merge_candidate"
+    },
+    {
+      "cluster_a": "1ST",
+      "cluster_b": "VENTURES",
+      "cluster_a_entities": [
+        "1492 1ST AVENUE REALTY LLC",
+        "1ST 2ND MORTGAGE CO OF NJ INC",
+        "1ST AMERICAN PROPERTIES GROUP I LLC",
+        "1ST AMERICAN PROPERTIES GROUP ONE NY LLC",
+        "1ST REPUBLIC MORTGAGE BANKERS INC",
+        "2015 1ST AVENUE NYC REALTY INC",
+        "64 1ST PLACE LLC",
+        "71 1ST VENTURES LLC"
+      ],
+      "cluster_a_properties": 11,
+      "cluster_b_entities": [
+        "140 VENTURES LLC",
+        "164 VENTURES LLC",
+        "3844 VENTURES LLC"
+      ],
+      "cluster_b_properties": 3,
+      "signals": [
+        {
+          "signal_type": "name_embedding",
+          "confidence": 0.9,
+          "detail": "'71 1ST VENTURES LLC' (in 1ST cluster) embeds root 'VENTURES'"
+        }
+      ],
+      "combined_confidence": 0.9,
+      "recommended_action": "merge_candidate"
+    },
+    {
+      "cluster_a": "MELO",
+      "cluster_b": "PHANTOM",
+      "cluster_a_entities": [
+        "MELO HECTOR B",
+        "MELO Z PHANTOM CAP LLC"
+      ],
+      "cluster_a_properties": 10,
+      "cluster_b_entities": [
+        "PHANTOM & Z CAPITAL LLC",
+        "PHANTOM AFFORDABLE HOUSING LLC",
+        "PHANTOM CAP HOLDINGS 206 LLC",
+        "PHANTOM CAP MAP LLC",
+        "PHANTOM CAPITAL 10 LLC",
+        "PHANTOM CAPITAL 107 LLC",
+        "PHANTOM CAPITAL 11 LLC",
+        "PHANTOM CAPITAL 12 LLC",
+        "PHANTOM CAPITAL 161 LLC",
+        "PHANTOM CAPITAL 21 LLC",
+        "PHANTOM CAPITAL 22 LLC",
+        "PHANTOM CAPITAL 350 LLC",
+        "PHANTOM CAPITAL 44 LLC",
+        "PHANTOM CAPITAL 53 LLC",
+        "PHANTOM CAPITAL 55 LLC",
+        "PHANTOM CAPITAL 71 LLC",
+        "PHANTOM CAPITAL 800 LLC",
+        "PHANTOM CAPITAL ACQUISITIONS LLC",
+        "PHANTOM CAPITAL BX LLC",
+        "PHANTOM HOUSING LLC",
+        "PHANTOM KOACH LLC",
+        "PHANTOM LANDLORDS LLC",
+        "PHANTOM NYC HOLDINGS LLC",
+        "PHANTOM PARTNERS 89 LLC",
+        "PHANTOM PARTNERS BH LLC",
+        "PHANTOM PARTNERS PROPERTIES LLC",
+        "PHANTOM PARTNERS RE LLC",
+        "PHANTOM RISE LLC",
+        "PHANTOM TERRITORY LLC",
+        "PHANTOM TITANS LLC",
+        "PHANTOM TOWN LLC",
+        "PHANTOM TROPHIES LLC"
+      ],
+      "cluster_b_properties": 64,
+      "signals": [
+        {
+          "signal_type": "name_embedding",
+          "confidence": 0.9,
+          "detail": "'MELO Z PHANTOM CAP LLC' (in MELO cluster) embeds root 'PHANTOM'"
+        }
+      ],
+      "combined_confidence": 0.9,
+      "recommended_action": "merge_candidate"
+    },
+    {
+      "cluster_a": "GREYSTONE",
+      "cluster_b": "NOTES",
+      "cluster_a_entities": [
+        "GREYSTONE ALT BORROWER LLC",
+        "GREYSTONE BRIDGE CLO XII LLC",
+        "GREYSTONE BRIDGE FUNDING X LLC",
+        "GREYSTONE BRIDGE FUNDING XVIII LLC",
+        "GREYSTONE CMC I LLC",
+        "GREYSTONE COMMERCIAL MORTGAGE CAPITAL LLC",
+        "GREYSTONE CRE NOTES 2025-FL4 LLC",
+        "GREYSTONE FUNDING COMPANY LLC",
+        "GREYSTONE LOAN AGGREGATOR LLC",
+        "GREYSTONE SELECT COMPANY II LLC",
+        "GREYSTONE SELECT COMPANY LLC",
+        "GREYSTONE SERVICING COMPANY LLC",
+        "GREYSTONE ST LOAN FUNDING LLC",
+        "LLC GREYSTONE BRIDGE FUNDING X"
+      ],
+      "cluster_a_properties": 26,
+      "cluster_b_entities": [
+        "BD NOTES LLC",
+        "CI NOTES LLC",
+        "DD NOTES LLC"
+      ],
+      "cluster_b_properties": 9,
+      "signals": [
+        {
+          "signal_type": "name_embedding",
+          "confidence": 0.9,
+          "detail": "'GREYSTONE CRE NOTES 2025-FL4 LLC' (in GREYSTONE cluster) embeds root 'NOTES'"
+        }
+      ],
+      "combined_confidence": 0.9,
+      "recommended_action": "merge_candidate"
+    },
+    {
+      "cluster_a": "COMMUNITY",
+      "cluster_b": "DELTA",
+      "cluster_a_entities": [
+        "AMERICAN COMMUNITY BANK",
+        "AMERICAN COMMUNITY BANK ISAOA",
+        "COMMUNITY BANK NATIONAL ASSOCIATION",
+        "COMMUNITY FEDERAL SAVINGS BANK",
+        "COMMUNITY FEDERAL SAVINGS BANK ISAOA",
+        "COMMUNITY FEDERAL SAVINGS BANK ISAOA/ATIMA",
+        "COMMUNITY LOAN SERVICING LLC",
+        "FIRST COMMUNITY BANK",
+        "NORTHEAST COMMUNITY BANK",
+        "THE COMMUNITY PRESERVATION CORPORATION",
+        "THE COMMUNITY PRESERVATION CORPORTION"
+      ],
+      "cluster_a_properties": 62,
+      "cluster_b_entities": [
+        "DELTA COMMUNITY CREDIT UNION",
+        "DELTA FUNDING CORP",
+        "DELTA FUNDING CORPORATION",
+        "DELTA VENTURE HOLDINGS INC"
+      ],
+      "cluster_b_properties": 8,
+      "signals": [
+        {
+          "signal_type": "name_embedding",
+          "confidence": 0.9,
+          "detail": "'DELTA COMMUNITY CREDIT UNION' (in DELTA cluster) embeds root 'COMMUNITY'"
+        }
+      ],
+      "combined_confidence": 0.9,
+      "recommended_action": "merge_candidate"
+    },
+    {
+      "cluster_a": "PATRIOT",
+      "cluster_b": "MASPETH",
+      "cluster_a_entities": [
+        "PATRIOT (2010) MASPETH GP LLC",
+        "PATRIOT ONE MORTGAGE BANKERS LLC"
+      ],
+      "cluster_a_properties": 3,
+      "cluster_b_entities": [
+        "KL MASPETH LLC",
+        "MASPETH FEDERAL SAVINGS & LOAN ASSOCIATION",
+        "MASPETH FEDERAL SAVINGS AND LOAN ASSOCIATION"
+      ],
+      "cluster_b_properties": 11,
+      "signals": [
+        {
+          "signal_type": "name_embedding",
+          "confidence": 0.9,
+          "detail": "'PATRIOT (2010) MASPETH GP LLC' (in PATRIOT cluster) embeds root 'MASPETH'"
+        }
+      ],
+      "combined_confidence": 0.9,
+      "recommended_action": "merge_candidate"
+    },
+    {
+      "cluster_a": "RISING",
+      "cluster_b": "HIGHBRIDGE",
+      "cluster_a_entities": [
+        "22 RISING SUN LLC",
+        "RISING GROUND INC",
+        "RISING PROPERTIES LLC"
+      ],
+      "cluster_a_properties": 7,
+      "cluster_b_entities": [
+        "HIGHBRIDGE RISING HOUSING DEVELOPMENT FUND CORP",
+        "HIGHBRIDGE WFLAH BRONX OWNER LLC"
+      ],
+      "cluster_b_properties": 5,
+      "signals": [
+        {
+          "signal_type": "name_embedding",
+          "confidence": 0.9,
+          "detail": "'HIGHBRIDGE RISING HOUSING DEVELOPMENT FUND CORP' (in HIGHBRIDGE cluster) embeds root 'RISING'"
+        }
+      ],
+      "combined_confidence": 0.9,
+      "recommended_action": "merge_candidate"
+    },
+    {
+      "cluster_a": "ICECAP",
+      "cluster_b": "STANDARD",
+      "cluster_a_entities": [
+        "ICECAP FUND III SPV-C LLC",
+        "ICECAP REAL",
+        "ICECAP REAL ESTATE DEBT FUND 111 LLC",
+        "ICECAP REAL ESTATE DEBT FUND IHI LLC",
+        "ICECAP REAL ESTATE DEBT FUND III LLC",
+        "ICECAP SUB-REIT SPV I LLC",
+        "ICECAP SUB-REIT SPV-I LLC"
+      ],
+      "cluster_a_properties": 73,
+      "cluster_b_entities": [
+        "STANDARD FEDERAL BANK FSB",
+        "STANDARD INSURANCE COMAPNY",
+        "STANDARD INSURANCE COMPANY",
+        "STANDARD INSURANCE COMPANY AN OREGON CORPORATION"
+      ],
+      "cluster_b_properties": 52,
+      "signals": [
+        {
+          "signal_type": "shared_bbl",
+          "confidence": 0.79,
+          "detail": "4 BBL(s) acquired by both clusters: ['2024520022', '2028000045', '2028070027', '2029990029']"
+        }
+      ],
+      "combined_confidence": 0.79,
+      "recommended_action": "flag_for_manual_review"
+    },
+    {
+      "cluster_a": "INCREF",
+      "cluster_b": "TOWNHOUSE",
+      "cluster_a_entities": [
+        "INCREF 2025-FL1 LLC",
+        "INCREF CLO SELLER LLC",
+        "INCREF INVESTMENTS BB SELLER LLC",
+        "INCREF INVESTMENTS BMO SELLER LLC",
+        "INCREF INVESTMENTS CB TERM SELLER LLC",
+        "INCREF INVESTMENTS MS SELLER LLC",
+        "INCREF INVESTMENTS WF SELLER LLC"
+      ],
+      "cluster_a_properties": 20,
+      "cluster_b_entities": [
+        "M5 TOWNHOUSE 47 LLC",
+        "TOWNHOUSE RENTAL II LLC",
+        "TOWNHOUSE RENTAL IX LLC",
+        "TOWNHOUSE RENTAL LLC",
+        "TOWNHOUSE RENTAL VII LLC"
+      ],
+      "cluster_b_properties": 27,
+      "signals": [
+        {
+          "signal_type": "shared_bbl",
+          "confidence": 0.79,
+          "detail": "4 BBL(s) acquired by both clusters: ['3003820023', '3009340045', '3011000008', '3015250021']"
+        }
+      ],
+      "combined_confidence": 0.79,
+      "recommended_action": "flag_for_manual_review"
+    },
+    {
+      "cluster_a": "EMPORIUM",
+      "cluster_b": "PHANTOM",
+      "cluster_a_entities": [
+        "EMPORIUM TOP LLC",
+        "EMPORIUM TPO LLC",
+        "EMPORIUM TPO LLC ISAOA/ATIMA",
+        "EMPORIUM TPO LLC LLC"
+      ],
+      "cluster_a_properties": 32,
+      "cluster_b_entities": [
+        "PHANTOM & Z CAPITAL LLC",
+        "PHANTOM AFFORDABLE HOUSING LLC",
+        "PHANTOM CAP HOLDINGS 206 LLC",
+        "PHANTOM CAP MAP LLC",
+        "PHANTOM CAPITAL 10 LLC",
+        "PHANTOM CAPITAL 107 LLC",
+        "PHANTOM CAPITAL 11 LLC",
+        "PHANTOM CAPITAL 12 LLC",
+        "PHANTOM CAPITAL 161 LLC",
+        "PHANTOM CAPITAL 21 LLC",
+        "PHANTOM CAPITAL 22 LLC",
+        "PHANTOM CAPITAL 350 LLC",
+        "PHANTOM CAPITAL 44 LLC",
+        "PHANTOM CAPITAL 53 LLC",
+        "PHANTOM CAPITAL 55 LLC",
+        "PHANTOM CAPITAL 71 LLC",
+        "PHANTOM CAPITAL 800 LLC",
+        "PHANTOM CAPITAL ACQUISITIONS LLC",
+        "PHANTOM CAPITAL BX LLC",
+        "PHANTOM HOUSING LLC",
+        "PHANTOM KOACH LLC",
+        "PHANTOM LANDLORDS LLC",
+        "PHANTOM NYC HOLDINGS LLC",
+        "PHANTOM PARTNERS 89 LLC",
+        "PHANTOM PARTNERS BH LLC",
+        "PHANTOM PARTNERS PROPERTIES LLC",
+        "PHANTOM PARTNERS RE LLC",
+        "PHANTOM RISE LLC",
+        "PHANTOM TERRITORY LLC",
+        "PHANTOM TITANS LLC",
+        "PHANTOM TOWN LLC",
+        "PHANTOM TROPHIES LLC"
+      ],
+      "cluster_b_properties": 64,
+      "signals": [
+        {
+          "signal_type": "shared_bbl",
+          "confidence": 0.75,
+          "detail": "2 BBL(s) acquired by both clusters: ['2027540022', '2030990124']"
+        }
+      ],
+      "combined_confidence": 0.75,
+      "recommended_action": "flag_for_manual_review"
+    },
+    {
+      "cluster_a": "TOORAK",
+      "cluster_b": "BROADVIEW",
+      "cluster_a_entities": [
+        "TOORAK CAPITAL PARTNERS",
+        "TOORAK CAPITAL PARTNERS LLC"
+      ],
+      "cluster_a_properties": 65,
+      "cluster_b_entities": [
+        "BROADVIEW CAPITAL LLC",
+        "BROADVIEW CAPITAL LLC ISAOA ATIMA",
+        "BROADVIEW CAPITAL LLC ISAOA/ATIMA"
+      ],
+      "cluster_b_properties": 39,
+      "signals": [
+        {
+          "signal_type": "shared_bbl",
+          "confidence": 0.75,
+          "detail": "2 BBL(s) acquired by both clusters: ['2027160135', '3019130023']"
+        }
+      ],
+      "combined_confidence": 0.75,
+      "recommended_action": "flag_for_manual_review"
+    },
+    {
+      "cluster_a": "TOORAK",
+      "cluster_b": "POPULAR",
+      "cluster_a_entities": [
+        "TOORAK CAPITAL PARTNERS",
+        "TOORAK CAPITAL PARTNERS LLC"
+      ],
+      "cluster_a_properties": 65,
+      "cluster_b_entities": [
+        "POPULAR ABS INC SERIES 2007-A",
+        "POPULAR BANK",
+        "POPULAR BANK FKA BANCO POPULAR NORTH AMERICA"
+      ],
+      "cluster_b_properties": 27,
+      "signals": [
+        {
+          "signal_type": "shared_bbl",
+          "confidence": 0.75,
+          "detail": "3 BBL(s) acquired by both clusters: ['2029580208', '2029580209', '2029580210']"
+        }
+      ],
+      "combined_confidence": 0.75,
+      "recommended_action": "flag_for_manual_review"
+    },
+    {
+      "cluster_a": "GRASSHOPPER",
+      "cluster_b": "BROAD",
+      "cluster_a_entities": [
+        "GRASSHOPPER BANK",
+        "GRASSHOPPER BANK NA",
+        "GRASSHOPPER BANKNA"
+      ],
+      "cluster_a_properties": 23,
+      "cluster_b_entities": [
+        "BROAD X FUNDING II LLC",
+        "BROAD X FUNDING III LLC",
+        "BROAD X FUNDING LLC"
+      ],
+      "cluster_b_properties": 43,
+      "signals": [
+        {
+          "signal_type": "shared_bbl",
+          "confidence": 0.75,
+          "detail": "2 BBL(s) acquired by both clusters: ['2028160057', '2028270036']"
+        }
+      ],
+      "combined_confidence": 0.75,
+      "recommended_action": "flag_for_manual_review"
+    },
+    {
+      "cluster_a": "BROAD",
+      "cluster_b": "SPENCER",
+      "cluster_a_entities": [
+        "BROAD X FUNDING II LLC",
+        "BROAD X FUNDING III LLC",
+        "BROAD X FUNDING LLC"
+      ],
+      "cluster_a_properties": 43,
+      "cluster_b_entities": [
+        "100 SPENCER ST 1C LLC",
+        "14 SPENCER PSA LLC",
+        "185 SPENCER ST LLC",
+        "3135 SPENCER DRIVE LLC",
+        "3210 SPENCER DRIVE LLC",
+        "49 SPENCER FUNDING LP",
+        "86 SPENCER ST 2B LLC",
+        "MM SPENCER HOLDINGS LLC",
+        "SPENCER DENISE M",
+        "SPENCER GARDENS NY LLC",
+        "SPENCER KINGSLEY",
+        "SPENCER SAVINGS BANK",
+        "SPENCER SAVINGS BANK SL",
+        "SPENCER SAVINGS BANK SLA",
+        "SPENCER STARS LLC",
+        "SPENCER WILBERT A JR",
+        "SPENCER WILLOUGHBY HOLDINGS LLC"
+      ],
+      "cluster_b_properties": 28,
+      "signals": [
+        {
+          "signal_type": "shared_bbl",
+          "confidence": 0.75,
+          "detail": "2 BBL(s) acquired by both clusters: ['2033110117', '2037740064']"
+        }
+      ],
+      "combined_confidence": 0.75,
+      "recommended_action": "flag_for_manual_review"
+    },
+    {
+      "cluster_a": "BROAD",
+      "cluster_b": "BXC",
+      "cluster_a_entities": [
+        "BROAD X FUNDING II LLC",
+        "BROAD X FUNDING III LLC",
+        "BROAD X FUNDING LLC"
+      ],
+      "cluster_a_properties": 43,
+      "cluster_b_entities": [
+        "BXC 1677-79 EASTBURN FUNDING LLC",
+        "BXC SPE 6 LLC"
+      ],
+      "cluster_b_properties": 2,
+      "signals": [
+        {
+          "signal_type": "shared_bbl",
+          "confidence": 0.75,
+          "detail": "2 BBL(s) acquired by both clusters: ['2027940061', '2032100057']"
+        }
+      ],
+      "combined_confidence": 0.75,
+      "recommended_action": "flag_for_manual_review"
+    },
+    {
+      "cluster_a": "DEEPHAVEN",
+      "cluster_b": "BCC/ST",
+      "cluster_a_entities": [
+        "DEEPHAVEN MORTGAGE LLC",
+        "DEEPHAVEN RESIDENTIAL MORTGAGE TRUST 2021-4"
+      ],
+      "cluster_a_properties": 11,
+      "cluster_b_entities": [
+        "BCC/ST LLC",
+        "BCC/ST LLC ISAOA/ATIMA"
+      ],
+      "cluster_b_properties": 4,
+      "signals": [
+        {
+          "signal_type": "shared_bbl",
+          "confidence": 0.75,
+          "detail": "2 BBL(s) acquired by both clusters: ['3048530009', '3048530099']"
+        }
+      ],
+      "combined_confidence": 0.75,
+      "recommended_action": "flag_for_manual_review"
+    },
+    {
+      "cluster_a": "BROAD",
+      "cluster_b": "BROADVIEW",
+      "cluster_a_entities": [
+        "BROAD X FUNDING II LLC",
+        "BROAD X FUNDING III LLC",
+        "BROAD X FUNDING LLC"
+      ],
+      "cluster_a_properties": 43,
+      "cluster_b_entities": [
+        "BROADVIEW CAPITAL LLC",
+        "BROADVIEW CAPITAL LLC ISAOA ATIMA",
+        "BROADVIEW CAPITAL LLC ISAOA/ATIMA"
+      ],
+      "cluster_b_properties": 39,
+      "signals": [
+        {
+          "signal_type": "root_substring",
+          "confidence": 0.7,
+          "detail": "Root 'BROAD' is a prefix of 'BROADVIEW' \u2014 possible whitespace normalization split."
+        }
+      ],
+      "combined_confidence": 0.7,
+      "recommended_action": "flag_for_manual_review"
+    },
+    {
+      "cluster_a": "SHERIDAN",
+      "cluster_b": "REIGO",
+      "cluster_a_entities": [
+        "139 SHERIDAN HOLDING LLC",
+        "4F SHERIDAN LLC",
+        "SHERIDAN AVENUE PROPERTIES LLC",
+        "SHERIDAN D BLAU AS TRUSTEE"
+      ],
+      "cluster_a_properties": 8,
+      "cluster_b_entities": [
+        "REIGO",
+        "REIGO BY MEITAV DASH US INVESTMENTS LLC"
+      ],
+      "cluster_b_properties": 3,
+      "signals": [
+        {
+          "signal_type": "zip_jaccard",
+          "confidence": 0.7,
+          "detail": "Jaccard=1.00 \u2014 1 shared / 1 total zips. Shared: ['10456']"
+        }
+      ],
+      "combined_confidence": 0.7,
+      "recommended_action": "flag_for_manual_review"
+    },
+    {
+      "cluster_a": "SACHEM",
+      "cluster_b": "HIGHBRIDGE",
+      "cluster_a_entities": [
+        "SACHEM CAPITAL CORP",
+        "SACHEM CAPITAL CORPORATION HOLDINGS LLC"
+      ],
+      "cluster_a_properties": 3,
+      "cluster_b_entities": [
+        "HIGHBRIDGE RISING HOUSING DEVELOPMENT FUND CORP",
+        "HIGHBRIDGE WFLAH BRONX OWNER LLC"
+      ],
+      "cluster_b_properties": 5,
+      "signals": [
+        {
+          "signal_type": "zip_jaccard",
+          "confidence": 0.7,
+          "detail": "Jaccard=1.00 \u2014 1 shared / 1 total zips. Shared: ['10452']"
+        }
+      ],
+      "combined_confidence": 0.7,
+      "recommended_action": "flag_for_manual_review"
+    }
+  ]
+}

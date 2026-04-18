@@ -1,0 +1,4975 @@
+{
+  "generated_at": "2026-04-18",
+  "baseline_date": "2026-04-16",
+  "analysis_window": {
+    "operator_lookback": "18 months",
+    "acris_pull_window": "7 days (since last scraper run)"
+  },
+  "acris_ingest_stats": {
+    "total_new_records": 70677,
+    "unique_bbls": 60358,
+    "unique_parties": 49284,
+    "window_start": "2026-04-11",
+    "window_end": "2026-04-18"
+  },
+  "operator_universe": {
+    "total_operators_found": 107,
+    "operators_10_plus_props": 63,
+    "operators_20_plus_props": 34
+  },
+  "diff": {
+    "new_entrants_10_plus": [
+      {
+        "operator_root": "ICE",
+        "total_properties": 34,
+        "llc_count": 4,
+        "llc_entities": [
+          "ICE CAP FUND III SPV-C LLC",
+          "ICE LENDER HOLDINGS",
+          "ICE LENDER HOLDINGS LLC",
+          "ICE LENDER HOLDINGS LLC ISAOA/ATIMA"
+        ],
+        "first_acquisition": "2025-04-23",
+        "last_acquisition": "2026-03-19",
+        "high_displacement_pct": 46.8,
+        "zip_codes_targeted": [
+          "10027",
+          "10452",
+          "10456",
+          "10463",
+          "10467",
+          "10469",
+          "10472",
+          "11206",
+          "11207",
+          "11210",
+          "11212",
+          "11219",
+          "11225",
+          "11230",
+          "11231",
+          "11419"
+        ],
+        "acquisitions_per_month": 4.27,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "EMPORIUM",
+        "total_properties": 32,
+        "llc_count": 4,
+        "llc_entities": [
+          "EMPORIUM TOP LLC",
+          "EMPORIUM TPO LLC",
+          "EMPORIUM TPO LLC ISAOA/ATIMA",
+          "EMPORIUM TPO LLC LLC"
+        ],
+        "first_acquisition": "2025-04-15",
+        "last_acquisition": "2026-03-06",
+        "high_displacement_pct": 30.6,
+        "zip_codes_targeted": [
+          "10457",
+          "10458",
+          "10459",
+          "10460",
+          "10466",
+          "11212",
+          "11229",
+          "11416",
+          "11418",
+          "11691",
+          "11692"
+        ],
+        "acquisitions_per_month": 3.32,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "PONCE",
+        "total_properties": 30,
+        "llc_count": 4,
+        "llc_entities": [
+          "PONCE BANK",
+          "PONCE BANK NA",
+          "PONCE BANK NATIONAL ASSOCIATION",
+          "PONCE LISANNE"
+        ],
+        "first_acquisition": "2025-04-30",
+        "last_acquisition": "2026-03-23",
+        "high_displacement_pct": 30.8,
+        "zip_codes_targeted": [
+          "10010",
+          "10012",
+          "10452",
+          "11101",
+          "11102",
+          "11206",
+          "11207",
+          "11212",
+          "11226",
+          "11230",
+          "11238",
+          "11354",
+          "11356",
+          "11368",
+          "11377"
+        ],
+        "acquisitions_per_month": 3.58,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "AMALGAMATED",
+        "total_properties": 29,
+        "llc_count": 2,
+        "llc_entities": [
+          "AMALGAMATED BANK",
+          "AMALGAMATED BUSINESS CORP"
+        ],
+        "first_acquisition": "2025-05-09",
+        "last_acquisition": "2026-03-20",
+        "high_displacement_pct": 71.4,
+        "zip_codes_targeted": [
+          "10012",
+          "10014",
+          "10033",
+          "10128",
+          "10453",
+          "10457",
+          "11207",
+          "11211",
+          "11213",
+          "11216",
+          "11221",
+          "11237",
+          "11238",
+          "11249"
+        ],
+        "acquisitions_per_month": 4.0,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "SPENCER",
+        "total_properties": 28,
+        "llc_count": 17,
+        "llc_entities": [
+          "100 SPENCER ST 1C LLC",
+          "14 SPENCER PSA LLC",
+          "185 SPENCER ST LLC",
+          "3135 SPENCER DRIVE LLC",
+          "3210 SPENCER DRIVE LLC",
+          "49 SPENCER FUNDING LP",
+          "86 SPENCER ST 2B LLC",
+          "MM SPENCER HOLDINGS LLC",
+          "SPENCER DENISE M",
+          "SPENCER GARDENS NY LLC",
+          "SPENCER KINGSLEY",
+          "SPENCER SAVINGS BANK",
+          "SPENCER SAVINGS BANK SL",
+          "SPENCER SAVINGS BANK SLA",
+          "SPENCER STARS LLC",
+          "SPENCER WILBERT A JR",
+          "SPENCER WILLOUGHBY HOLDINGS LLC"
+        ],
+        "first_acquisition": "2025-04-28",
+        "last_acquisition": "2026-03-20",
+        "high_displacement_pct": 53.8,
+        "zip_codes_targeted": [
+          "10451",
+          "10453",
+          "10465",
+          "10472",
+          "11203",
+          "11205",
+          "11212",
+          "11216",
+          "11221"
+        ],
+        "acquisitions_per_month": 3.59,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "ATHENE",
+        "total_properties": 28,
+        "llc_count": 6,
+        "llc_entities": [
+          "ATHENE ANNUITY & LIFE COMPANY",
+          "ATHENE ANNUITY AND LIFE COMANY",
+          "ATHENE ANNUITY AND LIFE COMPANY",
+          "ATHENE ANNUITY& LIFE ASSURANCE COMPANY",
+          "ATHENE ANNUNITY AND LIFE COMPANY DOING BUSINESS",
+          "ATHENE IOWA (AAIA FUNDING AGREEMENTS_MODCO"
+        ],
+        "first_acquisition": "2025-04-15",
+        "last_acquisition": "2026-03-04",
+        "high_displacement_pct": 45.0,
+        "zip_codes_targeted": [
+          "10004",
+          "10005",
+          "10022",
+          "10031",
+          "10075",
+          "10460",
+          "11101",
+          "11212",
+          "11213",
+          "11217",
+          "11226",
+          "11231",
+          "11233",
+          "11238"
+        ],
+        "acquisitions_per_month": 3.72,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "TOWNHOUSE",
+        "total_properties": 27,
+        "llc_count": 5,
+        "llc_entities": [
+          "M5 TOWNHOUSE 47 LLC",
+          "TOWNHOUSE RENTAL II LLC",
+          "TOWNHOUSE RENTAL IX LLC",
+          "TOWNHOUSE RENTAL LLC",
+          "TOWNHOUSE RENTAL VII LLC"
+        ],
+        "first_acquisition": "2025-04-24",
+        "last_acquisition": "2026-03-20",
+        "high_displacement_pct": 60.7,
+        "zip_codes_targeted": [
+          "10036",
+          "11207",
+          "11215",
+          "11216",
+          "11217",
+          "11221",
+          "11222",
+          "11233",
+          "11237",
+          "11238",
+          "11385"
+        ],
+        "acquisitions_per_month": 2.55,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "POPULAR",
+        "total_properties": 27,
+        "llc_count": 3,
+        "llc_entities": [
+          "POPULAR ABS INC SERIES 2007-A",
+          "POPULAR BANK",
+          "POPULAR BANK FKA BANCO POPULAR NORTH AMERICA"
+        ],
+        "first_acquisition": "2025-05-06",
+        "last_acquisition": "2026-03-11",
+        "high_displacement_pct": 45.0,
+        "zip_codes_targeted": [
+          "10453",
+          "10457",
+          "10458",
+          "10460",
+          "10462",
+          "10468",
+          "11101",
+          "11208",
+          "11211",
+          "11226",
+          "11377",
+          "11432"
+        ],
+        "acquisitions_per_month": 3.88,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "PROVIDENT",
+        "total_properties": 26,
+        "llc_count": 2,
+        "llc_entities": [
+          "PROVIDENT BANK",
+          "PROVIDENT FUNDING"
+        ],
+        "first_acquisition": "2025-04-22",
+        "last_acquisition": "2026-03-17",
+        "high_displacement_pct": 54.5,
+        "zip_codes_targeted": [
+          "10009",
+          "10011",
+          "10026",
+          "10028",
+          "10451",
+          "10452",
+          "10454",
+          "10467",
+          "11102",
+          "11207",
+          "11208",
+          "11211",
+          "11216",
+          "11217",
+          "11220",
+          "11223",
+          "11368",
+          "11415"
+        ],
+        "acquisitions_per_month": 3.01,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "GREYSTONE",
+        "total_properties": 26,
+        "llc_count": 14,
+        "llc_entities": [
+          "GREYSTONE ALT BORROWER LLC",
+          "GREYSTONE BRIDGE CLO XII LLC",
+          "GREYSTONE BRIDGE FUNDING X LLC",
+          "GREYSTONE BRIDGE FUNDING XVIII LLC",
+          "GREYSTONE CMC I LLC",
+          "GREYSTONE COMMERCIAL MORTGAGE CAPITAL LLC",
+          "GREYSTONE CRE NOTES 2025-FL4 LLC",
+          "GREYSTONE FUNDING COMPANY LLC",
+          "GREYSTONE LOAN AGGREGATOR LLC",
+          "GREYSTONE SELECT COMPANY II LLC",
+          "GREYSTONE SELECT COMPANY LLC",
+          "GREYSTONE SERVICING COMPANY LLC",
+          "GREYSTONE ST LOAN FUNDING LLC",
+          "LLC GREYSTONE BRIDGE FUNDING X"
+        ],
+        "first_acquisition": "2025-04-24",
+        "last_acquisition": "2026-02-23",
+        "high_displacement_pct": 46.5,
+        "zip_codes_targeted": [
+          "10001",
+          "10014",
+          "10016",
+          "10038",
+          "10128",
+          "10451",
+          "10462",
+          "10468",
+          "10471",
+          "11101",
+          "11211",
+          "11221",
+          "11222",
+          "11233",
+          "11237",
+          "11374"
+        ],
+        "acquisitions_per_month": 4.23,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "TOWER",
+        "total_properties": 25,
+        "llc_count": 7,
+        "llc_entities": [
+          "859 TOWER LLC",
+          "NY TOWER CAPITAL LLC",
+          "NYC TOWER 2619 HOLDINGS LLC",
+          "SOUTH TOWER 121 LLC",
+          "TOWER 1014 LLC",
+          "TOWER 2055 REALTY LLC",
+          "TOWER 66 LLC"
+        ],
+        "first_acquisition": "2025-04-29",
+        "last_acquisition": "2026-02-10",
+        "high_displacement_pct": 32.3,
+        "zip_codes_targeted": [
+          "10016",
+          "10452",
+          "10459",
+          "11206",
+          "11219",
+          "11221",
+          "11225",
+          "11226",
+          "11355",
+          "11435",
+          "11691"
+        ],
+        "acquisitions_per_month": 3.24,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "FOURLEAF",
+        "total_properties": 24,
+        "llc_count": 2,
+        "llc_entities": [
+          "FOURLEAF FEDERAL CREDIT UNION",
+          "FOURLEAF FEDERAL CREDIT UNION ISAOA/ATIMA"
+        ],
+        "first_acquisition": "2025-04-29",
+        "last_acquisition": "2026-03-19",
+        "high_displacement_pct": 51.6,
+        "zip_codes_targeted": [
+          "10009",
+          "10456",
+          "10459",
+          "10467",
+          "10474",
+          "11204",
+          "11206",
+          "11211",
+          "11226",
+          "11232",
+          "11233"
+        ],
+        "acquisitions_per_month": 2.87,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "GRASSHOPPER",
+        "total_properties": 23,
+        "llc_count": 3,
+        "llc_entities": [
+          "GRASSHOPPER BANK",
+          "GRASSHOPPER BANK NA",
+          "GRASSHOPPER BANKNA"
+        ],
+        "first_acquisition": "2025-04-21",
+        "last_acquisition": "2026-03-26",
+        "high_displacement_pct": 53.3,
+        "zip_codes_targeted": [
+          "10452",
+          "10453",
+          "10459",
+          "10468",
+          "11204",
+          "11206",
+          "11212",
+          "11216",
+          "11219",
+          "11220",
+          "11413"
+        ],
+        "acquisitions_per_month": 2.65,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "CONNECTONE",
+        "total_properties": 23,
+        "llc_count": 2,
+        "llc_entities": [
+          "CONNECTONE BANK",
+          "CONNECTONE BANK ISAOA/ATIMA"
+        ],
+        "first_acquisition": "2025-04-30",
+        "last_acquisition": "2026-03-24",
+        "high_displacement_pct": 37.5,
+        "zip_codes_targeted": [
+          "10001",
+          "10007",
+          "10012",
+          "10013",
+          "10458",
+          "10461",
+          "11101",
+          "11201",
+          "11205",
+          "11211",
+          "11215",
+          "11354",
+          "11378"
+        ],
+        "acquisitions_per_month": 2.2,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "STARWOOD",
+        "total_properties": 22,
+        "llc_count": 10,
+        "llc_entities": [
+          "STARWOOD MORTGAGE CAPITAL LLC",
+          "STARWOOD MORTGAGE FUNDING II LLC",
+          "STARWOOD MORTGAGE FUNDING III LLC",
+          "STARWOOD MORTGAGE FUNDING VII LLC",
+          "STARWOOD MORTGAGE RESIDENTIAL TRUST 2021-6",
+          "STARWOOD MORTGAGE RESIDENTIAL TRUST 2022-2",
+          "STARWOOD MORTGAGE RESIDENTIAL TRUST 2022-3",
+          "STARWOOD PROPERTY MORTGAGE SUB-14-A LLC",
+          "STARWOOD PROPERTY MORTGAGE SUB-2 LLC",
+          "STARWOOD PROPERTY MORTGAGE SUB-23-A LLC"
+        ],
+        "first_acquisition": "2025-04-24",
+        "last_acquisition": "2025-11-19",
+        "high_displacement_pct": 43.8,
+        "zip_codes_targeted": [
+          "10010",
+          "10035",
+          "10040",
+          "10463",
+          "11205",
+          "11211",
+          "11222",
+          "11226",
+          "11237"
+        ],
+        "acquisitions_per_month": 4.59,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "INCREF",
+        "total_properties": 20,
+        "llc_count": 7,
+        "llc_entities": [
+          "INCREF 2025-FL1 LLC",
+          "INCREF CLO SELLER LLC",
+          "INCREF INVESTMENTS BB SELLER LLC",
+          "INCREF INVESTMENTS BMO SELLER LLC",
+          "INCREF INVESTMENTS CB TERM SELLER LLC",
+          "INCREF INVESTMENTS MS SELLER LLC",
+          "INCREF INVESTMENTS WF SELLER LLC"
+        ],
+        "first_acquisition": "2025-04-15",
+        "last_acquisition": "2025-12-30",
+        "high_displacement_pct": 31.0,
+        "zip_codes_targeted": [
+          "10018",
+          "10024",
+          "11101",
+          "11207",
+          "11211",
+          "11215",
+          "11216",
+          "11217",
+          "11221",
+          "11231",
+          "11237"
+        ],
+        "acquisitions_per_month": 3.36,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "LASALLE",
+        "total_properties": 19,
+        "llc_count": 5,
+        "llc_entities": [
+          "3033 LASALLE AVE LLC",
+          "LASALLE BANK MIDWEST NATIONAL ASSOCIATION",
+          "LASALLE BANK NA",
+          "LASALLE BANK NATIONAL ASSOCIATION",
+          "LASALLE REAL ESTATE CREDIT STRATEGIES REIT IA LL"
+        ],
+        "first_acquisition": "2025-05-06",
+        "last_acquisition": "2026-03-17",
+        "high_displacement_pct": 33.3,
+        "zip_codes_targeted": [
+          "10457",
+          "10469",
+          "11207",
+          "11221",
+          "11236",
+          "11420"
+        ],
+        "acquisitions_per_month": 2.0,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "STORMFIELD",
+        "total_properties": 18,
+        "llc_count": 5,
+        "llc_entities": [
+          "STORMFIELD CAPITAL FUNDING I LLC",
+          "STORMFIELD ENHANCED MORTGAGE FUNDING LLC",
+          "STORMFIELD REAL ESTATE INCOME OFFSHORE FUND LTD",
+          "STORMFIELD SPV I LLC",
+          "STORMFIELD SPV IV LLC"
+        ],
+        "first_acquisition": "2025-05-27",
+        "last_acquisition": "2026-03-18",
+        "high_displacement_pct": 35.0,
+        "zip_codes_targeted": [
+          "10001",
+          "10003",
+          "10016",
+          "10025",
+          "10040",
+          "11207",
+          "11222",
+          "11225",
+          "11233",
+          "11238"
+        ],
+        "acquisitions_per_month": 2.03,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "SELF",
+        "total_properties": 18,
+        "llc_count": 4,
+        "llc_entities": [
+          "SELF RELIANCE (NY) FEDERAL CREDIT UNION",
+          "SELF RELIANCE FINANCIAL CREDIT UNION",
+          "SELF RELIANCE FINANCIAL FEDERAL CREDIT UNION",
+          "SELF TSCHABALALA AMANDLA NNEKA"
+        ],
+        "first_acquisition": "2025-04-23",
+        "last_acquisition": "2026-03-09",
+        "high_displacement_pct": 54.2,
+        "zip_codes_targeted": [
+          "10009",
+          "10453",
+          "10456",
+          "10457",
+          "10458",
+          "10461",
+          "10467",
+          "10472",
+          "10473",
+          "11222",
+          "11385"
+        ],
+        "acquisitions_per_month": 2.25,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "HOMETOWN",
+        "total_properties": 18,
+        "llc_count": 4,
+        "llc_entities": [
+          "HOMETOWN EQUITY MORTGAGE",
+          "HOMETOWN EQUITY MORTGAGE LLC",
+          "HOMETOWN EQUITY MORTGAGE LLC DBA THELENDER",
+          "HOMETOWN MORTGAGE LLC"
+        ],
+        "first_acquisition": "2025-04-23",
+        "last_acquisition": "2026-03-04",
+        "high_displacement_pct": 47.4,
+        "zip_codes_targeted": [
+          "10459",
+          "10466",
+          "11212",
+          "11216",
+          "11237",
+          "11369",
+          "11433"
+        ],
+        "acquisitions_per_month": 1.81,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "A&E",
+        "total_properties": 17,
+        "llc_count": 3,
+        "llc_entities": [
+          "A&E REAL ESTATE FINANCE SPV A-1 LLC",
+          "A&E REAL ESTATE FINANCE SPV-A-1 LLC",
+          "A&E REAL ESTATE FINANCING SPV A-1 LLC"
+        ],
+        "first_acquisition": "2025-06-13",
+        "last_acquisition": "2026-03-19",
+        "high_displacement_pct": 33.3,
+        "zip_codes_targeted": [
+          "10030",
+          "10035",
+          "11206",
+          "11211",
+          "11221",
+          "11233",
+          "11237"
+        ],
+        "acquisitions_per_month": 2.26,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "OCEANFIRST",
+        "total_properties": 15,
+        "llc_count": 2,
+        "llc_entities": [
+          "OCEANFIRST BANK NA",
+          "OCEANFIRST BANK NA ISAOA ATIMA"
+        ],
+        "first_acquisition": "2025-05-29",
+        "last_acquisition": "2026-02-05",
+        "high_displacement_pct": 33.3,
+        "zip_codes_targeted": [
+          "10013",
+          "10014",
+          "10025",
+          "11101",
+          "11203",
+          "11206",
+          "11207",
+          "11210",
+          "11218",
+          "11221",
+          "11226",
+          "11229"
+        ],
+        "acquisitions_per_month": 2.14,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "PARKE",
+        "total_properties": 15,
+        "llc_count": 3,
+        "llc_entities": [
+          "PARKE BANK",
+          "PARKE BANK ISAOA",
+          "PARKE BANK ISAOA ATIMA"
+        ],
+        "first_acquisition": "2025-06-12",
+        "last_acquisition": "2026-03-16",
+        "high_displacement_pct": 30.4,
+        "zip_codes_targeted": [
+          "10456",
+          "11205",
+          "11211",
+          "11225"
+        ],
+        "acquisitions_per_month": 2.49,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "TOMPKINS",
+        "total_properties": 14,
+        "llc_count": 7,
+        "llc_entities": [
+          "116 TOMPKINS AVENUE CORPORATION",
+          "145 TOMPKINS REALTY LLC",
+          "51 TOMPKINS TOWNHOUSE LLC",
+          "M TOMPKINS LLC",
+          "TOMPKINS & BALLONZOLI TRUST",
+          "TOMPKINS COMMUNITY BANK",
+          "TOMPKINS EUGENE"
+        ],
+        "first_acquisition": "2025-04-21",
+        "last_acquisition": "2026-01-06",
+        "high_displacement_pct": 33.3,
+        "zip_codes_targeted": [
+          "10459",
+          "10461",
+          "11206",
+          "11231"
+        ],
+        "acquisitions_per_month": 1.73,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "DWIGHT",
+        "total_properties": 14,
+        "llc_count": 7,
+        "llc_entities": [
+          "DWIGHT 2025-FL1 ISSUER LLC",
+          "DWIGHT AVENUE CORP",
+          "DWIGHT CAPITAL LLC",
+          "DWIGHT CRE CLO SELLER LLC",
+          "DWIGHT MORTGAGE TRUST LLC",
+          "DWIGHT SILVERIO CAAMAL AND SHARON LANDRETH-SMITH F",
+          "DWIGHT SILVERIO CAAMAL TRUSTEE"
+        ],
+        "first_acquisition": "2025-04-24",
+        "last_acquisition": "2025-10-28",
+        "high_displacement_pct": 53.8,
+        "zip_codes_targeted": [
+          "10451",
+          "11102",
+          "11220",
+          "11222",
+          "11226",
+          "11228",
+          "11237"
+        ],
+        "acquisitions_per_month": 4.17,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "ARGENTIC",
+        "total_properties": 14,
+        "llc_count": 2,
+        "llc_entities": [
+          "ARGENTIC REAL ESTATE FINANCE 2 LLC",
+          "ARGENTIC REAL ESTATE INVESTMENT 2 LLC"
+        ],
+        "first_acquisition": "2025-05-09",
+        "last_acquisition": "2026-03-26",
+        "high_displacement_pct": 72.0,
+        "zip_codes_targeted": [
+          "10001",
+          "10004",
+          "10013",
+          "10018",
+          "10453",
+          "10466",
+          "10468",
+          "11216",
+          "11222"
+        ],
+        "acquisitions_per_month": 2.34,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "BCC",
+        "total_properties": 13,
+        "llc_count": 7,
+        "llc_entities": [
+          "BCC 1375 BROADWAY 1 LLC",
+          "BCC 141 SECOND AVE LLC",
+          "BCC 205-207 EIGHTH AVE LLC",
+          "BCC FUNDING CRF LLC",
+          "BCC FUNDING II LLC",
+          "BCC LAKESIDE A LLC",
+          "BCC LOAN FUNDER III LLC"
+        ],
+        "first_acquisition": "2025-06-30",
+        "last_acquisition": "2026-03-13",
+        "high_displacement_pct": 35.0,
+        "zip_codes_targeted": [
+          "10003",
+          "10011",
+          "10018",
+          "10457",
+          "10467",
+          "11101",
+          "11206",
+          "11237",
+          "11238",
+          "11249"
+        ],
+        "acquisitions_per_month": 2.34,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "ECC",
+        "total_properties": 12,
+        "llc_count": 4,
+        "llc_entities": [
+          "ECC 121 8TH AVE LLC",
+          "ECC MT SPE LLC",
+          "ECC SPE LLC",
+          "ECC UNDERHILL LLC"
+        ],
+        "first_acquisition": "2025-05-06",
+        "last_acquisition": "2026-02-02",
+        "high_displacement_pct": 31.2,
+        "zip_codes_targeted": [
+          "10016",
+          "10022",
+          "10024",
+          "10065",
+          "11215",
+          "11217",
+          "11230"
+        ],
+        "acquisitions_per_month": 1.76,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "EMIGRANT",
+        "total_properties": 12,
+        "llc_count": 4,
+        "llc_entities": [
+          "EMIGRANT BANK",
+          "EMIGRANT FUNDING CORPORATION",
+          "EMIGRANT FUNDING CORPORATION ISAOA",
+          "EMIGRANT MORTGAGE COMPANY INC"
+        ],
+        "first_acquisition": "2025-04-21",
+        "last_acquisition": "2025-12-18",
+        "high_displacement_pct": 42.9,
+        "zip_codes_targeted": [
+          "10002",
+          "10004",
+          "10452",
+          "10466",
+          "11103",
+          "11206",
+          "11215",
+          "11223",
+          "11233",
+          "11361",
+          "11372"
+        ],
+        "acquisitions_per_month": 1.74,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "JOVIA",
+        "total_properties": 12,
+        "llc_count": 2,
+        "llc_entities": [
+          "JOVIA FINANCIAL CREDIT UNION",
+          "JOVIA FINANCIAL FEDERAL CREDIT UNION"
+        ],
+        "first_acquisition": "2025-04-23",
+        "last_acquisition": "2026-02-27",
+        "high_displacement_pct": 62.5,
+        "zip_codes_targeted": [
+          "11215",
+          "11216",
+          "11221",
+          "11222",
+          "11233",
+          "11237",
+          "11385"
+        ],
+        "acquisitions_per_month": 1.55,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "ARION",
+        "total_properties": 12,
+        "llc_count": 3,
+        "llc_entities": [
+          "ARION FUND LLC",
+          "ARION FUND LLC ISAOA/ATIMA",
+          "ARION FUNDING LLC"
+        ],
+        "first_acquisition": "2025-04-23",
+        "last_acquisition": "2026-01-21",
+        "high_displacement_pct": 60.0,
+        "zip_codes_targeted": [
+          "10016",
+          "10452",
+          "10461",
+          "11203",
+          "11204",
+          "11211",
+          "11212",
+          "11233",
+          "11355"
+        ],
+        "acquisitions_per_month": 1.65,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "SMS",
+        "total_properties": 12,
+        "llc_count": 3,
+        "llc_entities": [
+          "SMS 205 LLC",
+          "SMS FINANCIAL CRE FUND LLC",
+          "SMS FINANCIAL RECOVERY SERVICES LLC"
+        ],
+        "first_acquisition": "2025-05-05",
+        "last_acquisition": "2026-02-06",
+        "high_displacement_pct": 50.0,
+        "zip_codes_targeted": [
+          "10029",
+          "10034",
+          "10464",
+          "11207",
+          "11222",
+          "11231",
+          "11233"
+        ],
+        "acquisitions_per_month": 1.3,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "1ST",
+        "total_properties": 11,
+        "llc_count": 8,
+        "llc_entities": [
+          "1492 1ST AVENUE REALTY LLC",
+          "1ST 2ND MORTGAGE CO OF NJ INC",
+          "1ST AMERICAN PROPERTIES GROUP I LLC",
+          "1ST AMERICAN PROPERTIES GROUP ONE NY LLC",
+          "1ST REPUBLIC MORTGAGE BANKERS INC",
+          "2015 1ST AVENUE NYC REALTY INC",
+          "64 1ST PLACE LLC",
+          "71 1ST VENTURES LLC"
+        ],
+        "first_acquisition": "2025-04-23",
+        "last_acquisition": "2026-02-03",
+        "high_displacement_pct": 43.8,
+        "zip_codes_targeted": [
+          "10029",
+          "10075",
+          "11231",
+          "11238",
+          "11361"
+        ],
+        "acquisitions_per_month": 1.68,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "MASPETH",
+        "total_properties": 11,
+        "llc_count": 3,
+        "llc_entities": [
+          "KL MASPETH LLC",
+          "MASPETH FEDERAL SAVINGS & LOAN ASSOCIATION",
+          "MASPETH FEDERAL SAVINGS AND LOAN ASSOCIATION"
+        ],
+        "first_acquisition": "2025-06-02",
+        "last_acquisition": "2026-01-23",
+        "high_displacement_pct": 33.3,
+        "zip_codes_targeted": [
+          "10002",
+          "10021",
+          "11101",
+          "11102",
+          "11103",
+          "11231",
+          "11378"
+        ],
+        "acquisitions_per_month": 1.53,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "HORIZON",
+        "total_properties": 11,
+        "llc_count": 5,
+        "llc_entities": [
+          "105 HORIZON COURT LLC",
+          "FIRST HORIZON BANK",
+          "FLUSHING HORIZON PROPERTY LLC",
+          "NEW HORIZON 88 LLC",
+          "SECOND HORIZON HOLDINGS LLC"
+        ],
+        "first_acquisition": "2025-04-21",
+        "last_acquisition": "2025-12-12",
+        "high_displacement_pct": 36.4,
+        "zip_codes_targeted": [
+          "10473",
+          "11104",
+          "11205",
+          "11213",
+          "11221",
+          "11235",
+          "11373",
+          "11378"
+        ],
+        "acquisitions_per_month": 1.4,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "DEEPHAVEN",
+        "total_properties": 11,
+        "llc_count": 2,
+        "llc_entities": [
+          "DEEPHAVEN MORTGAGE LLC",
+          "DEEPHAVEN RESIDENTIAL MORTGAGE TRUST 2021-4"
+        ],
+        "first_acquisition": "2025-05-22",
+        "last_acquisition": "2026-03-25",
+        "high_displacement_pct": 64.3,
+        "zip_codes_targeted": [
+          "10466",
+          "11212",
+          "11221",
+          "11226",
+          "11233",
+          "11366"
+        ],
+        "acquisitions_per_month": 1.37,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "MELO",
+        "total_properties": 10,
+        "llc_count": 2,
+        "llc_entities": [
+          "MELO HECTOR B",
+          "MELO Z PHANTOM CAP LLC"
+        ],
+        "first_acquisition": "2025-04-24",
+        "last_acquisition": "2026-01-12",
+        "high_displacement_pct": 70.0,
+        "zip_codes_targeted": [
+          "10455",
+          "10459",
+          "10460",
+          "10461",
+          "10462",
+          "10467",
+          "10468"
+        ],
+        "acquisitions_per_month": 1.14,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "EMERALD",
+        "total_properties": 10,
+        "llc_count": 4,
+        "llc_entities": [
+          "436 EMERALD STAR LLC",
+          "629 EMERALD HOLDINGS LLC",
+          "EMERALD CREEK CAPITAL 3 LLC",
+          "EMERALD CREEK CAPITAL 4 LLC"
+        ],
+        "first_acquisition": "2025-05-05",
+        "last_acquisition": "2026-01-20",
+        "high_displacement_pct": 30.0,
+        "zip_codes_targeted": [
+          "10013",
+          "10461",
+          "11102",
+          "11208",
+          "11220"
+        ],
+        "acquisitions_per_month": 1.15,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "TRYON",
+        "total_properties": 10,
+        "llc_count": 3,
+        "llc_entities": [
+          "3519 TRYON AVE LLC",
+          "TRYON STREET ACQUISITION TRUST 1",
+          "TRYON STREET ACQUISITION TRUST I"
+        ],
+        "first_acquisition": "2025-04-21",
+        "last_acquisition": "2026-02-27",
+        "high_displacement_pct": 30.0,
+        "zip_codes_targeted": [
+          "11203",
+          "11206",
+          "11219",
+          "11237",
+          "11694"
+        ],
+        "acquisitions_per_month": 0.96,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "GMAC",
+        "total_properties": 10,
+        "llc_count": 2,
+        "llc_entities": [
+          "GMAC BANK",
+          "GMAC MORTGAGE LLC"
+        ],
+        "first_acquisition": "2025-04-17",
+        "last_acquisition": "2025-12-22",
+        "high_displacement_pct": 40.0,
+        "zip_codes_targeted": [
+          "11385",
+          "11413",
+          "11418",
+          "11691"
+        ],
+        "acquisitions_per_month": 1.2,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "CAKE",
+        "total_properties": 10,
+        "llc_count": 2,
+        "llc_entities": [
+          "CAKE MORTGAGE CORP",
+          "CAKE MORTGAGE CORPORATION"
+        ],
+        "first_acquisition": "2025-04-24",
+        "last_acquisition": "2025-12-04",
+        "high_displacement_pct": 41.7,
+        "zip_codes_targeted": [
+          "10456",
+          "10469",
+          "11205",
+          "11208"
+        ],
+        "acquisitions_per_month": 1.61,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "HERITAGE",
+        "total_properties": 10,
+        "llc_count": 3,
+        "llc_entities": [
+          "AMERICAN HERITAGE LANDING LLC",
+          "AMERICAN HERITAGE LENDING LLC",
+          "AMERICAN HERITAGE LIFE INSURANCE COMPANY"
+        ],
+        "first_acquisition": "2025-05-06",
+        "last_acquisition": "2026-01-23",
+        "high_displacement_pct": 36.4,
+        "zip_codes_targeted": [
+          "10461",
+          "11208"
+        ],
+        "acquisitions_per_month": 1.26,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "HAB",
+        "total_properties": 10,
+        "llc_count": 3,
+        "llc_entities": [
+          "HAB AMERICAN BANK",
+          "HAB BANK",
+          "HAB BANK ISAOA"
+        ],
+        "first_acquisition": "2025-05-06",
+        "last_acquisition": "2025-12-23",
+        "high_displacement_pct": 72.7,
+        "zip_codes_targeted": [
+          "10002",
+          "10453",
+          "10457",
+          "10459",
+          "10461",
+          "10462",
+          "10467",
+          "11212",
+          "11223"
+        ],
+        "acquisitions_per_month": 1.43,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "HEI",
+        "total_properties": 10,
+        "llc_count": 4,
+        "llc_entities": [
+          "HEI JV VI TRUST 1",
+          "HEI JV VI TRUST I",
+          "HEI JV VIII TRUST",
+          "LP HEI FUND VII"
+        ],
+        "first_acquisition": "2025-07-07",
+        "last_acquisition": "2026-02-17",
+        "high_displacement_pct": 40.0,
+        "zip_codes_targeted": [
+          "10467",
+          "11207",
+          "11691"
+        ],
+        "acquisitions_per_month": 1.33,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      },
+      {
+        "operator_root": "STG",
+        "total_properties": 10,
+        "llc_count": 2,
+        "llc_entities": [
+          "STG MORTGAGE INC",
+          "STG RE FUND LLC"
+        ],
+        "first_acquisition": "2025-08-26",
+        "last_acquisition": "2026-01-12",
+        "high_displacement_pct": 30.0,
+        "zip_codes_targeted": [
+          "11212",
+          "11219",
+          "11355",
+          "11356",
+          "11373"
+        ],
+        "acquisitions_per_month": 2.16,
+        "note": "Not in prior week baseline \u2014 entered analysis window this cycle",
+        "entrant_type": "previously_below_top20_baseline"
+      }
+    ],
+    "threshold_crossings": [],
+    "portfolio_growth": {
+      "COMMUNITY": {
+        "prev_properties": 56,
+        "curr_properties": 62,
+        "properties_added": 6,
+        "prev_llc_count": 9,
+        "curr_llc_count": 11,
+        "new_llc_entities": [
+          "AMERICAN COMMUNITY BANK",
+          "AMERICAN COMMUNITY BANK ISAOA"
+        ],
+        "last_acquisition": "2026-03-26",
+        "high_displacement_pct": 48.6,
+        "analyst_flag": "FALSE POSITIVE \u2014 new LLC entities are 'AMERICAN COMMUNITY BANK' and 'AMERICAN COMMUNITY BANK ISAOA' (ISAOA = mortgage assignment standard suffix). This is a bank acquiring via foreclosure/note sale, not a speculative operator. Recommend adding 'COMMUNITY' to _BANK_ROOTS when first token is 'AMERICAN'."
+      }
+    },
+    "new_entrants_note": "Prior baseline captured only the top-20 operators. Operators labelled 'previously_below_top20_baseline' existed in the 18-month window before this run but were not surfaced because the baseline was capped. 'truly_new_this_week' operators had their first recorded acquisition within the last 7 days.",
+    "high_signal_watchlist": [
+      {
+        "operator_root": "HAB",
+        "total_properties": 10,
+        "llc_count": 3,
+        "high_displacement_pct": 72.7,
+        "last_acquisition": "2025-12-23"
+      },
+      {
+        "operator_root": "ARGENTIC",
+        "total_properties": 14,
+        "llc_count": 2,
+        "high_displacement_pct": 72.0,
+        "last_acquisition": "2026-03-26"
+      },
+      {
+        "operator_root": "AMALGAMATED",
+        "total_properties": 29,
+        "llc_count": 2,
+        "high_displacement_pct": 71.4,
+        "last_acquisition": "2026-03-20"
+      },
+      {
+        "operator_root": "MELO",
+        "total_properties": 10,
+        "llc_count": 2,
+        "high_displacement_pct": 70.0,
+        "last_acquisition": "2026-01-12"
+      },
+      {
+        "operator_root": "DEEPHAVEN",
+        "total_properties": 11,
+        "llc_count": 2,
+        "high_displacement_pct": 64.3,
+        "last_acquisition": "2026-03-25"
+      },
+      {
+        "operator_root": "JOVIA",
+        "total_properties": 12,
+        "llc_count": 2,
+        "high_displacement_pct": 62.5,
+        "last_acquisition": "2026-02-27"
+      },
+      {
+        "operator_root": "TOWNHOUSE",
+        "total_properties": 27,
+        "llc_count": 5,
+        "high_displacement_pct": 60.7,
+        "last_acquisition": "2026-03-20"
+      },
+      {
+        "operator_root": "ARION",
+        "total_properties": 12,
+        "llc_count": 3,
+        "high_displacement_pct": 60.0,
+        "last_acquisition": "2026-01-21"
+      }
+    ]
+  },
+  "updated_profiles": {
+    "BREDIF": {
+      "operator_root": "BREDIF",
+      "llc_entities": [
+        "BREDIF CO SELLER LLC",
+        "BREDIF JPM SELLER LLC",
+        "BREDIF LPA LLC"
+      ],
+      "llc_count": 3,
+      "total_properties": 66,
+      "total_acquisitions": 67,
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 9.44,
+      "first_acquisition": "2025-06-10",
+      "last_acquisition": "2026-01-09",
+      "displacement_score": {
+        "weighted_avg": 39.1,
+        "tier_distribution": {
+          "score_80_plus": 0,
+          "score_60_79": 4,
+          "score_40_59": 21,
+          "score_under_40": 23
+        },
+        "zip_concentration": {
+          "11222": 4,
+          "11206": 3,
+          "11201": 2,
+          "11237": 2,
+          "10028": 2,
+          "10011": 2,
+          "10022": 2,
+          "10461": 2,
+          "11215": 1,
+          "11238": 1
+        }
+      },
+      "high_displacement_pct": 37.3,
+      "eviction_then_buy": {
+        "matched_properties": 5,
+        "match_rate_pct": 7.6,
+        "lookback_days": 365,
+        "matches": [
+          {
+            "bbl": "1000930028",
+            "acquisition_date": "2026-01-09",
+            "evictions_before": 2,
+            "latest_eviction": "2025-12-02",
+            "days_gap": 38
+          },
+          {
+            "bbl": "1010720050",
+            "acquisition_date": "2025-12-12",
+            "evictions_before": 1,
+            "latest_eviction": "2025-07-18",
+            "days_gap": 147
+          },
+          {
+            "bbl": "4108910021",
+            "acquisition_date": "2026-01-09",
+            "evictions_before": 3,
+            "latest_eviction": "2025-08-04",
+            "days_gap": 158
+          },
+          {
+            "bbl": "1008230079",
+            "acquisition_date": "2026-01-09",
+            "evictions_before": 1,
+            "latest_eviction": "2025-03-19",
+            "days_gap": 296
+          },
+          {
+            "bbl": "3013130046",
+            "acquisition_date": "2026-01-09",
+            "evictions_before": 1,
+            "latest_eviction": "2025-02-04",
+            "days_gap": 339
+          }
+        ]
+      },
+      "hpd_violations": {
+        "total": 181,
+        "class_b": 92,
+        "class_c": 63,
+        "bbls_with_class_bc": 10,
+        "violations_per_property": 2.74,
+        "class_bc_per_property": 2.35
+      },
+      "evidence_score": 27.6
+    },
+    "MTEK": {
+      "operator_root": "MTEK",
+      "llc_entities": [
+        "MTEK 174 JEFFERSON LLC",
+        "MTEK CAPITAL LLC",
+        "MTEK FORT GREENE LLC",
+        "MTEK FRANKLIN LLC",
+        "MTEK FULTON LLC",
+        "MTEK GOLD LLC",
+        "MTEK NYC LLC",
+        "MTEK PARK LLC",
+        "MTEK UNION LLC"
+      ],
+      "llc_count": 9,
+      "total_properties": 37,
+      "total_acquisitions": 37,
+      "total_portfolio_value": 37661442.5,
+      "avg_acquisition_price": 1017876.82,
+      "acquisitions_per_month": 3.46,
+      "first_acquisition": "2025-04-29",
+      "last_acquisition": "2026-03-16",
+      "displacement_score": {
+        "weighted_avg": 62.9,
+        "tier_distribution": {
+          "score_80_plus": 0,
+          "score_60_79": 7,
+          "score_40_59": 5,
+          "score_under_40": 1
+        },
+        "zip_concentration": {
+          "11208": 3,
+          "11221": 3,
+          "11216": 3,
+          "11217": 1,
+          "11203": 1,
+          "11207": 1,
+          "11434": 1
+        }
+      },
+      "high_displacement_pct": 32.4,
+      "eviction_then_buy": {
+        "matched_properties": 1,
+        "match_rate_pct": 2.7,
+        "lookback_days": 365,
+        "matches": [
+          {
+            "bbl": "3040400020",
+            "acquisition_date": "2025-09-05",
+            "evictions_before": 2,
+            "latest_eviction": "2025-04-07",
+            "days_gap": 151
+          }
+        ]
+      },
+      "hpd_violations": {
+        "total": 28,
+        "class_b": 7,
+        "class_c": 8,
+        "bbls_with_class_bc": 3,
+        "violations_per_property": 0.76,
+        "class_bc_per_property": 0.41
+      },
+      "evidence_score": 26.9
+    },
+    "PHANTOM": {
+      "operator_root": "PHANTOM",
+      "llc_entities": [
+        "PHANTOM & Z CAPITAL LLC",
+        "PHANTOM AFFORDABLE HOUSING LLC",
+        "PHANTOM CAP HOLDINGS 206 LLC",
+        "PHANTOM CAP MAP LLC",
+        "PHANTOM CAPITAL 10 LLC",
+        "PHANTOM CAPITAL 107 LLC",
+        "PHANTOM CAPITAL 11 LLC",
+        "PHANTOM CAPITAL 12 LLC",
+        "PHANTOM CAPITAL 161 LLC",
+        "PHANTOM CAPITAL 21 LLC",
+        "PHANTOM CAPITAL 22 LLC",
+        "PHANTOM CAPITAL 350 LLC",
+        "PHANTOM CAPITAL 44 LLC",
+        "PHANTOM CAPITAL 53 LLC",
+        "PHANTOM CAPITAL 55 LLC",
+        "PHANTOM CAPITAL 71 LLC",
+        "PHANTOM CAPITAL 800 LLC",
+        "PHANTOM CAPITAL ACQUISITIONS LLC",
+        "PHANTOM CAPITAL BX LLC",
+        "PHANTOM HOUSING LLC",
+        "PHANTOM KOACH LLC",
+        "PHANTOM LANDLORDS LLC",
+        "PHANTOM NYC HOLDINGS LLC",
+        "PHANTOM PARTNERS 89 LLC",
+        "PHANTOM PARTNERS BH LLC",
+        "PHANTOM PARTNERS PROPERTIES LLC",
+        "PHANTOM PARTNERS RE LLC",
+        "PHANTOM RISE LLC",
+        "PHANTOM TERRITORY LLC",
+        "PHANTOM TITANS LLC",
+        "PHANTOM TOWN LLC",
+        "PHANTOM TROPHIES LLC"
+      ],
+      "llc_count": 32,
+      "total_properties": 64,
+      "total_acquisitions": 65,
+      "total_portfolio_value": 49898000.0,
+      "avg_acquisition_price": 767661.54,
+      "acquisitions_per_month": 6.19,
+      "first_acquisition": "2025-05-01",
+      "last_acquisition": "2026-03-12",
+      "displacement_score": {
+        "weighted_avg": 54.6,
+        "tier_distribution": {
+          "score_80_plus": 0,
+          "score_60_79": 13,
+          "score_40_59": 16,
+          "score_under_40": 5
+        },
+        "zip_concentration": {
+          "10466": 7,
+          "10459": 5,
+          "10456": 4,
+          "10473": 2,
+          "11207": 2,
+          "10457": 2,
+          "10460": 1,
+          "10455": 1,
+          "11210": 1,
+          "10470": 1
+        }
+      },
+      "high_displacement_pct": 44.6,
+      "eviction_then_buy": {
+        "matched_properties": 3,
+        "match_rate_pct": 4.7,
+        "lookback_days": 365,
+        "matches": [
+          {
+            "bbl": "2050840054",
+            "acquisition_date": "2025-07-08",
+            "evictions_before": 2,
+            "latest_eviction": "2025-04-21",
+            "days_gap": 78
+          },
+          {
+            "bbl": "2048260038",
+            "acquisition_date": "2026-01-08",
+            "evictions_before": 2,
+            "latest_eviction": "2025-09-11",
+            "days_gap": 119
+          },
+          {
+            "bbl": "2047830038",
+            "acquisition_date": "2026-01-23",
+            "evictions_before": 1,
+            "latest_eviction": "2025-07-22",
+            "days_gap": 185
+          }
+        ]
+      },
+      "hpd_violations": {
+        "total": 151,
+        "class_b": 57,
+        "class_c": 52,
+        "bbls_with_class_bc": 11,
+        "violations_per_property": 2.36,
+        "class_bc_per_property": 1.7
+      },
+      "evidence_score": 31.6
+    }
+  },
+  "full_operator_list": [
+    {
+      "operator_root": "OCEANVIEW",
+      "total_properties": 128,
+      "total_acquisitions": 128,
+      "llc_count": 2,
+      "llc_entities": [
+        "OCEANVIEW LIFE AN ANNUITY COMPANY",
+        "OCEANVIEW LIFE AND ANNUITY COMPANY"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 24.94,
+      "first_acquisition": "2025-04-29",
+      "last_acquisition": "2025-09-30",
+      "zip_codes_targeted": [
+        "10012",
+        "10013",
+        "10014",
+        "10017",
+        "10018",
+        "10027",
+        "10030",
+        "10451",
+        "10453",
+        "10454",
+        "10455",
+        "10456",
+        "10457",
+        "10458",
+        "10459",
+        "10461",
+        "10465",
+        "10467",
+        "10468",
+        "10469",
+        "10470",
+        "10472",
+        "11104",
+        "11201",
+        "11206",
+        "11207",
+        "11209",
+        "11211",
+        "11212",
+        "11213",
+        "11216",
+        "11221",
+        "11222",
+        "11226",
+        "11231",
+        "11233",
+        "11234",
+        "11235",
+        "11237",
+        "11238",
+        "11366",
+        "11367",
+        "11373",
+        "11385",
+        "11415",
+        "11418",
+        "11423",
+        "11428",
+        "11691"
+      ],
+      "high_displacement_acquisitions": 71,
+      "high_displacement_pct": 55.5,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "CHURCHILL",
+      "total_properties": 86,
+      "total_acquisitions": 159,
+      "llc_count": 5,
+      "llc_entities": [
+        "CHURCHILL DANIELE",
+        "CHURCHILL FUNDING I LLC",
+        "CHURCHILL MARA FUNDING I LLC",
+        "CHURCHILL MRA FUNDING I LLC",
+        "FB CHURCHILL FACILITY LLC"
+      ],
+      "total_portfolio_value": 2185000.0,
+      "avg_acquisition_price": 13742.14,
+      "acquisitions_per_month": 14.68,
+      "first_acquisition": "2025-04-29",
+      "last_acquisition": "2026-03-20",
+      "zip_codes_targeted": [
+        "10001",
+        "10003",
+        "10009",
+        "10011",
+        "10013",
+        "10019",
+        "10026",
+        "10035",
+        "10038",
+        "10452",
+        "10455",
+        "10456",
+        "10458",
+        "10461",
+        "10465",
+        "10468",
+        "11101",
+        "11104",
+        "11201",
+        "11205",
+        "11206",
+        "11211",
+        "11212",
+        "11213",
+        "11215",
+        "11216",
+        "11221",
+        "11222",
+        "11223",
+        "11225",
+        "11226",
+        "11231",
+        "11232",
+        "11233",
+        "11249",
+        "11368",
+        "11369",
+        "11433"
+      ],
+      "high_displacement_acquisitions": 62,
+      "high_displacement_pct": 39.0,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "ICECAP",
+      "total_properties": 73,
+      "total_acquisitions": 145,
+      "llc_count": 7,
+      "llc_entities": [
+        "ICECAP FUND III SPV-C LLC",
+        "ICECAP REAL",
+        "ICECAP REAL ESTATE DEBT FUND 111 LLC",
+        "ICECAP REAL ESTATE DEBT FUND IHI LLC",
+        "ICECAP REAL ESTATE DEBT FUND III LLC",
+        "ICECAP SUB-REIT SPV I LLC",
+        "ICECAP SUB-REIT SPV-I LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 12.95,
+      "first_acquisition": "2025-04-15",
+      "last_acquisition": "2026-03-17",
+      "zip_codes_targeted": [
+        "10027",
+        "10453",
+        "10456",
+        "10457",
+        "10459",
+        "10466",
+        "10467",
+        "10468",
+        "10469",
+        "10472",
+        "10474",
+        "11206",
+        "11208",
+        "11212",
+        "11213",
+        "11219",
+        "11221",
+        "11225",
+        "11226",
+        "11231"
+      ],
+      "high_displacement_acquisitions": 54,
+      "high_displacement_pct": 37.2,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "BREDIF",
+      "total_properties": 66,
+      "total_acquisitions": 67,
+      "llc_count": 3,
+      "llc_entities": [
+        "BREDIF CO SELLER LLC",
+        "BREDIF JPM SELLER LLC",
+        "BREDIF LPA LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 9.44,
+      "first_acquisition": "2025-06-10",
+      "last_acquisition": "2026-01-09",
+      "zip_codes_targeted": [
+        "10001",
+        "10002",
+        "10010",
+        "10011",
+        "10016",
+        "10022",
+        "10028",
+        "10036",
+        "10038",
+        "10451",
+        "10454",
+        "10455",
+        "10457",
+        "10461",
+        "10467",
+        "11040",
+        "11201",
+        "11205",
+        "11206",
+        "11211",
+        "11212",
+        "11215",
+        "11216",
+        "11217",
+        "11220",
+        "11221",
+        "11222",
+        "11225",
+        "11237",
+        "11238",
+        "11368",
+        "11374",
+        "11375",
+        "11385",
+        "11412",
+        "11417",
+        "11433"
+      ],
+      "high_displacement_acquisitions": 25,
+      "high_displacement_pct": 37.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "TOORAK",
+      "total_properties": 65,
+      "total_acquisitions": 99,
+      "llc_count": 2,
+      "llc_entities": [
+        "TOORAK CAPITAL PARTNERS",
+        "TOORAK CAPITAL PARTNERS LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 9.05,
+      "first_acquisition": "2025-04-15",
+      "last_acquisition": "2026-03-09",
+      "zip_codes_targeted": [
+        "10022",
+        "10453",
+        "10455",
+        "10459",
+        "10460",
+        "10466",
+        "10467",
+        "11102",
+        "11204",
+        "11205",
+        "11210",
+        "11211",
+        "11212",
+        "11213",
+        "11215",
+        "11221",
+        "11225",
+        "11230",
+        "11231",
+        "11238",
+        "11368",
+        "11691"
+      ],
+      "high_displacement_acquisitions": 35,
+      "high_displacement_pct": 35.4,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "PHANTOM",
+      "total_properties": 64,
+      "total_acquisitions": 65,
+      "llc_count": 32,
+      "llc_entities": [
+        "PHANTOM & Z CAPITAL LLC",
+        "PHANTOM AFFORDABLE HOUSING LLC",
+        "PHANTOM CAP HOLDINGS 206 LLC",
+        "PHANTOM CAP MAP LLC",
+        "PHANTOM CAPITAL 10 LLC",
+        "PHANTOM CAPITAL 107 LLC",
+        "PHANTOM CAPITAL 11 LLC",
+        "PHANTOM CAPITAL 12 LLC",
+        "PHANTOM CAPITAL 161 LLC",
+        "PHANTOM CAPITAL 21 LLC",
+        "PHANTOM CAPITAL 22 LLC",
+        "PHANTOM CAPITAL 350 LLC",
+        "PHANTOM CAPITAL 44 LLC",
+        "PHANTOM CAPITAL 53 LLC",
+        "PHANTOM CAPITAL 55 LLC",
+        "PHANTOM CAPITAL 71 LLC",
+        "PHANTOM CAPITAL 800 LLC",
+        "PHANTOM CAPITAL ACQUISITIONS LLC",
+        "PHANTOM CAPITAL BX LLC",
+        "PHANTOM HOUSING LLC",
+        "PHANTOM KOACH LLC",
+        "PHANTOM LANDLORDS LLC",
+        "PHANTOM NYC HOLDINGS LLC",
+        "PHANTOM PARTNERS 89 LLC",
+        "PHANTOM PARTNERS BH LLC",
+        "PHANTOM PARTNERS PROPERTIES LLC",
+        "PHANTOM PARTNERS RE LLC",
+        "PHANTOM RISE LLC",
+        "PHANTOM TERRITORY LLC",
+        "PHANTOM TITANS LLC",
+        "PHANTOM TOWN LLC",
+        "PHANTOM TROPHIES LLC"
+      ],
+      "total_portfolio_value": 49898000.0,
+      "avg_acquisition_price": 767661.54,
+      "acquisitions_per_month": 6.19,
+      "first_acquisition": "2025-05-01",
+      "last_acquisition": "2026-03-12",
+      "zip_codes_targeted": [
+        "10454",
+        "10455",
+        "10456",
+        "10457",
+        "10459",
+        "10460",
+        "10462",
+        "10466",
+        "10467",
+        "10469",
+        "10470",
+        "10472",
+        "10473",
+        "10474",
+        "11207",
+        "11210",
+        "11212",
+        "11421"
+      ],
+      "high_displacement_acquisitions": 29,
+      "high_displacement_pct": 44.6,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "METROPOLITAN",
+      "total_properties": 62,
+      "total_acquisitions": 63,
+      "llc_count": 11,
+      "llc_entities": [
+        "5549 METROPOLITAN LLC",
+        "C1 METROPOLITAN AVE LLC",
+        "C2 METROPOLITAN AVE LLC",
+        "EE METROPOLITAN LLC",
+        "HC METROPOLITAN LLC",
+        "METROPOLITAN COMERCIAL BANK",
+        "METROPOLITAN COMMERCIAL BANK",
+        "METROPOLITAN COMMERCIAL BANK ISAOA",
+        "METROPOLITAN LIFE INSURANCE COMPANY",
+        "METROPOLITAN NATIONAL BANK MORTGAGE COMPANY LLC",
+        "METROPOLITAN TOWER LIFE INSURANCE COMPANY"
+      ],
+      "total_portfolio_value": 2418243.76,
+      "avg_acquisition_price": 38384.82,
+      "acquisitions_per_month": 5.62,
+      "first_acquisition": "2025-04-16",
+      "last_acquisition": "2026-03-18",
+      "zip_codes_targeted": [
+        "10001",
+        "10002",
+        "10003",
+        "10007",
+        "10012",
+        "10013",
+        "10035",
+        "10453",
+        "10457",
+        "10460",
+        "10466",
+        "11101",
+        "11201",
+        "11203",
+        "11204",
+        "11205",
+        "11213",
+        "11221",
+        "11222",
+        "11225",
+        "11354",
+        "11369",
+        "11385",
+        "11418",
+        "11430",
+        "11436"
+      ],
+      "high_displacement_acquisitions": 21,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "COMMUNITY",
+      "total_properties": 62,
+      "total_acquisitions": 70,
+      "llc_count": 11,
+      "llc_entities": [
+        "AMERICAN COMMUNITY BANK",
+        "AMERICAN COMMUNITY BANK ISAOA",
+        "COMMUNITY BANK NATIONAL ASSOCIATION",
+        "COMMUNITY FEDERAL SAVINGS BANK",
+        "COMMUNITY FEDERAL SAVINGS BANK ISAOA",
+        "COMMUNITY FEDERAL SAVINGS BANK ISAOA/ATIMA",
+        "COMMUNITY LOAN SERVICING LLC",
+        "FIRST COMMUNITY BANK",
+        "NORTHEAST COMMUNITY BANK",
+        "THE COMMUNITY PRESERVATION CORPORATION",
+        "THE COMMUNITY PRESERVATION CORPORTION"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 6.38,
+      "first_acquisition": "2025-05-01",
+      "last_acquisition": "2026-03-26",
+      "zip_codes_targeted": [
+        "10010",
+        "10012",
+        "10013",
+        "10021",
+        "10024",
+        "10025",
+        "10028",
+        "10034",
+        "10128",
+        "10462",
+        "10463",
+        "10468",
+        "11102",
+        "11203",
+        "11205",
+        "11206",
+        "11207",
+        "11212",
+        "11213",
+        "11215",
+        "11216",
+        "11218",
+        "11219",
+        "11221",
+        "11222",
+        "11229",
+        "11230",
+        "11233",
+        "11234",
+        "11237",
+        "11249",
+        "11355",
+        "11368",
+        "11374",
+        "11385",
+        "11418"
+      ],
+      "high_displacement_acquisitions": 34,
+      "high_displacement_pct": 48.6,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "VALLEY",
+      "total_properties": 57,
+      "total_acquisitions": 74,
+      "llc_count": 6,
+      "llc_entities": [
+        "NORTH VALLEY CAPITAL LLC",
+        "S VALLEY 104 LLC",
+        "VALLEY NATIONAL BANK",
+        "VALLEY NATIONAL BANK ISAOA ATIMA",
+        "VALLEY NATIONAL BANK NA",
+        "VALLEY ROAD HOLDINGS LLC"
+      ],
+      "total_portfolio_value": 7255500.0,
+      "avg_acquisition_price": 98047.3,
+      "acquisitions_per_month": 6.73,
+      "first_acquisition": "2025-04-28",
+      "last_acquisition": "2026-03-24",
+      "zip_codes_targeted": [
+        "10001",
+        "10002",
+        "10009",
+        "10014",
+        "10031",
+        "10035",
+        "10452",
+        "10453",
+        "10454",
+        "10457",
+        "10463",
+        "10468",
+        "10473",
+        "11201",
+        "11203",
+        "11205",
+        "11212",
+        "11215",
+        "11216",
+        "11221",
+        "11249"
+      ],
+      "high_displacement_acquisitions": 30,
+      "high_displacement_pct": 40.5,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "STANDARD",
+      "total_properties": 52,
+      "total_acquisitions": 90,
+      "llc_count": 4,
+      "llc_entities": [
+        "STANDARD FEDERAL BANK FSB",
+        "STANDARD INSURANCE COMAPNY",
+        "STANDARD INSURANCE COMPANY",
+        "STANDARD INSURANCE COMPANY AN OREGON CORPORATION"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 8.68,
+      "first_acquisition": "2025-04-22",
+      "last_acquisition": "2026-02-27",
+      "zip_codes_targeted": [
+        "10019",
+        "10452",
+        "10453",
+        "10455",
+        "10456",
+        "10457",
+        "10458",
+        "10459",
+        "10460",
+        "10462",
+        "10463",
+        "10467",
+        "10468",
+        "10473",
+        "11103",
+        "11207",
+        "11212",
+        "11215",
+        "11226",
+        "11233",
+        "11415"
+      ],
+      "high_displacement_acquisitions": 53,
+      "high_displacement_pct": 58.9,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "RIDGEWOOD",
+      "total_properties": 48,
+      "total_acquisitions": 50,
+      "llc_count": 11,
+      "llc_entities": [
+        "232 RIDGEWOOD AVE CORP",
+        "407 RIDGEWOOD AVE LLC",
+        "510 RIDGEWOOD AVE CORP",
+        "6702 RIDGEWOOD LLC",
+        "RIDGEWOOD 407 LLC",
+        "RIDGEWOOD 781 LLC A NEW YORK",
+        "RIDGEWOOD LOFTS LLC",
+        "RIDGEWOOD SAVING BANK",
+        "RIDGEWOOD SAVINGS BANK",
+        "RIDGEWOOD SAVINGS BANK ISAOA",
+        "RIDGEWOOD SAVINGS BANK ISAOA/ATIMA"
+      ],
+      "total_portfolio_value": 5289325.0,
+      "avg_acquisition_price": 105786.5,
+      "acquisitions_per_month": 5.1,
+      "first_acquisition": "2025-04-18",
+      "last_acquisition": "2026-02-06",
+      "zip_codes_targeted": [
+        "10001",
+        "10033",
+        "10452",
+        "10457",
+        "10458",
+        "10459",
+        "10462",
+        "11201",
+        "11206",
+        "11207",
+        "11208",
+        "11211",
+        "11217",
+        "11219",
+        "11221",
+        "11222",
+        "11225",
+        "11230",
+        "11233",
+        "11237",
+        "11385",
+        "11419",
+        "11422",
+        "11429",
+        "11432"
+      ],
+      "high_displacement_acquisitions": 28,
+      "high_displacement_pct": 56.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "BROAD",
+      "total_properties": 43,
+      "total_acquisitions": 76,
+      "llc_count": 3,
+      "llc_entities": [
+        "BROAD X FUNDING II LLC",
+        "BROAD X FUNDING III LLC",
+        "BROAD X FUNDING LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 6.79,
+      "first_acquisition": "2025-04-23",
+      "last_acquisition": "2026-03-25",
+      "zip_codes_targeted": [
+        "10452",
+        "10453",
+        "10456",
+        "10457",
+        "10458",
+        "10460",
+        "10467",
+        "10468",
+        "10469",
+        "10472",
+        "11201",
+        "11207",
+        "11212",
+        "11216",
+        "11221"
+      ],
+      "high_displacement_acquisitions": 41,
+      "high_displacement_pct": 53.9,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "BROADVIEW",
+      "total_properties": 39,
+      "total_acquisitions": 42,
+      "llc_count": 3,
+      "llc_entities": [
+        "BROADVIEW CAPITAL LLC",
+        "BROADVIEW CAPITAL LLC ISAOA ATIMA",
+        "BROADVIEW CAPITAL LLC ISAOA/ATIMA"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 3.83,
+      "first_acquisition": "2025-04-24",
+      "last_acquisition": "2026-03-19",
+      "zip_codes_targeted": [
+        "10460",
+        "10461",
+        "11205",
+        "11206",
+        "11211",
+        "11212",
+        "11216",
+        "11221",
+        "11226",
+        "11233",
+        "11385"
+      ],
+      "high_displacement_acquisitions": 14,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "MTEK",
+      "total_properties": 37,
+      "total_acquisitions": 37,
+      "llc_count": 9,
+      "llc_entities": [
+        "MTEK 174 JEFFERSON LLC",
+        "MTEK CAPITAL LLC",
+        "MTEK FORT GREENE LLC",
+        "MTEK FRANKLIN LLC",
+        "MTEK FULTON LLC",
+        "MTEK GOLD LLC",
+        "MTEK NYC LLC",
+        "MTEK PARK LLC",
+        "MTEK UNION LLC"
+      ],
+      "total_portfolio_value": 37661442.5,
+      "avg_acquisition_price": 1017876.82,
+      "acquisitions_per_month": 3.46,
+      "first_acquisition": "2025-04-29",
+      "last_acquisition": "2026-03-16",
+      "zip_codes_targeted": [
+        "11203",
+        "11207",
+        "11208",
+        "11216",
+        "11217",
+        "11221",
+        "11434"
+      ],
+      "high_displacement_acquisitions": 12,
+      "high_displacement_pct": 32.4,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "SYMETRA",
+      "total_properties": 36,
+      "total_acquisitions": 52,
+      "llc_count": 4,
+      "llc_entities": [
+        "SYMETRA LIFE INSURANCE",
+        "SYMETRA LIFE INSURANCE COMPANY",
+        "SYMETRA LIFE INSURANCE COMPANY AN IOWA CORP",
+        "SYMETRA NATIONAL LIFE INSURANCE COMPANY"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 4.95,
+      "first_acquisition": "2025-04-28",
+      "last_acquisition": "2026-03-09",
+      "zip_codes_targeted": [
+        "10011",
+        "10012",
+        "10013",
+        "10014",
+        "10022",
+        "10028",
+        "10453",
+        "10456",
+        "10460",
+        "10463",
+        "11207",
+        "11209",
+        "11212",
+        "11226",
+        "11228",
+        "11233",
+        "11385",
+        "11432"
+      ],
+      "high_displacement_acquisitions": 28,
+      "high_displacement_pct": 53.8,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "CROSS",
+      "total_properties": 35,
+      "total_acquisitions": 37,
+      "llc_count": 9,
+      "llc_entities": [
+        "2104 CROSS BRONX LLC",
+        "2775 CROSS BRONX EXPY LLC",
+        "8005 CROSS ISLAND LLC",
+        "CROSS 2024-H2 MORTGAGE TRUST",
+        "CROSS COUNTRY MORTGAGE LLC",
+        "CROSS COUNTY SAVINGS BANK",
+        "CROSS NAOMI ELDORA",
+        "CROSS RIVER BANK",
+        "CROSS RIVER BANK NA"
+      ],
+      "total_portfolio_value": 4495000.0,
+      "avg_acquisition_price": 121486.49,
+      "acquisitions_per_month": 3.35,
+      "first_acquisition": "2025-04-23",
+      "last_acquisition": "2026-03-20",
+      "zip_codes_targeted": [
+        "10017",
+        "10021",
+        "10030",
+        "10031",
+        "10039",
+        "10465",
+        "10466",
+        "10472",
+        "11204",
+        "11212",
+        "11213",
+        "11221",
+        "11225",
+        "11226",
+        "11426"
+      ],
+      "high_displacement_acquisitions": 15,
+      "high_displacement_pct": 40.5,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "ARBOR",
+      "total_properties": 35,
+      "total_acquisitions": 48,
+      "llc_count": 8,
+      "llc_entities": [
+        "ARBOR AGENCY LENDING LLC",
+        "ARBOR ATLAS SD FUNDING LLC",
+        "ARBOR CH FUNDING LLC",
+        "ARBOR COMMERCIAL FUNDING I LLC",
+        "ARBOR COMMERCIAL FUNDING I LLC ISAOA /ATIMA",
+        "ARBOR REALTY PARTICIPATION LLC",
+        "ARBOR REALTY SR INC",
+        "ARBOR ROW LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 4.34,
+      "first_acquisition": "2025-04-25",
+      "last_acquisition": "2026-03-23",
+      "zip_codes_targeted": [
+        "10010",
+        "10012",
+        "10013",
+        "10016",
+        "10021",
+        "10025",
+        "10036",
+        "10458",
+        "10460",
+        "10461",
+        "10468",
+        "11101",
+        "11210",
+        "11213",
+        "11214",
+        "11215",
+        "11216",
+        "11222",
+        "11225",
+        "11226",
+        "11230",
+        "11232",
+        "11235"
+      ],
+      "high_displacement_acquisitions": 29,
+      "high_displacement_pct": 60.4,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "DERBY",
+      "total_properties": 34,
+      "total_acquisitions": 54,
+      "llc_count": 8,
+      "llc_entities": [
+        "DERBY 538 LLC",
+        "DERBY BOW 9 LLC",
+        "DERBY DENVER 303 LENDER II LLC",
+        "DERBY FIG HOLDINGS 1 LP",
+        "DERBY FIG HOLDINGS I LLC",
+        "DERBY ROADRUNNER 355 LLC",
+        "DERBY SLED 580 LLC",
+        "DERBY WRIGHT 1571 LLC"
+      ],
+      "total_portfolio_value": 7225500.0,
+      "avg_acquisition_price": 133805.56,
+      "acquisitions_per_month": 5.08,
+      "first_acquisition": "2025-05-05",
+      "last_acquisition": "2026-03-20",
+      "zip_codes_targeted": [
+        "10001",
+        "10011",
+        "10014",
+        "10018",
+        "10038",
+        "10075",
+        "11104",
+        "11201",
+        "11205",
+        "11206",
+        "11213",
+        "11215",
+        "11217",
+        "11222",
+        "11231",
+        "11232",
+        "11233",
+        "11249",
+        "11385"
+      ],
+      "high_displacement_acquisitions": 19,
+      "high_displacement_pct": 35.2,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "ICE",
+      "total_properties": 34,
+      "total_acquisitions": 47,
+      "llc_count": 4,
+      "llc_entities": [
+        "ICE CAP FUND III SPV-C LLC",
+        "ICE LENDER HOLDINGS",
+        "ICE LENDER HOLDINGS LLC",
+        "ICE LENDER HOLDINGS LLC ISAOA/ATIMA"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 4.27,
+      "first_acquisition": "2025-04-23",
+      "last_acquisition": "2026-03-19",
+      "zip_codes_targeted": [
+        "10027",
+        "10452",
+        "10456",
+        "10463",
+        "10467",
+        "10469",
+        "10472",
+        "11206",
+        "11207",
+        "11210",
+        "11212",
+        "11219",
+        "11225",
+        "11230",
+        "11231",
+        "11419"
+      ],
+      "high_displacement_acquisitions": 22,
+      "high_displacement_pct": 46.8,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "EMPORIUM",
+      "total_properties": 32,
+      "total_acquisitions": 36,
+      "llc_count": 4,
+      "llc_entities": [
+        "EMPORIUM TOP LLC",
+        "EMPORIUM TPO LLC",
+        "EMPORIUM TPO LLC ISAOA/ATIMA",
+        "EMPORIUM TPO LLC LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 3.32,
+      "first_acquisition": "2025-04-15",
+      "last_acquisition": "2026-03-06",
+      "zip_codes_targeted": [
+        "10457",
+        "10458",
+        "10459",
+        "10460",
+        "10466",
+        "11212",
+        "11229",
+        "11416",
+        "11418",
+        "11691",
+        "11692"
+      ],
+      "high_displacement_acquisitions": 11,
+      "high_displacement_pct": 30.6,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "PONCE",
+      "total_properties": 30,
+      "total_acquisitions": 39,
+      "llc_count": 4,
+      "llc_entities": [
+        "PONCE BANK",
+        "PONCE BANK NA",
+        "PONCE BANK NATIONAL ASSOCIATION",
+        "PONCE LISANNE"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 3.58,
+      "first_acquisition": "2025-04-30",
+      "last_acquisition": "2026-03-23",
+      "zip_codes_targeted": [
+        "10010",
+        "10012",
+        "10452",
+        "11101",
+        "11102",
+        "11206",
+        "11207",
+        "11212",
+        "11226",
+        "11230",
+        "11238",
+        "11354",
+        "11356",
+        "11368",
+        "11377"
+      ],
+      "high_displacement_acquisitions": 12,
+      "high_displacement_pct": 30.8,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "AMALGAMATED",
+      "total_properties": 29,
+      "total_acquisitions": 42,
+      "llc_count": 2,
+      "llc_entities": [
+        "AMALGAMATED BANK",
+        "AMALGAMATED BUSINESS CORP"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 4.0,
+      "first_acquisition": "2025-05-09",
+      "last_acquisition": "2026-03-20",
+      "zip_codes_targeted": [
+        "10012",
+        "10014",
+        "10033",
+        "10128",
+        "10453",
+        "10457",
+        "11207",
+        "11211",
+        "11213",
+        "11216",
+        "11221",
+        "11237",
+        "11238",
+        "11249"
+      ],
+      "high_displacement_acquisitions": 30,
+      "high_displacement_pct": 71.4,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "SPENCER",
+      "total_properties": 28,
+      "total_acquisitions": 39,
+      "llc_count": 17,
+      "llc_entities": [
+        "100 SPENCER ST 1C LLC",
+        "14 SPENCER PSA LLC",
+        "185 SPENCER ST LLC",
+        "3135 SPENCER DRIVE LLC",
+        "3210 SPENCER DRIVE LLC",
+        "49 SPENCER FUNDING LP",
+        "86 SPENCER ST 2B LLC",
+        "MM SPENCER HOLDINGS LLC",
+        "SPENCER DENISE M",
+        "SPENCER GARDENS NY LLC",
+        "SPENCER KINGSLEY",
+        "SPENCER SAVINGS BANK",
+        "SPENCER SAVINGS BANK SL",
+        "SPENCER SAVINGS BANK SLA",
+        "SPENCER STARS LLC",
+        "SPENCER WILBERT A JR",
+        "SPENCER WILLOUGHBY HOLDINGS LLC"
+      ],
+      "total_portfolio_value": 12350776.13,
+      "avg_acquisition_price": 316686.57,
+      "acquisitions_per_month": 3.59,
+      "first_acquisition": "2025-04-28",
+      "last_acquisition": "2026-03-20",
+      "zip_codes_targeted": [
+        "10451",
+        "10453",
+        "10465",
+        "10472",
+        "11203",
+        "11205",
+        "11212",
+        "11216",
+        "11221"
+      ],
+      "high_displacement_acquisitions": 21,
+      "high_displacement_pct": 53.8,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "ATHENE",
+      "total_properties": 28,
+      "total_acquisitions": 40,
+      "llc_count": 6,
+      "llc_entities": [
+        "ATHENE ANNUITY & LIFE COMPANY",
+        "ATHENE ANNUITY AND LIFE COMANY",
+        "ATHENE ANNUITY AND LIFE COMPANY",
+        "ATHENE ANNUITY& LIFE ASSURANCE COMPANY",
+        "ATHENE ANNUNITY AND LIFE COMPANY DOING BUSINESS",
+        "ATHENE IOWA (AAIA FUNDING AGREEMENTS_MODCO"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 3.72,
+      "first_acquisition": "2025-04-15",
+      "last_acquisition": "2026-03-04",
+      "zip_codes_targeted": [
+        "10004",
+        "10005",
+        "10022",
+        "10031",
+        "10075",
+        "10460",
+        "11101",
+        "11212",
+        "11213",
+        "11217",
+        "11226",
+        "11231",
+        "11233",
+        "11238"
+      ],
+      "high_displacement_acquisitions": 18,
+      "high_displacement_pct": 45.0,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "TOWNHOUSE",
+      "total_properties": 27,
+      "total_acquisitions": 28,
+      "llc_count": 5,
+      "llc_entities": [
+        "M5 TOWNHOUSE 47 LLC",
+        "TOWNHOUSE RENTAL II LLC",
+        "TOWNHOUSE RENTAL IX LLC",
+        "TOWNHOUSE RENTAL LLC",
+        "TOWNHOUSE RENTAL VII LLC"
+      ],
+      "total_portfolio_value": 95626375.0,
+      "avg_acquisition_price": 3415227.68,
+      "acquisitions_per_month": 2.55,
+      "first_acquisition": "2025-04-24",
+      "last_acquisition": "2026-03-20",
+      "zip_codes_targeted": [
+        "10036",
+        "11207",
+        "11215",
+        "11216",
+        "11217",
+        "11221",
+        "11222",
+        "11233",
+        "11237",
+        "11238",
+        "11385"
+      ],
+      "high_displacement_acquisitions": 17,
+      "high_displacement_pct": 60.7,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "POPULAR",
+      "total_properties": 27,
+      "total_acquisitions": 40,
+      "llc_count": 3,
+      "llc_entities": [
+        "POPULAR ABS INC SERIES 2007-A",
+        "POPULAR BANK",
+        "POPULAR BANK FKA BANCO POPULAR NORTH AMERICA"
+      ],
+      "total_portfolio_value": 584020.03,
+      "avg_acquisition_price": 14600.5,
+      "acquisitions_per_month": 3.88,
+      "first_acquisition": "2025-05-06",
+      "last_acquisition": "2026-03-11",
+      "zip_codes_targeted": [
+        "10453",
+        "10457",
+        "10458",
+        "10460",
+        "10462",
+        "10468",
+        "11101",
+        "11208",
+        "11211",
+        "11226",
+        "11377",
+        "11432"
+      ],
+      "high_displacement_acquisitions": 18,
+      "high_displacement_pct": 45.0,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "PROVIDENT",
+      "total_properties": 26,
+      "total_acquisitions": 33,
+      "llc_count": 2,
+      "llc_entities": [
+        "PROVIDENT BANK",
+        "PROVIDENT FUNDING"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 3.01,
+      "first_acquisition": "2025-04-22",
+      "last_acquisition": "2026-03-17",
+      "zip_codes_targeted": [
+        "10009",
+        "10011",
+        "10026",
+        "10028",
+        "10451",
+        "10452",
+        "10454",
+        "10467",
+        "11102",
+        "11207",
+        "11208",
+        "11211",
+        "11216",
+        "11217",
+        "11220",
+        "11223",
+        "11368",
+        "11415"
+      ],
+      "high_displacement_acquisitions": 18,
+      "high_displacement_pct": 54.5,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "GREYSTONE",
+      "total_properties": 26,
+      "total_acquisitions": 43,
+      "llc_count": 14,
+      "llc_entities": [
+        "GREYSTONE ALT BORROWER LLC",
+        "GREYSTONE BRIDGE CLO XII LLC",
+        "GREYSTONE BRIDGE FUNDING X LLC",
+        "GREYSTONE BRIDGE FUNDING XVIII LLC",
+        "GREYSTONE CMC I LLC",
+        "GREYSTONE COMMERCIAL MORTGAGE CAPITAL LLC",
+        "GREYSTONE CRE NOTES 2025-FL4 LLC",
+        "GREYSTONE FUNDING COMPANY LLC",
+        "GREYSTONE LOAN AGGREGATOR LLC",
+        "GREYSTONE SELECT COMPANY II LLC",
+        "GREYSTONE SELECT COMPANY LLC",
+        "GREYSTONE SERVICING COMPANY LLC",
+        "GREYSTONE ST LOAN FUNDING LLC",
+        "LLC GREYSTONE BRIDGE FUNDING X"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 4.23,
+      "first_acquisition": "2025-04-24",
+      "last_acquisition": "2026-02-23",
+      "zip_codes_targeted": [
+        "10001",
+        "10014",
+        "10016",
+        "10038",
+        "10128",
+        "10451",
+        "10462",
+        "10468",
+        "10471",
+        "11101",
+        "11211",
+        "11221",
+        "11222",
+        "11233",
+        "11237",
+        "11374"
+      ],
+      "high_displacement_acquisitions": 20,
+      "high_displacement_pct": 46.5,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "TOWER",
+      "total_properties": 25,
+      "total_acquisitions": 31,
+      "llc_count": 7,
+      "llc_entities": [
+        "859 TOWER LLC",
+        "NY TOWER CAPITAL LLC",
+        "NYC TOWER 2619 HOLDINGS LLC",
+        "SOUTH TOWER 121 LLC",
+        "TOWER 1014 LLC",
+        "TOWER 2055 REALTY LLC",
+        "TOWER 66 LLC"
+      ],
+      "total_portfolio_value": 13000000.0,
+      "avg_acquisition_price": 419354.84,
+      "acquisitions_per_month": 3.24,
+      "first_acquisition": "2025-04-29",
+      "last_acquisition": "2026-02-10",
+      "zip_codes_targeted": [
+        "10016",
+        "10452",
+        "10459",
+        "11206",
+        "11219",
+        "11221",
+        "11225",
+        "11226",
+        "11355",
+        "11435",
+        "11691"
+      ],
+      "high_displacement_acquisitions": 10,
+      "high_displacement_pct": 32.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "FOURLEAF",
+      "total_properties": 24,
+      "total_acquisitions": 31,
+      "llc_count": 2,
+      "llc_entities": [
+        "FOURLEAF FEDERAL CREDIT UNION",
+        "FOURLEAF FEDERAL CREDIT UNION ISAOA/ATIMA"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 2.87,
+      "first_acquisition": "2025-04-29",
+      "last_acquisition": "2026-03-19",
+      "zip_codes_targeted": [
+        "10009",
+        "10456",
+        "10459",
+        "10467",
+        "10474",
+        "11204",
+        "11206",
+        "11211",
+        "11226",
+        "11232",
+        "11233"
+      ],
+      "high_displacement_acquisitions": 16,
+      "high_displacement_pct": 51.6,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "GRASSHOPPER",
+      "total_properties": 23,
+      "total_acquisitions": 30,
+      "llc_count": 3,
+      "llc_entities": [
+        "GRASSHOPPER BANK",
+        "GRASSHOPPER BANK NA",
+        "GRASSHOPPER BANKNA"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 2.65,
+      "first_acquisition": "2025-04-21",
+      "last_acquisition": "2026-03-26",
+      "zip_codes_targeted": [
+        "10452",
+        "10453",
+        "10459",
+        "10468",
+        "11204",
+        "11206",
+        "11212",
+        "11216",
+        "11219",
+        "11220",
+        "11413"
+      ],
+      "high_displacement_acquisitions": 16,
+      "high_displacement_pct": 53.3,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "CONNECTONE",
+      "total_properties": 23,
+      "total_acquisitions": 24,
+      "llc_count": 2,
+      "llc_entities": [
+        "CONNECTONE BANK",
+        "CONNECTONE BANK ISAOA/ATIMA"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 2.2,
+      "first_acquisition": "2025-04-30",
+      "last_acquisition": "2026-03-24",
+      "zip_codes_targeted": [
+        "10001",
+        "10007",
+        "10012",
+        "10013",
+        "10458",
+        "10461",
+        "11101",
+        "11201",
+        "11205",
+        "11211",
+        "11215",
+        "11354",
+        "11378"
+      ],
+      "high_displacement_acquisitions": 9,
+      "high_displacement_pct": 37.5,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "STARWOOD",
+      "total_properties": 22,
+      "total_acquisitions": 32,
+      "llc_count": 10,
+      "llc_entities": [
+        "STARWOOD MORTGAGE CAPITAL LLC",
+        "STARWOOD MORTGAGE FUNDING II LLC",
+        "STARWOOD MORTGAGE FUNDING III LLC",
+        "STARWOOD MORTGAGE FUNDING VII LLC",
+        "STARWOOD MORTGAGE RESIDENTIAL TRUST 2021-6",
+        "STARWOOD MORTGAGE RESIDENTIAL TRUST 2022-2",
+        "STARWOOD MORTGAGE RESIDENTIAL TRUST 2022-3",
+        "STARWOOD PROPERTY MORTGAGE SUB-14-A LLC",
+        "STARWOOD PROPERTY MORTGAGE SUB-2 LLC",
+        "STARWOOD PROPERTY MORTGAGE SUB-23-A LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 4.59,
+      "first_acquisition": "2025-04-24",
+      "last_acquisition": "2025-11-19",
+      "zip_codes_targeted": [
+        "10010",
+        "10035",
+        "10040",
+        "10463",
+        "11205",
+        "11211",
+        "11222",
+        "11226",
+        "11237"
+      ],
+      "high_displacement_acquisitions": 14,
+      "high_displacement_pct": 43.8,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "INCREF",
+      "total_properties": 20,
+      "total_acquisitions": 29,
+      "llc_count": 7,
+      "llc_entities": [
+        "INCREF 2025-FL1 LLC",
+        "INCREF CLO SELLER LLC",
+        "INCREF INVESTMENTS BB SELLER LLC",
+        "INCREF INVESTMENTS BMO SELLER LLC",
+        "INCREF INVESTMENTS CB TERM SELLER LLC",
+        "INCREF INVESTMENTS MS SELLER LLC",
+        "INCREF INVESTMENTS WF SELLER LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 3.36,
+      "first_acquisition": "2025-04-15",
+      "last_acquisition": "2025-12-30",
+      "zip_codes_targeted": [
+        "10018",
+        "10024",
+        "11101",
+        "11207",
+        "11211",
+        "11215",
+        "11216",
+        "11217",
+        "11221",
+        "11231",
+        "11237"
+      ],
+      "high_displacement_acquisitions": 9,
+      "high_displacement_pct": 31.0,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "LASALLE",
+      "total_properties": 19,
+      "total_acquisitions": 21,
+      "llc_count": 5,
+      "llc_entities": [
+        "3033 LASALLE AVE LLC",
+        "LASALLE BANK MIDWEST NATIONAL ASSOCIATION",
+        "LASALLE BANK NA",
+        "LASALLE BANK NATIONAL ASSOCIATION",
+        "LASALLE REAL ESTATE CREDIT STRATEGIES REIT IA LL"
+      ],
+      "total_portfolio_value": 1050000.0,
+      "avg_acquisition_price": 50000.0,
+      "acquisitions_per_month": 2.0,
+      "first_acquisition": "2025-05-06",
+      "last_acquisition": "2026-03-17",
+      "zip_codes_targeted": [
+        "10457",
+        "10469",
+        "11207",
+        "11221",
+        "11236",
+        "11420"
+      ],
+      "high_displacement_acquisitions": 7,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "STORMFIELD",
+      "total_properties": 18,
+      "total_acquisitions": 20,
+      "llc_count": 5,
+      "llc_entities": [
+        "STORMFIELD CAPITAL FUNDING I LLC",
+        "STORMFIELD ENHANCED MORTGAGE FUNDING LLC",
+        "STORMFIELD REAL ESTATE INCOME OFFSHORE FUND LTD",
+        "STORMFIELD SPV I LLC",
+        "STORMFIELD SPV IV LLC"
+      ],
+      "total_portfolio_value": 5000000.0,
+      "avg_acquisition_price": 250000.0,
+      "acquisitions_per_month": 2.03,
+      "first_acquisition": "2025-05-27",
+      "last_acquisition": "2026-03-18",
+      "zip_codes_targeted": [
+        "10001",
+        "10003",
+        "10016",
+        "10025",
+        "10040",
+        "11207",
+        "11222",
+        "11225",
+        "11233",
+        "11238"
+      ],
+      "high_displacement_acquisitions": 7,
+      "high_displacement_pct": 35.0,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "SELF",
+      "total_properties": 18,
+      "total_acquisitions": 24,
+      "llc_count": 4,
+      "llc_entities": [
+        "SELF RELIANCE (NY) FEDERAL CREDIT UNION",
+        "SELF RELIANCE FINANCIAL CREDIT UNION",
+        "SELF RELIANCE FINANCIAL FEDERAL CREDIT UNION",
+        "SELF TSCHABALALA AMANDLA NNEKA"
+      ],
+      "total_portfolio_value": 2500000.0,
+      "avg_acquisition_price": 104166.67,
+      "acquisitions_per_month": 2.25,
+      "first_acquisition": "2025-04-23",
+      "last_acquisition": "2026-03-09",
+      "zip_codes_targeted": [
+        "10009",
+        "10453",
+        "10456",
+        "10457",
+        "10458",
+        "10461",
+        "10467",
+        "10472",
+        "10473",
+        "11222",
+        "11385"
+      ],
+      "high_displacement_acquisitions": 13,
+      "high_displacement_pct": 54.2,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "HOMETOWN",
+      "total_properties": 18,
+      "total_acquisitions": 19,
+      "llc_count": 4,
+      "llc_entities": [
+        "HOMETOWN EQUITY MORTGAGE",
+        "HOMETOWN EQUITY MORTGAGE LLC",
+        "HOMETOWN EQUITY MORTGAGE LLC DBA THELENDER",
+        "HOMETOWN MORTGAGE LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.81,
+      "first_acquisition": "2025-04-23",
+      "last_acquisition": "2026-03-04",
+      "zip_codes_targeted": [
+        "10459",
+        "10466",
+        "11212",
+        "11216",
+        "11237",
+        "11369",
+        "11433"
+      ],
+      "high_displacement_acquisitions": 9,
+      "high_displacement_pct": 47.4,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "A&E",
+      "total_properties": 17,
+      "total_acquisitions": 21,
+      "llc_count": 3,
+      "llc_entities": [
+        "A&E REAL ESTATE FINANCE SPV A-1 LLC",
+        "A&E REAL ESTATE FINANCE SPV-A-1 LLC",
+        "A&E REAL ESTATE FINANCING SPV A-1 LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 2.26,
+      "first_acquisition": "2025-06-13",
+      "last_acquisition": "2026-03-19",
+      "zip_codes_targeted": [
+        "10030",
+        "10035",
+        "11206",
+        "11211",
+        "11221",
+        "11233",
+        "11237"
+      ],
+      "high_displacement_acquisitions": 7,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "OCEANFIRST",
+      "total_properties": 15,
+      "total_acquisitions": 18,
+      "llc_count": 2,
+      "llc_entities": [
+        "OCEANFIRST BANK NA",
+        "OCEANFIRST BANK NA ISAOA ATIMA"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 2.14,
+      "first_acquisition": "2025-05-29",
+      "last_acquisition": "2026-02-05",
+      "zip_codes_targeted": [
+        "10013",
+        "10014",
+        "10025",
+        "11101",
+        "11203",
+        "11206",
+        "11207",
+        "11210",
+        "11218",
+        "11221",
+        "11226",
+        "11229"
+      ],
+      "high_displacement_acquisitions": 6,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "PARKE",
+      "total_properties": 15,
+      "total_acquisitions": 23,
+      "llc_count": 3,
+      "llc_entities": [
+        "PARKE BANK",
+        "PARKE BANK ISAOA",
+        "PARKE BANK ISAOA ATIMA"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 2.49,
+      "first_acquisition": "2025-06-12",
+      "last_acquisition": "2026-03-16",
+      "zip_codes_targeted": [
+        "10456",
+        "11205",
+        "11211",
+        "11225"
+      ],
+      "high_displacement_acquisitions": 7,
+      "high_displacement_pct": 30.4,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "TOMPKINS",
+      "total_properties": 14,
+      "total_acquisitions": 15,
+      "llc_count": 7,
+      "llc_entities": [
+        "116 TOMPKINS AVENUE CORPORATION",
+        "145 TOMPKINS REALTY LLC",
+        "51 TOMPKINS TOWNHOUSE LLC",
+        "M TOMPKINS LLC",
+        "TOMPKINS & BALLONZOLI TRUST",
+        "TOMPKINS COMMUNITY BANK",
+        "TOMPKINS EUGENE"
+      ],
+      "total_portfolio_value": 16600000.0,
+      "avg_acquisition_price": 1106666.67,
+      "acquisitions_per_month": 1.73,
+      "first_acquisition": "2025-04-21",
+      "last_acquisition": "2026-01-06",
+      "zip_codes_targeted": [
+        "10459",
+        "10461",
+        "11206",
+        "11231"
+      ],
+      "high_displacement_acquisitions": 5,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "DWIGHT",
+      "total_properties": 14,
+      "total_acquisitions": 26,
+      "llc_count": 7,
+      "llc_entities": [
+        "DWIGHT 2025-FL1 ISSUER LLC",
+        "DWIGHT AVENUE CORP",
+        "DWIGHT CAPITAL LLC",
+        "DWIGHT CRE CLO SELLER LLC",
+        "DWIGHT MORTGAGE TRUST LLC",
+        "DWIGHT SILVERIO CAAMAL AND SHARON LANDRETH-SMITH F",
+        "DWIGHT SILVERIO CAAMAL TRUSTEE"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 4.17,
+      "first_acquisition": "2025-04-24",
+      "last_acquisition": "2025-10-28",
+      "zip_codes_targeted": [
+        "10451",
+        "11102",
+        "11220",
+        "11222",
+        "11226",
+        "11228",
+        "11237"
+      ],
+      "high_displacement_acquisitions": 14,
+      "high_displacement_pct": 53.8,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "ARGENTIC",
+      "total_properties": 14,
+      "total_acquisitions": 25,
+      "llc_count": 2,
+      "llc_entities": [
+        "ARGENTIC REAL ESTATE FINANCE 2 LLC",
+        "ARGENTIC REAL ESTATE INVESTMENT 2 LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 2.34,
+      "first_acquisition": "2025-05-09",
+      "last_acquisition": "2026-03-26",
+      "zip_codes_targeted": [
+        "10001",
+        "10004",
+        "10013",
+        "10018",
+        "10453",
+        "10466",
+        "10468",
+        "11216",
+        "11222"
+      ],
+      "high_displacement_acquisitions": 18,
+      "high_displacement_pct": 72.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "BCC",
+      "total_properties": 13,
+      "total_acquisitions": 20,
+      "llc_count": 7,
+      "llc_entities": [
+        "BCC 1375 BROADWAY 1 LLC",
+        "BCC 141 SECOND AVE LLC",
+        "BCC 205-207 EIGHTH AVE LLC",
+        "BCC FUNDING CRF LLC",
+        "BCC FUNDING II LLC",
+        "BCC LAKESIDE A LLC",
+        "BCC LOAN FUNDER III LLC"
+      ],
+      "total_portfolio_value": 32125000.0,
+      "avg_acquisition_price": 1606250.0,
+      "acquisitions_per_month": 2.34,
+      "first_acquisition": "2025-06-30",
+      "last_acquisition": "2026-03-13",
+      "zip_codes_targeted": [
+        "10003",
+        "10011",
+        "10018",
+        "10457",
+        "10467",
+        "11101",
+        "11206",
+        "11237",
+        "11238",
+        "11249"
+      ],
+      "high_displacement_acquisitions": 7,
+      "high_displacement_pct": 35.0,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "ECC",
+      "total_properties": 12,
+      "total_acquisitions": 16,
+      "llc_count": 4,
+      "llc_entities": [
+        "ECC 121 8TH AVE LLC",
+        "ECC MT SPE LLC",
+        "ECC SPE LLC",
+        "ECC UNDERHILL LLC"
+      ],
+      "total_portfolio_value": 1076098.5,
+      "avg_acquisition_price": 67256.16,
+      "acquisitions_per_month": 1.76,
+      "first_acquisition": "2025-05-06",
+      "last_acquisition": "2026-02-02",
+      "zip_codes_targeted": [
+        "10016",
+        "10022",
+        "10024",
+        "10065",
+        "11215",
+        "11217",
+        "11230"
+      ],
+      "high_displacement_acquisitions": 5,
+      "high_displacement_pct": 31.2,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "EMIGRANT",
+      "total_properties": 12,
+      "total_acquisitions": 14,
+      "llc_count": 4,
+      "llc_entities": [
+        "EMIGRANT BANK",
+        "EMIGRANT FUNDING CORPORATION",
+        "EMIGRANT FUNDING CORPORATION ISAOA",
+        "EMIGRANT MORTGAGE COMPANY INC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.74,
+      "first_acquisition": "2025-04-21",
+      "last_acquisition": "2025-12-18",
+      "zip_codes_targeted": [
+        "10002",
+        "10004",
+        "10452",
+        "10466",
+        "11103",
+        "11206",
+        "11215",
+        "11223",
+        "11233",
+        "11361",
+        "11372"
+      ],
+      "high_displacement_acquisitions": 6,
+      "high_displacement_pct": 42.9,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "JOVIA",
+      "total_properties": 12,
+      "total_acquisitions": 16,
+      "llc_count": 2,
+      "llc_entities": [
+        "JOVIA FINANCIAL CREDIT UNION",
+        "JOVIA FINANCIAL FEDERAL CREDIT UNION"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.55,
+      "first_acquisition": "2025-04-23",
+      "last_acquisition": "2026-02-27",
+      "zip_codes_targeted": [
+        "11215",
+        "11216",
+        "11221",
+        "11222",
+        "11233",
+        "11237",
+        "11385"
+      ],
+      "high_displacement_acquisitions": 10,
+      "high_displacement_pct": 62.5,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "ARION",
+      "total_properties": 12,
+      "total_acquisitions": 15,
+      "llc_count": 3,
+      "llc_entities": [
+        "ARION FUND LLC",
+        "ARION FUND LLC ISAOA/ATIMA",
+        "ARION FUNDING LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.65,
+      "first_acquisition": "2025-04-23",
+      "last_acquisition": "2026-01-21",
+      "zip_codes_targeted": [
+        "10016",
+        "10452",
+        "10461",
+        "11203",
+        "11204",
+        "11211",
+        "11212",
+        "11233",
+        "11355"
+      ],
+      "high_displacement_acquisitions": 9,
+      "high_displacement_pct": 60.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "SMS",
+      "total_properties": 12,
+      "total_acquisitions": 12,
+      "llc_count": 3,
+      "llc_entities": [
+        "SMS 205 LLC",
+        "SMS FINANCIAL CRE FUND LLC",
+        "SMS FINANCIAL RECOVERY SERVICES LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.3,
+      "first_acquisition": "2025-05-05",
+      "last_acquisition": "2026-02-06",
+      "zip_codes_targeted": [
+        "10029",
+        "10034",
+        "10464",
+        "11207",
+        "11222",
+        "11231",
+        "11233"
+      ],
+      "high_displacement_acquisitions": 6,
+      "high_displacement_pct": 50.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "1ST",
+      "total_properties": 11,
+      "total_acquisitions": 16,
+      "llc_count": 8,
+      "llc_entities": [
+        "1492 1ST AVENUE REALTY LLC",
+        "1ST 2ND MORTGAGE CO OF NJ INC",
+        "1ST AMERICAN PROPERTIES GROUP I LLC",
+        "1ST AMERICAN PROPERTIES GROUP ONE NY LLC",
+        "1ST REPUBLIC MORTGAGE BANKERS INC",
+        "2015 1ST AVENUE NYC REALTY INC",
+        "64 1ST PLACE LLC",
+        "71 1ST VENTURES LLC"
+      ],
+      "total_portfolio_value": 17905000.0,
+      "avg_acquisition_price": 1119062.5,
+      "acquisitions_per_month": 1.68,
+      "first_acquisition": "2025-04-23",
+      "last_acquisition": "2026-02-03",
+      "zip_codes_targeted": [
+        "10029",
+        "10075",
+        "11231",
+        "11238",
+        "11361"
+      ],
+      "high_displacement_acquisitions": 7,
+      "high_displacement_pct": 43.8,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "MASPETH",
+      "total_properties": 11,
+      "total_acquisitions": 12,
+      "llc_count": 3,
+      "llc_entities": [
+        "KL MASPETH LLC",
+        "MASPETH FEDERAL SAVINGS & LOAN ASSOCIATION",
+        "MASPETH FEDERAL SAVINGS AND LOAN ASSOCIATION"
+      ],
+      "total_portfolio_value": 3300000.0,
+      "avg_acquisition_price": 275000.0,
+      "acquisitions_per_month": 1.53,
+      "first_acquisition": "2025-06-02",
+      "last_acquisition": "2026-01-23",
+      "zip_codes_targeted": [
+        "10002",
+        "10021",
+        "11101",
+        "11102",
+        "11103",
+        "11231",
+        "11378"
+      ],
+      "high_displacement_acquisitions": 4,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "HORIZON",
+      "total_properties": 11,
+      "total_acquisitions": 11,
+      "llc_count": 5,
+      "llc_entities": [
+        "105 HORIZON COURT LLC",
+        "FIRST HORIZON BANK",
+        "FLUSHING HORIZON PROPERTY LLC",
+        "NEW HORIZON 88 LLC",
+        "SECOND HORIZON HOLDINGS LLC"
+      ],
+      "total_portfolio_value": 2750000.0,
+      "avg_acquisition_price": 250000.0,
+      "acquisitions_per_month": 1.4,
+      "first_acquisition": "2025-04-21",
+      "last_acquisition": "2025-12-12",
+      "zip_codes_targeted": [
+        "10473",
+        "11104",
+        "11205",
+        "11213",
+        "11221",
+        "11235",
+        "11373",
+        "11378"
+      ],
+      "high_displacement_acquisitions": 4,
+      "high_displacement_pct": 36.4,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "DEEPHAVEN",
+      "total_properties": 11,
+      "total_acquisitions": 14,
+      "llc_count": 2,
+      "llc_entities": [
+        "DEEPHAVEN MORTGAGE LLC",
+        "DEEPHAVEN RESIDENTIAL MORTGAGE TRUST 2021-4"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.37,
+      "first_acquisition": "2025-05-22",
+      "last_acquisition": "2026-03-25",
+      "zip_codes_targeted": [
+        "10466",
+        "11212",
+        "11221",
+        "11226",
+        "11233",
+        "11366"
+      ],
+      "high_displacement_acquisitions": 9,
+      "high_displacement_pct": 64.3,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "MELO",
+      "total_properties": 10,
+      "total_acquisitions": 10,
+      "llc_count": 2,
+      "llc_entities": [
+        "MELO HECTOR B",
+        "MELO Z PHANTOM CAP LLC"
+      ],
+      "total_portfolio_value": 7228800.0,
+      "avg_acquisition_price": 722880.0,
+      "acquisitions_per_month": 1.14,
+      "first_acquisition": "2025-04-24",
+      "last_acquisition": "2026-01-12",
+      "zip_codes_targeted": [
+        "10455",
+        "10459",
+        "10460",
+        "10461",
+        "10462",
+        "10467",
+        "10468"
+      ],
+      "high_displacement_acquisitions": 7,
+      "high_displacement_pct": 70.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "EMERALD",
+      "total_properties": 10,
+      "total_acquisitions": 10,
+      "llc_count": 4,
+      "llc_entities": [
+        "436 EMERALD STAR LLC",
+        "629 EMERALD HOLDINGS LLC",
+        "EMERALD CREEK CAPITAL 3 LLC",
+        "EMERALD CREEK CAPITAL 4 LLC"
+      ],
+      "total_portfolio_value": 2300000.0,
+      "avg_acquisition_price": 230000.0,
+      "acquisitions_per_month": 1.15,
+      "first_acquisition": "2025-05-05",
+      "last_acquisition": "2026-01-20",
+      "zip_codes_targeted": [
+        "10013",
+        "10461",
+        "11102",
+        "11208",
+        "11220"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 30.0,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "TRYON",
+      "total_properties": 10,
+      "total_acquisitions": 10,
+      "llc_count": 3,
+      "llc_entities": [
+        "3519 TRYON AVE LLC",
+        "TRYON STREET ACQUISITION TRUST 1",
+        "TRYON STREET ACQUISITION TRUST I"
+      ],
+      "total_portfolio_value": 980000.0,
+      "avg_acquisition_price": 98000.0,
+      "acquisitions_per_month": 0.96,
+      "first_acquisition": "2025-04-21",
+      "last_acquisition": "2026-02-27",
+      "zip_codes_targeted": [
+        "11203",
+        "11206",
+        "11219",
+        "11237",
+        "11694"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 30.0,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "GMAC",
+      "total_properties": 10,
+      "total_acquisitions": 10,
+      "llc_count": 2,
+      "llc_entities": [
+        "GMAC BANK",
+        "GMAC MORTGAGE LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.2,
+      "first_acquisition": "2025-04-17",
+      "last_acquisition": "2025-12-22",
+      "zip_codes_targeted": [
+        "11385",
+        "11413",
+        "11418",
+        "11691"
+      ],
+      "high_displacement_acquisitions": 4,
+      "high_displacement_pct": 40.0,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "CAKE",
+      "total_properties": 10,
+      "total_acquisitions": 12,
+      "llc_count": 2,
+      "llc_entities": [
+        "CAKE MORTGAGE CORP",
+        "CAKE MORTGAGE CORPORATION"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.61,
+      "first_acquisition": "2025-04-24",
+      "last_acquisition": "2025-12-04",
+      "zip_codes_targeted": [
+        "10456",
+        "10469",
+        "11205",
+        "11208"
+      ],
+      "high_displacement_acquisitions": 5,
+      "high_displacement_pct": 41.7,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "HERITAGE",
+      "total_properties": 10,
+      "total_acquisitions": 11,
+      "llc_count": 3,
+      "llc_entities": [
+        "AMERICAN HERITAGE LANDING LLC",
+        "AMERICAN HERITAGE LENDING LLC",
+        "AMERICAN HERITAGE LIFE INSURANCE COMPANY"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.26,
+      "first_acquisition": "2025-05-06",
+      "last_acquisition": "2026-01-23",
+      "zip_codes_targeted": [
+        "10461",
+        "11208"
+      ],
+      "high_displacement_acquisitions": 4,
+      "high_displacement_pct": 36.4,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "HAB",
+      "total_properties": 10,
+      "total_acquisitions": 11,
+      "llc_count": 3,
+      "llc_entities": [
+        "HAB AMERICAN BANK",
+        "HAB BANK",
+        "HAB BANK ISAOA"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.43,
+      "first_acquisition": "2025-05-06",
+      "last_acquisition": "2025-12-23",
+      "zip_codes_targeted": [
+        "10002",
+        "10453",
+        "10457",
+        "10459",
+        "10461",
+        "10462",
+        "10467",
+        "11212",
+        "11223"
+      ],
+      "high_displacement_acquisitions": 8,
+      "high_displacement_pct": 72.7,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "HEI",
+      "total_properties": 10,
+      "total_acquisitions": 10,
+      "llc_count": 4,
+      "llc_entities": [
+        "HEI JV VI TRUST 1",
+        "HEI JV VI TRUST I",
+        "HEI JV VIII TRUST",
+        "LP HEI FUND VII"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.33,
+      "first_acquisition": "2025-07-07",
+      "last_acquisition": "2026-02-17",
+      "zip_codes_targeted": [
+        "10467",
+        "11207",
+        "11691"
+      ],
+      "high_displacement_acquisitions": 4,
+      "high_displacement_pct": 40.0,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "STG",
+      "total_properties": 10,
+      "total_acquisitions": 10,
+      "llc_count": 2,
+      "llc_entities": [
+        "STG MORTGAGE INC",
+        "STG RE FUND LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 2.16,
+      "first_acquisition": "2025-08-26",
+      "last_acquisition": "2026-01-12",
+      "zip_codes_targeted": [
+        "11212",
+        "11219",
+        "11355",
+        "11356",
+        "11373"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 30.0,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "ALLISON",
+      "total_properties": 9,
+      "total_acquisitions": 9,
+      "llc_count": 4,
+      "llc_entities": [
+        "ALLISON A SYLVESTER AND ANSELM F SYLVESTER",
+        "ALLISON AMANDA",
+        "ALLISON DUSTIN",
+        "ALLISON LENDING LLC"
+      ],
+      "total_portfolio_value": 2767875.72,
+      "avg_acquisition_price": 307541.75,
+      "acquisitions_per_month": 0.93,
+      "first_acquisition": "2025-04-15",
+      "last_acquisition": "2026-01-30",
+      "zip_codes_targeted": [
+        "11206",
+        "11219",
+        "11237",
+        "11434"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "NOTES",
+      "total_properties": 9,
+      "total_acquisitions": 9,
+      "llc_count": 3,
+      "llc_entities": [
+        "BD NOTES LLC",
+        "CI NOTES LLC",
+        "DD NOTES LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.03,
+      "first_acquisition": "2025-06-24",
+      "last_acquisition": "2026-03-12",
+      "zip_codes_targeted": [
+        "10027",
+        "10461",
+        "10472",
+        "11102",
+        "11215",
+        "11221",
+        "11222"
+      ],
+      "high_displacement_acquisitions": 6,
+      "high_displacement_pct": 66.7,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "FAY",
+      "total_properties": 9,
+      "total_acquisitions": 9,
+      "llc_count": 3,
+      "llc_entities": [
+        "FAY BRANDWEIN REVOCABLE TRUST",
+        "FAY SERVICING LLC",
+        "FAY SMALDONE TRUSTEE"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.09,
+      "first_acquisition": "2025-07-07",
+      "last_acquisition": "2026-03-11",
+      "zip_codes_targeted": [
+        "11205",
+        "11214",
+        "11249",
+        "11369",
+        "11433"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "SHERIDAN",
+      "total_properties": 8,
+      "total_acquisitions": 8,
+      "llc_count": 4,
+      "llc_entities": [
+        "139 SHERIDAN HOLDING LLC",
+        "4F SHERIDAN LLC",
+        "SHERIDAN AVENUE PROPERTIES LLC",
+        "SHERIDAN D BLAU AS TRUSTEE"
+      ],
+      "total_portfolio_value": 7080000.0,
+      "avg_acquisition_price": 885000.0,
+      "acquisitions_per_month": 1.01,
+      "first_acquisition": "2025-04-30",
+      "last_acquisition": "2025-12-23",
+      "zip_codes_targeted": [
+        "10456"
+      ],
+      "high_displacement_acquisitions": 5,
+      "high_displacement_pct": 62.5,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "MODERN",
+      "total_properties": 8,
+      "total_acquisitions": 10,
+      "llc_count": 3,
+      "llc_entities": [
+        "MODERN ABSTRACTION GALLERY LLC",
+        "MODERN BANK",
+        "MODERN BANK NA"
+      ],
+      "total_portfolio_value": 3000000.0,
+      "avg_acquisition_price": 300000.0,
+      "acquisitions_per_month": 0.93,
+      "first_acquisition": "2025-04-29",
+      "last_acquisition": "2026-03-18",
+      "zip_codes_targeted": [
+        "10454",
+        "10458",
+        "11222"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 30.0,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "HUNTINGTON",
+      "total_properties": 8,
+      "total_acquisitions": 10,
+      "llc_count": 4,
+      "llc_entities": [
+        "295 HUNTINGTON AVE LLC",
+        "HUNTINGTON CHASE ALLISON",
+        "HUNTINGTON NATIONAL BANK",
+        "THE HUNTINGTON NATIONAL BANK"
+      ],
+      "total_portfolio_value": 2325000.0,
+      "avg_acquisition_price": 232500.0,
+      "acquisitions_per_month": 1.04,
+      "first_acquisition": "2025-05-29",
+      "last_acquisition": "2026-03-13",
+      "zip_codes_targeted": [
+        "10456",
+        "10472",
+        "11213",
+        "11219",
+        "11691"
+      ],
+      "high_displacement_acquisitions": 7,
+      "high_displacement_pct": 70.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "DELTA",
+      "total_properties": 8,
+      "total_acquisitions": 10,
+      "llc_count": 4,
+      "llc_entities": [
+        "DELTA COMMUNITY CREDIT UNION",
+        "DELTA FUNDING CORP",
+        "DELTA FUNDING CORPORATION",
+        "DELTA VENTURE HOLDINGS INC"
+      ],
+      "total_portfolio_value": 502500.0,
+      "avg_acquisition_price": 50250.0,
+      "acquisitions_per_month": 1.19,
+      "first_acquisition": "2025-05-29",
+      "last_acquisition": "2026-02-06",
+      "zip_codes_targeted": [
+        "10016",
+        "10472",
+        "11216",
+        "11433",
+        "11434"
+      ],
+      "high_displacement_acquisitions": 5,
+      "high_displacement_pct": 50.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "IBI",
+      "total_properties": 8,
+      "total_acquisitions": 11,
+      "llc_count": 3,
+      "llc_entities": [
+        "IBI FALCON US LLC",
+        "IBI FALCON US LP",
+        "IBI SBL INVESTMENT LP"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 2.17,
+      "first_acquisition": "2025-05-01",
+      "last_acquisition": "2025-09-30",
+      "zip_codes_targeted": [
+        "10457",
+        "11210",
+        "11220",
+        "11249"
+      ],
+      "high_displacement_acquisitions": 7,
+      "high_displacement_pct": 63.6,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "NEWTEK",
+      "total_properties": 8,
+      "total_acquisitions": 10,
+      "llc_count": 3,
+      "llc_entities": [
+        "NEWTEK BANK NATIONAL ASSOCIATION",
+        "NEWTEK BANK NATIONAL ASSOCIATION ISAOA ATIMA",
+        "NEWTEK BUSINESS SERVICES HOLDCO 6 INC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.3,
+      "first_acquisition": "2025-06-06",
+      "last_acquisition": "2026-01-22",
+      "zip_codes_targeted": [
+        "10014",
+        "10018",
+        "10467",
+        "11212",
+        "11233"
+      ],
+      "high_displacement_acquisitions": 4,
+      "high_displacement_pct": 40.0,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "VCC",
+      "total_properties": 8,
+      "total_acquisitions": 8,
+      "llc_count": 2,
+      "llc_entities": [
+        "VCC 2025-MC1 TRUST",
+        "VCC 2026-MC1 TRUST"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.08,
+      "first_acquisition": "2025-08-21",
+      "last_acquisition": "2026-03-31",
+      "zip_codes_targeted": [
+        "10031",
+        "10469",
+        "10472"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 37.5,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "RISING",
+      "total_properties": 7,
+      "total_acquisitions": 7,
+      "llc_count": 3,
+      "llc_entities": [
+        "22 RISING SUN LLC",
+        "RISING GROUND INC",
+        "RISING PROPERTIES LLC"
+      ],
+      "total_portfolio_value": 4291370.0,
+      "avg_acquisition_price": 613052.86,
+      "acquisitions_per_month": 1.21,
+      "first_acquisition": "2025-07-30",
+      "last_acquisition": "2026-01-20",
+      "zip_codes_targeted": [
+        "10456",
+        "10468"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 42.9,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "KEYBANK",
+      "total_properties": 7,
+      "total_acquisitions": 8,
+      "llc_count": 2,
+      "llc_entities": [
+        "KEYBANK NA",
+        "KEYBANK NATIONAL ASSOCIATION"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 0.81,
+      "first_acquisition": "2025-04-15",
+      "last_acquisition": "2026-02-05",
+      "zip_codes_targeted": [
+        "10009",
+        "11205",
+        "11210",
+        "11385"
+      ],
+      "high_displacement_acquisitions": 4,
+      "high_displacement_pct": 50.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "SUFFOLK",
+      "total_properties": 7,
+      "total_acquisitions": 9,
+      "llc_count": 4,
+      "llc_entities": [
+        "151 SUFFOLK ST LLC",
+        "SUFFOLK CREDIT UNION",
+        "SUFFOLK FEDERAL CREDIT UNION",
+        "SUFFOLK FEDERAL CREDIT UNION D/B/A"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.02,
+      "first_acquisition": "2025-04-30",
+      "last_acquisition": "2026-01-21",
+      "zip_codes_targeted": [
+        "11206",
+        "11213",
+        "11221",
+        "11222",
+        "11233"
+      ],
+      "high_displacement_acquisitions": 6,
+      "high_displacement_pct": 66.7,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "CBRE",
+      "total_properties": 7,
+      "total_acquisitions": 7,
+      "llc_count": 2,
+      "llc_entities": [
+        "CBRE CAPITAL MARKETS INC",
+        "CBRE MULTIFAMILY CAPITAL INC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 0.77,
+      "first_acquisition": "2025-05-01",
+      "last_acquisition": "2026-01-27",
+      "zip_codes_targeted": [
+        "10455",
+        "10458",
+        "10468",
+        "11206",
+        "11233",
+        "11373"
+      ],
+      "high_displacement_acquisitions": 4,
+      "high_displacement_pct": 57.1,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "SCF",
+      "total_properties": 7,
+      "total_acquisitions": 9,
+      "llc_count": 4,
+      "llc_entities": [
+        "SCF LN HLDGS LLC",
+        "SCF LN HLDINGS LLC ISAOA/ATIMA",
+        "SCF OPPORTUNITY LLC",
+        "SCF REALTY DELAWARE LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.76,
+      "first_acquisition": "2025-05-22",
+      "last_acquisition": "2025-10-22",
+      "zip_codes_targeted": [
+        "10012",
+        "11222",
+        "11232",
+        "11233",
+        "11385"
+      ],
+      "high_displacement_acquisitions": 7,
+      "high_displacement_pct": 77.8,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "UPTOWN",
+      "total_properties": 6,
+      "total_acquisitions": 6,
+      "llc_count": 2,
+      "llc_entities": [
+        "UPTOWN FUN LLC",
+        "UPTOWN WH GROUP LLC"
+      ],
+      "total_portfolio_value": 24250000.0,
+      "avg_acquisition_price": 4041666.67,
+      "acquisitions_per_month": 1.67,
+      "first_acquisition": "2025-09-30",
+      "last_acquisition": "2026-01-16",
+      "zip_codes_targeted": [
+        "10027",
+        "10031",
+        "10032"
+      ],
+      "high_displacement_acquisitions": 4,
+      "high_displacement_pct": 66.7,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "WATERFALL",
+      "total_properties": 6,
+      "total_acquisitions": 6,
+      "llc_count": 3,
+      "llc_entities": [
+        "WATERFALL BUILDERS LLC",
+        "WATERFALL VICTORIA III-NB ALTERNATIVE HOLDINGS LLC",
+        "WATERFALL VICTORIA III-NB GRANTOR TRUST"
+      ],
+      "total_portfolio_value": 6533824.0,
+      "avg_acquisition_price": 1088970.67,
+      "acquisitions_per_month": 0.56,
+      "first_acquisition": "2025-04-16",
+      "last_acquisition": "2026-03-05",
+      "zip_codes_targeted": [
+        "10032",
+        "10457",
+        "11219",
+        "11373"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 50.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "CRESTON",
+      "total_properties": 6,
+      "total_acquisitions": 6,
+      "llc_count": 3,
+      "llc_entities": [
+        "2 CRESTON LLC",
+        "2731 CRESTON AVE LLC",
+        "CRESTON REALTY LLC"
+      ],
+      "total_portfolio_value": 6265000.0,
+      "avg_acquisition_price": 1044166.67,
+      "acquisitions_per_month": 1.15,
+      "first_acquisition": "2025-08-08",
+      "last_acquisition": "2026-01-12",
+      "zip_codes_targeted": [
+        "10468"
+      ],
+      "high_displacement_acquisitions": 2,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "ANCHOR",
+      "total_properties": 6,
+      "total_acquisitions": 12,
+      "llc_count": 4,
+      "llc_entities": [
+        "53 ANCHOR BAHM LLC",
+        "ANCHOR ASSETS XVIII LLC",
+        "ANCHOR LOANS LP",
+        "ANCHOR MORTGAGE TRUST 2025-RTL1"
+      ],
+      "total_portfolio_value": 456000.0,
+      "avg_acquisition_price": 38000.0,
+      "acquisitions_per_month": 1.37,
+      "first_acquisition": "2025-06-12",
+      "last_acquisition": "2026-03-02",
+      "zip_codes_targeted": [
+        "11221"
+      ],
+      "high_displacement_acquisitions": 4,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "CLIFFCO",
+      "total_properties": 6,
+      "total_acquisitions": 6,
+      "llc_count": 2,
+      "llc_entities": [
+        "CLIFFCO INC",
+        "CLIFFCO INC DBA CLIFFCO MORTGAGE BANKERS"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 0.73,
+      "first_acquisition": "2025-04-14",
+      "last_acquisition": "2025-12-18",
+      "zip_codes_targeted": [
+        "10026",
+        "11231",
+        "11356"
+      ],
+      "high_displacement_acquisitions": 2,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "MTGLQ",
+      "total_properties": 6,
+      "total_acquisitions": 6,
+      "llc_count": 2,
+      "llc_entities": [
+        "LP MTGLQ INVESTORS",
+        "MTGLQ INVESTORS LP"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 0.66,
+      "first_acquisition": "2025-04-23",
+      "last_acquisition": "2026-01-21",
+      "zip_codes_targeted": [
+        "10467",
+        "10473",
+        "11208"
+      ],
+      "high_displacement_acquisitions": 2,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "CONSUMER",
+      "total_properties": 6,
+      "total_acquisitions": 9,
+      "llc_count": 4,
+      "llc_entities": [
+        "NATIONAL CONSUMER BANK NA",
+        "NATIONAL CONSUMER COOPERATIVE BANK",
+        "NATIONAL CONSUMER COOPERATIVE BANK NA",
+        "NATIONAL CONSUMER COOPERATIVE BANKNA"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 0.98,
+      "first_acquisition": "2025-04-28",
+      "last_acquisition": "2026-01-29",
+      "zip_codes_targeted": [
+        "10003",
+        "10012",
+        "10013",
+        "10034",
+        "10128"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "POLISH",
+      "total_properties": 6,
+      "total_acquisitions": 7,
+      "llc_count": 3,
+      "llc_entities": [
+        "POLISH & SLAVIC FCU",
+        "POLISH & SLAVIC FEDERAL CREDIT UNION",
+        "POLISH & SLAVIC FEDERAL CREDIT UNION ISAOA"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 0.71,
+      "first_acquisition": "2025-04-29",
+      "last_acquisition": "2026-02-17",
+      "zip_codes_targeted": [
+        "11216",
+        "11222",
+        "11233"
+      ],
+      "high_displacement_acquisitions": 6,
+      "high_displacement_pct": 85.7,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "HANA",
+      "total_properties": 6,
+      "total_acquisitions": 6,
+      "llc_count": 3,
+      "llc_entities": [
+        "HANA BANK USA NA",
+        "HANA BANK USA NA ISAOA/ATIMA",
+        "THE HANA LIVING TRUST"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 0.73,
+      "first_acquisition": "2025-05-14",
+      "last_acquisition": "2026-01-16",
+      "zip_codes_targeted": [
+        "11215",
+        "11226",
+        "11366"
+      ],
+      "high_displacement_acquisitions": 5,
+      "high_displacement_pct": 83.3,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "RBI",
+      "total_properties": 6,
+      "total_acquisitions": 6,
+      "llc_count": 2,
+      "llc_entities": [
+        "RBI OPPORTUNITIES LLC",
+        "RBI PRIVATE LENDING LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 0.61,
+      "first_acquisition": "2025-05-23",
+      "last_acquisition": "2026-03-16",
+      "zip_codes_targeted": [
+        "10466",
+        "11211",
+        "11237",
+        "11368"
+      ],
+      "high_displacement_acquisitions": 4,
+      "high_displacement_pct": 66.7,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "CL-LM",
+      "total_properties": 6,
+      "total_acquisitions": 10,
+      "llc_count": 2,
+      "llc_entities": [
+        "CL-LM RESI PURCHASER TRUST 1",
+        "CL-LM RESI PURCHASER TRUST I"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.55,
+      "first_acquisition": "2025-05-23",
+      "last_acquisition": "2025-12-03",
+      "zip_codes_targeted": [
+        "10022",
+        "10459",
+        "11210",
+        "11385"
+      ],
+      "high_displacement_acquisitions": 6,
+      "high_displacement_pct": 60.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "BAC",
+      "total_properties": 6,
+      "total_acquisitions": 6,
+      "llc_count": 2,
+      "llc_entities": [
+        "BAC HOME LOANS SERVICING LP",
+        "BAC HOME LOANS SERVICING LP FKA COUNTRYWIDE"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 0.72,
+      "first_acquisition": "2025-06-09",
+      "last_acquisition": "2026-02-13",
+      "zip_codes_targeted": [
+        "11212"
+      ],
+      "high_displacement_acquisitions": 2,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "HIGHBRIDGE",
+      "total_properties": 5,
+      "total_acquisitions": 5,
+      "llc_count": 2,
+      "llc_entities": [
+        "HIGHBRIDGE RISING HOUSING DEVELOPMENT FUND CORP",
+        "HIGHBRIDGE WFLAH BRONX OWNER LLC"
+      ],
+      "total_portfolio_value": 127403831.88,
+      "avg_acquisition_price": 25480766.38,
+      "acquisitions_per_month": 2.38,
+      "first_acquisition": "2025-12-19",
+      "last_acquisition": "2026-02-20",
+      "zip_codes_targeted": [
+        "10452"
+      ],
+      "high_displacement_acquisitions": 5,
+      "high_displacement_pct": 100.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "RESTORED",
+      "total_properties": 5,
+      "total_acquisitions": 5,
+      "llc_count": 2,
+      "llc_entities": [
+        "RESTORED HOMES HOUSING DEVELOPMENT FUND CORP",
+        "RESTORED HOMES HOUSING DEVELOPMENT FUNDCORPORATION"
+      ],
+      "total_portfolio_value": 4925592.0,
+      "avg_acquisition_price": 985118.4,
+      "acquisitions_per_month": 1.07,
+      "first_acquisition": "2025-05-29",
+      "last_acquisition": "2025-10-16",
+      "zip_codes_targeted": [
+        "11207",
+        "11221"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 60.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "TRISTATE",
+      "total_properties": 5,
+      "total_acquisitions": 6,
+      "llc_count": 2,
+      "llc_entities": [
+        "TRISTATE CAPITAL BANK",
+        "TRISTATE LUBRICANTS LLC"
+      ],
+      "total_portfolio_value": 349995.0,
+      "avg_acquisition_price": 58332.5,
+      "acquisitions_per_month": 0.6,
+      "first_acquisition": "2025-05-15",
+      "last_acquisition": "2026-03-10",
+      "zip_codes_targeted": [
+        "10455",
+        "11102"
+      ],
+      "high_displacement_acquisitions": 2,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "CAFL",
+      "total_properties": 5,
+      "total_acquisitions": 8,
+      "llc_count": 3,
+      "llc_entities": [
+        "CAFL 2023-RTL1 ISSUER LLC",
+        "CAFL 2025-RRTL1 ISSUER LP",
+        "CAFL 2025-RRTL2 ISSUER LP"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 0.81,
+      "first_acquisition": "2025-04-29",
+      "last_acquisition": "2026-02-19",
+      "zip_codes_targeted": [
+        "11221",
+        "11237",
+        "11412"
+      ],
+      "high_displacement_acquisitions": 4,
+      "high_displacement_pct": 50.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "QUONTIC",
+      "total_properties": 5,
+      "total_acquisitions": 5,
+      "llc_count": 2,
+      "llc_entities": [
+        "QUONTIC BANK",
+        "QUONTIC BANK NA"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 1.83,
+      "first_acquisition": "2025-05-22",
+      "last_acquisition": "2025-08-12",
+      "zip_codes_targeted": [
+        "10460",
+        "11105",
+        "11233"
+      ],
+      "high_displacement_acquisitions": 2,
+      "high_displacement_pct": 40.0,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "SAND",
+      "total_properties": 5,
+      "total_acquisitions": 5,
+      "llc_count": 2,
+      "llc_entities": [
+        "SAND CANYON CORPORATION",
+        "SAND CASTLES IN THE SKY LIVING TRT DTD 03/11/2026"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 0.64,
+      "first_acquisition": "2025-07-18",
+      "last_acquisition": "2026-03-11",
+      "zip_codes_targeted": [
+        "10465",
+        "10467",
+        "10472"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 60.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "TRUESTONE",
+      "total_properties": 4,
+      "total_acquisitions": 6,
+      "llc_count": 2,
+      "llc_entities": [
+        "TRUESTONE LENDING FUND I LLC",
+        "TRUESTONE LENDING LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 0.57,
+      "first_acquisition": "2025-04-23",
+      "last_acquisition": "2026-03-05",
+      "zip_codes_targeted": [
+        "10456",
+        "11224",
+        "11226",
+        "11238"
+      ],
+      "high_displacement_acquisitions": 5,
+      "high_displacement_pct": 83.3,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "BCC/ST",
+      "total_properties": 4,
+      "total_acquisitions": 6,
+      "llc_count": 2,
+      "llc_entities": [
+        "BCC/ST LLC",
+        "BCC/ST LLC ISAOA/ATIMA"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 2.9,
+      "first_acquisition": "2025-07-02",
+      "last_acquisition": "2025-09-02",
+      "zip_codes_targeted": [
+        "11222",
+        "11226"
+      ],
+      "high_displacement_acquisitions": 5,
+      "high_displacement_pct": 83.3,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "FAIRBRIDGE",
+      "total_properties": 4,
+      "total_acquisitions": 5,
+      "llc_count": 2,
+      "llc_entities": [
+        "FAIRBRIDGE CREDIT LLC",
+        "FAIRBRIDGE STRATEGIC CAPITAL LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 0.88,
+      "first_acquisition": "2025-07-02",
+      "last_acquisition": "2025-12-19",
+      "zip_codes_targeted": [
+        "11203",
+        "11372"
+      ],
+      "high_displacement_acquisitions": 2,
+      "high_displacement_pct": 40.0,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "VENTURES",
+      "total_properties": 3,
+      "total_acquisitions": 6,
+      "llc_count": 3,
+      "llc_entities": [
+        "140 VENTURES LLC",
+        "164 VENTURES LLC",
+        "3844 VENTURES LLC"
+      ],
+      "total_portfolio_value": 23140000.0,
+      "avg_acquisition_price": 3856666.67,
+      "acquisitions_per_month": 5.45,
+      "first_acquisition": "2025-09-17",
+      "last_acquisition": "2025-10-20",
+      "zip_codes_targeted": [
+        "11201",
+        "11211",
+        "11231"
+      ],
+      "high_displacement_acquisitions": 2,
+      "high_displacement_pct": 33.3,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "ROSUL",
+      "total_properties": 3,
+      "total_acquisitions": 5,
+      "llc_count": 2,
+      "llc_entities": [
+        "ROSUL MOHAMMAD AMINUR",
+        "ROSUL PROPERTY LLC"
+      ],
+      "total_portfolio_value": 1650153.76,
+      "avg_acquisition_price": 330030.75,
+      "acquisitions_per_month": 1.55,
+      "first_acquisition": "2025-10-30",
+      "last_acquisition": "2026-02-04",
+      "zip_codes_targeted": [
+        "11208",
+        "11413"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 60.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "LCC",
+      "total_properties": 3,
+      "total_acquisitions": 8,
+      "llc_count": 2,
+      "llc_entities": [
+        "LCC SS HOLDCO LLC",
+        "LCC SS TRS HOLDCO LLC"
+      ],
+      "total_portfolio_value": 500.0,
+      "avg_acquisition_price": 62.5,
+      "acquisitions_per_month": 1.02,
+      "first_acquisition": "2025-06-06",
+      "last_acquisition": "2026-01-27",
+      "zip_codes_targeted": [
+        "10004",
+        "10013",
+        "10016"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 37.5,
+      "targets_high_displacement": false
+    },
+    {
+      "operator_root": "REIGO",
+      "total_properties": 3,
+      "total_acquisitions": 6,
+      "llc_count": 2,
+      "llc_entities": [
+        "REIGO",
+        "REIGO BY MEITAV DASH US INVESTMENTS LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 2.17,
+      "first_acquisition": "2025-05-06",
+      "last_acquisition": "2025-07-28",
+      "zip_codes_targeted": [
+        "10456"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 50.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "PATRIOT",
+      "total_properties": 3,
+      "total_acquisitions": 5,
+      "llc_count": 2,
+      "llc_entities": [
+        "PATRIOT (2010) MASPETH GP LLC",
+        "PATRIOT ONE MORTGAGE BANKERS LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 0.54,
+      "first_acquisition": "2025-05-28",
+      "last_acquisition": "2026-03-04",
+      "zip_codes_targeted": [
+        "11207",
+        "11378"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 60.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "SACHEM",
+      "total_properties": 3,
+      "total_acquisitions": 6,
+      "llc_count": 2,
+      "llc_entities": [
+        "SACHEM CAPITAL CORP",
+        "SACHEM CAPITAL CORPORATION HOLDINGS LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 180.0,
+      "first_acquisition": "2025-06-10",
+      "last_acquisition": "2025-06-10",
+      "zip_codes_targeted": [
+        "10452"
+      ],
+      "high_displacement_acquisitions": 3,
+      "high_displacement_pct": 50.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "LRECS",
+      "total_properties": 3,
+      "total_acquisitions": 6,
+      "llc_count": 2,
+      "llc_entities": [
+        "LRECS HOLDINGS IA LLC",
+        "LRECS NOTE HOLDER I LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 7.5,
+      "first_acquisition": "2025-11-17",
+      "last_acquisition": "2025-12-11",
+      "zip_codes_targeted": [
+        "10457",
+        "11210",
+        "11215"
+      ],
+      "high_displacement_acquisitions": 6,
+      "high_displacement_pct": 100.0,
+      "targets_high_displacement": true
+    },
+    {
+      "operator_root": "BXC",
+      "total_properties": 2,
+      "total_acquisitions": 5,
+      "llc_count": 2,
+      "llc_entities": [
+        "BXC 1677-79 EASTBURN FUNDING LLC",
+        "BXC SPE 6 LLC"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 3.33,
+      "first_acquisition": "2026-02-09",
+      "last_acquisition": "2026-03-26",
+      "zip_codes_targeted": [
+        "10453",
+        "10457"
+      ],
+      "high_displacement_acquisitions": 5,
+      "high_displacement_pct": 100.0,
+      "targets_high_displacement": true
+    }
+  ]
+}
