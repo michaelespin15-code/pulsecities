@@ -1683,10 +1683,7 @@
 
             document.getElementById('detail-zip').textContent = zip;
             const hoodEl = document.getElementById('detail-neighborhood');
-            if (hoodEl) {
-                const parts = [name && name !== zip ? name : null, borough].filter(Boolean);
-                hoodEl.textContent = parts.join(' · ');
-            }
+            if (hoodEl) hoodEl.textContent = (name && name !== zip) ? name : (borough || '');
 
             const scoreEl = document.getElementById('detail-score');
             const riskLabelEl = document.getElementById('detail-risk-label');
@@ -1869,10 +1866,7 @@
             s2.textContent = score2 !== null ? score2.toFixed(1) : '\u2014';
             s2.style.color = score2 !== null ? scoreColor(score2) : '#94a3b8';
 
-            const _cmpName = (d, zip) => {
-                const parts = [d?.name && d.name !== zip ? d.name : null, d?.borough].filter(Boolean);
-                return parts.join(' · ');
-            };
+            const _cmpName = (d, zip) => (d?.name && d.name !== zip) ? d.name : (d?.borough || '');
             document.getElementById('cmp-name-1').textContent = _cmpName(d1, zip1);
             document.getElementById('cmp-name-2').textContent = _cmpName(d2, zip2);
 
@@ -2605,8 +2599,7 @@
 
             const placeEl = document.createElement('span');
             placeEl.className = 'text-xs text-base-content/50 truncate';
-            const placeName = (n.name && n.name !== n.zip_code) ? n.name : null;
-            placeEl.textContent = [placeName, n.borough].filter(Boolean).join(', ');
+            placeEl.textContent = (n.name && n.name !== n.zip_code) ? n.name : (n.borough || '');
 
             left.append(rankEl, zipEl, placeEl);
 
