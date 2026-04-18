@@ -136,6 +136,19 @@
         details > summary::-webkit-details-marker { display: none; }
         .details-chevron { transition: transform 0.2s; flex-shrink: 0; }
         details[open] .details-chevron { transform: rotate(180deg); }
+        /* Desktop sidebar collapse */
+        @media (min-width: 768px) {
+            #sidebar {
+                transition: width 0.25s cubic-bezier(0.4,0,0.2,1),
+                            padding 0.25s cubic-bezier(0.4,0,0.2,1);
+            }
+            #sidebar.collapsed {
+                width: 0 !important;
+                min-width: 0 !important;
+                padding: 0 !important;
+                overflow: hidden;
+            }
+        }
         /* Mobile: sidebar is a bottom sheet that slides up over the map */
         @media (max-width: 767px) {
             #sidebar {
@@ -280,7 +293,7 @@
                 <button id="hero-search-btn" class="btn shrink-0" style="background-color:#f59e0b;border-color:#f59e0b;color:#1a1a2e;font-weight:600;">Search</button>
             </div>
             <div class="flex items-center justify-between w-full px-1">
-                <button onclick="hideHero()" class="text-sm text-slate-400 hover:text-slate-100 transition-colors">
+                <button id="hero-explore-map" onclick="hideHero()" class="text-sm text-slate-400 hover:text-slate-100 transition-colors">
                     or, explore the map →
                 </button>
                 <a href="https://www.linkedin.com/in/michaelespin"
@@ -360,6 +373,12 @@
     <div class="flex h-screen">
         <!-- Map container: flex-1 fills remaining width -->
         <div id="map" class="flex-1 relative">
+            <!-- Sidebar collapse tab — right edge of map, desktop only -->
+            <button id="sidebar-collapse-btn" onclick="toggleSidebar()" class="hidden md:flex" aria-label="Collapse sidebar"
+                style="position:absolute;right:0;top:50%;transform:translateY(-50%);z-index:10;
+                       width:18px;height:48px;align-items:center;justify-content:center;
+                       background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-right:none;
+                       border-radius:6px 0 0 6px;color:#64748b;font-size:0.85rem;cursor:pointer;">›</button>
             <!-- Map legend — bottom-left, always visible -->
             <div id="map-legend" class="absolute bottom-4 left-4 z-10 rounded-lg px-3 py-2 flex flex-col gap-1" style="background:rgba(15,23,42,0.88);backdrop-filter:blur(6px);border:1px solid rgba(148,163,184,0.15);font-size:11px;">
                 <div class="text-slate-400 font-mono uppercase tracking-wider mb-0.5" style="font-size:10px;letter-spacing:0.08em;">displacement risk</div>
@@ -379,7 +398,11 @@
         </div>
 
         <!-- Sidebar: full-width on mobile, fixed 288/320px on desktop -->
-        <aside id="sidebar" class="w-full md:w-72 lg:w-80 bg-base-200 p-4 md:p-6 overflow-y-auto flex flex-col">
+        <aside id="sidebar" class="w-full md:w-72 lg:w-80 bg-base-200 p-4 md:p-6 overflow-y-auto flex flex-col relative">
+            <!-- Drag handle — mobile only -->
+            <div class="md:hidden flex justify-center mb-3 -mt-1">
+                <div style="width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);"></div>
+            </div>
             <!-- Header -->
             <div class="mb-3 md:mb-6 flex items-start justify-between">
                 <div>
@@ -404,7 +427,7 @@
                     <input
                         id="landlord-input"
                         type="text"
-                        placeholder="Try: MTEK, Tsadik, Z Capital..."
+                        placeholder="Blackstone"
                         class="input input-sm input-bordered flex-1 text-sm font-mono min-w-0"
                         style="min-height: 36px;"
                     />
@@ -440,8 +463,11 @@
                 <!-- Zip + score -->
                 <div class="bg-base-300 rounded-xl p-4">
                     <div class="flex items-baseline justify-between mb-1">
-                        <span id="detail-zip" class="font-mono text-lg font-semibold text-base-content"></span>
-                        <span id="detail-score" class="font-mono text-3xl font-semibold"></span>
+                        <div class="flex items-baseline gap-2 min-w-0">
+                            <span id="detail-zip" class="font-mono text-lg font-semibold text-base-content shrink-0"></span>
+                            <span id="detail-neighborhood" class="text-xs text-base-content/40 truncate"></span>
+                        </div>
+                        <span id="detail-score" class="font-mono text-3xl font-semibold shrink-0 ml-2"></span>
                     </div>
                     <div class="flex justify-between items-center text-xs text-base-content/50 mt-1">
                         <span id="detail-risk-label">Displacement Risk</span>
@@ -556,7 +582,7 @@
                         <input
                             id="address-input"
                             type="text"
-                            placeholder="e.g. 123 Broadway, Brooklyn"
+                            placeholder="123 Broadway, Brooklyn"
                             class="input input-sm input-bordered flex-1 text-sm font-mono break-all"
                             style="min-height: 44px;"
                         />
@@ -614,12 +640,14 @@
                 <div class="grid grid-cols-2 gap-2">
                     <div class="bg-base-300 rounded-xl p-3">
                         <div class="font-mono text-base font-semibold text-base-content" id="cmp-zip-1"></div>
-                        <div class="font-mono text-2xl font-semibold mt-0.5" id="cmp-score-1"></div>
+                        <div class="text-xs text-base-content/40 mt-0.5 truncate" id="cmp-name-1"></div>
+                        <div class="font-mono text-2xl font-semibold mt-1" id="cmp-score-1"></div>
                         <div id="cmp-risk-label-1" class="text-xs text-base-content/40 mt-0.5">Displacement Risk</div>
                     </div>
                     <div class="bg-base-300 rounded-xl p-3">
                         <div class="font-mono text-base font-semibold text-base-content" id="cmp-zip-2"></div>
-                        <div class="font-mono text-2xl font-semibold mt-0.5" id="cmp-score-2"></div>
+                        <div class="text-xs text-base-content/40 mt-0.5 truncate" id="cmp-name-2"></div>
+                        <div class="font-mono text-2xl font-semibold mt-1" id="cmp-score-2"></div>
                         <div id="cmp-risk-label-2" class="text-xs text-base-content/40 mt-0.5">Displacement Risk</div>
                     </div>
                 </div>
@@ -1036,6 +1064,15 @@
                     empty:            'No recent activity in this ZIP.'
                 },
                 ui: {
+                    looking_up:          'Looking up...',
+                    searching:           'Searching...',
+                    addr_placeholder:    '123 Broadway, Brooklyn',
+                    landlord_placeholder:'Blackstone',
+                    addr_not_found:      'Address not found. Try including borough (e.g. "123 Main St, Brooklyn").',
+                    addr_bbl_fail:       'Could not resolve address to a BBL.',
+                    addr_block_fail:     'Could not load block data.',
+                    network_error:       'Network error — please try again.',
+                    server_error:        'Unexpected server response — please try again.',
                     landing_hint:        'Click any neighborhood on the map to see its displacement risk score, or pick one from the list below.',
                     displacement_risk:   'Displacement Risk',
                     compare:             'Compare',
@@ -1079,6 +1116,10 @@
                     title:             'PulseCities',
                     tagline:           "The displacement story NYC doesn't officially tell.",
                     search_placeholder:'Enter address, ZIP, or landlord name',
+                    explore_map:       'or, explore the map →',
+                    addr_not_found:    'Address not found. Try "123 Main St, Brooklyn".',
+                    zip_not_found:     'ZIP not found. Try a 5-digit ZIP code.',
+                    network_error:     'Network error. Try again.',
                     search_btn:        'Search',
                     llc_label:         'LLC transfers (30d)',
                     eviction_label:    'evictions (30d)',
@@ -1130,6 +1171,15 @@
                     empty:            'Sin actividad reciente en este código postal.'
                 },
                 ui: {
+                    looking_up:          'Buscando...',
+                    searching:           'Buscando...',
+                    addr_placeholder:    '123 Broadway, Brooklyn',
+                    landlord_placeholder:'Blackstone',
+                    addr_not_found:      'Dirección no encontrada. Incluya el condado (p. ej. "123 Main St, Brooklyn").',
+                    addr_bbl_fail:       'No se pudo resolver la dirección.',
+                    addr_block_fail:     'No se pudieron cargar los datos del edificio.',
+                    network_error:       'Error de red. Intente de nuevo.',
+                    server_error:        'Respuesta inesperada del servidor. Intente de nuevo.',
                     landing_hint:        'Haz clic en cualquier vecindario del mapa para ver su puntuación de riesgo de desplazamiento, o elige uno de la lista de abajo.',
                     displacement_risk:   'Riesgo de Desplazamiento',
                     compare:             'Comparar',
@@ -1173,6 +1223,10 @@
                     title:             'PulseCities',
                     tagline:           'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
                     search_placeholder:'Ingrese dirección, código postal o nombre del propietario',
+                    explore_map:       'o, explorar el mapa →',
+                    addr_not_found:    'Dirección no encontrada. Intente "123 Main St, Brooklyn".',
+                    zip_not_found:     'Código postal no encontrado. Intente un ZIP de 5 dígitos.',
+                    network_error:     'Error de red. Intente de nuevo.',
                     search_btn:        'Buscar',
                     llc_label:         'transferencias LLC (30d)',
                     eviction_label:    'desalojos (30d)',
@@ -1260,11 +1314,18 @@
                 'hero-search-btn':            t('hero', 'search_btn'),
                 'hero-llc-label':             t('hero', 'llc_label'),
                 'hero-eviction-label':        t('hero', 'eviction_label'),
+                'hero-explore-map':           t('hero', 'explore_map'),
             };
             for (const [id, text] of Object.entries(map)) {
                 const el = document.getElementById(id);
                 if (el) el.textContent = text;
             }
+            const heroInput = document.getElementById('hero-search-input');
+            if (heroInput) heroInput.placeholder = t('hero', 'search_placeholder');
+            const addrInput = document.getElementById('address-input');
+            if (addrInput) addrInput.placeholder = t('ui', 'addr_placeholder');
+            const landlordInput = document.getElementById('landlord-input');
+            if (landlordInput) landlordInput.placeholder = t('ui', 'landlord_placeholder');
             if (_heroLlcCount || _heroEvictionCount) {
                 const hookEl = document.getElementById('hero-hook-line');
                 if (hookEl) hookEl.textContent = buildHookLine(_heroLlcCount, _heroEvictionCount);
@@ -1609,7 +1670,7 @@
             this.textContent = isHidden ? 'Hide addresses' : 'See addresses';
         });
 
-        function showDetail(zip, score, breakdown, lastUpdated, signalLastUpdated, summaryText) {
+        function showDetail(zip, score, breakdown, lastUpdated, signalLastUpdated, summaryText, name, borough) {
             setPanel('detail');
             // Clear stale sparkline on new neighborhood selection
             const staleSparkline = document.querySelector('#detail-score')?.parentElement?.querySelector('svg.sparkline');
@@ -1621,6 +1682,11 @@
             document.getElementById('recent-activity-section').classList.add('hidden');
 
             document.getElementById('detail-zip').textContent = zip;
+            const hoodEl = document.getElementById('detail-neighborhood');
+            if (hoodEl) {
+                const parts = [name && name !== zip ? name : null, borough].filter(Boolean);
+                hoodEl.textContent = parts.join(' · ');
+            }
 
             const scoreEl = document.getElementById('detail-score');
             const riskLabelEl = document.getElementById('detail-risk-label');
@@ -1720,7 +1786,9 @@
                     _cachedZipData.breakdown,
                     _cachedZipData.lastUpdated,
                     _cachedZipData.signalLastUpdated,
-                    _cachedZipData.summaryText
+                    _cachedZipData.summaryText,
+                    _cachedZipData.name,
+                    _cachedZipData.borough
                 );
                 renderPulse(_cachedZip);
             }
@@ -1767,6 +1835,8 @@
             document.getElementById('cmp-back-btn').textContent = '\u2190 Back to ' + zip1;
             document.getElementById('cmp-zip-1').textContent = zip1;
             document.getElementById('cmp-zip-2').textContent = zip2;
+            document.getElementById('cmp-name-1').textContent = '';
+            document.getElementById('cmp-name-2').textContent = '';
             const s1 = document.getElementById('cmp-score-1');
             const s2 = document.getElementById('cmp-score-2');
             s1.textContent = '\u2014'; s1.style.color = '#94a3b8';
@@ -1798,6 +1868,13 @@
             const s2 = document.getElementById('cmp-score-2');
             s2.textContent = score2 !== null ? score2.toFixed(1) : '\u2014';
             s2.style.color = score2 !== null ? scoreColor(score2) : '#94a3b8';
+
+            const _cmpName = (d, zip) => {
+                const parts = [d?.name && d.name !== zip ? d.name : null, d?.borough].filter(Boolean);
+                return parts.join(' · ');
+            };
+            document.getElementById('cmp-name-1').textContent = _cmpName(d1, zip1);
+            document.getElementById('cmp-name-2').textContent = _cmpName(d2, zip2);
 
             const bd1 = d1?.signal_breakdown || {};
             const bd2 = d2?.signal_breakdown || {};
@@ -2099,13 +2176,13 @@
                 if (!query) return;
 
                 btn.disabled = true;
-                btn.textContent = 'Looking up...';
+                btn.textContent = t('ui', 'looking_up');
 
                 // Fast path: 5-digit ZIP code entered directly
                 if (/^\d{5}$/.test(query)) {
                     hideHero(() => selectNeighborhood(query));
                     btn.disabled = false;
-                    btn.textContent = t('hero', 'search_btn') || 'Search';
+                    btn.textContent = t('hero', 'search_btn');
                     return;
                 }
 
@@ -2113,10 +2190,9 @@
                 try {
                     const searchResp = await fetch(`/api/properties/search?address=${encodeURIComponent(query)}`);
                     if (!searchResp.ok) {
-                        // Fallback: show an error hint inside the hero (do not navigate away)
-                        input.placeholder = 'Address not found. Try "123 Main St, Brooklyn".';
+                        input.placeholder = t('hero', 'addr_not_found');
                         btn.disabled = false;
-                        btn.textContent = t('hero', 'search_btn') || 'Search';
+                        btn.textContent = t('hero', 'search_btn');
                         return;
                     }
                     const searchData = await searchResp.json();
@@ -2124,10 +2200,10 @@
                     if (zip) {
                         hideHero(() => selectNeighborhood(zip));
                     } else {
-                        input.placeholder = 'ZIP not found. Try a 5-digit ZIP code.';
+                        input.placeholder = t('hero', 'zip_not_found');
                     }
                 } catch {
-                    input.placeholder = 'Network error. Try again.';
+                    input.placeholder = t('hero', 'network_error');
                 } finally {
                     btn.disabled = false;
                     btn.textContent = t('hero', 'search_btn') || 'Search';
@@ -2315,7 +2391,9 @@
                     _cachedZipData.breakdown,
                     _cachedZipData.lastUpdated,
                     _cachedZipData.signalLastUpdated,
-                    _cachedZipData.summaryText
+                    _cachedZipData.summaryText,
+                    _cachedZipData.name,
+                    _cachedZipData.borough
                 );
             } else if (_cachedZip) {
                 setPanel('detail');
@@ -2351,14 +2429,14 @@
             errEl.classList.add('hidden');
             skeleton.classList.remove('hidden');
             this.disabled = true;
-            this.textContent = 'Looking up...';
+            this.textContent = t('ui', 'looking_up');
 
             try {
                 // Step 1: Resolve address -> BBL via GeoSearch-backed endpoint
                 const searchResp = await fetch(`/api/properties/search?address=${encodeURIComponent(address)}`);
                 if (!searchResp.ok) {
                     skeleton.classList.add('hidden');
-                    errEl.textContent = 'Address not found. Try including borough (e.g. "123 Main St, Brooklyn").';
+                    errEl.textContent = t('ui', 'addr_not_found');
                     errEl.classList.remove('hidden');
                     return;
                 }
@@ -2367,7 +2445,7 @@
                     searchData = await searchResp.json();
                 } catch {
                     skeleton.classList.add('hidden');
-                    errEl.textContent = 'Unexpected server response \u2014 please try again.';
+                    errEl.textContent = t('ui', 'server_error');
                     errEl.classList.remove('hidden');
                     return;
                 }
@@ -2375,7 +2453,7 @@
 
                 if (!bbl) {
                     skeleton.classList.add('hidden');
-                    errEl.textContent = 'Could not resolve address to a BBL.';
+                    errEl.textContent = t('ui', 'addr_bbl_fail');
                     errEl.classList.remove('hidden');
                     return;
                 }
@@ -2385,7 +2463,7 @@
                 skeleton.classList.add('hidden');
 
                 if (!blockResp.ok) {
-                    errEl.textContent = 'Could not load block data.';
+                    errEl.textContent = t('ui', 'addr_block_fail');
                     errEl.classList.remove('hidden');
                     return;
                 }
@@ -2396,12 +2474,12 @@
 
             } catch (err) {
                 skeleton.classList.add('hidden');
-                errEl.textContent = 'Network error \u2014 please try again.';
+                errEl.textContent = t('ui', 'network_error');
                 errEl.classList.remove('hidden');
                 console.error('Address search error:', err);
             } finally {
                 this.disabled = false;
-                this.textContent = 'Search';
+                this.textContent = t('ui', 'search');
             }
         });
 
@@ -2481,9 +2559,11 @@
                         breakdown: data.signal_breakdown,
                         summaryText: data.summary_text,
                         lastUpdated: data.last_updated,
-                        signalLastUpdated: data.signal_last_updated
+                        signalLastUpdated: data.signal_last_updated,
+                        name: data.name,
+                        borough: data.borough
                     };
-                    showDetail(zip, data.score, data.signal_breakdown, data.last_updated, data.signal_last_updated, data.summary_text);
+                    showDetail(zip, data.score, data.signal_breakdown, data.last_updated, data.signal_last_updated, data.summary_text, data.name, data.borough);
                     renderPulse(zip);
                     renderRenovationFlip(zip);
                     renderScoreHistory(zip, _historyDays);
@@ -2799,13 +2879,13 @@
             if (!q) return;
 
             this.disabled = true;
-            this.textContent = 'Searching...';
+            this.textContent = t('ui', 'searching');
 
             try {
                 const resp = await fetch(`/api/search/landlord?q=${encodeURIComponent(q)}`);
                 if (!resp.ok) {
                     const body = await resp.json().catch(() => ({}));
-                    errEl.textContent = body.detail || 'Search failed.';
+                    errEl.textContent = body.detail || t('ui', 'network_error');
                     errEl.classList.remove('hidden');
                     return;
                 }
@@ -2813,11 +2893,11 @@
                 _landlordData = data;
                 _renderLandlordResults(data);
             } catch {
-                errEl.textContent = 'Network error \u2014 please try again.';
+                errEl.textContent = t('ui', 'network_error');
                 errEl.classList.remove('hidden');
             } finally {
                 this.disabled = false;
-                this.textContent = 'Search';
+                this.textContent = t('ui', 'search');
             }
         });
 
@@ -3012,6 +3092,25 @@
         document.getElementById('subscribe-email').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') document.getElementById('subscribe-btn').click();
         });
+
+        // Swipe-to-dismiss bottom sheet on mobile
+        (function() {
+            const sheet = document.getElementById('sidebar');
+            let startY = 0;
+            sheet.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+            sheet.addEventListener('touchend', e => {
+                if (e.changedTouches[0].clientY - startY > 60) showMobileMap();
+            }, { passive: true });
+        })();
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const collapseBtn = document.getElementById('sidebar-collapse-btn');
+            const collapsed = sidebar.classList.toggle('collapsed');
+            collapseBtn.textContent = collapsed ? '‹' : '›';
+            collapseBtn.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+        }
     </script>
+
 </body>
 </html>

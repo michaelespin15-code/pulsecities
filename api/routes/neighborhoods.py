@@ -16,6 +16,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from models.database import get_db
+from models.neighborhoods import Neighborhood
 from models.scores import DisplacementScore
 
 logger = logging.getLogger(__name__)
@@ -98,9 +99,13 @@ def get_neighborhood_score(
             detail=f"No score data for zip code {zip_code}.",
         )
 
+    hood = db.query(Neighborhood).filter(Neighborhood.zip_code == zip_code).first()
+
     breakdown = score.signal_breakdown or {}
     return {
         "zip_code": zip_code,
+        "name": hood.name if hood else None,
+        "borough": _borough_from_zip(zip_code),
         "score": round(score.score, 1) if score.score is not None else None,
         # Five-signal breakdown — all values normalized to [0–100].
         # Keys: permits, evictions, llc_acquisitions, assessment_spike, complaint_rate.
@@ -115,6 +120,24 @@ def get_neighborhood_score(
             score.cache_generated_at.isoformat() if score.cache_generated_at else None
         ),
     }
+
+
+def _borough_from_zip(zip_code: str) -> str | None:
+    try:
+        z = int(zip_code)
+    except ValueError:
+        return None
+    if 10001 <= z <= 10282:
+        return "Manhattan"
+    if 10301 <= z <= 10314:
+        return "Staten Island"
+    if 10451 <= z <= 10475:
+        return "Bronx"
+    if 11201 <= z <= 11239:
+        return "Brooklyn"
+    if (11001 <= z <= 11109) or (11354 <= z <= 11697):
+        return "Queens"
+    return None
 
 
 _VALID_BOROUGHS = {"Manhattan", "Brooklyn", "Queens", "Bronx", "Staten Island"}
@@ -423,3 +446,13 @@ def _build_summary(score: float | None, breakdown: dict[str, Any]) -> str:
         detail = f"The dominant drivers are {top[0]} and {top[1]}."
 
     return f"{opening} {detail}"
+
+
+@router.get("/names")
+@limiter.limit("60/minute")
+def get_neighborhood_names(request: Request, response: Response, db: Session = Depends(get_db)):
+    """Returns {zip_code: name} for all neighborhoods. Lightweight lookup for the UI."""
+    rows = db.execute(
+        text("SELECT zip_code, name FROM neighborhoods WHERE zip_code != '99999' AND name IS NOT NULL")
+    ).fetchall()
+    return {r.zip_code: r.name for r in rows}

@@ -175,13 +175,18 @@
         document.title = root + ' — PulseCities Operator Profile';
         document.getElementById('canonical-url').href = 'https://pulsecities.com/operator/' + root;
 
-        fetch('/api/operators/' + encodeURIComponent(root))
+        const _opFetch = fetch('/api/operators/' + encodeURIComponent(root))
             .then(r => {
                 if (r.status === 404) throw new Error('Operator not found in the 18-month ACRIS window.');
                 if (!r.ok) throw new Error('API error ' + r.status);
                 return r.json();
-            })
-            .then(render)
+            });
+        const _namesFetch = fetch('/api/neighborhoods/names')
+            .then(r => r.ok ? r.json() : {})
+            .catch(() => ({}));
+
+        Promise.all([_opFetch, _namesFetch])
+            .then(([data, zipNames]) => render(data, zipNames))
             .catch(err => showError(err.message));
 
         const PATTERN_NOTES = {
@@ -190,7 +195,8 @@
             'PHANTOM': '64 direct-purchase acquisitions averaging $827K each across South Bronx and East Brooklyn, using 32 LLC shells spun up in numbered sequences (PHANTOM CAPITAL 10, 11, 12...). The fragmentation is deliberate: no single entity name in public records reveals more than a fraction of the portfolio\'s true scale.',
         };
 
-        function render(data) {
+        function render(data, zipNames) {
+            zipNames = zipNames || {};
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('content').style.display = 'block';
 
@@ -236,7 +242,7 @@
                     if (i % 2 === 0) tr.style.background = 'rgba(15,23,42,0.2)';
                     tr.innerHTML =
                         '<td style="padding:8px 16px;color:rgba(241,245,249,0.85);">' + esc(r.address) + '</td>' +
-                        '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.6);font-size:0.72rem;">' + esc(r.zip_code || '') + '</td>' +
+                        '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.6);font-size:0.72rem;line-height:1.3;">' + esc(r.zip_code || '') + (r.zip_code && zipNames[r.zip_code] ? '<br><span style="font-size:0.65rem;color:rgba(148,163,184,0.35);font-family:inherit;">' + esc(zipNames[r.zip_code]) + '</span>' : '') + '</td>' +
                         '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.55);font-size:0.7rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(r.buyer_name || '') + '</td>' +
                         '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.5);font-size:0.72rem;white-space:nowrap;">' + esc(r.doc_date || '') + '</td>' +
                         '<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:rgba(148,163,184,0.6);font-size:0.72rem;white-space:nowrap;">' + (r.doc_amount ? '$' + Math.round(r.doc_amount).toLocaleString() : '—') + '</td>';
@@ -293,7 +299,10 @@
                 rel.shared_properties.forEach(prop => {
                     const row = document.createElement('div');
                     row.style.cssText = 'font-size:0.75rem;color:rgba(148,163,184,0.65);padding:2px 0;font-family:"JetBrains Mono",monospace;';
-                    row.textContent = prop.address + (prop.zip_code ? ' · ' + prop.zip_code : '');
+                    const zipLabel = prop.zip_code
+                        ? ' · ' + prop.zip_code + (zipNames[prop.zip_code] ? ' ' + zipNames[prop.zip_code] : '')
+                        : '';
+                    row.textContent = prop.address + zipLabel;
                     sharedDiv.appendChild(row);
                 });
                 card.appendChild(sharedDiv);
