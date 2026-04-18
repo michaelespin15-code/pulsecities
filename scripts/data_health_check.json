@@ -1,0 +1,289 @@
+{
+  "generated_at": "2026-04-18T15:51:07.119344+00:00",
+  "overall_status": "critical",
+  "summary": {
+    "total_scrapers": 8,
+    "healthy": 4,
+    "warning": 3,
+    "stale": 0,
+    "failed": 1,
+    "never_run": 0,
+    "stale_locks_fixed": 0
+  },
+  "scrapers": [
+    {
+      "name": "311_complaints",
+      "display": "311 Complaints",
+      "frequency": "daily",
+      "stale_threshold_h": 48.0,
+      "status": "warning",
+      "flags": [
+        "record count anomaly: 0 processed, expected \u22655000 (got 0% of minimum)"
+      ],
+      "hours_since_success": 13.8,
+      "last_success": {
+        "started_at": "2026-04-18T02:01:45.319821+00:00",
+        "completed_at": "2026-04-18T02:02:01.182132+00:00",
+        "records_processed": 0,
+        "records_failed": 0,
+        "watermark": "2026-04-16T02:50:00+00:00"
+      },
+      "last_run": {
+        "started_at": "2026-04-18T02:01:45.319821+00:00",
+        "status": "success",
+        "error_message": null
+      },
+      "quarantine_last_7d": 0
+    },
+    {
+      "name": "dob_permits",
+      "display": "DOB Permits",
+      "frequency": "daily",
+      "stale_threshold_h": 48.0,
+      "status": "warning",
+      "flags": [
+        "record count anomaly: 25 processed, expected \u2265500 (got 5% of minimum)"
+      ],
+      "hours_since_success": 13.8,
+      "last_success": {
+        "started_at": "2026-04-18T02:02:01.195472+00:00",
+        "completed_at": "2026-04-18T02:02:18.583956+00:00",
+        "records_processed": 25,
+        "records_failed": 0,
+        "watermark": "2026-04-16T00:00:00+00:00"
+      },
+      "last_run": {
+        "started_at": "2026-04-18T02:02:01.195472+00:00",
+        "status": "success",
+        "error_message": null
+      },
+      "quarantine_last_7d": 0
+    },
+    {
+      "name": "evictions",
+      "display": "Evictions (OCA)",
+      "frequency": "weekly",
+      "stale_threshold_h": 192.0,
+      "status": "healthy",
+      "flags": [],
+      "hours_since_success": 13.8,
+      "last_success": {
+        "started_at": "2026-04-18T02:02:18.595349+00:00",
+        "completed_at": "2026-04-18T02:02:24.687121+00:00",
+        "records_processed": 237,
+        "records_failed": 0,
+        "watermark": "2026-04-15T00:00:00+00:00"
+      },
+      "last_run": {
+        "started_at": "2026-04-18T02:02:18.595349+00:00",
+        "status": "success",
+        "error_message": null
+      },
+      "quarantine_last_7d": 0
+    },
+    {
+      "name": "acris_ownership",
+      "display": "ACRIS Ownership",
+      "frequency": "daily",
+      "stale_threshold_h": 48.0,
+      "status": "warning",
+      "flags": [
+        "record count anomaly: 0 processed, expected \u2265200 (got 0% of minimum)"
+      ],
+      "hours_since_success": 13.8,
+      "last_success": {
+        "started_at": "2026-04-18T02:02:24.696621+00:00",
+        "completed_at": "2026-04-18T02:02:25.953839+00:00",
+        "records_processed": 0,
+        "records_failed": 0,
+        "watermark": "2026-03-31T00:00:00+00:00"
+      },
+      "last_run": {
+        "started_at": "2026-04-18T02:02:24.696621+00:00",
+        "status": "success",
+        "error_message": null
+      },
+      "quarantine_last_7d": 0
+    },
+    {
+      "name": "dcwp_licenses",
+      "display": "DCWP Licenses",
+      "frequency": "daily",
+      "stale_threshold_h": 48.0,
+      "status": "healthy",
+      "flags": [],
+      "hours_since_success": 13.8,
+      "last_success": {
+        "started_at": "2026-04-18T02:02:25.966376+00:00",
+        "completed_at": "2026-04-18T02:02:30.274350+00:00",
+        "records_processed": 667,
+        "records_failed": 0,
+        "watermark": "2026-04-16T00:00:00+00:00"
+      },
+      "last_run": {
+        "started_at": "2026-04-18T02:02:25.966376+00:00",
+        "status": "success",
+        "error_message": null
+      },
+      "quarantine_last_7d": 0
+    },
+    {
+      "name": "dhcr_rs",
+      "display": "DHCR Rent Stabilization",
+      "frequency": "annual",
+      "stale_threshold_h": 9600.0,
+      "status": "healthy",
+      "flags": [],
+      "hours_since_success": 13.8,
+      "last_success": {
+        "started_at": "2026-04-18T02:02:30.307531+00:00",
+        "completed_at": "2026-04-18T02:20:39.103848+00:00",
+        "records_processed": 348297,
+        "records_failed": 0,
+        "watermark": null
+      },
+      "last_run": {
+        "started_at": "2026-04-18T02:02:30.307531+00:00",
+        "status": "success",
+        "error_message": null
+      },
+      "quarantine_last_7d": 0
+    },
+    {
+      "name": "mappluto",
+      "display": "MapPLUTO (parcels)",
+      "frequency": "quarterly",
+      "stale_threshold_h": 2280.0,
+      "status": "healthy",
+      "flags": [],
+      "hours_since_success": 145.7,
+      "last_success": {
+        "started_at": "2026-04-12T14:11:02.176240+00:00",
+        "completed_at": "2026-04-12T14:28:09.053161+00:00",
+        "records_processed": 858644,
+        "records_failed": 0,
+        "watermark": null
+      },
+      "last_run": {
+        "started_at": "2026-04-12T14:11:02.176240+00:00",
+        "status": "success",
+        "error_message": null
+      },
+      "quarantine_last_7d": 0
+    },
+    {
+      "name": "dof_assessments",
+      "display": "DOF Tax Assessments",
+      "frequency": "annual",
+      "stale_threshold_h": 9600.0,
+      "status": "failed",
+      "flags": [
+        "no successful run on record"
+      ],
+      "hours_since_success": null,
+      "last_success": {
+        "started_at": null,
+        "completed_at": null,
+        "records_processed": null,
+        "records_failed": null,
+        "watermark": null
+      },
+      "last_run": {
+        "started_at": "2026-04-18T02:01:36.475620+00:00",
+        "status": "failure",
+        "error_message": "stale run: automatically marked failed by data_health_check.py"
+      },
+      "quarantine_last_7d": 0
+    }
+  ],
+  "tables": [
+    {
+      "table": "complaints_raw",
+      "total_rows": 3849125,
+      "rows_last_7d": 799128,
+      "rows_prior_7d": 3049997,
+      "wow_delta": -2250869,
+      "wow_pct": -73.8,
+      "volume_status": "growing"
+    },
+    {
+      "table": "permits_raw",
+      "total_rows": 733374,
+      "rows_last_7d": 76831,
+      "rows_prior_7d": 656543,
+      "wow_delta": -579712,
+      "wow_pct": -88.3,
+      "volume_status": "growing"
+    },
+    {
+      "table": "evictions_raw",
+      "total_rows": 37929,
+      "rows_last_7d": 1661,
+      "rows_prior_7d": 36268,
+      "wow_delta": -34607,
+      "wow_pct": -95.4,
+      "volume_status": "growing"
+    },
+    {
+      "table": "ownership_raw",
+      "total_rows": 70677,
+      "rows_last_7d": 70677,
+      "rows_prior_7d": 0,
+      "wow_delta": 70677,
+      "wow_pct": null,
+      "volume_status": "growing"
+    },
+    {
+      "table": "dcwp_licenses",
+      "total_rows": 28190,
+      "rows_last_7d": 28190,
+      "rows_prior_7d": 0,
+      "wow_delta": 28190,
+      "wow_pct": null,
+      "volume_status": "growing"
+    },
+    {
+      "table": "rs_buildings",
+      "total_rows": 529211,
+      "rows_last_7d": 529211,
+      "rows_prior_7d": 0,
+      "wow_delta": 529211,
+      "wow_pct": null,
+      "volume_status": "growing"
+    },
+    {
+      "table": "parcels",
+      "total_rows": 858644,
+      "rows_last_7d": 858644,
+      "rows_prior_7d": 0,
+      "wow_delta": 858644,
+      "wow_pct": null,
+      "volume_status": "growing"
+    },
+    {
+      "table": "score_history",
+      "total_rows": 33867,
+      "rows_last_7d": 33867,
+      "rows_prior_7d": 0,
+      "wow_delta": 33867,
+      "wow_pct": null,
+      "volume_status": "growing"
+    },
+    {
+      "table": "scraper_quarantine",
+      "total_rows": 68274,
+      "rows_last_7d": 68274,
+      "rows_prior_7d": 0,
+      "wow_delta": 68274,
+      "wow_pct": null,
+      "volume_status": "growing"
+    }
+  ],
+  "fixes_applied": [],
+  "open_issues": [
+    "Scraper `311_complaints` (311 Complaints) \u2014 status: warning\n  - record count anomaly: 0 processed, expected \u22655000 (got 0% of minimum)",
+    "Scraper `dob_permits` (DOB Permits) \u2014 status: warning\n  - record count anomaly: 25 processed, expected \u2265500 (got 5% of minimum)",
+    "Scraper `acris_ownership` (ACRIS Ownership) \u2014 status: warning\n  - record count anomaly: 0 processed, expected \u2265200 (got 0% of minimum)",
+    "Scraper `dof_assessments` (DOF Tax Assessments) \u2014 status: failed\n  - no successful run on record\n  - last error: stale run: automatically marked failed by data_health_check.py"
+  ]
+}

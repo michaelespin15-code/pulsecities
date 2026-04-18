@@ -56,6 +56,11 @@ class DOFScraper(BaseScraper):
     DATASET_ID = DATASET_ID
     INITIAL_LOOKBACK_DAYS = 0  # unused, no date watermark for DOF assessments
 
+    # DOF is a full-refresh dataset with 900K+ records. The default 50K-row
+    # pages spike memory enough to trigger OOM on constrained hosts. 5K rows
+    # per page keeps peak in-flight memory to ~5MB per fetch instead of ~50MB.
+    PAGE_SIZE = 5_000
+
     def _run(self, db) -> tuple[int, int, datetime | None]:
         # DOF has no date filter, always fetch all records with a valid BBL
         where = "bble IS NOT NULL"
@@ -141,9 +146,6 @@ class DOFScraper(BaseScraper):
             "address": (raw.get("staddr") or "").strip() or None,
             "zip_code": _clean_zip(raw.get("zip")),
             "assessed_total": assessed_total,
-            "raw_data": raw,
-            # assessment_year is metadata, not stored in Parcel model directly
-            # but included in raw_data above for audit purposes
         }
 
     def _upsert_batch(self, db, batch: list[dict]) -> int:
