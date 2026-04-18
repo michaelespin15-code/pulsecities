@@ -54,6 +54,13 @@ class OwnershipRaw(TimestampMixin, Base):
         Numeric(precision=15, scale=2), nullable=True
     )
 
+    # Registered address of the party (grantee) as reported in ACRIS
+    party_addr_1: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    party_addr_2: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    party_city: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    party_state: Mapped[str | None] = mapped_column(String(2), nullable=True)
+    party_zip: Mapped[str | None] = mapped_column(String(10), nullable=True)
+
     raw_data: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
 
     __table_args__ = (
