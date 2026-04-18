@@ -253,6 +253,23 @@ def main() -> None:
     with get_scraper_db() as db:
         operators = run_analysis(db)
 
+    # Attach relationship data from the entity resolution audit if available.
+    # The audit JSON must be generated first (python scripts/entity_resolution_audit.py).
+    audit_path = Path(__file__).parent / "entity_resolution_audit.json"
+    if audit_path.exists():
+        try:
+            audit = json.loads(audit_path.read_text())
+            by_operator = audit.get("by_operator", {})
+            for op in operators:
+                op["related_operators"] = by_operator.get(op["operator_root"], [])
+        except Exception as exc:
+            logger.warning("Could not attach related_operators from audit JSON: %s", exc)
+            for op in operators:
+                op["related_operators"] = []
+    else:
+        for op in operators:
+            op["related_operators"] = []
+
     payload = {
         "generated_at":       date.today().isoformat(),
         "analysis_window":    "18 months",
