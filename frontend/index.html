@@ -100,12 +100,12 @@
             border-radius: 9999px;
             border: 1px solid rgba(148,163,184,0.18);
             background: transparent;
-            color: rgba(148,163,184,0.5);
+            color: #94a3b8;
             cursor: pointer;
             min-height: 26px;
             transition: background 0.12s, color 0.12s, border-color 0.12s;
         }
-        .borough-pill:hover { color: rgba(148,163,184,0.85); border-color: rgba(148,163,184,0.35); }
+        .borough-pill:hover { color: #cbd5e1; border-color: rgba(148,163,184,0.35); }
         .borough-pill.active {
             background: rgba(249,115,22,0.15);
             border-color: rgba(249,115,22,0.4);
@@ -120,12 +120,12 @@
             border-radius: 9999px;
             border: 1px solid rgba(148,163,184,0.18);
             background: transparent;
-            color: rgba(148,163,184,0.4);
+            color: #94a3b8;
             cursor: pointer;
             min-height: 22px;
             transition: background 0.12s, color 0.12s, border-color 0.12s;
         }
-        .history-pill:hover { color: rgba(148,163,184,0.8); border-color: rgba(148,163,184,0.3); }
+        .history-pill:hover { color: #cbd5e1; border-color: rgba(148,163,184,0.3); }
         .history-pill.active {
             background: rgba(249,115,22,0.15);
             border-color: rgba(249,115,22,0.4);
@@ -409,20 +409,20 @@
                     <button onclick="resetToHero()" class="text-left leading-none" title="Return to home" style="background:none;border:none;padding:0;cursor:pointer;">
                         <h1 class="text-xl font-semibold" style="color: #38bdf8;">PulseCities</h1>
                     </button>
-                    <p class="text-sm text-base-content/60 mt-1">NYC Displacement Risk</p>
+                    <p class="text-sm text-slate-400 mt-1">NYC Displacement Risk</p>
                 </div>
                 <div class="flex items-center gap-1">
-                    <button id="lang-toggle" class="text-xs text-base-content/50 hover:text-base-content mt-1" aria-label="Toggle language" style="min-height:44px;min-width:44px;">
+                    <button id="lang-toggle" class="text-xs text-slate-400 hover:text-base-content mt-1" aria-label="Toggle language" style="min-height:44px;min-width:44px;">
                         EN / ES
                     </button>
                     <!-- Close sheet — mobile only -->
-                    <button onclick="showMobileMap()" class="md:hidden text-base-content/40 hover:text-base-content transition-colors" aria-label="Close" style="min-height:44px;min-width:36px;font-size:1.25rem;line-height:1;">&#x2715;</button>
+                    <button onclick="showMobileMap()" class="md:hidden text-slate-400 hover:text-base-content transition-colors" aria-label="Close" style="min-height:44px;min-width:36px;font-size:1.25rem;line-height:1;">&#x2715;</button>
                 </div>
             </div>
 
             <!-- Landlord portfolio search — always visible, no neighborhood selection required -->
             <div class="bg-base-300 rounded-xl p-3 mb-4">
-                <h3 id="landlord-section-title" class="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-2">Search Landlord or LLC Name</h3>
+                <h3 id="landlord-section-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Search Landlord or LLC Name</h3>
                 <div class="flex gap-2">
                     <input
                         id="landlord-input"
@@ -439,24 +439,24 @@
                 </div>
                 <div id="landlord-error" class="hidden text-xs text-error mt-2"></div>
                 <div id="landlord-results" class="hidden">
-                    <p id="landlord-summary" class="text-xs text-base-content/50 mt-2 mb-2 leading-relaxed"></p>
+                    <p id="landlord-summary" class="text-xs text-slate-400 mt-2 mb-2 leading-relaxed"></p>
                     <div id="landlord-list" class="flex flex-col max-h-52 overflow-y-auto -mx-1 px-1"></div>
                     <div class="flex items-center mt-2">
-                        <button id="landlord-copy-btn" class="text-xs text-base-content/40 hover:text-base-content/70 transition-colors" style="min-height:32px;">Copy</button>
-                        <button id="landlord-clear-btn" class="text-xs text-base-content/40 hover:text-base-content/70 transition-colors ml-auto" style="min-height:32px;">Clear</button>
+                        <button id="landlord-copy-btn" class="text-xs text-slate-400 hover:text-base-content/70 transition-colors" style="min-height:32px;">Copy</button>
+                        <button id="landlord-clear-btn" class="text-xs text-slate-400 hover:text-base-content/70 transition-colors ml-auto" style="min-height:32px;">Clear</button>
                     </div>
                 </div>
             </div>
 
             <!-- Landing state: shown before any neighborhood is selected -->
             <div id="empty-state" class="flex flex-col">
-                <p id="landing-hint-text" class="text-xs text-base-content/50 leading-relaxed px-1">Click any neighborhood on the map to see its displacement risk score, or pick one from the list below.</p>
+                <p id="landing-hint-text" class="text-xs text-slate-400 leading-relaxed px-1">Click any neighborhood on the map to see its displacement risk score, or pick one from the list below.</p>
             </div>
 
             <!-- Neighborhood detail panel (hidden by default) -->
             <div id="detail-panel" class="hidden flex-1 flex flex-col gap-4">
                 <!-- Back to at-risk list — mobile only, shown only when user navigated from the list -->
-                <button id="back-to-list-btn" onclick="showMobileMap()" class="flex items-center gap-1.5 text-xs text-base-content/50 hover:text-sky-400 transition-colors -mb-1" style="display:none;min-height:36px;">
+                <button id="back-to-list-btn" onclick="showMobileMap()" class="flex items-center gap-1.5 text-xs text-slate-400 hover:text-sky-400 transition-colors -mb-1" style="display:none;min-height:36px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="15 18 9 12 15 6"/></svg>
                     <span id="back-to-list-label">At-risk list</span>
                 </button>
@@ -465,11 +465,11 @@
                     <div class="flex items-baseline justify-between mb-1">
                         <div class="flex items-baseline gap-2 min-w-0">
                             <span id="detail-zip" class="font-mono text-lg font-semibold text-base-content shrink-0"></span>
-                            <span id="detail-neighborhood" class="text-xs text-base-content/40 truncate"></span>
+                            <span id="detail-neighborhood" class="text-xs text-slate-400 truncate"></span>
                         </div>
                         <span id="detail-score" class="font-mono text-3xl font-semibold shrink-0 ml-2"></span>
                     </div>
-                    <div class="flex justify-between items-center text-xs text-base-content/50 mt-1">
+                    <div class="flex justify-between items-center text-xs text-slate-400 mt-1">
                         <span id="detail-risk-label">Displacement Risk</span>
                         <div class="flex items-center gap-3">
                             <span id="detail-updated"></span>
@@ -482,15 +482,15 @@
                 <!-- Score History Timeline -->
                 <div id="history-section" class="hidden bg-base-300 rounded-xl p-4">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 id="history-section-title" class="text-xs font-semibold text-base-content/60 uppercase tracking-wider">Score History</h3>
+                        <h3 id="history-section-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Score History</h3>
                         <div class="flex gap-1">
                             <button class="history-pill" data-days="30">30d</button>
                             <button class="history-pill active" data-days="90">90d</button>
                             <button class="history-pill" data-days="180">180d</button>
                         </div>
                     </div>
-                    <p id="history-loading" class="hidden text-xs text-base-content/40 text-center py-3">Loading&hellip;</p>
-                    <p id="history-empty" class="hidden text-xs text-base-content/40 text-center py-3">No history yet for this ZIP.</p>
+                    <p id="history-loading" class="hidden text-xs text-slate-400 text-center py-3">Loading&hellip;</p>
+                    <p id="history-empty" class="hidden text-xs text-slate-400 text-center py-3">No history yet for this ZIP.</p>
                     <div id="history-chart-wrap" style="position:relative;height:110px;display:none;">
                         <canvas id="history-chart"></canvas>
                     </div>
@@ -498,7 +498,7 @@
 
                 <!-- Recent activity — 3 most recent events from pulse data, no extra fetch needed -->
                 <div id="recent-activity-section" class="hidden bg-base-300 rounded-xl p-4">
-                    <h3 id="recent-activity-title" class="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-3">Recent Activity</h3>
+                    <h3 id="recent-activity-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Recent Activity</h3>
                     <div id="recent-activity-list" class="flex flex-col gap-2"></div>
                 </div>
 
@@ -507,42 +507,46 @@
                     <div class="flex items-start justify-between gap-2">
                         <div>
                             <p id="reno-flip-title" class="text-sm font-semibold text-amber-400">Renovation-Flip Pattern Detected</p>
-                            <p id="renovation-flip-count" class="text-xs text-base-content/60 mt-0.5"></p>
+                            <p id="renovation-flip-count" class="text-xs text-slate-400 mt-0.5"></p>
                         </div>
                         <button id="renovation-flip-toggle" class="text-xs text-amber-400/70 hover:text-amber-400 whitespace-nowrap" style="min-height:44px;">See addresses</button>
                     </div>
                     <div id="renovation-flip-list" class="hidden mt-3 flex flex-col gap-1 text-sm"></div>
-                    <p class="text-xs text-base-content/40 mt-3 italic">Based on LLC acquisitions followed by renovation permits (A1/A2) within 60 days. Affordable housing LLCs and seasonal construction may produce false positives.</p>
+                    <p class="text-xs text-slate-400 mt-3 italic">Based on LLC acquisitions followed by renovation permits (A1/A2) within 60 days. Affordable housing LLCs and seasonal construction may produce false positives.</p>
                 </div>
 
                 <!-- Neighborhood Pulse feed (Phase 6: Plan 03) -->
                 <div id="pulse-section" class="bg-base-300 rounded-xl p-4 hidden">
                     <details>
-                        <summary class="text-xs font-semibold text-base-content/60 uppercase tracking-wider cursor-pointer select-none mb-3 flex items-center justify-between">
+                        <summary class="text-xs font-semibold text-slate-400 uppercase tracking-wider cursor-pointer select-none mb-3 flex items-center justify-between">
                             <span id="pulse-section-title">Neighborhood Pulse</span>
-                            <span id="pulse-last-days" class="text-base-content/30 text-xs normal-case tracking-normal font-normal">last 90 days</span>
+                            <span id="pulse-last-days" class="text-slate-500 text-xs normal-case tracking-normal font-normal">last 90 days</span>
                         </summary>
 
                         <!-- LLC Acquisitions subsection -->
                         <div id="pulse-llc-section" class="hidden mb-4 mt-3">
-                            <h4 id="pulse-llc-header" class="text-xs font-semibold text-amber-400/70 uppercase tracking-wider mb-2">LLC Acquisitions</h4>
+                            <h4 id="pulse-llc-header" class="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-2">LLC Acquisitions</h4>
                             <div id="pulse-llc-list" class="flex flex-col gap-1 text-sm"></div>
+                            <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:rgba(148,163,184,0.35);">Source: NYC ACRIS (bnx9-e6tj)</div>
                         </div>
 
                         <!-- Recent Permits subsection -->
                         <div id="pulse-permits-section" class="hidden mb-4">
-                            <h4 id="pulse-permits-header" class="text-xs font-semibold text-sky-400/70 uppercase tracking-wider mb-2">Recent Permits</h4>
+                            <h4 id="pulse-permits-header" class="text-xs font-semibold text-sky-400 uppercase tracking-wider mb-2">Recent Permits</h4>
                             <div id="pulse-permits-list" class="flex flex-col gap-1 text-sm"></div>
+                            <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:rgba(148,163,184,0.35);">Source: NYC DOB (ipu4-2q9a)</div>
                         </div>
 
                         <!-- Recent Evictions subsection -->
                         <div id="pulse-evictions-section" class="hidden">
-                            <h4 id="pulse-evictions-header" class="text-xs font-semibold text-red-400/70 uppercase tracking-wider mb-2">Recent Evictions</h4>
-                            <div id="pulse-evictions-list" class="flex flex-col gap-1 text-sm"></div>
+                            <h4 id="pulse-evictions-header" class="text-xs font-semibold text-red-400 uppercase tracking-wider mb-1">Recent Evictions</h4>
+                            <p class="text-xs text-slate-400 italic mb-2">Eviction filings typically appear 2&ndash;4 weeks after they occur.</p>
+                            <div id="pulse-evictions-list" class="flex flex-col gap-1 text-sm" role="list"></div>
+                            <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:rgba(148,163,184,0.35);">Source: NYC Open Data (6z8x-wfk4)</div>
                         </div>
 
                         <!-- Empty state -->
-                        <p id="pulse-empty" class="hidden text-sm text-base-content/50 text-center py-2">
+                        <p id="pulse-empty" class="hidden text-sm text-slate-400 text-center py-2">
                             No recent activity in this ZIP.
                         </p>
                     </details>
@@ -551,18 +555,18 @@
                 <!-- Signal breakdown — collapsed by default -->
                 <div class="bg-base-300 rounded-xl p-4">
                     <details>
-                        <summary class="text-xs font-semibold text-base-content/60 uppercase tracking-wider cursor-pointer select-none flex items-center justify-between">
+                        <summary class="text-xs font-semibold text-slate-400 uppercase tracking-wider cursor-pointer select-none flex items-center justify-between">
                             <span id="signal-breakdown-title">Signal Breakdown</span>
-                            <svg class="details-chevron text-base-content/30" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
+                            <svg class="details-chevron text-slate-500" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
                         </summary>
-                        <p id="signal-breakdown-note" class="text-xs text-base-content/40 mt-2 mb-3">Scores are 0–100 relative to all NYC neighborhoods, normalized per residential unit.</p>
+                        <p id="signal-breakdown-note" class="text-xs text-slate-400 mt-2 mb-3">Scores are 0–100 relative to all NYC neighborhoods, normalized per residential unit.</p>
                         <div id="signal-rows" class="flex flex-col gap-2"></div>
                         <a
                             id="methodology-trigger"
                             href="/methodology"
                             target="_blank"
                             rel="noopener"
-                            class="text-xs text-sky-400/70 hover:text-sky-400 text-left underline mt-2 block"
+                            class="text-xs text-sky-400 hover:text-sky-300 text-left underline mt-2 block"
                             style="min-height: 44px; display: flex; align-items: center;"
                         >
                             How scores work
@@ -571,13 +575,13 @@
                 </div>
 
                 <!-- No score state -->
-                <div id="no-score-msg" class="hidden text-sm text-base-content/50 text-center px-2">
+                <div id="no-score-msg" class="hidden text-sm text-slate-400 text-center px-2">
                     No score computed yet for this zip code.
                 </div>
 
                 <!-- Address search — resolves to block detail panel (D-07) -->
                 <div class="bg-base-300 rounded-xl p-4">
-                    <h3 id="address-lookup-title" class="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-3">Look Up a Building</h3>
+                    <h3 id="address-lookup-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Look Up a Building</h3>
                     <div class="flex gap-2">
                         <input
                             id="address-input"
@@ -613,18 +617,18 @@
                 <!-- Block score card -->
                 <div class="bg-base-300 rounded-xl p-4">
                     <div class="flex items-baseline justify-between mb-1">
-                        <span id="block-bbl" class="font-mono text-sm text-base-content/60"></span>
+                        <span id="block-bbl" class="font-mono text-sm text-slate-400"></span>
                         <span id="block-score" class="font-mono text-3xl font-semibold"></span>
                     </div>
-                    <div id="block-risk-label" class="text-xs text-base-content/50 mt-1">Displacement Risk</div>
+                    <div id="block-risk-label" class="text-xs text-slate-400 mt-1">Displacement Risk</div>
                 </div>
 
                 <!-- Block event list — civic events, newest first (D-09, D-16) -->
                 <div class="bg-base-300 rounded-xl p-4">
-                    <h3 id="civic-events-title" class="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-3">Civic Events</h3>
+                    <h3 id="civic-events-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Civic Events</h3>
                     <div id="block-events" class="flex flex-col gap-2 text-sm break-words"></div>
                     <!-- Empty state (scope addition B) -->
-                    <div id="block-empty-state" class="hidden text-sm text-base-content/50 text-center py-4">
+                    <div id="block-empty-state" class="hidden text-sm text-slate-400 text-center py-4">
                         No recorded activity for this address
                     </div>
                 </div>
@@ -640,22 +644,22 @@
                 <div class="grid grid-cols-2 gap-2">
                     <div class="bg-base-300 rounded-xl p-3">
                         <div class="font-mono text-base font-semibold text-base-content" id="cmp-zip-1"></div>
-                        <div class="text-xs text-base-content/40 mt-0.5 truncate" id="cmp-name-1"></div>
+                        <div class="text-xs text-slate-400 mt-0.5 truncate" id="cmp-name-1"></div>
                         <div class="font-mono text-2xl font-semibold mt-1" id="cmp-score-1"></div>
-                        <div id="cmp-risk-label-1" class="text-xs text-base-content/40 mt-0.5">Displacement Risk</div>
+                        <div id="cmp-risk-label-1" class="text-xs text-slate-400 mt-0.5">Displacement Risk</div>
                     </div>
                     <div class="bg-base-300 rounded-xl p-3">
                         <div class="font-mono text-base font-semibold text-base-content" id="cmp-zip-2"></div>
-                        <div class="text-xs text-base-content/40 mt-0.5 truncate" id="cmp-name-2"></div>
+                        <div class="text-xs text-slate-400 mt-0.5 truncate" id="cmp-name-2"></div>
                         <div class="font-mono text-2xl font-semibold mt-1" id="cmp-score-2"></div>
-                        <div id="cmp-risk-label-2" class="text-xs text-base-content/40 mt-0.5">Displacement Risk</div>
+                        <div id="cmp-risk-label-2" class="text-xs text-slate-400 mt-0.5">Displacement Risk</div>
                     </div>
                 </div>
 
                 <!-- Signal breakdown — dual bar rows -->
                 <div class="bg-base-300 rounded-xl p-4">
-                    <h3 id="cmp-signal-breakdown-title" class="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-1">Signal Breakdown</h3>
-                    <p id="cmp-signal-note" class="text-xs text-base-content/40 mb-3">0–100 relative to all NYC neighborhoods.</p>
+                    <h3 id="cmp-signal-breakdown-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Signal Breakdown</h3>
+                    <p id="cmp-signal-note" class="text-xs text-slate-400 mb-3">0–100 relative to all NYC neighborhoods.</p>
                     <div id="cmp-signal-rows" class="flex flex-col gap-3"></div>
                 </div>
 
@@ -667,7 +671,7 @@
             <!-- At-risk section: desktop sidebar only — mobile uses #mobile-drawer -->
             <div id="at-risk-section" class="hidden md:flex flex-col gap-4 mt-2">
                 <div class="bg-base-300 rounded-xl p-4">
-                    <p id="most-at-risk-title" class="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-2">Most at-risk neighborhoods right now</p>
+                    <p id="most-at-risk-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Most at-risk neighborhoods right now</p>
                     <div id="desktop-borough-filters" class="flex gap-1 flex-wrap mb-3">
                         <button class="borough-pill active" data-borough="">All</button>
                         <button class="borough-pill" data-borough="Brooklyn" aria-label="Brooklyn">BK</button>
@@ -709,13 +713,13 @@
                     <div id="subscribe-msg" class="hidden text-xs mt-1.5"></div>
                 </div>
                 <!-- Attribution -->
-                <div id="sidebar-attribution" class="pt-3 border-t border-base-content/10 text-[13px] sm:text-xs text-base-content/30 text-center">
+                <div id="sidebar-attribution" class="pt-3 border-t border-base-content/10 text-[13px] sm:text-xs text-slate-500 text-center">
                     Built by
                     <a
                         href="https://www.linkedin.com/in/michaelespin"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="inline-flex items-center gap-1 text-base-content/40 hover:text-[#0A66C2] transition-colors duration-150"
+                        class="inline-flex items-center gap-1 text-slate-400 hover:text-[#0A66C2] transition-colors duration-150"
                         aria-label="Michael Espin on LinkedIn"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true" focusable="false">
@@ -738,7 +742,7 @@
             <div class="flex justify-between items-start mb-4">
                 <h2 class="text-lg font-semibold" style="color: #38bdf8;">How Scores Work</h2>
                 <button
-                    class="text-base-content/50 hover:text-base-content text-xl leading-none"
+                    class="text-slate-400 hover:text-base-content text-xl leading-none"
                     style="min-height: 44px; min-width: 44px;"
                     aria-label="Close"
                     onclick="document.getElementById('methodology-modal').classList.add('hidden')"
@@ -751,31 +755,31 @@
             </p>
             <div class="flex flex-col gap-4 text-sm">
                 <div>
-                    <h3 class="font-semibold text-base-content mb-1">LLC Acquisitions <span class="text-base-content/50 font-normal">(weight: 26%)</span></h3>
+                    <h3 class="font-semibold text-base-content mb-1">LLC Acquisitions <span class="text-slate-400 font-normal">(weight: 26%)</span></h3>
                     <p class="text-base-content/70">Deed transfers to limited liability companies via ACRIS. LLC ownership is associated with speculative purchasing patterns and rapid rent increases. Financial institution transfers (mortgage servicers, foreclosure deeds) are excluded. Source: NYC ACRIS (bnx9-e6tj, 636b-3b5g, 8h5j-fqxa).</p>
                 </div>
                 <div>
-                    <h3 class="font-semibold text-base-content mb-1">Permit Filings <span class="text-base-content/50 font-normal">(weight: 21%)</span></h3>
+                    <h3 class="font-semibold text-base-content mb-1">Permit Filings <span class="text-slate-400 font-normal">(weight: 21%)</span></h3>
                     <p class="text-base-content/70">DOB building permit applications &mdash; renovation and alteration permits signal landlord investment that often precedes tenant displacement. Source: NYC Department of Buildings (Socrata ipu4-2q9a).</p>
                 </div>
                 <div>
-                    <h3 class="font-semibold text-base-content mb-1">Complaint Rate <span class="text-base-content/50 font-normal">(weight: 17%)</span></h3>
+                    <h3 class="font-semibold text-base-content mb-1">Complaint Rate <span class="text-slate-400 font-normal">(weight: 17%)</span></h3>
                     <p class="text-base-content/70">311 housing complaints (heat, hot water, pests, mold) per residential unit &mdash; a proxy for deteriorating conditions that precede forced moves. Source: NYC 311 (erm2-nwe9).</p>
                 </div>
                 <div>
-                    <h3 class="font-semibold text-base-content mb-1">Eviction Executions <span class="text-base-content/50 font-normal">(weight: 13%)</span></h3>
+                    <h3 class="font-semibold text-base-content mb-1">Eviction Executions <span class="text-slate-400 font-normal">(weight: 13%)</span></h3>
                     <p class="text-base-content/70">Residential evictions carried out by NYC marshals (executed evictions, not filings). Filed cases often resolve without execution &mdash; this signal tracks actual removals. OCA data lags executed date by 2&ndash;4 weeks. Source: NYC Open Data (6z8x-wfk4).</p>
                 </div>
                 <div>
-                    <h3 class="font-semibold text-base-content mb-1">Assessment Spike <span class="text-base-content/50 font-normal">(weight: 8%)</span></h3>
+                    <h3 class="font-semibold text-base-content mb-1">Assessment Spike <span class="text-slate-400 font-normal">(weight: 8%)</span></h3>
                     <p class="text-base-content/70">Year-over-year increase in NYC Department of Finance property assessment &mdash; a leading indicator of market pressure. Currently dormant &mdash; requires two consecutive years of DOF assessment history. Source: NYC Department of Finance (w7rz-68fs).</p>
                 </div>
                 <div>
-                    <h3 class="font-semibold text-base-content mb-1">RS Unit Loss <span class="text-base-content/50 font-normal">(weight: 15%)</span></h3>
+                    <h3 class="font-semibold text-base-content mb-1">RS Unit Loss <span class="text-slate-400 font-normal">(weight: 15%)</span></h3>
                     <p class="text-base-content/70">Year-over-year loss in rent-stabilized units per building via DHCR registration data. The single most direct signal of affordable housing erosion. Currently in data collection phase &mdash; signal becomes active after two consecutive annual snapshots. Source: DHCR Building Registrations (kj4p-ruqc).</p>
                 </div>
             </div>
-            <p class="text-xs text-base-content/50 mt-4">Scores are normalized per residential unit using MapPLUTO unit counts to prevent bias toward dense commercial areas. All data is public record.</p>
+            <p class="text-xs text-slate-400 mt-4">Scores are normalized per residential unit using MapPLUTO unit counts to prevent bias toward dense commercial areas. All data is public record.</p>
         </div>
     </div>
 
@@ -786,9 +790,9 @@
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Michael Espin on LinkedIn"
-        style="position:fixed;bottom:8px;left:8px;z-index:20;display:inline-flex;align-items:center;gap:4px;background:rgba(15,23,42,0.72);backdrop-filter:blur(4px);color:rgba(241,245,249,0.5);font-size:11px;font-family:'Inter',sans-serif;padding:3px 7px;border-radius:4px;text-decoration:none;transition:color 0.15s;"
+        style="position:fixed;bottom:8px;left:8px;z-index:20;display:inline-flex;align-items:center;gap:4px;background:rgba(15,23,42,0.72);backdrop-filter:blur(4px);color:#94a3b8;font-size:11px;font-family:'Inter',sans-serif;padding:3px 7px;border-radius:4px;text-decoration:none;transition:color 0.15s;"
         onmouseover="this.style.color='#0A66C2'"
-        onmouseout="this.style.color='rgba(241,245,249,0.5)'"
+        onmouseout="this.style.color='#94a3b8'"
     >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11" aria-hidden="true" focusable="false">
             <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
@@ -807,7 +811,7 @@
         >
             <div style="width:36px;height:4px;background:rgba(148,163,184,0.2);border-radius:2px;margin:0 auto 10px;"></div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
-                <span id="mobile-drawer-title" style="font-size:13px;font-weight:600;color:rgba(148,163,184,0.55);text-transform:uppercase;letter-spacing:0.07em;">10 most at-risk neighborhoods</span>
+                <span id="mobile-drawer-title" style="font-size:13px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;">10 most at-risk neighborhoods</span>
                 <svg id="mobile-drawer-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.4)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;" aria-hidden="true" focusable="false"><polyline points="18 15 12 9 6 15"/></svg>
             </div>
         </button>
@@ -1003,7 +1007,7 @@
                                 x: {
                                     grid: { display: false },
                                     ticks: {
-                                        color: 'rgba(148,163,184,0.4)',
+                                        color: '#94a3b8',
                                         font: { size: 9 },
                                         maxTicksLimit: 5,
                                         maxRotation: 0,
@@ -1015,7 +1019,7 @@
                                     max: 100,
                                     grid: { color: 'rgba(148,163,184,0.07)' },
                                     ticks: {
-                                        color: 'rgba(148,163,184,0.4)',
+                                        color: '#94a3b8',
                                         font: { size: 9 },
                                         maxTicksLimit: 4,
                                         stepSize: 25,
@@ -1504,7 +1508,7 @@
             if (items.length <= limit) return;
             const remainder = items.slice(limit);
             const btn = document.createElement('button');
-            btn.className = 'text-xs text-base-content/40 hover:text-base-content/60 mt-2 text-left block';
+            btn.className = 'text-xs text-slate-400 hover:text-slate-300 mt-2 text-left block';
             btn.style.minHeight = '32px';
             btn.textContent = `+${remainder.length} more`;
             btn.onclick = () => {
@@ -1568,9 +1572,9 @@
                             el.innerHTML = `
                                 <div class="flex justify-between items-baseline gap-2">
                                     <span class="text-xs font-medium text-base-content/90 leading-snug">${item.address || item.bbl}</span>
-                                    ${dateStr ? `<span class="text-xs text-base-content/30 shrink-0">${dateStr}</span>` : ''}
+                                    ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
                                 </div>
-                                <div class="text-xs text-base-content/40 mt-0.5">${t('pulse', 'acquired_by')} ${item.buyer_name || ''}</div>
+                                <div class="text-xs text-slate-400 mt-0.5">${t('pulse', 'acquired_by')} ${item.buyer_name || ''}</div>
                             `;
                             return el;
                         }, 5);
@@ -1587,9 +1591,9 @@
                             el.innerHTML = `
                                 <div class="flex justify-between items-baseline gap-2">
                                     <span class="text-xs font-medium text-base-content/90 leading-snug">${item.address || item.bbl}</span>
-                                    ${dateStr ? `<span class="text-xs text-base-content/30 shrink-0">${dateStr}</span>` : ''}
+                                    ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
                                 </div>
-                                <div class="text-xs text-base-content/40 mt-0.5">${item.permit_type_label || item.permit_type} ${t('pulse', 'filed')}</div>
+                                <div class="text-xs text-slate-400 mt-0.5">${item.permit_type_label || item.permit_type} ${t('pulse', 'filed')}</div>
                             `;
                             return el;
                         }, 5);
@@ -1601,14 +1605,18 @@
                         evictSec.classList.remove('hidden');
                         appendWithMore(data.recent_evictions, evictList, item => {
                             const el = document.createElement('div');
-                            el.className = 'py-1.5 border-b border-base-content/10 last:border-0';
+                            el.className = 'py-1.5 border-b border-base-content/10 last:border-0 rounded focus:outline-none focus:ring-2 focus:ring-red-400/50';
+                            el.setAttribute('tabindex', '0');
+                            el.setAttribute('role', 'listitem');
                             const dateStr = item.executed_date ? new Date(item.executed_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+                            const typeStr = item.eviction_type || t('pulse', 'executed');
+                            el.setAttribute('aria-label', `Eviction at ${item.address || 'unknown address'}${dateStr ? ', ' + dateStr : ''}, ${typeStr}`);
                             el.innerHTML = `
                                 <div class="flex justify-between items-baseline gap-2">
                                     <span class="text-xs font-medium text-base-content/90 leading-snug">${item.address || 'Unknown address'}</span>
-                                    ${dateStr ? `<span class="text-xs text-base-content/30 shrink-0">${dateStr}</span>` : ''}
+                                    ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
                                 </div>
-                                <div class="text-xs text-base-content/40 mt-0.5">${item.eviction_type || t('pulse', 'executed')}</div>
+                                <div class="text-xs text-slate-400 mt-0.5">${typeStr}</div>
                             `;
                             return el;
                         }, 5);
@@ -1648,7 +1656,7 @@
                         addr.className = 'text-base-content font-medium';
                         addr.textContent = p.address || p.bbl;
                         const detail = document.createElement('div');
-                        detail.className = 'text-xs text-base-content/50';
+                        detail.className = 'text-xs text-slate-400';
                         const transferDate = p.transfer_date ? new Date(p.transfer_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
                         const days = p.days_between != null ? `${p.days_between}d later` : '';
                         detail.textContent = `${p.buyer || ''}` + (transferDate ? ` \u2014 ${transferDate}` : '') + (days ? ` \u2014 permit ${days}` : '');
@@ -1744,19 +1752,19 @@
                     row.className = 'py-2 border-b border-base-content/[0.06] last:border-0';
                     row.innerHTML = `
                         <div class="flex justify-between items-baseline mb-1">
-                            <span class="text-xs text-base-content/60" title="${SIGNAL_DESCRIPTIONS[key] || ''}">${label}</span>
+                            <span class="text-xs text-slate-400" title="${SIGNAL_DESCRIPTIONS[key] || ''}">${label}</span>
                             <span class="font-mono text-sm text-base-content">${numVal !== null ? numVal : '\u2014'}</span>
                         </div>
                         <div style="height:3px;border-radius:2px;background:rgba(148,163,184,0.12);">
                             <div style="height:100%;border-radius:2px;width:${barPct}%;background:${numVal !== null ? signalBarColor(numVal) : 'transparent'};transition:width 0.4s ease;"></div>
                         </div>
-                        ${ts ? `<div class="text-xs text-sky-400/60 mt-1">Updated ${ts}</div>` : ''}
+                        ${ts ? `<div class="text-xs text-sky-400 mt-1">Updated ${ts}</div>` : ''}
                     `;
                     rows.appendChild(row);
 
                     if (key === 'evictions') {
                         const lagNote = document.createElement('div');
-                        lagNote.className = 'text-xs text-base-content/40 italic pb-1';
+                        lagNote.className = 'text-xs text-slate-400 italic pb-1';
                         lagNote.textContent = 'Eviction filings typically appear 2\u20134 weeks after they occur.';
                         rows.appendChild(lagNote);
                     }
@@ -1901,7 +1909,7 @@
                 row.className = 'pb-2 border-b border-base-content/[0.06] last:border-0';
 
                 const labelEl = document.createElement('div');
-                labelEl.className = 'text-xs text-base-content/60 mb-1.5';
+                labelEl.className = 'text-xs text-slate-400 mb-1.5';
                 labelEl.textContent = label;
                 row.appendChild(labelEl);
 
@@ -1912,7 +1920,7 @@
                     barRow.className = 'flex items-center gap-2 mb-1 last:mb-0';
 
                     const zipLbl = document.createElement('span');
-                    zipLbl.className = 'font-mono text-xs text-base-content/35 w-11 shrink-0';
+                    zipLbl.className = 'font-mono text-xs text-slate-500 w-11 shrink-0';
                     zipLbl.textContent = zip;
                     barRow.appendChild(zipLbl);
 
@@ -2340,7 +2348,7 @@
                         ownership_transfer: 'LLC Transfer',
                         complaint: '311 Complaint'
                     };
-                    const typeClass = typeColors[ev.type] || 'text-base-content/60';
+                    const typeClass = typeColors[ev.type] || 'text-slate-400';
                     const typeLabel = typeLabels[ev.type] || ev.type;
 
                     // Build header row with DOM methods to prevent XSS from API strings
@@ -2353,7 +2361,7 @@
                     headerRow.appendChild(badgeEl);
 
                     const dateEl = document.createElement('span');
-                    dateEl.className = 'text-xs text-base-content/50 whitespace-nowrap font-mono';
+                    dateEl.className = 'text-xs text-slate-400 whitespace-nowrap font-mono';
                     dateEl.textContent = ev.date || '\u2014';
                     headerRow.appendChild(dateEl);
 
@@ -2366,7 +2374,7 @@
 
                     if (ev.detail) {
                         const detailEl = document.createElement('span');
-                        detailEl.className = 'text-xs text-base-content/50';
+                        detailEl.className = 'text-xs text-slate-400';
                         detailEl.textContent = ev.detail;
                         item.appendChild(detailEl);
                     }
@@ -2590,7 +2598,7 @@
             left.className = 'flex items-baseline gap-2 min-w-0';
 
             const rankEl = document.createElement('span');
-            rankEl.className = 'text-xs text-base-content/30 font-mono w-4 shrink-0 text-right';
+            rankEl.className = 'text-xs text-slate-500 font-mono w-4 shrink-0 text-right';
             rankEl.textContent = n.rank;
 
             const zipEl = document.createElement('span');
@@ -2598,7 +2606,7 @@
             zipEl.textContent = n.zip_code;
 
             const placeEl = document.createElement('span');
-            placeEl.className = 'text-xs text-base-content/50 truncate';
+            placeEl.className = 'text-xs text-slate-400 truncate';
             placeEl.textContent = (n.name && n.name !== n.zip_code) ? n.name : (n.borough || '');
 
             left.append(rankEl, zipEl, placeEl);
@@ -2619,7 +2627,7 @@
                 countSpan.style.fontWeight = '600';
                 countSpan.textContent = n.raw_count;
                 const labelSpan = document.createElement('span');
-                labelSpan.style.color = 'rgba(148,163,184,0.45)';
+                labelSpan.style.color = '#94a3b8';
                 labelSpan.textContent = ' ' + t('signal_short', n.dominant_signal);
                 descEl.append(countSpan, labelSpan);
             } else {
@@ -2666,7 +2674,7 @@
             const list = document.getElementById(listId);
             if (!list) return;
             if (!data || !data.neighborhoods || !data.neighborhoods.length) {
-                list.insertAdjacentHTML('beforeend', `<p class="text-xs text-base-content/40 py-2">${t('ui', 'no_data')}</p>`);
+                list.insertAdjacentHTML('beforeend', `<p class="text-xs text-slate-400 py-2">${t('ui', 'no_data')}</p>`);
                 return;
             }
             data.neighborhoods.forEach(n => list.appendChild(_buildTopRiskItem(n)));
@@ -2688,7 +2696,7 @@
                     });
                     ['top-risk-list', 'mobile-drawer-list'].forEach(id => {
                         const el = document.getElementById(id);
-                        if (el) el.insertAdjacentHTML('beforeend', `<p class="text-xs text-base-content/40 py-2">${t('ui', 'unable_to_load')}</p>`);
+                        if (el) el.insertAdjacentHTML('beforeend', `<p class="text-xs text-slate-400 py-2">${t('ui', 'unable_to_load')}</p>`);
                     });
                 });
         }
@@ -2783,7 +2791,7 @@
             list.innerHTML = '';
             if (!data.results || data.results.length === 0) {
                 const emptyEl = document.createElement('p');
-                emptyEl.className = 'text-xs text-base-content/40 py-2 text-center';
+                emptyEl.className = 'text-xs text-slate-400 py-2 text-center';
                 emptyEl.textContent = `No properties found for "${data.query || 'that search'}" in ACRIS records.`;
                 list.appendChild(emptyEl);
                 resultsEl.classList.remove('hidden');
@@ -2808,13 +2816,13 @@
 
                 if (dateStr) {
                     const date = document.createElement('span');
-                    date.className = 'text-xs text-base-content/30 shrink-0 font-mono';
+                    date.className = 'text-xs text-slate-500 shrink-0 font-mono';
                     date.textContent = dateStr;
                     top.appendChild(date);
                 }
 
                 const bottom = document.createElement('div');
-                bottom.className = 'text-xs text-base-content/40 mt-0.5 truncate';
+                bottom.className = 'text-xs text-slate-400 mt-0.5 truncate';
                 bottom.textContent = `${r.zip_code || ''} \u2014 ${r.buyer_name || ''}`;
 
                 row.appendChild(top);
@@ -2943,7 +2951,7 @@
             const TYPE_META = {
                 llc:      { color: 'text-amber-400/70' },
                 permit:   { color: 'text-sky-400/70'   },
-                eviction: { color: 'text-red-400/70'   },
+                eviction: { color: 'text-red-400'      },
             };
 
             const combined = [];
@@ -3019,7 +3027,7 @@
                 el.innerHTML = `
                     <div class="flex justify-between items-baseline gap-2">
                         <span class="text-xs font-medium text-base-content/90 leading-snug">${ev.addr}</span>
-                        <span class="text-xs text-base-content/30 shrink-0">${ev.dateStr}</span>
+                        <span class="text-xs text-slate-500 shrink-0">${ev.dateStr}</span>
                     </div>
                     <div class="text-xs ${meta.color} mt-0.5">${ev.sublabel}</div>
                 `;
@@ -3047,7 +3055,7 @@
             }
             if (!_cachedZip) {
                 msgEl.textContent = 'Select a neighborhood on the map first.';
-                msgEl.className   = 'text-xs mt-1.5 text-base-content/50';
+                msgEl.className   = 'text-xs mt-1.5 text-slate-400';
                 msgEl.classList.remove('hidden');
                 setTimeout(() => msgEl.classList.add('hidden'), 3000);
                 return;
