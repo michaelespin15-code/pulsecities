@@ -72,6 +72,11 @@ class AcrisPartyInput(BaseModel):
     document_id: str = ""
     party_type: str | None = None
     name: str | None = None
+    addr_1: str | None = None
+    addr_2: str | None = None
+    city: str | None = None
+    state: str | None = None
+    zip: str | None = None
 
 
 class AcrisLegalInput(BaseModel):
