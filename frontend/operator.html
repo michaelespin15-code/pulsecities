@@ -41,7 +41,7 @@
     <nav style="border-bottom: 1px solid rgba(148,163,184,0.08); padding: 12px 0;">
         <div style="max-width: 860px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between;">
             <a href="/" style="display: flex; align-items: center; gap: 8px; color: #f1f5f9;">
-                <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span style="font-size: 0.85rem; color: rgba(148,163,184,0.6);">PulseCities</span>
             </a>
             <a href="/" style="font-size: 0.78rem; color: rgba(148,163,184,0.5); display: flex; align-items: center; gap-4px;">
@@ -110,7 +110,7 @@
                         <span style="font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8);">LLC Entities</span>
                         <span style="display: flex; align-items: center; gap: 8px;">
                             <span id="llc-count-badge" class="mono" style="font-size: 0.72rem; color: rgba(148,163,184,0.4);"></span>
-                            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.4)" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.4)" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
                         </span>
                     </summary>
                     <div id="llc-list" style="padding: 0 16px 16px; display: flex; flex-wrap: wrap; gap: 6px;"></div>
@@ -143,11 +143,11 @@
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.78rem;">
                         <thead>
                             <tr style="color: rgba(148,163,184,0.4); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em;">
-                                <th style="padding: 8px 16px; text-align: left; font-weight: 400;">Address</th>
-                                <th style="padding: 8px 16px; text-align: left; font-weight: 400;">Zip</th>
-                                <th style="padding: 8px 16px; text-align: left; font-weight: 400;">Buyer LLC</th>
-                                <th style="padding: 8px 16px; text-align: left; font-weight: 400;">Date</th>
-                                <th style="padding: 8px 8px 8px 16px; text-align: right; font-weight: 400;">Amount</th>
+                                <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;">Address</th>
+                                <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;">Zip</th>
+                                <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;">Buyer LLC</th>
+                                <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;">Date</th>
+                                <th scope="col" style="padding: 8px 8px 8px 16px; text-align: right; font-weight: 400;">Amount</th>
                             </tr>
                         </thead>
                         <tbody id="acq-rows"></tbody>
@@ -307,7 +307,7 @@
                 summ.style.cssText = 'padding:10px 16px;display:flex;align-items:center;justify-content:space-between;';
                 summ.innerHTML =
                     '<span style="font-size:0.72rem;color:rgba(148,163,184,0.4);">LLC entities in ' + esc(rel.operator_root) + ' cluster</span>' +
-                    '<svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.3)" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+                    '<svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.3)" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>';
                 det.appendChild(summ);
                 const pills = document.createElement('div');
                 pills.style.cssText = 'padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:5px;';
