@@ -27,6 +27,13 @@
     }
     </script>
 
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>
+    <script>
+        window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+        plausible.init()
+    </script>
+
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -362,14 +369,29 @@
         /* ---- Footer ---- */
         footer {
             border-top: 1px solid var(--border);
-            padding: 24px;
+            padding: 28px 24px;
             text-align: center;
-            font-size: 12px;
-            color: var(--faint);
+            font-size: 13px;
+            color: var(--muted);
         }
 
-        footer a { color: var(--faint); }
-        footer a:hover { color: var(--muted); }
+        .footer-byline {
+            font-size: 14px;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .footer-byline a {
+            color: var(--sky);
+            font-weight: 500;
+        }
+
+        .footer-byline a:hover { text-decoration: underline; }
+
+        .footer-links { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+
+        .footer-links a { color: var(--muted); font-size: 13px; }
+        .footer-links a:hover { color: var(--text); }
 
         /* ---- Mobile ---- */
         @media (max-width: 600px) {
@@ -703,9 +725,15 @@
 </div>
 
 <footer>
-    <a href="/">PulseCities</a> &nbsp;·&nbsp;
-    <a href="/methodology">Methodology</a> &nbsp;·&nbsp;
-    <a href="https://github.com/michaelespin15/pulsecities" target="_blank" rel="noopener">GitHub</a>
+    <p class="footer-byline">
+        Built by <a href="https://linkedin.com/in/michaelespin15" target="_blank" rel="noopener">Michael Espin</a>
+    </p>
+    <div class="footer-links">
+        <a href="/">PulseCities</a>
+        <a href="/methodology">Methodology</a>
+        <a href="https://github.com/michaelespin15/pulsecities" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:michaelespin15@gmail.com">Contact</a>
+    </div>
 </footer>
 
 </body>
