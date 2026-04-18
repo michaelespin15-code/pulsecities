@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>PulseCities — NYC Displacement Risk Intelligence Tool</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
@@ -99,11 +99,19 @@
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 z-index: 50;
                 overflow-y: auto;
-                padding-bottom: 24px;
+                padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
             }
             #sidebar.mobile-visible { transform: translateY(0); }
             /* at-risk section lives in the drawer on mobile, not the sidebar */
             #at-risk-section { display: none !important; }
+            /* Hero leaves 30vh at bottom so map is visible on first load */
+            #hero-overlay {
+                bottom: 30vh !important;
+                overflow-y: auto;
+                justify-content: flex-start;
+                padding-top: max(24px, env(safe-area-inset-top, 24px));
+                padding-bottom: 16px;
+            }
         }
         /* Mobile bottom drawer */
         #mobile-drawer {
@@ -115,7 +123,12 @@
             border-radius: 12px 12px 0 0;
             box-shadow: 0 -4px 24px rgba(0,0,0,0.45);
         }
-        @media (max-width: 767px) { #mobile-drawer { display: block; } }
+        @media (max-width: 767px) {
+            #mobile-drawer {
+                display: block;
+                padding-bottom: env(safe-area-inset-bottom, 0px);
+            }
+        }
         #mobile-drawer-list {
             display: none;
             overflow-y: auto;
@@ -142,8 +155,8 @@
         /* Mobile touch target and layout fixes */
         @media (max-width: 767px) {
             .borough-pill {
-                min-height: 36px;
-                padding: 6px 12px;
+                min-height: 44px;
+                padding: 10px 14px;
                 font-size: 12px;
             }
             .history-pill {
@@ -210,11 +223,12 @@
             <div class="flex gap-2 w-full">
                 <input id="hero-search-input"
                        type="text"
+                       inputmode="search"
                        placeholder="Enter address, ZIP, or landlord name"
                        class="input input-bordered flex-1 text-sm font-mono"
                        style="background:rgba(30,41,59,0.9);"
                        autocomplete="off" />
-                <button id="hero-search-btn" class="btn btn-primary shrink-0">Search</button>
+                <button id="hero-search-btn" class="btn shrink-0" style="background-color:#f59e0b;border-color:#f59e0b;color:#1a1a2e;font-weight:600;">Search</button>
             </div>
             <div class="flex items-center justify-between w-full px-1">
                 <button onclick="hideHero()" class="text-sm text-slate-400 hover:text-slate-100 transition-colors">
@@ -265,8 +279,9 @@
         <div class="flex flex-col items-center gap-6 mb-8 w-full md:hidden" id="hero-stats-mobile">
             <!-- Center first on mobile (D-07 priority) -->
             <div id="hero-stat-center-mobile" class="text-center">
+                <div class="text-xs font-mono uppercase tracking-widest mb-1" style="color:#94a3b8;letter-spacing:0.1em;">highest risk zip</div>
                 <div class="font-mono font-bold text-slate-100" style="font-size:2.2rem; letter-spacing:-0.02em;" data-hero-bind="hero-zip-code">&#8212;</div>
-                <div class="text-xs text-slate-400 mt-0.5" data-hero-bind="hero-zip-place">&#8212;</div>
+                <div class="text-xs mt-0.5" style="color:#cbd5e1;" data-hero-bind="hero-zip-place">&#8212;</div>
                 <div class="flex items-center justify-center gap-1.5 mt-1">
                     <span class="font-mono text-sm font-semibold" style="color:#f97316;" data-hero-bind="hero-zip-score">&#8212;</span>
                     <span class="pulse-dot text-xs" style="color:#f97316;">&#9679;</span>
@@ -275,11 +290,11 @@
             <div class="flex gap-8">
                 <div class="text-center">
                     <div class="text-2xl font-mono font-bold text-slate-100" data-hero-bind="hero-llc-count">&#8212;</div>
-                    <div class="text-xs text-slate-400 mt-1">LLC transfers (30d)</div>
+                    <div class="text-xs mt-1" style="color:#cbd5e1;">LLC transfers (30d)</div>
                 </div>
                 <div class="text-center">
                     <div class="text-2xl font-mono font-bold text-slate-100" data-hero-bind="hero-eviction-count">&#8212;</div>
-                    <div class="text-xs text-slate-400 mt-1">evictions (30d)</div>
+                    <div class="text-xs mt-1" style="color:#cbd5e1;">evictions (30d)</div>
                 </div>
             </div>
         </div>
@@ -296,6 +311,15 @@
     <div class="flex h-screen">
         <!-- Map container: flex-1 fills remaining width -->
         <div id="map" class="flex-1 relative">
+            <!-- Map legend — bottom-left, always visible -->
+            <div id="map-legend" class="absolute bottom-4 left-4 z-10 rounded-lg px-3 py-2 flex flex-col gap-1" style="background:rgba(15,23,42,0.88);backdrop-filter:blur(6px);border:1px solid rgba(148,163,184,0.15);font-size:11px;">
+                <div class="text-slate-400 font-mono uppercase tracking-wider mb-0.5" style="font-size:10px;letter-spacing:0.08em;">displacement risk</div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#22c55e;display:inline-block;flex-shrink:0;"></span><span class="text-slate-300">Low (0–33)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#eab308;display:inline-block;flex-shrink:0;"></span><span class="text-slate-300">Moderate (34–66)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#f97316;display:inline-block;flex-shrink:0;"></span><span class="text-slate-300">High (67–84)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block;flex-shrink:0;"></span><span class="text-slate-300">Critical (85+)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#94a3b8;display:inline-block;flex-shrink:0;"></span><span class="text-slate-300">No data</span></div>
+            </div>
             <!-- Comparison mode overlay — floats over map center while user picks a second zip -->
             <div id="compare-hint" class="hidden absolute top-4 left-0 right-0 flex justify-center z-10 pointer-events-none">
                 <div class="bg-slate-900/90 backdrop-blur-sm text-sm text-slate-200 px-4 py-2.5 rounded-full border border-slate-700 shadow-lg flex items-center gap-3 pointer-events-auto">
@@ -458,14 +482,16 @@
                         </summary>
                         <p id="signal-breakdown-note" class="text-xs text-base-content/40 mt-2 mb-3">Scores are 0–100 relative to all NYC neighborhoods, normalized per residential unit.</p>
                         <div id="signal-rows" class="flex flex-col gap-2"></div>
-                        <button
+                        <a
                             id="methodology-trigger"
-                            class="text-xs text-sky-400/70 hover:text-sky-400 text-left underline mt-2"
-                            style="min-height: 44px;"
-                            onclick="document.getElementById('methodology-modal').classList.remove('hidden')"
+                            href="/methodology"
+                            target="_blank"
+                            rel="noopener"
+                            class="text-xs text-sky-400/70 hover:text-sky-400 text-left underline mt-2 block"
+                            style="min-height: 44px; display: flex; align-items: center;"
                         >
                             How scores work
-                        </button>
+                        </a>
                     </details>
                 </div>
 
@@ -1889,12 +1915,18 @@
             _heroLlcCount = llcCount;
             _heroEvictionCount = evictionCount;
 
-            // Populate flanking stats
+            // Populate flanking stats — animate both desktop and mobile elements in parallel.
+            // The data-hero-bind sync below runs synchronously and would copy mid-animation
+            // values (dashes) if we relied on it for countUpInt targets.
             const llcEl = document.getElementById('hero-llc-count');
             if (llcEl) countUpInt(llcEl, llcCount, '#e2e8f0', 400);
+            document.querySelectorAll('[data-hero-bind="hero-llc-count"]').forEach(el =>
+                countUpInt(el, llcCount, '#e2e8f0', 400));
 
             const evEl = document.getElementById('hero-eviction-count');
             if (evEl) countUpInt(evEl, evictionCount, '#e2e8f0', 400);
+            document.querySelectorAll('[data-hero-bind="hero-eviction-count"]').forEach(el =>
+                countUpInt(el, evictionCount, '#e2e8f0', 400));
 
             // Populate center stat (D-07/D-08: ZIP large, place small, score smallest + pulse)
             if (topRisk) {
@@ -1909,6 +1941,8 @@
 
                 const scoreEl = document.getElementById('hero-zip-score');
                 if (scoreEl) countUp(scoreEl, topRisk.score, '#f97316', 400);
+                document.querySelectorAll('[data-hero-bind="hero-zip-score"]').forEach(el =>
+                    countUp(el, topRisk.score, '#f97316', 400));
 
                 // Store ZIP for sparkline hover (D-12)
                 const centerEl = document.getElementById('hero-stat-center');
@@ -1924,9 +1958,13 @@
                 }
             }
 
-            // Mirror values to mobile elements via data-hero-bind
+            // Mirror text-only values to mobile elements via data-hero-bind.
+            // Animated fields (llc-count, eviction-count, zip-score) are handled directly
+            // above — skipping them here prevents the race with countUpInt/countUp.
+            const _animatedBinds = new Set(['hero-llc-count', 'hero-eviction-count', 'hero-zip-score']);
             document.querySelectorAll('[data-hero-bind]').forEach(el => {
                 const sourceId = el.dataset.heroBind;
+                if (_animatedBinds.has(sourceId)) return;
                 const source = document.getElementById(sourceId);
                 if (source) el.textContent = source.textContent;
             });
@@ -2132,7 +2170,7 @@
 
         function showEmptyState() {
             setPanel('empty');
-            history.pushState(null, '', window.location.pathname);
+            history.pushState(null, '', '/');
         }
 
         function showBlockPanel(bbl, data) {
@@ -2353,15 +2391,17 @@
             renderTopRisk();
             _wireBoroughFilters();
 
-            // Auto-open from ?zip= URL param (scope addition D)
+            // Auto-open from /neighborhood/{zip} path on direct load.
             // On mobile, preload silently — keep the map visible on first load.
-            const zip = new URLSearchParams(window.location.search).get('zip');
+            const _pathMatch = window.location.pathname.match(/^\/neighborhood\/(\d{5})$/);
+            const zip = _pathMatch ? _pathMatch[1] : null;
             if (zip) selectNeighborhood(zip, { suppressMobileSheet: window.innerWidth < 768 });
         });
 
         // Sync UI to browser back/forward navigation
         window.addEventListener('popstate', function() {
-            const zip = new URLSearchParams(window.location.search).get('zip');
+            const m = window.location.pathname.match(/^\/neighborhood\/(\d{5})$/);
+            const zip = m ? m[1] : null;
             if (zip) { _navFromList = false; selectNeighborhood(zip); }
             else if (window.innerWidth < 768) showMobileMap();
             else showEmptyState();
@@ -2374,7 +2414,7 @@
         async function selectNeighborhood(zip, { suppressMobileSheet = false } = {}) {
             _cachedZip = zip;
             _cachedZipData = null;
-            history.pushState(null, '', '?zip=' + zip);
+            history.pushState(null, '', '/neighborhood/' + zip);
             showDetail(zip, null, null);
             if (window.innerWidth < 768 && !suppressMobileSheet) {
                 showMobileSidebar();
