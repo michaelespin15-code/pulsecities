@@ -19,6 +19,7 @@ Rate-limited to 30/minute per IP.
 
 import json
 import logging
+import re
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -35,7 +36,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/operators", tags=["operators"])
 limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
-_AUDIT_PATH = Path(__file__).parent.parent.parent / "scripts" / "entity_resolution_audit.json"
+_SCRIPTS_DIR = Path(__file__).parent.parent.parent / "scripts"
+_AUDIT_PATH = _SCRIPTS_DIR / "entity_resolution_audit.json"
+_ANALYSIS_PATH = _SCRIPTS_DIR / "operator_network_analysis.json"
 _ANALYSIS_WINDOW_DAYS = 548
 
 _audit_cache: dict | None = None
@@ -44,25 +47,81 @@ _AUDIT_TTL = 300  # 5 minutes
 
 
 def _load_audit() -> dict:
+    """
+    Build clusters and by_operator indexes from the two source files:
+      - operator_network_analysis.json  → clusters dict (LLC entities, stats)
+      - entity_resolution_audit.json    → by_operator dict (affiliation pairs)
+    """
     global _audit_cache, _audit_loaded_at
     now = time.monotonic()
     if _audit_cache is not None and now - _audit_loaded_at < _AUDIT_TTL:
         return _audit_cache
-    empty: dict = {"clusters": {}, "by_operator": {}}
-    if not _AUDIT_PATH.exists():
-        _audit_cache = empty
-        _audit_loaded_at = now
-        return empty
-    try:
-        data = json.loads(_AUDIT_PATH.read_text())
-        _audit_cache = data
-        _audit_loaded_at = now
-        return data
-    except Exception as exc:
-        logger.warning("Could not read entity_resolution_audit.json: %s", exc)
-        _audit_cache = empty
-        _audit_loaded_at = now
-        return empty
+
+    clusters: dict = {}
+    if _ANALYSIS_PATH.exists():
+        try:
+            analysis = json.loads(_ANALYSIS_PATH.read_text())
+            for op in analysis.get("operators", []):
+                root = op["operator_root"]
+                clusters[root] = {
+                    "llc_entities":       op.get("llc_entities", []),
+                    "total_properties":   op.get("total_properties", 0),
+                    "total_acquisitions": op.get("total_acquisitions", 0),
+                    "zip_codes":          op.get("zip_codes_targeted", []),
+                }
+        except Exception as exc:
+            logger.warning("Could not read operator_network_analysis.json: %s", exc)
+
+    # Supplement with individual investigation JSONs for operators not in the analysis file
+    for inv_path in sorted(_SCRIPTS_DIR.glob("*_investigation.json")):
+        try:
+            inv = json.loads(inv_path.read_text())
+            root = str(inv.get("subject", inv_path.stem.replace("_investigation", "").upper())).upper()
+            if root not in clusters:
+                geo = inv.get("geographic_concentration", {})
+                zips = list(geo.keys()) if isinstance(geo, dict) else []
+                clusters[root] = {
+                    "llc_entities":       inv.get("llc_entities", []),
+                    "total_properties":   inv.get("total_properties", 0),
+                    "total_acquisitions": inv.get("total_acquisitions", 0),
+                    "zip_codes":          zips,
+                }
+        except Exception as exc:
+            logger.warning("Could not read %s: %s", inv_path.name, exc)
+
+    by_operator: dict = {}
+    if _AUDIT_PATH.exists():
+        try:
+            audit = json.loads(_AUDIT_PATH.read_text())
+            for finding in audit.get("findings", []):
+                a = finding["cluster_a"]
+                b = finding["cluster_b"]
+                action = finding.get("recommended_action", "flag_for_review")
+                rel_type = "affiliated" if action == "merge_candidate" else "related"
+                conf = finding.get("combined_confidence", 0.0)
+
+                # Enrich shared_bbl signals with parsed BBL list
+                enriched: list = []
+                for sig in finding.get("signals", []):
+                    s = dict(sig)
+                    if s.get("signal_type") == "shared_bbl":
+                        s["shared_bbls"] = re.findall(r"'(\d+)'", s.get("detail", ""))
+                    enriched.append(s)
+
+                for root, related_root in [(a, b), (b, a)]:
+                    by_operator.setdefault(root, []).append({
+                        "related_root":        related_root,
+                        "relationship_type":   rel_type,
+                        "combined_confidence": conf,
+                        "signals":             enriched,
+                    })
+        except Exception as exc:
+            logger.warning("Could not read entity_resolution_audit.json: %s", exc)
+
+    result: dict = {"clusters": clusters, "by_operator": by_operator}
+    _audit_cache = result
+    _audit_loaded_at = now
+    return result
 
 
 @router.get("/{root}")
