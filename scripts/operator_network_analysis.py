@@ -86,12 +86,19 @@ def _operator_root(name: str | None) -> str | None:
     Returns None for bank/financial roots and common Chinese/Korean/South Asian
     surnames that generate many unrelated single-LLC investors — those patterns
     don't reflect the coordinated multi-LLC acquisition scheme we're tracking.
+
+    Compound-brand extension: short first tokens (≤4 chars) are fused with a
+    short non-generic successor token when present, so space-variant spellings
+    of the same brand ("ICE CAP" vs "ICECAP") resolve to the same root key.
     """
     if not name:
         return None
     cleaned = re.sub(r"\b(LLC|L\.L\.C|CORP|INC|LTD|LP|LLP)\b\.?$", "", name).strip()
     tokens = cleaned.split()
-    for tok in tokens[:2]:
+
+    first_tok: str | None = None
+    first_idx: int = -1
+    for i, tok in enumerate(tokens[:2]):
         tok = tok.strip(".,;")
         if (
             len(tok) >= 3
@@ -99,8 +106,24 @@ def _operator_root(name: str | None) -> str | None:
             and tok not in _BANK_ROOTS
             and not re.match(r"^\d+$", tok)
         ):
-            return tok
-    return None
+            first_tok = tok
+            first_idx = i
+            break
+
+    if not first_tok:
+        return None
+
+    if len(first_tok) <= 4 and first_idx + 1 < len(tokens):
+        next_tok = tokens[first_idx + 1].strip(".,;")
+        if (
+            3 <= len(next_tok) <= 4
+            and next_tok not in _GENERIC
+            and next_tok not in _BANK_ROOTS
+            and not re.match(r"^\d+$", next_tok)
+        ):
+            return first_tok + next_tok
+
+    return first_tok
 
 
 def _load_high_displacement_zips(db) -> set[str]:
