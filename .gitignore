@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 .ecc/
 *.log
+*.sqlite
 .DS_Store
 node_modules/
 .claude/
