@@ -185,7 +185,7 @@ class OwnershipScraper(BaseScraper):
         id_list_sql = ", ".join(f"'{d}'" for d in doc_ids)
 
         # --- Fetch parties (buyers) ---
-        parties: dict[str, str] = {}  # document_id → normalized party name
+        parties: dict[str, AcrisPartyInput] = {}  # document_id → party record
         try:
             page = self._fetch_parties(id_list_sql)
             for r in page:
@@ -196,7 +196,7 @@ class OwnershipScraper(BaseScraper):
                 did = party_rec.document_id.strip()
                 name = (party_rec.name or "").strip()
                 if did and name:
-                    parties[did] = name
+                    parties[did] = party_rec
         except Exception as e:
             logger.warning("ACRIS parties fetch failed for batch: %s", e)
             # Count entire batch as failed; can't score LLC acquisitions without party names
@@ -218,11 +218,16 @@ class OwnershipScraper(BaseScraper):
         except Exception as e:
             logger.warning("ACRIS legals fetch failed for batch: %s", e)
 
+        def _clean(val: str | None) -> str | None:
+            v = (val or "").strip()
+            return v or None
+
         # --- Join and write ---
         rows = []
         failed = 0
         for doc_id, master in master_batch.items():
-            raw_party_name = parties.get(doc_id)
+            party = parties.get(doc_id)
+            raw_party_name = (party.name or "").strip() if party else None
             bbl = legals.get(doc_id)
 
             if not bbl:
@@ -240,6 +245,11 @@ class OwnershipScraper(BaseScraper):
                     "party_name_normalized": normalize_party_name(raw_party_name),
                     "doc_date": master["doc_date"],
                     "doc_amount": master["doc_amount"],
+                    "party_addr_1": _clean(party.addr_1) if party else None,
+                    "party_addr_2": _clean(party.addr_2) if party else None,
+                    "party_city": _clean(party.city) if party else None,
+                    "party_state": _clean(party.state) if party else None,
+                    "party_zip": _clean(party.zip) if party else None,
                     "raw_data": {
                         "doc_type": master["doc_type"],
                         "doc_date": master["doc_date"].isoformat() if master["doc_date"] is not None else None,
