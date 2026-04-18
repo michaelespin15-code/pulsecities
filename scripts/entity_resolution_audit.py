@@ -1,5 +1,5 @@
 """
-Entity resolution audit — cross-cluster affiliate detection across all
+Entity resolution audit — cross-cluster affiliation detection across all
 operator clusters identified in the 18-month ACRIS window.
 
 Signals checked per cluster pair:
@@ -11,15 +11,12 @@ Signals checked per cluster pair:
 Confidence is combined as 1 - prod(1 - p_i) across independent signals.
 
 Thresholds:
-  ≥ 0.85  → merge_candidate
-  0.65–   → flag_for_manual_review
+  ≥ 0.85  → strong_affiliation
+  0.65–   → possible_affiliation
   < 0.65  → omitted from output
 
-No auto-merges. Produces candidates for manual review only.
-
-Addresses and deed signatories are not stored in ownership_raw
-(the ACRIS parties scraper captures only party_name, not addr_1/addr_2),
-so address-based resolution requires a separate enrichment pass.
+No clusters are merged. Relationships are published as-is so readers can
+evaluate the evidence themselves and follow links between operator profiles.
 
 Usage:
     python scripts/entity_resolution_audit.py
@@ -316,6 +313,7 @@ def _check_shared_bbl(a: dict, b: dict) -> dict | None:
     return {
         "signal_type": "shared_bbl",
         "confidence":  round(confidence, 3),
+        "shared_bbls": examples,
         "detail":      f"{n} BBL(s) acquired by both clusters: {examples}{suffix}",
     }
 
@@ -359,15 +357,15 @@ def _check_zip_jaccard(a: dict, b: dict) -> dict | None:
 # Audit orchestration
 # ---------------------------------------------------------------------------
 
-def _recommended_action(confidence: float) -> str:
+def _relationship_type(confidence: float) -> str:
     if confidence >= 0.85:
-        return "merge_candidate"
+        return "strong_affiliation"
     if confidence >= 0.65:
-        return "flag_for_manual_review"
+        return "possible_affiliation"
     return "ignore"
 
 
-def run_audit(db) -> list[dict]:
+def run_audit(db) -> tuple[list[dict], list[dict]]:
     clusters = _load_clusters(db)
     findings: list[dict] = []
 
@@ -387,26 +385,26 @@ def run_audit(db) -> list[dict]:
         if not signals:
             continue
 
-        combined = _combine_confidence(*[s["confidence"] for s in signals])
-        action   = _recommended_action(combined)
+        combined      = _combine_confidence(*[s["confidence"] for s in signals])
+        rel_type      = _relationship_type(combined)
 
-        if action == "ignore":
+        if rel_type == "ignore":
             continue
 
         findings.append({
-            "cluster_a":              a["operator_root"],
-            "cluster_b":              b["operator_root"],
-            "cluster_a_entities":     a["llc_entities"],
-            "cluster_a_properties":   a["total_properties"],
-            "cluster_b_entities":     b["llc_entities"],
-            "cluster_b_properties":   b["total_properties"],
-            "signals":                signals,
-            "combined_confidence":    combined,
-            "recommended_action":     action,
+            "cluster_a":            a["operator_root"],
+            "cluster_b":            b["operator_root"],
+            "cluster_a_entities":   a["llc_entities"],
+            "cluster_a_properties": a["total_properties"],
+            "cluster_b_entities":   b["llc_entities"],
+            "cluster_b_properties": b["total_properties"],
+            "signals":              signals,
+            "combined_confidence":  combined,
+            "relationship_type":    rel_type,
         })
 
     findings.sort(key=lambda x: x["combined_confidence"], reverse=True)
-    return findings
+    return findings, clusters
 
 
 def main() -> None:
@@ -417,40 +415,69 @@ def main() -> None:
     )
 
     with get_scraper_db() as db:
-        findings = run_audit(db)
+        findings, clusters = run_audit(db)
 
-    merge_candidates = [f for f in findings if f["recommended_action"] == "merge_candidate"]
-    flag_for_review  = [f for f in findings if f["recommended_action"] == "flag_for_manual_review"]
+    strong   = [f for f in findings if f["relationship_type"] == "strong_affiliation"]
+    possible = [f for f in findings if f["relationship_type"] == "possible_affiliation"]
 
-    # Serialize — sets are not JSON-safe, already excluded from output fields
+    # Cluster index — used by the operator profile API to look up LLC names
+    # without a DB round-trip. Sets converted to sorted lists for JSON safety.
+    clusters_dict = {
+        c["operator_root"]: {
+            "llc_entities":       c["llc_entities"],
+            "total_acquisitions": c["total_acquisitions"],
+            "total_properties":   c["total_properties"],
+            "zip_codes":          sorted(c["zip_codes"]),
+        }
+        for c in clusters
+    }
+
+    # Per-operator relationship index — keyed by operator_root so the API can
+    # fetch one operator's affiliations without scanning the full findings list.
+    by_operator: dict[str, list] = {}
+    for f in findings:
+        for this_root, other_root in [
+            (f["cluster_a"], f["cluster_b"]),
+            (f["cluster_b"], f["cluster_a"]),
+        ]:
+            by_operator.setdefault(this_root, []).append({
+                "related_root":       other_root,
+                "relationship_type":  f["relationship_type"],
+                "combined_confidence": f["combined_confidence"],
+                "signals":            f["signals"],
+            })
+
     payload = {
         "generated_at":      date.today().isoformat(),
         "analysis_window":   "18 months",
         "signals_checked":   ["name_embedding", "root_substring", "shared_bbl", "zip_jaccard"],
         "signals_not_checked": [
-            "registered_address — party addresses not stored in ownership_raw "
-            "(AcrisPartyInput captures only party_name, not addr_1/addr_2)",
+            "registered_address — party_addr_1/addr_2 columns added in migration "
+            "b2c3d4e5f6a7; run backfill_party_addresses.py to populate historical rows "
+            "before this signal can be used in the audit",
             "deed_signatory — signatories are on physical deed instruments, not ACRIS digital records",
         ],
-        "total_candidates":  len(findings),
-        "merge_candidates":  len(merge_candidates),
-        "flag_for_review":   len(flag_for_review),
-        "findings":          findings,
+        "total_relationships":   len(findings),
+        "strong_affiliations":   len(strong),
+        "possible_affiliations": len(possible),
+        "relationships":         findings,
+        "clusters":              clusters_dict,
+        "by_operator":           by_operator,
     }
 
     OUTPUT_PATH.write_text(json.dumps(payload, indent=2, default=str))
     logger.info("Saved %s", OUTPUT_PATH)
 
     print(f"\nEntity resolution audit — {date.today().isoformat()}")
-    print(f"  {len(merge_candidates):>3} merge candidates")
-    print(f"  {len(flag_for_review):>3} flagged for manual review")
-    print(f"\nTop findings (by confidence):\n")
+    print(f"  {len(strong):>3} strong affiliations")
+    print(f"  {len(possible):>3} possible affiliations")
+    print(f"\nTop relationships (by confidence):\n")
     for f in findings[:15]:
         sig_types = [s["signal_type"] for s in f["signals"]]
         print(
             f"  {f['cluster_a']:<18} ↔ {f['cluster_b']:<18} "
             f"conf={f['combined_confidence']:.2f}  [{', '.join(sig_types)}]"
-            f"  → {f['recommended_action']}"
+            f"  → {f['relationship_type']}"
         )
 
 
