@@ -40,3 +40,22 @@ Items flagged for manual follow-up by automated health checks.
 - [ ] `acris_ownership` — last run processed 0 records against an expected minimum of 200. ACRIS incremental fetches depend on `recorded_datetime`; check if the watermark is ahead of available data.
 
 ---
+
+## Deferred: Assessment Spike Historical Backfill (PLUTO 2022-2025)
+
+**Decision date:** 2026-04-18
+**Status:** Deferred — table and scoring logic retained, ingestion script not built.
+
+**Why deferred:**
+NYC RPTL §581 caps Class 2 residential building assessments at +6%/year or +20% over 5 years. Fast-moving acquisition operators (MTEK, PHANTOM, BREDIF, etc.) typically hold and sell within 2-4 years — well inside the lag window before DOF assessed values track speculative activity. Backfilling historical PLUTO would produce a signal that reliably fires on slow, long-term neighborhood gentrification but is structurally blind to the aggressive portfolio operators PulseCities specifically investigates.
+
+**What the signal would actually show:**
+Buildings where DOF assessment has caught up to sustained market appreciation over 5-10 years. Useful for borough-level gentrification pressure reporting, not useful for identifying individual speculative operators.
+
+**What to do instead:**
+Let the live pipeline accumulate data. `PlutoScraper._write_assessment_snapshot()` already writes a row to `assessment_history` on every quarterly PLUTO run. After two distinct `tax_year` values exist, `_aggregate_assessment_spike()` in `scoring/compute.py` activates automatically with no code change. First expected activation: April 2027.
+
+**When to revisit:**
+Run `SELECT COUNT(DISTINCT tax_year) FROM assessment_history` in April 2027. If backfill is ever needed for score history reconstruction, the Bytes of the Big Apple archive has PLUTO back to 2002. Column name casing varies by version; `assesstot` is consistent post-2021.
+
+---
