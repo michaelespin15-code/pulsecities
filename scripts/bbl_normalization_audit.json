@@ -1,0 +1,137 @@
+{
+  "meta": {
+    "run_date": "2026-04-18",
+    "canonical_format": "10-digit zero-padded string (BBBBBBBBBLL), first digit 1-5",
+    "tables_checked": [
+      "parcels",
+      "ownership_raw",
+      "complaints_raw",
+      "violations_raw",
+      "permits_raw",
+      "evictions_raw",
+      "sales_raw",
+      "dcwp_licenses",
+      "rs_buildings",
+      "property_scores",
+      "mtek_alerts"
+    ]
+  },
+  "summary": {
+    "tables_audited": 11,
+    "tables_with_issues": 0,
+    "max_inflation_pct": 0.0,
+    "normalization_needed": false
+  },
+  "tables": {
+    "parcels": {
+      "total_rows": 858644,
+      "non_null_bbl_rows": 858644,
+      "unique_bbls": 858644,
+      "non_canonical_rows": 0,
+      "invalid_borough_rows": 0,
+      "total_bad_rows": 0,
+      "inflation_pct": 0.0,
+      "top_variants": []
+    },
+    "ownership_raw": {
+      "total_rows": 70677,
+      "non_null_bbl_rows": 70677,
+      "unique_bbls": 60358,
+      "non_canonical_rows": 0,
+      "invalid_borough_rows": 0,
+      "total_bad_rows": 0,
+      "inflation_pct": 0.0,
+      "top_variants": []
+    },
+    "complaints_raw": {
+      "total_rows": 3849125,
+      "non_null_bbl_rows": 3404118,
+      "unique_bbls": 427586,
+      "non_canonical_rows": 0,
+      "invalid_borough_rows": 0,
+      "total_bad_rows": 0,
+      "inflation_pct": 0.0,
+      "top_variants": []
+    },
+    "violations_raw": {
+      "total_rows": 1080649,
+      "non_null_bbl_rows": 1079585,
+      "unique_bbls": 100492,
+      "non_canonical_rows": 0,
+      "invalid_borough_rows": 0,
+      "total_bad_rows": 0,
+      "inflation_pct": 0.0,
+      "top_variants": []
+    },
+    "permits_raw": {
+      "total_rows": 733374,
+      "non_null_bbl_rows": 733242,
+      "unique_bbls": 196877,
+      "non_canonical_rows": 0,
+      "invalid_borough_rows": 0,
+      "total_bad_rows": 0,
+      "inflation_pct": 0.0,
+      "top_variants": []
+    },
+    "evictions_raw": {
+      "total_rows": 37929,
+      "non_null_bbl_rows": 33328,
+      "unique_bbls": 17480,
+      "non_canonical_rows": 0,
+      "invalid_borough_rows": 0,
+      "total_bad_rows": 0,
+      "inflation_pct": 0.0,
+      "top_variants": []
+    },
+    "sales_raw": {
+      "total_rows": 0,
+      "non_null_bbl_rows": 0,
+      "unique_bbls": 0,
+      "non_canonical_rows": 0,
+      "invalid_borough_rows": 0,
+      "total_bad_rows": 0,
+      "inflation_pct": 0.0,
+      "top_variants": []
+    },
+    "dcwp_licenses": {
+      "total_rows": 28190,
+      "non_null_bbl_rows": 16459,
+      "unique_bbls": 12060,
+      "non_canonical_rows": 0,
+      "invalid_borough_rows": 0,
+      "total_bad_rows": 0,
+      "inflation_pct": 0.0,
+      "top_variants": []
+    },
+    "rs_buildings": {
+      "total_rows": 529211,
+      "non_null_bbl_rows": 529211,
+      "unique_bbls": 331719,
+      "non_canonical_rows": 0,
+      "invalid_borough_rows": 0,
+      "total_bad_rows": 0,
+      "inflation_pct": 0.0,
+      "top_variants": []
+    },
+    "property_scores": {
+      "total_rows": 0,
+      "non_null_bbl_rows": 0,
+      "unique_bbls": 0,
+      "non_canonical_rows": 0,
+      "invalid_borough_rows": 0,
+      "total_bad_rows": 0,
+      "inflation_pct": 0.0,
+      "top_variants": []
+    },
+    "mtek_alerts": {
+      "total_rows": 0,
+      "non_null_bbl_rows": 0,
+      "unique_bbls": 0,
+      "non_canonical_rows": 0,
+      "invalid_borough_rows": 0,
+      "total_bad_rows": 0,
+      "inflation_pct": 0.0,
+      "top_variants": []
+    }
+  }
+}
