@@ -1,0 +1,342 @@
+{
+  "generated_at": "2026-04-18",
+  "subject": "ARION",
+  "classification": "mortgage_lender_false_positive",
+  "lender_kind": "Private mortgage fund / note investor",
+  "entities": [
+    "ARION FUND LLC",
+    "ARION FUND LLC ISAOA/ATIMA",
+    "ARION FUNDING LLC"
+  ],
+  "total_records": 15,
+  "unique_bbls": 12,
+  "deed_count": 0,
+  "asst_count": 15,
+  "first_record": "2025-04-23",
+  "last_record": "2026-01-21",
+  "entity_breakdown": {
+    "ARION FUND LLC": 12,
+    "ARION FUND LLC ISAOA/ATIMA": 2,
+    "ARION FUNDING LLC": 1
+  },
+  "doctype_breakdown": {
+    "ASST": 15
+  },
+  "monthly_pace": {
+    "2025-04": 2,
+    "2025-05": 2,
+    "2025-06": 4,
+    "2025-07": 2,
+    "2025-09": 2,
+    "2025-11": 1,
+    "2025-12": 1,
+    "2026-01": 1
+  },
+  "geographic_context": {
+    "avg_displacement_score": 45.5,
+    "high_displacement_pct": 80.0,
+    "geo_breakdown": [
+      {
+        "zip_code": "10452",
+        "bbls": 2,
+        "displacement_score": 50.1
+      },
+      {
+        "zip_code": "10016",
+        "bbls": 1,
+        "displacement_score": 11.6
+      },
+      {
+        "zip_code": "10461",
+        "bbls": 1,
+        "displacement_score": 50.0
+      },
+      {
+        "zip_code": "11233",
+        "bbls": 1,
+        "displacement_score": 66.0
+      },
+      {
+        "zip_code": "11211",
+        "bbls": 1,
+        "displacement_score": 57.4
+      },
+      {
+        "zip_code": "11212",
+        "bbls": 1,
+        "displacement_score": 48.7
+      },
+      {
+        "zip_code": "11203",
+        "bbls": 1,
+        "displacement_score": 55.1
+      },
+      {
+        "zip_code": "11204",
+        "bbls": 1,
+        "displacement_score": 40.2
+      },
+      {
+        "zip_code": "11355",
+        "bbls": 1,
+        "displacement_score": 25.4
+      }
+    ]
+  },
+  "bbl_footprint": [
+    {
+      "bbl": "2024790012",
+      "address": "1170 GERARD AVENUE",
+      "zip_code": "10452",
+      "displacement_score": 50.1,
+      "first_record_date": "2025-04-23",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "ARION FUND LLC"
+      ],
+      "evictions_on_bbl": 4,
+      "hpd_violations": {
+        "total": 89,
+        "class_a": 19,
+        "class_b": 54,
+        "class_c": 16
+      }
+    },
+    {
+      "bbl": "2024880041",
+      "address": "1165 GERARD AVENUE",
+      "zip_code": "10452",
+      "displacement_score": 50.1,
+      "first_record_date": "2025-04-23",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "ARION FUND LLC"
+      ],
+      "evictions_on_bbl": 1,
+      "hpd_violations": {
+        "total": 92,
+        "class_a": 12,
+        "class_b": 44,
+        "class_c": 36
+      }
+    },
+    {
+      "bbl": "3027620017",
+      "address": "632 METROPOLITAN AVENUE",
+      "zip_code": "11211",
+      "displacement_score": 57.4,
+      "first_record_date": "2025-05-28",
+      "record_count": 2,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "ARION FUND LLC"
+      ],
+      "evictions_on_bbl": 0,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0
+      }
+    },
+    {
+      "bbl": "4050440074",
+      "address": "138-25 BARCLAY AVENUE",
+      "zip_code": "11355",
+      "displacement_score": 25.4,
+      "first_record_date": "2025-06-20",
+      "record_count": 2,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "ARION FUND LLC"
+      ],
+      "evictions_on_bbl": 0,
+      "hpd_violations": {
+        "total": 8,
+        "class_a": 7,
+        "class_b": 0,
+        "class_c": 1
+      }
+    },
+    {
+      "bbl": "3046210008",
+      "address": "894 WINTHROP STREET",
+      "zip_code": "11203",
+      "displacement_score": 55.1,
+      "first_record_date": "2025-06-30",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "ARION FUND LLC ISAOA/ATIMA"
+      ],
+      "evictions_on_bbl": 1,
+      "hpd_violations": {
+        "total": 8,
+        "class_a": 0,
+        "class_b": 2,
+        "class_c": 6
+      }
+    },
+    {
+      "bbl": "3051620059",
+      "address": null,
+      "zip_code": null,
+      "displacement_score": null,
+      "first_record_date": "2025-06-30",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "ARION FUND LLC ISAOA/ATIMA"
+      ],
+      "evictions_on_bbl": 1,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0
+      }
+    },
+    {
+      "bbl": "2041700046",
+      "address": "1721 HOBART AVENUE",
+      "zip_code": "10461",
+      "displacement_score": 50.0,
+      "first_record_date": "2025-07-15",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "ARION FUND LLC"
+      ],
+      "evictions_on_bbl": 3,
+      "hpd_violations": {
+        "total": 58,
+        "class_a": 2,
+        "class_b": 27,
+        "class_c": 29
+      }
+    },
+    {
+      "bbl": "3016670035",
+      "address": "670 HALSEY STREET",
+      "zip_code": "11233",
+      "displacement_score": 66.0,
+      "first_record_date": "2025-07-18",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "ARION FUND LLC"
+      ],
+      "evictions_on_bbl": 0,
+      "hpd_violations": {
+        "total": 2,
+        "class_a": 2,
+        "class_b": 0,
+        "class_c": 0
+      }
+    },
+    {
+      "bbl": "3036120026",
+      "address": "869 THOMAS S BOYLAND STREET",
+      "zip_code": "11212",
+      "displacement_score": 48.7,
+      "first_record_date": "2025-09-12",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "ARION FUND LLC"
+      ],
+      "evictions_on_bbl": 0,
+      "hpd_violations": {
+        "total": 43,
+        "class_a": 6,
+        "class_b": 28,
+        "class_c": 9
+      }
+    },
+    {
+      "bbl": "1008600034",
+      "address": "47 EAST 30 STREET",
+      "zip_code": "10016",
+      "displacement_score": 11.6,
+      "first_record_date": "2025-09-18",
+      "record_count": 2,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "ARION FUND LLC"
+      ],
+      "evictions_on_bbl": 0,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0
+      }
+    },
+    {
+      "bbl": "4012961020",
+      "address": null,
+      "zip_code": null,
+      "displacement_score": null,
+      "first_record_date": "2025-12-24",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "ARION FUNDING LLC"
+      ],
+      "evictions_on_bbl": 0,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0
+      }
+    },
+    {
+      "bbl": "3065960082",
+      "address": "1525 WEST 11 STREET",
+      "zip_code": "11204",
+      "displacement_score": 40.2,
+      "first_record_date": "2026-01-21",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "ARION FUND LLC"
+      ],
+      "evictions_on_bbl": 1,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0
+      }
+    }
+  ],
+  "determination": "exclude",
+  "recommended_fix": "Add ARION to _BANK_ROOTS. The 'ISAOA/ATIMA' suffix ('Its Successors And/Or Assigns, As Their Interests May Appear') is a mortgagee boilerplate phrase and is a reliable tell for lender-side recordings. A party_name_normalized LIKE '%ISAOA%' or '%ATIMA%' filter at the operator-extraction layer would catch all such entities pre-emptively."
+}

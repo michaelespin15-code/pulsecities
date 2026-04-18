@@ -1,0 +1,329 @@
+{
+  "generated_at": "2026-04-18",
+  "subject": "JOVIA",
+  "classification": "mortgage_lender_false_positive",
+  "lender_kind": "Federal credit union (Long Island, NY)",
+  "entities": [
+    "JOVIA FINANCIAL CREDIT UNION",
+    "JOVIA FINANCIAL FEDERAL CREDIT UNION"
+  ],
+  "total_records": 16,
+  "unique_bbls": 12,
+  "deed_count": 0,
+  "asst_count": 16,
+  "first_record": "2025-04-23",
+  "last_record": "2026-02-27",
+  "entity_breakdown": {
+    "JOVIA FINANCIAL FEDERAL CREDIT UNION": 12,
+    "JOVIA FINANCIAL CREDIT UNION": 4
+  },
+  "doctype_breakdown": {
+    "ASST": 16
+  },
+  "monthly_pace": {
+    "2025-04": 2,
+    "2025-05": 2,
+    "2025-06": 4,
+    "2025-07": 2,
+    "2025-08": 1,
+    "2025-12": 2,
+    "2026-02": 3
+  },
+  "geographic_context": {
+    "avg_displacement_score": 55.3,
+    "high_displacement_pct": 100.0,
+    "geo_breakdown": [
+      {
+        "zip_code": "11385",
+        "bbls": 2,
+        "displacement_score": 41.1
+      },
+      {
+        "zip_code": "11215",
+        "bbls": 1,
+        "displacement_score": 45.0
+      },
+      {
+        "zip_code": "11233",
+        "bbls": 1,
+        "displacement_score": 66.0
+      },
+      {
+        "zip_code": "11216",
+        "bbls": 1,
+        "displacement_score": 79.5
+      },
+      {
+        "zip_code": "11222",
+        "bbls": 1,
+        "displacement_score": 51.1
+      },
+      {
+        "zip_code": "11237",
+        "bbls": 1,
+        "displacement_score": 47.8
+      },
+      {
+        "zip_code": "11221",
+        "bbls": 1,
+        "displacement_score": 70.6
+      }
+    ]
+  },
+  "bbl_footprint": [
+    {
+      "bbl": "3006310067",
+      "address": "207 18 STREET",
+      "zip_code": "11215",
+      "displacement_score": 45.0,
+      "first_record_date": "2025-04-23",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "JOVIA FINANCIAL FEDERAL CREDIT UNION"
+      ],
+      "evictions_on_bbl": 0,
+      "hpd_violations": {
+        "total": 9,
+        "class_a": 1,
+        "class_b": 6,
+        "class_c": 2
+      }
+    },
+    {
+      "bbl": "3015160039",
+      "address": "44 ROCKAWAY AVENUE",
+      "zip_code": "11233",
+      "displacement_score": 66.0,
+      "first_record_date": "2025-04-25",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "JOVIA FINANCIAL FEDERAL CREDIT UNION"
+      ],
+      "evictions_on_bbl": 4,
+      "hpd_violations": {
+        "total": 4,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 3
+      }
+    },
+    {
+      "bbl": "3030510016",
+      "address": null,
+      "zip_code": null,
+      "displacement_score": null,
+      "first_record_date": "2025-05-28",
+      "record_count": 2,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "JOVIA FINANCIAL CREDIT UNION"
+      ],
+      "evictions_on_bbl": 0,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0
+      }
+    },
+    {
+      "bbl": "3032590014",
+      "address": "298 STOCKHOLM STREET",
+      "zip_code": "11237",
+      "displacement_score": 47.8,
+      "first_record_date": "2025-06-13",
+      "record_count": 2,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "JOVIA FINANCIAL FEDERAL CREDIT UNION"
+      ],
+      "evictions_on_bbl": 0,
+      "hpd_violations": {
+        "total": 2,
+        "class_a": 0,
+        "class_b": 1,
+        "class_c": 1
+      }
+    },
+    {
+      "bbl": "4035540077",
+      "address": "1647 SUMMERFIELD STREET",
+      "zip_code": "11385",
+      "displacement_score": 41.1,
+      "first_record_date": "2025-06-24",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "JOVIA FINANCIAL FEDERAL CREDIT UNION"
+      ],
+      "evictions_on_bbl": 1,
+      "hpd_violations": {
+        "total": 4,
+        "class_a": 1,
+        "class_b": 1,
+        "class_c": 2
+      }
+    },
+    {
+      "bbl": "3025130015",
+      "address": "188 FREEMAN STREET",
+      "zip_code": "11222",
+      "displacement_score": 51.1,
+      "first_record_date": "2025-06-27",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "JOVIA FINANCIAL FEDERAL CREDIT UNION"
+      ],
+      "evictions_on_bbl": 0,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0
+      }
+    },
+    {
+      "bbl": "4034500008",
+      "address": "3-61 ST NICHOLAS AVENUE",
+      "zip_code": "11385",
+      "displacement_score": 41.1,
+      "first_record_date": "2025-07-07",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "JOVIA FINANCIAL CREDIT UNION"
+      ],
+      "evictions_on_bbl": 1,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0
+      }
+    },
+    {
+      "bbl": "3071291034",
+      "address": null,
+      "zip_code": null,
+      "displacement_score": null,
+      "first_record_date": "2025-07-18",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "JOVIA FINANCIAL FEDERAL CREDIT UNION"
+      ],
+      "evictions_on_bbl": 0,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0
+      }
+    },
+    {
+      "bbl": "3033870014",
+      "address": "1038 JEFFERSON AVENUE",
+      "zip_code": "11221",
+      "displacement_score": 70.6,
+      "first_record_date": "2025-08-06",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "JOVIA FINANCIAL FEDERAL CREDIT UNION"
+      ],
+      "evictions_on_bbl": 0,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0
+      }
+    },
+    {
+      "bbl": "3073210040",
+      "address": null,
+      "zip_code": null,
+      "displacement_score": null,
+      "first_record_date": "2025-12-02",
+      "record_count": 2,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "JOVIA FINANCIAL FEDERAL CREDIT UNION"
+      ],
+      "evictions_on_bbl": 0,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0
+      }
+    },
+    {
+      "bbl": "3020000003",
+      "address": "23 SPENCER PLACE",
+      "zip_code": "11216",
+      "displacement_score": 79.5,
+      "first_record_date": "2026-02-27",
+      "record_count": 2,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "JOVIA FINANCIAL FEDERAL CREDIT UNION"
+      ],
+      "evictions_on_bbl": 0,
+      "hpd_violations": {
+        "total": 3,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 3
+      }
+    },
+    {
+      "bbl": "3073770070",
+      "address": null,
+      "zip_code": null,
+      "displacement_score": null,
+      "first_record_date": "2026-02-27",
+      "record_count": 1,
+      "doc_types": [
+        "ASST"
+      ],
+      "grantee_entities": [
+        "JOVIA FINANCIAL CREDIT UNION"
+      ],
+      "evictions_on_bbl": 0,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0
+      }
+    }
+  ],
+  "determination": "exclude",
+  "recommended_fix": "Add JOVIA to _BANK_ROOTS in operator_network_analysis.py. Credit-union naming (FINANCIAL CREDIT UNION, FEDERAL CREDIT UNION) is a catchable pattern; consider adding 'CREDIT' as a root-level block token alongside BANK / MORTGAGE / FUNDING."
+}

@@ -1,0 +1,114 @@
+TOWNHOUSE OPERATOR INVESTIGATION
+Generated: 2026-04-18
+==========================================================================
+
+OVERVIEW
+--------
+TOWNHOUSE operated through 5 grantee identities and acquired
+27 unique properties in New York City between 2025-04-24
+and 2026-03-20. Span: 330 days. Average acquisition
+pace: 2.5 properties per month.
+
+Total recorded spend: $95,626,375
+Average price per recorded transaction: $4,157,668
+(23 of 27 properties had a recorded price)
+
+All records are DEED transfers (not ASST). TOWNHOUSE is a direct-purchase operator,
+same transaction pattern as PHANTOM CAPITAL and MTEK.
+
+LLC STRUCTURE
+-------------
+5 total entities: 1 numbered, 4 named.
+5 entities with recorded deed transactions; 0 registered but unused.
+
+Active entities (by deed count):
+- TOWNHOUSE RENTAL II LLC: 19 deed records
+- TOWNHOUSE RENTAL VII LLC: 6 deed records
+- M5 TOWNHOUSE 47 LLC: 1 deed record
+- TOWNHOUSE RENTAL IX LLC: 1 deed record
+- TOWNHOUSE RENTAL LLC: 1 deed record
+
+Five entities: four roman-numeraled rental funds (TOWNHOUSE RENTAL, II, VII, IX) plus a numbered single-purpose shell (M5 TOWNHOUSE 47 LLC). The roman-numeral sequencing is consistent with a fund-by-fund capital-raise structure rather than one-LLC-per-property shell fragmentation.
+
+ACQUISITION PACE (monthly)
+--------------------------
+2025-04: ###### (6)
+2025-07: ### (3)
+2025-08: ##### (5)
+2025-09: ## (2)
+2025-10: ## (2)
+2025-11: ## (2)
+2025-12: #### (4)
+2026-03: ### (3)
+
+GEOGRAPHIC CONCENTRATION (top zip codes)
+----------------------------------------
+11385: 3 properties  (displacement score 41.1)
+11222: 3 properties  (displacement score 51.1)
+11221: 3 properties  (displacement score 70.6)
+11217: 2 properties  (displacement score 33.5)
+11207: 2 properties  (displacement score 60.0)
+11216: 2 properties  (displacement score 79.5)
+11215: 1 properties  (displacement score 45.0)
+11233: 1 properties  (displacement score 66.0)
+
+COMPLETE PROPERTY LIST
+----------------------
+- 2025-04-24  3003820023                                     zip    N/A  ds   N/A    $3,900,000  via TOWNHOUSE RENTAL VII LLC
+- 2025-04-24  88 5 AVE                                       zip  11217  ds  33.5    $7,175,000  via TOWNHOUSE RENTAL VII LLC
+- 2025-04-24  409 7 AVENUE                                   zip  11215  ds  45.0    $6,931,000  via TOWNHOUSE RENTAL VII LLC
+- 2025-04-24  3015250021                                     zip    N/A  ds   N/A    $4,100,000  via TOWNHOUSE RENTAL VII LLC
+- 2025-04-24  138 SCHAEFER STREET                            zip  11207  ds  60.0      no price  via TOWNHOUSE RENTAL VII LLC
+- 2025-04-24  285 ONDERDONK AVENUE                           zip  11385  ds  41.1      no price  via TOWNHOUSE RENTAL VII LLC
+- 2025-07-03  3011360046                                     zip    N/A  ds   N/A    $6,700,000  via TOWNHOUSE RENTAL II LLC
+- 2025-07-09  286 ONDERDONK AVENUE                           zip  11385  ds  41.1    $2,470,000  via TOWNHOUSE RENTAL II LLC
+- 2025-07-31  116 MADISON STREET                             zip  11216  ds  79.5    $3,191,500  via TOWNHOUSE RENTAL II LLC
+- 2025-08-13  1368 HERKIMER STREET                           zip  11233  ds  66.0    $1,954,000  via TOWNHOUSE RENTAL II LLC
+- 2025-08-14  556 LEONARD STREET                             zip  11222  ds  51.1    $3,400,000  via TOWNHOUSE RENTAL II LLC
+- 2025-08-20  3025690034                                     zip    N/A  ds   N/A    $5,625,000  via TOWNHOUSE RENTAL II LLC
+- 2025-08-27  866 BUSHWICK AVENUE                            zip  11221  ds  70.6    $2,625,000  via TOWNHOUSE RENTAL II LLC
+- 2025-08-27  1250 HALSEY STREET                             zip  11207  ds  60.0    $2,250,000  via TOWNHOUSE RENTAL II LLC
+- 2025-09-05  76 FRANKLIN STREET                             zip  11222  ds  51.1    $6,639,875  via TOWNHOUSE RENTAL II LLC
+- 2025-09-18  506 WOODWARD AVENUE                            zip  11385  ds  41.1    $2,430,000  via TOWNHOUSE RENTAL II LLC
+- 2025-10-10  1116 GATES AVENUE                              zip  11221  ds  70.6    $2,420,000  via TOWNHOUSE RENTAL II LLC
+- 2025-10-30  101 MONITOR STREET                             zip  11222  ds  51.1    $3,250,000  via TOWNHOUSE RENTAL II LLC
+- 2025-11-06  3010560040                                     zip    N/A  ds   N/A    $3,550,000  via TOWNHOUSE RENTAL II LLC
+- 2025-11-20  792 BERGEN STREET                              zip  11238  ds  46.4    $3,600,000  via TOWNHOUSE RENTAL II LLC
+- 2025-12-03  1391 JEFFERSON AVENUE                          zip  11237  ds  47.8    $2,690,000  via TOWNHOUSE RENTAL II LLC
+- 2025-12-15  74 BLEECKER STREET                             zip  11221  ds  70.6      no price  via TOWNHOUSE RENTAL IX LLC
+- 2025-12-19  3002850046                                     zip    N/A  ds   N/A    $7,075,000  via TOWNHOUSE RENTAL II LLC
+- 2025-12-30  647 DE KALB AVENUE                             zip  11216  ds  79.5    $4,250,000  via TOWNHOUSE RENTAL II LLC
+- 2026-03-03  451 WEST   47 STREET                           zip  10036  ds  21.6      no price  via M5 TOWNHOUSE 47 LLC
+- 2026-03-11  33 PARK PLACE                                  zip  11217  ds  33.5    $4,950,000  via TOWNHOUSE RENTAL II LLC
+- 2026-03-20  3009380078                                     zip    N/A  ds   N/A    $4,450,000  via TOWNHOUSE RENTAL II LLC
+
+EVICTION-THEN-BUY MATCHES (0 events across 0 properties, 365-day lookback)
+---------------------------------------------------------------------------
+0 of 27 properties show at least one eviction executed within
+365 days before TOWNHOUSE took title (0 total eviction events).
+ETB rate: 0.0% of acquired properties.
+
+No eviction-then-buy matches found in this dataset.
+
+HPD VIOLATIONS (all time, all acquired properties)
+--------------------------------------------------
+Total violations:        38
+  Class A (minor):       15
+  Class B (hazardous):   10
+  Class C (immediately hazardous): 13
+Properties with B or C:  6 of 27
+B+C per property:        0.85
+
+HIGH-VIOLATION PROPERTIES (>=3 Class B/C violations)
+----------------------------------------------------
+- 286 ONDERDONK AVENUE (zip 11385, ds=41.1)  6 B/C violations (0 B, 6 C)
+- 74 BLEECKER STREET (zip 11221, ds=70.6)  6 B/C violations (5 B, 1 C)
+- 409 7 AVENUE (zip 11215, ds=45.0)  4 B/C violations (0 B, 4 C)
+- 116 MADISON STREET (zip 11216, ds=79.5)  3 B/C violations (2 B, 1 C)
+
+ASSESSMENT
+----------
+TOWNHOUSE is a Brooklyn-focused direct acquirer operating out of a small number of rental funds. Portfolio concentration in 11207/11221/11237 (Bushwick / East New York / Bed-Stuy fringe) overlaps heavily with PHANTOM's Brooklyn footprint. The high-displacement-zip rate (60.7%) reported in the weekly diff is a strong signal that this is a displacement-linked acquisition strategy, not a scatter portfolio.
+
+RECOMMENDATION: Add to nightly-monitored operator set alongside MTEK, PHANTOM, and BREDIF.
+==========================================================================

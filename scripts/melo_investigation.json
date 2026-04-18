@@ -1,0 +1,600 @@
+{
+  "generated_at": "2026-04-18",
+  "subject": "MELO",
+  "classification": "direct_acquirer",
+  "llc_entities": [
+    "MELO HECTOR B",
+    "MELO Z PHANTOM CAP LLC"
+  ],
+  "llc_count": 2,
+  "active_entities": [
+    "MELO HECTOR B",
+    "MELO Z PHANTOM CAP LLC"
+  ],
+  "numbered_llc_count": 0,
+  "named_llc_count": 2,
+  "llc_breakdown": {
+    "MELO HECTOR B": 1,
+    "MELO Z PHANTOM CAP LLC": 9
+  },
+  "total_properties": 10,
+  "total_acquisitions": 10,
+  "total_spend": 7228800.0,
+  "avg_acquisition_price": 803200.0,
+  "properties_with_price": 9,
+  "first_acquisition": "2025-04-24",
+  "last_acquisition": "2026-01-12",
+  "span_days": 263,
+  "acquisitions_per_month": 1.14,
+  "monthly_pace": {
+    "2025-04": 2,
+    "2025-06": 1,
+    "2025-07": 1,
+    "2025-08": 2,
+    "2025-09": 1,
+    "2025-10": 1,
+    "2026-01": 2
+  },
+  "hpd_violations": {
+    "total": 31,
+    "class_a": 14,
+    "class_b": 4,
+    "class_c": 13,
+    "bbls_with_class_bc": 4,
+    "bc_per_property": 1.7
+  },
+  "eviction_then_buy": {
+    "total_matches": 0,
+    "lookback_days": 365,
+    "matches": []
+  },
+  "geographic_concentration": [
+    {
+      "zip_code": "10459",
+      "properties": 2,
+      "displacement_score": 56.9,
+      "eviction_rate": 89.0,
+      "llc_acq_rate": 57.8
+    },
+    {
+      "zip_code": "10467",
+      "properties": 1,
+      "displacement_score": 45.2,
+      "eviction_rate": 76.1,
+      "llc_acq_rate": 38.2
+    },
+    {
+      "zip_code": "10460",
+      "properties": 1,
+      "displacement_score": 58.6,
+      "eviction_rate": 100.0,
+      "llc_acq_rate": 38.3
+    },
+    {
+      "zip_code": "10462",
+      "properties": 1,
+      "displacement_score": 36.1,
+      "eviction_rate": 69.3,
+      "llc_acq_rate": 26.6
+    },
+    {
+      "zip_code": "10455",
+      "properties": 1,
+      "displacement_score": 45.6,
+      "eviction_rate": 89.0,
+      "llc_acq_rate": 29.6
+    },
+    {
+      "zip_code": "10461",
+      "properties": 1,
+      "displacement_score": 50.0,
+      "eviction_rate": 43.9,
+      "llc_acq_rate": 73.8
+    },
+    {
+      "zip_code": "10468",
+      "properties": 1,
+      "displacement_score": 54.9,
+      "eviction_rate": 100.0,
+      "llc_acq_rate": 36.4
+    }
+  ],
+  "properties": [
+    {
+      "bbl": "2029710049",
+      "address": "847 FREEMAN STREET",
+      "zip_code": "10459",
+      "acquiring_entity": "MELO Z PHANTOM CAP LLC",
+      "acquisition_date": "2025-04-24",
+      "price_paid": 670000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025050800628001"
+      ],
+      "displacement_score": 56.9,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17956273",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "2045720044",
+      "address": "3011 MATTHEWS AVENUE",
+      "zip_code": "10467",
+      "acquiring_entity": "MELO Z PHANTOM CAP LLC",
+      "acquisition_date": "2025-04-28",
+      "price_paid": 900000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025052301585001"
+      ],
+      "displacement_score": 45.2,
+      "hpd_violations": {
+        "total": 3,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 2,
+        "records": [
+          {
+            "violation_id": "17495019",
+            "class": "C",
+            "description": "\u00a7 27-2029 ADM CODE PROVIDE AN ADEQUATE SUPPLY OF HEAT FOR THE APARTMENT IN THE ENTIRE APARTMENT LOCATED AT APT 4, 2nd STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-12-01",
+            "nov_issued_date": "2024-12-02",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17495020",
+            "class": "C",
+            "description": "\u00a7 27-2033 ADM CODE PROVIDE READY ACCESS TO BUILDINGS HEATING SYSTEM LOCKED DOOR AT BOILER ROOM",
+            "inspection_date": "2024-12-01",
+            "nov_issued_date": "2024-12-02",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17959015",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "2031330112",
+      "address": "962 EAST 181 STREET",
+      "zip_code": "10460",
+      "acquiring_entity": "MELO HECTOR B",
+      "acquisition_date": "2025-06-26",
+      "price_paid": null,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025071400859001"
+      ],
+      "displacement_score": 58.6,
+      "hpd_violations": {
+        "total": 3,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 2,
+        "records": [
+          {
+            "violation_id": "16953511",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT BOILER ROOM, 1st STORY",
+            "inspection_date": "2024-04-30",
+            "nov_issued_date": "2024-05-07",
+            "current_status": "NOV CERTIFIED LATE"
+          },
+          {
+            "violation_id": "16953502",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES IN THE ENTRANCE LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-04-30",
+            "nov_issued_date": "2024-05-07",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "18027006",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-13",
+            "nov_issued_date": "2025-06-13",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "2042610016",
+      "address": "1936 WALLACE AVENUE",
+      "zip_code": "10462",
+      "acquiring_entity": "MELO Z PHANTOM CAP LLC",
+      "acquisition_date": "2025-07-14",
+      "price_paid": 793800.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025072100336001"
+      ],
+      "displacement_score": 36.1,
+      "hpd_violations": {
+        "total": 17,
+        "class_a": 7,
+        "class_b": 1,
+        "class_c": 9,
+        "records": [
+          {
+            "violation_id": "17590064",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT BUILDING VESTIBULE DOOR (FROM VESTIBULE TOPUBLIC HALL) , 1st STORY",
+            "inspection_date": "2025-01-02",
+            "nov_issued_date": "2025-01-03",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17590058",
+            "class": "A",
+            "description": "\u00a7 27-2104 ADM CODE POST AND MAINTAIN A PROPER SIGN ON WALL OF ENTRANCE STORY SHOWING THE REGISTRATION NUMBER ASSIGNED BY THE DEPARTMENT AND THE ADDRESS OF THE BUILDING. AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2025-01-02",
+            "nov_issued_date": "2025-01-03",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17590059",
+            "class": "A",
+            "description": "\u00a7 27-2046.1 HMC: POST A PROPER NOTICE OF CARBON MONOXIDE DETECTING DEVICE REQUIREMENTS, IN A FORM APPROVED BY THE COMMISSIONER, IN A COMMON AREA OF A CLASS A MULTIPLE DWELLING NEAR INSPECTION CERTIFICATE OR PROVIDE NOTICE TO TENANTS IN A PRIVATE DWELLING.",
+            "inspection_date": "2025-01-02",
+            "nov_issued_date": "2025-01-03",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17590057",
+            "class": "A",
+            "description": "\u00a7 27-2045 ADM CODE POST A PROPER NOTICE OF SMOKE DETECTOR REQUIREMENTS, IN A FORM APPROVED BY THE COMMISSIONER, AT OR NEAR THE MAIL BOX MISSING AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2025-01-02",
+            "nov_issued_date": "2025-01-03",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17590062",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE & 309 M/D LAW ABATE THE NUISANCE CONSISTING OF EXCESSIVE HOUSEHOLD ITEMS AND BOXES BLOCKING COMPLETELY AREA TO ACCESS SCUTTLE LADDER AT PUBLIC HALL, 2nd STORY",
+            "inspection_date": "2025-01-02",
+            "nov_issued_date": "2025-01-03",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17590060",
+            "class": "A",
+            "description": "\u00a7 27-2005 HMC: POST, IN A FORM APPROVED BY THE COMMISSIONER, AND MAINTAIN A NOTICE IN A COMMON AREA OF THE BUILDING REGARDING THE PROCEDURES THAT SHOULD BE FOLLOWED WHEN A GAS LEAK IS SUSPECTED AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2025-01-02",
+            "nov_issued_date": "2025-01-03",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17590061",
+            "class": "C",
+            "description": "\u00a7 27-2033 ADM CODE POST NOTICE, IN FORM APPROVED BY THE DEPARTMENT, STATING THE NAME AND LOCATION OF THE PERSON DESIGNATED BY THE OWNER TO HAVE KEY TO BUILDINGS HEATING SYSTEM MISSING AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2025-01-02",
+            "nov_issued_date": "2025-01-03",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17590065",
+            "class": "B",
+            "description": "\u00a7 27-2005 HMC: PROPERLY REPAIR OR REPLACE THE BROKEN OR DEFECTIVE LATCH AT BUILDING VESTIBULE DOOR (FROM VESTIBULE TO PUBLIC HALL) , 1st STORY",
+            "inspection_date": "2025-01-02",
+            "nov_issued_date": "2025-01-03",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17590063",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT BUILDING ENTRANCE DOOR (FROM ENTRANCE TO VESTIBULE) , 1st STORY",
+            "inspection_date": "2025-01-02",
+            "nov_issued_date": "2025-01-03",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17590056",
+            "class": "A",
+            "description": "\u00a7 26-1103 ADMIN. CODE: POST AND MAINTAIN A PROPER NOTICE ON WALL OF THE ENTRANCE STORY IN ENGLISH AND SPANISH ON THE AVAILABILITY OF THE AGENCY\u001aS HOUSING INFORMATION GUIDE. A SAMPLE NOTICE CAN BE FOUND AT WWW.NYC.GOV/HPD. AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2025-01-02",
+            "nov_issued_date": "2025-01-03",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17590055",
+            "class": "A",
+            "description": "\u00a7 329, M/D LAW AND DEPT. RULES AND REGS. PROVIDE A COMPLETED CERTIFICATE OF INSPECTION VISITS IN A PROPER FRAME READILY ACCESSIBLE FOR SIGNATURE, BOTTOM EDGE OF FRAME BETWEEN 48-62 INCHES ABOVE FLOOR AT MISSING AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2025-01-02",
+            "nov_issued_date": "2025-01-03",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17600149",
+            "class": "C",
+            "description": "\u00a7 27-2029 ADM CODE PROVIDE AN ADEQUATE SUPPLY OF HEAT FOR THE APARTMENT IN THE ENTIRE APARTMENT LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-01-06",
+            "nov_issued_date": "2025-01-07",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17600150",
+            "class": "C",
+            "description": "\u00a7 27-2033 ADM CODE PROVIDE READY ACCESS TO BUILDINGS HEATING SYSTEM DOOR LOCKED AT BOILER ROOM",
+            "inspection_date": "2025-01-06",
+            "nov_issued_date": "2025-01-07",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17707991",
+            "class": "C",
+            "description": "\u00a7 27-2037, 2038 HMC: PROVIDE A SAFE AND ADEQUATE SUPPLY OF ELECTRIC SERVICE TO THE FIXTURES TO ALL LIGHT FIXTURES AT CEILING AT PUBLIC HALL, 2nd STORY",
+            "inspection_date": "2025-02-18",
+            "nov_issued_date": "2025-02-24",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17703535",
+            "class": "C",
+            "description": "\u00a7 27-2037, 2038 HMC: PROVIDE A SAFE AND ADEQUATE SUPPLY OF ELECTRIC SERVICE TO THE FIXTURES TO ALL OUTLETS AND LIGHT FIXTURES THROUGHOUT IN THE ENTIRE APARTMENT LOCATED AT APT 2, 2nd STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-02-18",
+            "nov_issued_date": "2025-02-19",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17703536",
+            "class": "C",
+            "description": "\u00a7 27-2037, 2038 HMC: PROVIDE A SAFE AND ADEQUATE SUPPLY OF ELECTRIC SERVICE TO THE FIXTURES TO ALL LIGHT FIXTURES AT CEILING AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2025-02-18",
+            "nov_issued_date": "2025-02-24",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17957708",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "2048240063",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "MELO Z PHANTOM CAP LLC",
+      "acquisition_date": "2025-08-05",
+      "price_paid": 425000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025082000227001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "2027070056",
+      "address": "776 BECK STREET",
+      "zip_code": "10455",
+      "acquiring_entity": "MELO Z PHANTOM CAP LLC",
+      "acquisition_date": "2025-08-13",
+      "price_paid": 890000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025082100530001"
+      ],
+      "displacement_score": 45.6,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17951875",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-04",
+            "nov_issued_date": "2025-06-04",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "2032830032",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "MELO Z PHANTOM CAP LLC",
+      "acquisition_date": "2025-09-29",
+      "price_paid": 900000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025100300358001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "2039870011",
+      "address": "1532 OVERING STREET",
+      "zip_code": "10461",
+      "acquiring_entity": "MELO Z PHANTOM CAP LLC",
+      "acquisition_date": "2025-10-28",
+      "price_paid": 900000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025110400487002"
+      ],
+      "displacement_score": 50.0,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17957207",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "2026730042",
+      "address": "1231 UNION AVENUE",
+      "zip_code": "10459",
+      "acquiring_entity": "MELO Z PHANTOM CAP LLC",
+      "acquisition_date": "2026-01-07",
+      "price_paid": 900000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026011400311001"
+      ],
+      "displacement_score": 56.9,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17956456",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-05",
+            "nov_issued_date": "2025-06-05",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "2032250180",
+      "address": "2305 LORING PLACE NORTH",
+      "zip_code": "10468",
+      "acquiring_entity": "MELO Z PHANTOM CAP LLC",
+      "acquisition_date": "2026-01-12",
+      "price_paid": 850000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026011600448001"
+      ],
+      "displacement_score": 54.9,
+      "hpd_violations": {
+        "total": 4,
+        "class_a": 1,
+        "class_b": 3,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17923252",
+            "class": "B",
+            "description": "\u00a7 27-2026, 2027 HMC: PROPERLY REPAIR THE SOURCE AND ABATE THE EVIDENCE OF A WATER LEAK AT CEILING AT VESTIBULE , 1st STORY",
+            "inspection_date": "2025-05-28",
+            "nov_issued_date": "2025-05-30",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "17923253",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADMIN. CODE: PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE FIRE RETARDANT MATERIAL AT CEILING AT VESTIBULE , 1st STORY",
+            "inspection_date": "2025-05-28",
+            "nov_issued_date": "2025-05-30",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "18083358",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADMIN. CODE: PROPERLY REPAIR WITH SIMILAR MATERIAL THE BROKEN OR DEFECTIVE FIRE RETARDANT MATERIAL AT VESTIBULE CEILING AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2025-07-11",
+            "nov_issued_date": "2025-07-14",
+            "current_status": "NOV SENT OUT"
+          },
+          {
+            "violation_id": "18083359",
+            "class": "A",
+            "description": "\u00a7 27-2013 ADMIN. CODE: PAINT WITH LIGHT COLORED PAINT TO THE SATISFACTION OF THIS DEPARTMENT AT VESTIBULE CEILING AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2025-07-11",
+            "nov_issued_date": "2025-07-14",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    }
+  ]
+}

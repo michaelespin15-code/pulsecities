@@ -1,0 +1,1113 @@
+{
+  "generated_at": "2026-04-18",
+  "subject": "TOWNHOUSE",
+  "classification": "direct_acquirer",
+  "llc_entities": [
+    "M5 TOWNHOUSE 47 LLC",
+    "TOWNHOUSE RENTAL II LLC",
+    "TOWNHOUSE RENTAL IX LLC",
+    "TOWNHOUSE RENTAL LLC",
+    "TOWNHOUSE RENTAL VII LLC"
+  ],
+  "llc_count": 5,
+  "active_entities": [
+    "M5 TOWNHOUSE 47 LLC",
+    "TOWNHOUSE RENTAL II LLC",
+    "TOWNHOUSE RENTAL IX LLC",
+    "TOWNHOUSE RENTAL LLC",
+    "TOWNHOUSE RENTAL VII LLC"
+  ],
+  "numbered_llc_count": 1,
+  "named_llc_count": 4,
+  "llc_breakdown": {
+    "M5 TOWNHOUSE 47 LLC": 1,
+    "TOWNHOUSE RENTAL II LLC": 19,
+    "TOWNHOUSE RENTAL IX LLC": 1,
+    "TOWNHOUSE RENTAL LLC": 1,
+    "TOWNHOUSE RENTAL VII LLC": 6
+  },
+  "total_properties": 27,
+  "total_acquisitions": 28,
+  "total_spend": 95626375.0,
+  "avg_acquisition_price": 4157668.48,
+  "properties_with_price": 23,
+  "first_acquisition": "2025-04-24",
+  "last_acquisition": "2026-03-20",
+  "span_days": 330,
+  "acquisitions_per_month": 2.45,
+  "monthly_pace": {
+    "2025-04": 6,
+    "2025-07": 3,
+    "2025-08": 5,
+    "2025-09": 2,
+    "2025-10": 2,
+    "2025-11": 2,
+    "2025-12": 4,
+    "2026-03": 3
+  },
+  "hpd_violations": {
+    "total": 38,
+    "class_a": 15,
+    "class_b": 10,
+    "class_c": 13,
+    "bbls_with_class_bc": 6,
+    "bc_per_property": 0.85
+  },
+  "eviction_then_buy": {
+    "total_matches": 0,
+    "lookback_days": 365,
+    "matches": []
+  },
+  "geographic_concentration": [
+    {
+      "zip_code": "11385",
+      "properties": 3,
+      "displacement_score": 41.1,
+      "eviction_rate": 36.1,
+      "llc_acq_rate": 77.4
+    },
+    {
+      "zip_code": "11222",
+      "properties": 3,
+      "displacement_score": 51.1,
+      "eviction_rate": 10.6,
+      "llc_acq_rate": 80.0
+    },
+    {
+      "zip_code": "11221",
+      "properties": 3,
+      "displacement_score": 70.6,
+      "eviction_rate": 37.2,
+      "llc_acq_rate": 100.0
+    },
+    {
+      "zip_code": "11217",
+      "properties": 2,
+      "displacement_score": 33.5,
+      "eviction_rate": 11.3,
+      "llc_acq_rate": 61.1
+    },
+    {
+      "zip_code": "11207",
+      "properties": 2,
+      "displacement_score": 60.0,
+      "eviction_rate": 76.4,
+      "llc_acq_rate": 80.8
+    },
+    {
+      "zip_code": "11216",
+      "properties": 2,
+      "displacement_score": 79.5,
+      "eviction_rate": 43.7,
+      "llc_acq_rate": 100.0
+    },
+    {
+      "zip_code": "11215",
+      "properties": 1,
+      "displacement_score": 45.0,
+      "eviction_rate": 0.3,
+      "llc_acq_rate": 68.5
+    },
+    {
+      "zip_code": "11233",
+      "properties": 1,
+      "displacement_score": 66.0,
+      "eviction_rate": 64.7,
+      "llc_acq_rate": 94.1
+    },
+    {
+      "zip_code": "11238",
+      "properties": 1,
+      "displacement_score": 46.4,
+      "eviction_rate": 13.2,
+      "llc_acq_rate": 61.5
+    },
+    {
+      "zip_code": "11237",
+      "properties": 1,
+      "displacement_score": 47.8,
+      "eviction_rate": 23.2,
+      "llc_acq_rate": 87.9
+    },
+    {
+      "zip_code": "10036",
+      "properties": 1,
+      "displacement_score": 21.6,
+      "eviction_rate": 34.0,
+      "llc_acq_rate": 22.4
+    }
+  ],
+  "properties": [
+    {
+      "bbl": "3003820023",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "TOWNHOUSE RENTAL VII LLC",
+      "acquisition_date": "2025-04-24",
+      "price_paid": 3900000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025050700994006"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3009340045",
+      "address": "88 5 AVE",
+      "zip_code": "11217",
+      "acquiring_entity": "TOWNHOUSE RENTAL VII LLC",
+      "acquisition_date": "2025-04-24",
+      "price_paid": 7175000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025050700934004"
+      ],
+      "displacement_score": 33.5,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3011000008",
+      "address": "409 7 AVENUE",
+      "zip_code": "11215",
+      "acquiring_entity": "TOWNHOUSE RENTAL VII LLC",
+      "acquisition_date": "2025-04-24",
+      "price_paid": 6931000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025050600410003"
+      ],
+      "displacement_score": 45.0,
+      "hpd_violations": {
+        "total": 4,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 4,
+        "records": [
+          {
+            "violation_id": "17313152",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF ROACHES IN THE ENTIRE APARTMENT LOCATED AT APT 2L, 2nd STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2024-10-01",
+            "nov_issued_date": "2024-10-08",
+            "current_status": "FIRST NO ACCESS TO RE- INSPECT VIOLATION"
+          },
+          {
+            "violation_id": "17313153",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2024-10-01",
+            "nov_issued_date": "2024-10-08",
+            "current_status": "NOT COMPLIED WITH"
+          },
+          {
+            "violation_id": "17706556",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES AT VESTIBULE DOOR",
+            "inspection_date": "2025-02-15",
+            "nov_issued_date": "2025-02-18",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17706557",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2025-02-15",
+            "nov_issued_date": "2025-02-18",
+            "current_status": "NOT COMPLIED WITH"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3015250021",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "TOWNHOUSE RENTAL VII LLC",
+      "acquisition_date": "2025-04-24",
+      "price_paid": 4100000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025050700824004"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3034280028",
+      "address": "138 SCHAEFER STREET",
+      "zip_code": "11207",
+      "acquiring_entity": "TOWNHOUSE RENTAL VII LLC",
+      "acquisition_date": "2025-04-24",
+      "price_paid": null,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025050800281001"
+      ],
+      "displacement_score": 60.0,
+      "hpd_violations": {
+        "total": 2,
+        "class_a": 0,
+        "class_b": 1,
+        "class_c": 1,
+        "records": [
+          {
+            "violation_id": "17932625",
+            "class": "C",
+            "description": "HMC ADM CODE: \u00a7 27-2017.4 ABATE THE INFESTATION CONSISTING OF MICE IN THE ENTIRE APARTMENT LOCATED AT APT 1A, 1st STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-06-02",
+            "nov_issued_date": "2025-06-04",
+            "current_status": "NOTICE OF ISSUANCE SENT TO TENANT"
+          },
+          {
+            "violation_id": "17932626",
+            "class": "B",
+            "description": "566 (B) 27-2021.4 HMC: ABATE THE NUISANCE CONSISTING OF PESTS. EVIDENCE OF FLIES IN THE ENTIRE APARTMENT LOCATED AT APT 1A, 1st STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-06-02",
+            "nov_issued_date": "2025-06-04",
+            "current_status": "NOV SENT OUT"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "4033980006",
+      "address": "285 ONDERDONK AVENUE",
+      "zip_code": "11385",
+      "acquiring_entity": "TOWNHOUSE RENTAL VII LLC",
+      "acquisition_date": "2025-04-24",
+      "price_paid": null,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025050800281002"
+      ],
+      "displacement_score": 41.1,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "18021604",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-12",
+            "nov_issued_date": "2025-06-12",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3011360046",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-07-03",
+      "price_paid": 6700000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025070500003004",
+        "2025121600124001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "4034190031",
+      "address": "286 ONDERDONK AVENUE",
+      "zip_code": "11385",
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-07-09",
+      "price_paid": 2470000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025072100167001"
+      ],
+      "displacement_score": 41.1,
+      "hpd_violations": {
+        "total": 7,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 6,
+        "records": [
+          {
+            "violation_id": "17784014",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE FIRE RATED DOOR TO BOILER ROOM AT CELLAR, SECTION AT NORTH",
+            "inspection_date": "2025-03-19",
+            "nov_issued_date": "2025-03-25",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17784009",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE FIRE RATED DOOR TO BOILER ROOM AT CELLAR, SECTION AT SOUTH",
+            "inspection_date": "2025-03-19",
+            "nov_issued_date": "2025-03-25",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17784066",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES 1ST DOOR FROM EAST AT SOUTH LEADING TO SOUTH SECTION AT CELLAR",
+            "inspection_date": "2025-03-19",
+            "nov_issued_date": "2025-03-25",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17784048",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES CELLAR ENTRANCE DOOR FROM STREET AT CELLAR",
+            "inspection_date": "2025-03-19",
+            "nov_issued_date": "2025-03-25",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17784063",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES 1ST DOOR FROM SOUTH AT WEST LEADING TO NORTH SECTION AT CELLAR",
+            "inspection_date": "2025-03-19",
+            "nov_issued_date": "2025-03-25",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17783997",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE HINGES ON DOOR TO REAR YARD AT CELLAR",
+            "inspection_date": "2025-03-19",
+            "nov_issued_date": "2025-03-25",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "18021605",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-12",
+            "nov_issued_date": "2025-06-12",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3019900028",
+      "address": "116 MADISON STREET",
+      "zip_code": "11216",
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-07-31",
+      "price_paid": 3191500.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025080500134001"
+      ],
+      "displacement_score": 79.5,
+      "hpd_violations": {
+        "total": 4,
+        "class_a": 1,
+        "class_b": 2,
+        "class_c": 1,
+        "records": [
+          {
+            "violation_id": "17406758",
+            "class": "B",
+            "description": "\u00a7 27-2050 ADM CODE PROVIDE AN ANGLE HOSE VALVE OR SILL COCK AT EXTREME END OF HIGHEST LINE OF SPRINKLERS.",
+            "inspection_date": "2024-11-04",
+            "nov_issued_date": "2024-11-07",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17406755",
+            "class": "C",
+            "description": "\u00a7 27-2005, 27-2007, 27-2041.1 HMC, \u00a7238, \u00a7 309; \u00a7 107 (2) ( C) MDL AND 28 RCNY \u00a725-171: REPLACE OR REPAIR THE SELF-CLOSING DOORS THAT IS MISSING OR DEFECTIVE AT BUILDING ENTRANCE, BUILDING FRONT. HINGES DEFECTIVE.",
+            "inspection_date": "2024-11-04",
+            "nov_issued_date": "2024-11-07",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17406759",
+            "class": "B",
+            "description": "\u00a7 27-2050 ADM CODE PROVIDE A PIECE OF GARDEN HOSE 10 FEET IN LENGTH WITH FEMALE COUPLING AND A 10 QUART PAIL ON PREMISES TO TEST SPRINKLER SYSTEM.",
+            "inspection_date": "2024-11-04",
+            "nov_issued_date": "2024-11-07",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17993598",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-10",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3015700024",
+      "address": "1368 HERKIMER STREET",
+      "zip_code": "11233",
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-08-13",
+      "price_paid": 1954000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025081400288001"
+      ],
+      "displacement_score": 66.0,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17987648",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-09",
+            "nov_issued_date": "2025-06-09",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3026810064",
+      "address": "556 LEONARD STREET",
+      "zip_code": "11222",
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-08-14",
+      "price_paid": 3400000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025081500073001"
+      ],
+      "displacement_score": 51.1,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17995706",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-10",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3025690034",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-08-20",
+      "price_paid": 5625000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025082500556001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3032630032",
+      "address": "866 BUSHWICK AVENUE",
+      "zip_code": "11221",
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-08-27",
+      "price_paid": 2625000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025082900286001"
+      ],
+      "displacement_score": 70.6,
+      "hpd_violations": {
+        "total": 3,
+        "class_a": 1,
+        "class_b": 2,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17830137",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR AT CEILING INSIDE 3RD CLOSET AT WEST WALL IN THE PRIVATE HALLWAY LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-04-16",
+            "nov_issued_date": "2025-04-18",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17830136",
+            "class": "B",
+            "description": "\u00a7 27-2026, 2027 HMC: PROPERLY REPAIR THE SOURCE AND ABATE THE EVIDENCE OF A WATER LEAK AT CEILING INSIDE 3RD CLOSET AT WEST WALL IN THE PRIVATE HALLWAY LOCATED AT APT 1, 1st STORY, 1st APARTMENT FROM NORTH AT EAST",
+            "inspection_date": "2025-04-16",
+            "nov_issued_date": "2025-04-18",
+            "current_status": "VIOLATION CLOSED"
+          },
+          {
+            "violation_id": "17984741",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-09",
+            "nov_issued_date": "2025-06-09",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3034120028",
+      "address": "1250 HALSEY STREET",
+      "zip_code": "11207",
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-08-27",
+      "price_paid": 2250000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025082900119001"
+      ],
+      "displacement_score": 60.0,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17981547",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-09",
+            "nov_issued_date": "2025-06-09",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3025720001",
+      "address": "76 FRANKLIN STREET",
+      "zip_code": "11222",
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-09-05",
+      "price_paid": 6639875.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025090900218001"
+      ],
+      "displacement_score": 51.1,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17985397",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-09",
+            "nov_issued_date": "2025-06-09",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "4034050040",
+      "address": "506 WOODWARD AVENUE",
+      "zip_code": "11385",
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-09-18",
+      "price_paid": 2430000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025091900411001"
+      ],
+      "displacement_score": 41.1,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "18022029",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-12",
+            "nov_issued_date": "2025-06-12",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3033390015",
+      "address": "1116 GATES AVENUE",
+      "zip_code": "11221",
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-10-10",
+      "price_paid": 2420000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025101300038001"
+      ],
+      "displacement_score": 70.6,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17984910",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-09",
+            "nov_issued_date": "2025-06-09",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3027040031",
+      "address": "101 MONITOR STREET",
+      "zip_code": "11222",
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-10-30",
+      "price_paid": 3250000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025110300223001"
+      ],
+      "displacement_score": 51.1,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17995903",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-10",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3010560040",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-11-06",
+      "price_paid": 3550000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025111200182004"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3011480016",
+      "address": "792 BERGEN STREET",
+      "zip_code": "11238",
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-11-20",
+      "price_paid": 3600000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025112500047001"
+      ],
+      "displacement_score": 46.4,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17973238",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-06",
+            "nov_issued_date": "2025-06-06",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3033850061",
+      "address": "1391 JEFFERSON AVENUE",
+      "zip_code": "11237",
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-12-03",
+      "price_paid": 2690000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025120500164001"
+      ],
+      "displacement_score": 47.8,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17998081",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-10",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3033050023",
+      "address": "74 BLEECKER STREET",
+      "zip_code": "11221",
+      "acquiring_entity": "TOWNHOUSE RENTAL IX LLC",
+      "acquisition_date": "2025-12-15",
+      "price_paid": null,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025121600124002"
+      ],
+      "displacement_score": 70.6,
+      "hpd_violations": {
+        "total": 6,
+        "class_a": 0,
+        "class_b": 5,
+        "class_c": 1,
+        "records": [
+          {
+            "violation_id": "17226975",
+            "class": "B",
+            "description": "\u00a7 27-2005, 2007 ADM CODE AND DEPT. RULES AND REGULATIONS. REMOVE THE ENCUMBRANCE OBSTRUCTING EGRESS FROM FIRE ESCAPES CONSISTING OF PLANT POTS AT 2ND STORY BALCONY AT RARE BUILDING AT FIRE ESCAPE",
+            "inspection_date": "2024-08-24",
+            "nov_issued_date": "2024-09-09",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17226973",
+            "class": "B",
+            "description": "\u00a7 27-2005, 2007 ADM CODE AND DEPT. RULES AND REGULATIONS. REMOVE THE ENCUMBRANCE OBSTRUCTING EGRESS FROM FIRE ESCAPES CONSISTING OF PLANT POTS AT 4TH STORY BALCONY AT RARE BUILDING AT FIRE ESCAPE",
+            "inspection_date": "2024-08-24",
+            "nov_issued_date": "2024-09-09",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17226969",
+            "class": "B",
+            "description": "\u00a7 27-2005, 2007 ADM CODE REMOVE ALL ENCUMBRANCES CONSISTING OF CONSISTING OF HOUSEHOLD ITEMS AT PUBLIC HALL, 1st STORY",
+            "inspection_date": "2024-08-24",
+            "nov_issued_date": "2024-09-09",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17226974",
+            "class": "B",
+            "description": "\u00a7 27-2005, 2007 ADM CODE AND DEPT. RULES AND REGULATIONS. REMOVE THE ENCUMBRANCE OBSTRUCTING EGRESS FROM FIRE ESCAPES CONSISTING OF BROKEN GLASS PANE OR WINDOW SASH AT 3RD STORY BALCONY AT RARE BUILDING AT FIRE ESCAPE",
+            "inspection_date": "2024-08-24",
+            "nov_issued_date": "2024-09-09",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17300123",
+            "class": "B",
+            "description": "\u00a7 27-2005 ADM CODE REPAIR THE BROKEN OR DEFECTIVE PLASTERED SURFACES AND PAINT IN A UNIFORM COLOR THE CEILING IN THE PRIVATE HALLWAY LOCATED AT APT 4F, 4th STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-09-21",
+            "nov_issued_date": "2024-09-26",
+            "current_status": "VIOLATION DISMISSED"
+          },
+          {
+            "violation_id": "17307823",
+            "class": "C",
+            "description": "\u00a7 27-2005 ADM CODE & 309 M/D LAW ABATE THE NUISANCE CONSISTING OF PAINTED SPRINKLER HEAD IN THE PRIVATE HALLWAY LOCATED AT APT 4F, 4th STORY, 1st APARTMENT FROM SOUTH AT WEST",
+            "inspection_date": "2024-09-21",
+            "nov_issued_date": "2024-09-26",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3002850046",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-12-19",
+      "price_paid": 7075000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2025122200929001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3017740070",
+      "address": "647 DE KALB AVENUE",
+      "zip_code": "11216",
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2025-12-30",
+      "price_paid": 4250000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026010500855001"
+      ],
+      "displacement_score": 79.5,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17983540",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-09",
+            "nov_issued_date": "2025-06-09",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "1010570110",
+      "address": "451 WEST   47 STREET",
+      "zip_code": "10036",
+      "acquiring_entity": "M5 TOWNHOUSE 47 LLC",
+      "acquisition_date": "2026-03-03",
+      "price_paid": null,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026030500342001"
+      ],
+      "displacement_score": 21.6,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3009380067",
+      "address": "33 PARK PLACE",
+      "zip_code": "11217",
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2026-03-11",
+      "price_paid": 4950000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026031600040001"
+      ],
+      "displacement_score": 33.5,
+      "hpd_violations": {
+        "total": 1,
+        "class_a": 1,
+        "class_b": 0,
+        "class_c": 0,
+        "records": [
+          {
+            "violation_id": "17994197",
+            "class": "A",
+            "description": "(A) \u00a7 HMC:FILE ANNUAL BEDBUG REPORT IN ACCORDANCE WITH HPD RULE AS DESCRIBED ON THE BACK OF THIS NOTICE OF VIOLATION OR AS DESCRIBED ON HPD\u001aS WEBSITE, WWW.NYC.GOV\\HPD, SEARCH BED BUGS.",
+            "inspection_date": "2025-06-10",
+            "nov_issued_date": "2025-06-10",
+            "current_status": "VIOLATION DISMISSED"
+          }
+        ]
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    },
+    {
+      "bbl": "3009380078",
+      "address": null,
+      "zip_code": null,
+      "acquiring_entity": "TOWNHOUSE RENTAL II LLC",
+      "acquisition_date": "2026-03-20",
+      "price_paid": 4450000.0,
+      "doc_types": [
+        "DEED"
+      ],
+      "document_ids": [
+        "2026032400106001"
+      ],
+      "displacement_score": null,
+      "hpd_violations": {
+        "total": 0,
+        "class_a": 0,
+        "class_b": 0,
+        "class_c": 0,
+        "records": []
+      },
+      "eviction_then_buy": [],
+      "post_acquisition_permits": []
+    }
+  ]
+}

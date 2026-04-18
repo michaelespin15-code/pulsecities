@@ -1,0 +1,90 @@
+MELO OPERATOR INVESTIGATION
+Generated: 2026-04-18
+==========================================================================
+
+OVERVIEW
+--------
+MELO operated through 2 grantee identities and acquired
+10 unique properties in New York City between 2025-04-24
+and 2026-01-12. Span: 263 days. Average acquisition
+pace: 1.1 properties per month.
+
+Total recorded spend: $7,228,800
+Average price per recorded transaction: $803,200
+(9 of 10 properties had a recorded price)
+
+All records are DEED transfers (not ASST). MELO is a direct-purchase operator,
+same transaction pattern as PHANTOM CAPITAL and MTEK.
+
+LLC STRUCTURE
+-------------
+2 total entities: 0 numbered, 2 named.
+2 entities with recorded deed transactions; 0 registered but unused.
+
+Active entities (by deed count):
+- MELO Z PHANTOM CAP LLC: 9 deed records
+- MELO HECTOR B: 1 deed record
+
+Two grantee identities: an individual (HECTOR B MELO) and one LLC (MELO Z PHANTOM CAP LLC). The LLC name embeds 'PHANTOM CAP', the exact brand used by the 32-LLC PHANTOM CAPITAL network already profiled. This suggests MELO Z PHANTOM CAP LLC is either a PHANTOM affiliate or a principal entity co-branded across both networks. It is NOT currently in the PHANTOM_ENTITIES list and was not counted in that investigation.
+
+ACQUISITION PACE (monthly)
+--------------------------
+2025-04: ## (2)
+2025-06: # (1)
+2025-07: # (1)
+2025-08: ## (2)
+2025-09: # (1)
+2025-10: # (1)
+2026-01: ## (2)
+
+GEOGRAPHIC CONCENTRATION (top zip codes)
+----------------------------------------
+10459: 2 properties  (displacement score 56.9)
+10467: 1 properties  (displacement score 45.2)
+10460: 1 properties  (displacement score 58.6)
+10462: 1 properties  (displacement score 36.1)
+10455: 1 properties  (displacement score 45.6)
+10461: 1 properties  (displacement score 50.0)
+10468: 1 properties  (displacement score 54.9)
+
+COMPLETE PROPERTY LIST
+----------------------
+- 2025-04-24  847 FREEMAN STREET                             zip  10459  ds  56.9      $670,000  via MELO Z PHANTOM CAP LLC
+- 2025-04-28  3011 MATTHEWS AVENUE                           zip  10467  ds  45.2      $900,000  via MELO Z PHANTOM CAP LLC
+- 2025-06-26  962 EAST 181 STREET                            zip  10460  ds  58.6      no price  via MELO HECTOR B
+- 2025-07-14  1936 WALLACE AVENUE                            zip  10462  ds  36.1      $793,800  via MELO Z PHANTOM CAP LLC
+- 2025-08-05  2048240063                                     zip    N/A  ds   N/A      $425,000  via MELO Z PHANTOM CAP LLC
+- 2025-08-13  776 BECK STREET                                zip  10455  ds  45.6      $890,000  via MELO Z PHANTOM CAP LLC
+- 2025-09-29  2032830032                                     zip    N/A  ds   N/A      $900,000  via MELO Z PHANTOM CAP LLC
+- 2025-10-28  1532 OVERING STREET                            zip  10461  ds  50.0      $900,000  via MELO Z PHANTOM CAP LLC
+- 2026-01-07  1231 UNION AVENUE                              zip  10459  ds  56.9      $900,000  via MELO Z PHANTOM CAP LLC
+- 2026-01-12  2305 LORING PLACE NORTH                        zip  10468  ds  54.9      $850,000  via MELO Z PHANTOM CAP LLC
+
+EVICTION-THEN-BUY MATCHES (0 events across 0 properties, 365-day lookback)
+---------------------------------------------------------------------------
+0 of 10 properties show at least one eviction executed within
+365 days before MELO took title (0 total eviction events).
+ETB rate: 0.0% of acquired properties.
+
+No eviction-then-buy matches found in this dataset.
+
+HPD VIOLATIONS (all time, all acquired properties)
+--------------------------------------------------
+Total violations:        31
+  Class A (minor):       14
+  Class B (hazardous):   4
+  Class C (immediately hazardous): 13
+Properties with B or C:  4 of 10
+B+C per property:        1.70
+
+HIGH-VIOLATION PROPERTIES (>=3 Class B/C violations)
+----------------------------------------------------
+- 1936 WALLACE AVENUE (zip 10462, ds=36.1)  10 B/C violations (1 B, 9 C)
+- 2305 LORING PLACE NORTH (zip 10468, ds=54.9)  3 B/C violations (3 B, 0 C)
+
+ASSESSMENT
+----------
+MELO is small by volume (10 properties) but the 70% high-displacement-zip rate is the highest among this week's new entrants. Bronx-only footprint. The PHANTOM-brand overlap (MELO Z PHANTOM CAP LLC) is the most actionable signal. If this entity belongs to the same principals as PHANTOM CAPITAL, the consolidated PHANTOM footprint is larger than previously reported.
+
+RECOMMENDATION: Add to nightly-monitored operator set alongside MTEK, PHANTOM, and BREDIF.
+==========================================================================
