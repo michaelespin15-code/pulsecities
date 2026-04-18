@@ -270,7 +270,7 @@ class OwnershipScraper(BaseScraper):
                 f"document_id IN ({id_list_sql}) "
                 f"AND party_type = '{GRANTEE_PARTY_TYPE}'"
             ),
-            "$select": "document_id, party_type, name",
+            "$select": "document_id, party_type, name, addr_1, addr_2, city, state, zip",
             "$limit": 10_000,
         }
         resp = self._http.get(self._parties_url, params=params, timeout=60)
