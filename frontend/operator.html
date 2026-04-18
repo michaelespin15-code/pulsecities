@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operator Profile — PulseCities</title>
+    <meta name="description" content="LLC portfolio and affiliated operator network for a NYC acquisition cluster, sourced from ACRIS public records.">
+    <link rel="canonical" id="canonical-url" href="https://pulsecities.com/">
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #f1f5f9; min-height: 100vh; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .accent { color: #f97316; }
+        .panel { background: #1e293b; border: 1px solid rgba(148,163,184,0.1); border-radius: 8px; }
+        .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; color: #f97316; font-weight: 400; }
+        .stat-label { font-size: 0.7rem; color: rgba(148,163,184,0.6); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+        .tag-strong { background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.35); color: #f97316; font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; }
+        .tag-possible { background: rgba(148,163,184,0.08); border: 1px solid rgba(148,163,184,0.2); color: rgba(148,163,184,0.7); font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; }
+        .signal-chip { display: inline-flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; background: rgba(15,23,42,0.6); border: 1px solid rgba(148,163,184,0.12); border-radius: 4px; padding: 2px 7px; color: rgba(148,163,184,0.75); }
+        .llc-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; background: rgba(15,23,42,0.5); border: 1px solid rgba(148,163,184,0.1); border-radius: 4px; padding: 3px 8px; color: rgba(148,163,184,0.8); }
+        details > summary { list-style: none; cursor: pointer; }
+        details > summary::-webkit-details-marker { display: none; }
+        .chevron { transition: transform 0.2s; display: inline-block; }
+        details[open] .chevron { transform: rotate(180deg); }
+        a { color: inherit; text-decoration: none; }
+        a:hover { color: #f97316; }
+        #error-state { display: none; }
+        #loading-state { display: flex; }
+        #content { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Nav -->
+    <nav style="border-bottom: 1px solid rgba(148,163,184,0.08); padding: 12px 0;">
+        <div style="max-width: 860px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between;">
+            <a href="/" style="display: flex; align-items: center; gap: 8px; color: #f1f5f9;">
+                <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span style="font-size: 0.85rem; color: rgba(148,163,184,0.6);">PulseCities</span>
+            </a>
+            <a href="/" style="font-size: 0.78rem; color: rgba(148,163,184,0.5); display: flex; align-items: center; gap-4px;">
+                ← Map
+            </a>
+        </div>
+    </nav>
+
+    <div style="max-width: 860px; margin: 0 auto; padding: 32px 20px 80px;">
+
+        <!-- Loading -->
+        <div id="loading-state" style="justify-content: center; padding: 80px 0; color: rgba(148,163,184,0.4); font-size: 0.85rem; font-family: 'JetBrains Mono', monospace;">
+            Loading operator profile...
+        </div>
+
+        <!-- Error -->
+        <div id="error-state" style="padding: 60px 0; text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 12px;">404</div>
+            <div style="color: rgba(148,163,184,0.6); font-size: 0.9rem;" id="error-msg">Operator not found.</div>
+            <div style="margin-top: 16px;">
+                <a href="/" style="font-size: 0.8rem; color: rgba(249,115,22,0.8);">← Back to map</a>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div id="content">
+            <!-- Header -->
+            <div style="margin-bottom: 28px;">
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                    <div>
+                        <h1 id="op-root" class="mono accent" style="font-size: 1.8rem; font-weight: 400; letter-spacing: 0.04em;"></h1>
+                        <div style="font-size: 0.78rem; color: rgba(148,163,184,0.45); margin-top: 4px;">
+                            Operator cluster — 18-month ACRIS window · public records only
+                        </div>
+                    </div>
+                    <div style="font-size: 0.72rem; color: rgba(148,163,184,0.35); font-family: 'JetBrains Mono', monospace; padding-top: 6px;">
+                        Source: NYC ACRIS
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats row -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 24px;">
+                <div class="panel" style="padding: 14px 16px;">
+                    <div class="stat-val" id="stat-properties">—</div>
+                    <div class="stat-label">Properties</div>
+                </div>
+                <div class="panel" style="padding: 14px 16px;">
+                    <div class="stat-val" id="stat-acquisitions">—</div>
+                    <div class="stat-label">Acquisitions</div>
+                </div>
+                <div class="panel" style="padding: 14px 16px;">
+                    <div class="stat-val" id="stat-llcs">—</div>
+                    <div class="stat-label">LLC Entities</div>
+                </div>
+                <div class="panel" style="padding: 14px 16px;">
+                    <div class="stat-val" id="stat-zips">—</div>
+                    <div class="stat-label">Zip Codes</div>
+                </div>
+            </div>
+
+            <!-- LLC entities -->
+            <div class="panel" style="margin-bottom: 16px;">
+                <details>
+                    <summary style="padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8);">LLC Entities</span>
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                            <span id="llc-count-badge" class="mono" style="font-size: 0.72rem; color: rgba(148,163,184,0.4);"></span>
+                            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.4)" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </span>
+                    </summary>
+                    <div id="llc-list" style="padding: 0 16px 16px; display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                </details>
+            </div>
+
+            <!-- Related Operators -->
+            <div id="related-section" style="display: none; margin-bottom: 16px;">
+                <div style="font-size: 0.78rem; font-weight: 600; color: rgba(148,163,184,0.5); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;">
+                    Related Operators
+                </div>
+                <div style="font-size: 0.75rem; color: rgba(148,163,184,0.4); margin-bottom: 14px; line-height: 1.5;">
+                    These clusters are not the same operator. The signals below are evidence of a possible relationship — shared properties, name patterns, or geographic overlap. Each operator remains as the public records show them.
+                </div>
+                <div id="related-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+            </div>
+
+            <!-- Recent acquisitions -->
+            <div class="panel">
+                <div style="padding: 14px 16px 10px; font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8); border-bottom: 1px solid rgba(148,163,184,0.07);">
+                    Recent Acquisitions <span style="font-size: 0.72rem; font-weight: 400; color: rgba(148,163,184,0.35);">(last 18 months, up to 50)</span>
+                </div>
+                <div id="acq-table" style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.78rem;">
+                        <thead>
+                            <tr style="color: rgba(148,163,184,0.4); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em;">
+                                <th style="padding: 8px 16px; text-align: left; font-weight: 400;">Address</th>
+                                <th style="padding: 8px 16px; text-align: left; font-weight: 400;">Zip</th>
+                                <th style="padding: 8px 16px; text-align: left; font-weight: 400;">Buyer LLC</th>
+                                <th style="padding: 8px 16px; text-align: left; font-weight: 400;">Date</th>
+                                <th style="padding: 8px 8px 8px 16px; text-align: right; font-weight: 400;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="acq-rows"></tbody>
+                    </table>
+                </div>
+                <div id="acq-empty" style="display: none; padding: 24px 16px; font-size: 0.8rem; color: rgba(148,163,184,0.35); text-align: center;">
+                    No acquisitions found in the 18-month window.
+                </div>
+            </div>
+
+        </div><!-- /content -->
+    </div>
+
+    <script>
+    (function () {
+        const parts = location.pathname.replace(/\/$/, '').split('/');
+        const root = (parts[2] || '').toUpperCase();
+
+        if (!root) {
+            showError('No operator specified.');
+            return;
+        }
+
+        document.title = root + ' — PulseCities Operator Profile';
+        document.getElementById('canonical-url').href = 'https://pulsecities.com/operator/' + root;
+
+        fetch('/api/operators/' + encodeURIComponent(root))
+            .then(r => {
+                if (r.status === 404) throw new Error('Operator not found in the 18-month ACRIS window.');
+                if (!r.ok) throw new Error('API error ' + r.status);
+                return r.json();
+            })
+            .then(render)
+            .catch(err => showError(err.message));
+
+        function render(data) {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+
+            document.getElementById('op-root').textContent = data.operator_root;
+            document.getElementById('stat-properties').textContent = data.total_properties;
+            document.getElementById('stat-acquisitions').textContent = data.total_acquisitions;
+            document.getElementById('stat-llcs').textContent = data.llc_entities.length;
+            document.getElementById('stat-zips').textContent = (data.zip_codes || []).length;
+
+            // LLC list
+            const llcList = document.getElementById('llc-list');
+            data.llc_entities.forEach(name => {
+                const pill = document.createElement('span');
+                pill.className = 'llc-pill';
+                pill.textContent = name;
+                llcList.appendChild(pill);
+            });
+            document.getElementById('llc-count-badge').textContent = data.llc_entities.length + ' entities';
+
+            // Related operators
+            if (data.related_operators && data.related_operators.length > 0) {
+                document.getElementById('related-section').style.display = 'block';
+                const relList = document.getElementById('related-list');
+                data.related_operators.forEach(rel => renderRelated(relList, rel));
+            }
+
+            // Acquisitions table
+            const rows = data.recent_acquisitions || [];
+            if (rows.length === 0) {
+                document.getElementById('acq-table').style.display = 'none';
+                document.getElementById('acq-empty').style.display = 'block';
+            } else {
+                const tbody = document.getElementById('acq-rows');
+                rows.forEach((r, i) => {
+                    const tr = document.createElement('tr');
+                    tr.style.borderTop = '1px solid rgba(148,163,184,0.06)';
+                    if (i % 2 === 0) tr.style.background = 'rgba(15,23,42,0.2)';
+                    tr.innerHTML =
+                        '<td style="padding:8px 16px;color:rgba(241,245,249,0.85);">' + esc(r.address) + '</td>' +
+                        '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.6);font-size:0.72rem;">' + esc(r.zip_code || '') + '</td>' +
+                        '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.55);font-size:0.7rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(r.buyer_name || '') + '</td>' +
+                        '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.5);font-size:0.72rem;white-space:nowrap;">' + esc(r.doc_date || '') + '</td>' +
+                        '<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:rgba(148,163,184,0.6);font-size:0.72rem;white-space:nowrap;">' + (r.doc_amount ? '$' + Math.round(r.doc_amount).toLocaleString() : '—') + '</td>';
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+        function renderRelated(container, rel) {
+            const isStrong = rel.relationship_type === 'strong_affiliation';
+            const pct = Math.round(rel.combined_confidence * 100);
+
+            const card = document.createElement('div');
+            card.className = 'panel';
+            card.style.padding = '0';
+
+            const header = document.createElement('div');
+            header.style.cssText = 'padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;';
+            header.innerHTML =
+                '<div style="display:flex;align-items:center;gap:10px;">' +
+                    '<a href="/operator/' + esc(rel.operator_root) + '" class="mono accent" style="font-size:1rem;letter-spacing:0.04em;">' + esc(rel.operator_root) + '</a>' +
+                    '<span class="' + (isStrong ? 'tag-strong' : 'tag-possible') + '">' + esc(rel.relationship_type.replace('_', ' ')) + '</span>' +
+                '</div>' +
+                '<div class="mono" style="font-size:0.72rem;color:rgba(148,163,184,0.4);">' + pct + '% confidence · ' + rel.total_properties + ' props</div>';
+            card.appendChild(header);
+
+            // Signals
+            const sigRow = document.createElement('div');
+            sigRow.style.cssText = 'padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:6px;';
+            (rel.signals || []).forEach(sig => {
+                const chip = document.createElement('span');
+                chip.className = 'signal-chip';
+                chip.title = sig.detail || '';
+                chip.textContent = sig.signal_type.replace('_', ' ');
+                sigRow.appendChild(chip);
+
+                if (sig.detail) {
+                    const detail = document.createElement('div');
+                    detail.style.cssText = 'width:100%;font-size:0.7rem;color:rgba(148,163,184,0.45);padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
+                    detail.textContent = sig.detail;
+                    sigRow.appendChild(detail);
+                }
+            });
+            card.appendChild(sigRow);
+
+            // Shared properties
+            if (rel.shared_properties && rel.shared_properties.length > 0) {
+                const sharedDiv = document.createElement('div');
+                sharedDiv.style.cssText = 'border-top:1px solid rgba(148,163,184,0.07);padding:10px 16px;';
+                const label = document.createElement('div');
+                label.style.cssText = 'font-size:0.68rem;color:rgba(148,163,184,0.4);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;';
+                label.textContent = 'Shared Properties';
+                sharedDiv.appendChild(label);
+                rel.shared_properties.forEach(prop => {
+                    const row = document.createElement('div');
+                    row.style.cssText = 'font-size:0.75rem;color:rgba(148,163,184,0.65);padding:2px 0;font-family:"JetBrains Mono",monospace;';
+                    row.textContent = prop.address + (prop.zip_code ? ' · ' + prop.zip_code : '');
+                    sharedDiv.appendChild(row);
+                });
+                card.appendChild(sharedDiv);
+            }
+
+            // Related LLC entities (collapsible)
+            if (rel.llc_entities && rel.llc_entities.length > 0) {
+                const entityDiv = document.createElement('div');
+                entityDiv.style.cssText = 'border-top:1px solid rgba(148,163,184,0.07);';
+                const det = document.createElement('details');
+                const summ = document.createElement('summary');
+                summ.style.cssText = 'padding:10px 16px;display:flex;align-items:center;justify-content:space-between;';
+                summ.innerHTML =
+                    '<span style="font-size:0.72rem;color:rgba(148,163,184,0.4);">LLC entities in ' + esc(rel.operator_root) + ' cluster</span>' +
+                    '<svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.3)" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+                det.appendChild(summ);
+                const pills = document.createElement('div');
+                pills.style.cssText = 'padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:5px;';
+                rel.llc_entities.slice(0, 30).forEach(name => {
+                    const p = document.createElement('span');
+                    p.className = 'llc-pill';
+                    p.textContent = name;
+                    pills.appendChild(p);
+                });
+                if (rel.llc_entities.length > 30) {
+                    const more = document.createElement('span');
+                    more.className = 'llc-pill';
+                    more.style.color = 'rgba(148,163,184,0.35)';
+                    more.textContent = '+' + (rel.llc_entities.length - 30) + ' more';
+                    pills.appendChild(more);
+                }
+                det.appendChild(pills);
+                entityDiv.appendChild(det);
+                card.appendChild(entityDiv);
+            }
+
+            // View profile link
+            const footer = document.createElement('div');
+            footer.style.cssText = 'border-top:1px solid rgba(148,163,184,0.07);padding:10px 16px;text-align:right;';
+            footer.innerHTML = '<a href="/operator/' + esc(rel.operator_root) + '" style="font-size:0.75rem;color:rgba(249,115,22,0.7);">View ' + esc(rel.operator_root) + ' profile →</a>';
+            card.appendChild(footer);
+
+            container.appendChild(card);
+        }
+
+        function showError(msg) {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('error-state').style.display = 'block';
+            document.getElementById('error-msg').textContent = msg;
+        }
+
+        function esc(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+    })();
+    </script>
+</body>
+</html>
