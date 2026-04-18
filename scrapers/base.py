@@ -18,10 +18,17 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta, timezone
 
 import requests
+from sqlalchemy import text
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from config.nyc import SCRAPER_EXPECTED_MIN_RECORDS, SOCRATA_BASE_URL
 from models.scraper import ScraperQuarantine, ScraperRun
+
+# Rolling average window for the record-count anomaly check.
+# 14 days gives ~14 data points for daily scrapers; weekly scrapers get ~2,
+# which falls below _ROLLING_MIN_SAMPLES so the check is skipped for them.
+_ROLLING_WINDOW_DAYS = 14
+_ROLLING_MIN_SAMPLES = 3
 
 logger = logging.getLogger(__name__)
 
@@ -136,6 +143,36 @@ class BaseScraper(ABC):
         return f"{date_field} > '{since.strftime('%Y-%m-%dT%H:%M:%S.000')}'"
 
     # ------------------------------------------------------------------ #
+    # Anomaly detection                                                  #
+    # ------------------------------------------------------------------ #
+
+    def _compute_rolling_avg(self, db, current_started_at: datetime) -> float | None:
+        """
+        Return the mean records_processed over the prior _ROLLING_WINDOW_DAYS days
+        of successful runs for this scraper, excluding the current run.
+        Returns None when fewer than _ROLLING_MIN_SAMPLES exist (e.g. first few
+        runs, weekly/annual scrapers with sparse history).
+        """
+        row = db.execute(
+            text("""
+                SELECT AVG(records_processed) AS avg_val, COUNT(*) AS n
+                FROM scraper_runs
+                WHERE scraper_name   = :name
+                  AND status         = 'success'
+                  AND started_at     >= :window_start
+                  AND started_at     < :current_started_at
+            """),
+            {
+                "name": self.SCRAPER_NAME,
+                "window_start": current_started_at - timedelta(days=_ROLLING_WINDOW_DAYS),
+                "current_started_at": current_started_at,
+            },
+        ).fetchone()
+        if not row or row.n < _ROLLING_MIN_SAMPLES:
+            return None
+        return float(row.avg_val)
+
+    # ------------------------------------------------------------------ #
     # Quarantine                                                         #
     # ------------------------------------------------------------------ #
 
@@ -177,15 +214,25 @@ class BaseScraper(ABC):
         try:
             records_processed, records_failed, new_watermark = self._run(db)
 
+            warnings: list[str] = []
+
             expected_min = SCRAPER_EXPECTED_MIN_RECORDS.get(self.SCRAPER_NAME)
             if expected_min and records_processed < expected_min * 0.5:
-                logger.warning(
-                    "%s: only %d records processed (expected >= %d). "
-                    "Possible upstream API issue or data gap; review quarantine table.",
-                    self.SCRAPER_NAME,
-                    records_processed,
-                    expected_min,
+                warnings.append(
+                    f"count {records_processed} < 50% of static minimum {expected_min}"
                 )
+
+            rolling_avg = self._compute_rolling_avg(db, started_at)
+            if rolling_avg is not None and records_processed < rolling_avg * 0.5:
+                warnings.append(
+                    f"count {records_processed} < 50% of {_ROLLING_WINDOW_DAYS}-day "
+                    f"rolling average {rolling_avg:.0f}"
+                )
+
+            if warnings:
+                msg = "; ".join(warnings)
+                logger.warning("%s: anomaly: %s", self.SCRAPER_NAME, msg)
+                scraper_run.warning_message = msg
 
             scraper_run.status = "success"
             logger.info(
