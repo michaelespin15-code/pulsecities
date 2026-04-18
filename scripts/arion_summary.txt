@@ -1,0 +1,99 @@
+ARION OPERATOR INVESTIGATION
+Generated: 2026-04-18
+==========================================================================
+
+CLASSIFICATION: FALSE POSITIVE - Private mortgage fund / note investor
+
+OVERVIEW
+--------
+ARION surfaces in the operator network analysis because 12 BBLs
+list ARION-branded entities as grantee. However, all 15 records
+are document type ASST (mortgage note assignment) with zero DEED transfers.
+
+Deed acquisitions: 0
+Mortgage assignments (ASST): 15
+
+When a mortgage lender or note holder appears as grantee on an ASST record in ACRIS,
+it has received a mortgage assignment, not title to the property. This is routine
+loan servicing or note-purchase activity. ARION has not acquired real property through
+these records and is not operating as a landlord.
+
+Record window: 2025-04-23 to 2026-01-21
+
+ENTITIES
+--------
+- ARION FUND LLC: 12 record(s)
+- ARION FUND LLC ISAOA/ATIMA: 2 record(s)
+- ARION FUNDING LLC: 1 record(s)
+
+DOCUMENT TYPE BREAKDOWN
+-----------------------
+- ASST: 15
+
+MONTHLY PACE (assignments)
+--------------------------
+2025-04: ## (2)
+2025-05: ## (2)
+2025-06: #### (4)
+2025-07: ## (2)
+2025-09: ## (2)
+2025-11: # (1)
+2025-12: # (1)
+2026-01: # (1)
+
+GEOGRAPHIC FOOTPRINT (zip codes of assigned BBLs)
+-------------------------------------------------
+10452: 2 BBL(s)  (displacement score 50.1)
+10016: 1 BBL(s)  (displacement score 11.6)
+10461: 1 BBL(s)  (displacement score 50.0)
+11233: 1 BBL(s)  (displacement score 66.0)
+11211: 1 BBL(s)  (displacement score 57.4)
+11212: 1 BBL(s)  (displacement score 48.7)
+11203: 1 BBL(s)  (displacement score 55.1)
+11204: 1 BBL(s)  (displacement score 40.2)
+
+Average displacement score across these BBLs: 45.5
+BBLs in high-displacement zips (score >= 40): 80.0%
+
+These metrics describe where ARION's borrowers / note counterparties are, not where
+ARION operates as an owner. A lender making loans in high-displacement zips is not
+itself a displacement actor.
+
+COMPLETE BBL FOOTPRINT (sorted by first record date)
+----------------------------------------------------
+- 2025-04-23  1170 GERARD AVENUE                             zip  10452  ds  50.1  1 rec (ASST)  HPD 70 B/C
+- 2025-04-23  1165 GERARD AVENUE                             zip  10452  ds  50.1  1 rec (ASST)  HPD 80 B/C
+- 2025-05-28  632 METROPOLITAN AVENUE                        zip  11211  ds  57.4  2 rec (ASST)  HPD 0 B/C
+- 2025-06-20  138-25 BARCLAY AVENUE                          zip  11355  ds  25.4  2 rec (ASST)  HPD 1 B/C
+- 2025-06-30  894 WINTHROP STREET                            zip  11203  ds  55.1  1 rec (ASST)  HPD 8 B/C
+- 2025-06-30  3051620059                                     zip    N/A  ds   N/A  1 rec (ASST)  HPD 0 B/C
+- 2025-07-15  1721 HOBART AVENUE                             zip  10461  ds  50.0  1 rec (ASST)  HPD 56 B/C
+- 2025-07-18  670 HALSEY STREET                              zip  11233  ds  66.0  1 rec (ASST)  HPD 0 B/C
+- 2025-09-12  869 THOMAS S BOYLAND STREET                    zip  11212  ds  48.7  1 rec (ASST)  HPD 37 B/C
+- 2025-09-18  47 EAST 30 STREET                              zip  10016  ds  11.6  2 rec (ASST)  HPD 0 B/C
+- 2025-12-24  4012961020                                     zip    N/A  ds   N/A  1 rec (ASST)  HPD 0 B/C
+- 2026-01-21  1525 WEST 11 STREET                            zip  11204  ds  40.2  1 rec (ASST)  HPD 0 B/C
+
+EVICTION-THEN-BUY ANALYSIS
+--------------------------
+N/A. ARION has no deed acquisitions, so there is nothing to time-align against
+eviction executions. The eviction counts shown in the BBL footprint above reflect
+evictions on properties where ARION later received a mortgage assignment, which
+has no causal relationship to ARION's activity.
+
+HPD VIOLATIONS CROSS-REFERENCE
+------------------------------
+HPD violation counts are listed per BBL above for completeness. These violations
+belong to the property owners (borrowers), not to ARION. ARION is not responsible
+for conditions at properties against which it holds a mortgage note.
+
+ASSESSMENT
+----------
+ARION is a clean mortgage-lender false positive. It does not own residential real
+estate in NYC; it holds or services mortgage paper. The high-displacement-zip
+concentration flagged in weekly_operator_diff reflects borrower geography, not
+operator behavior.
+
+RECOMMENDATION: Exclude ARION from operator monitoring.
+Recommended fix: Add ARION to _BANK_ROOTS. The 'ISAOA/ATIMA' suffix ('Its Successors And/Or Assigns, As Their Interests May Appear') is a mortgagee boilerplate phrase and is a reliable tell for lender-side recordings. A party_name_normalized LIKE '%ISAOA%' or '%ATIMA%' filter at the operator-extraction layer would catch all such entities pre-emptively.
+==========================================================================

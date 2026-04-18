@@ -1,0 +1,96 @@
+JOVIA OPERATOR INVESTIGATION
+Generated: 2026-04-18
+==========================================================================
+
+CLASSIFICATION: FALSE POSITIVE - Federal credit union (Long Island, NY)
+
+OVERVIEW
+--------
+JOVIA surfaces in the operator network analysis because 12 BBLs
+list JOVIA-branded entities as grantee. However, all 16 records
+are document type ASST (mortgage note assignment) with zero DEED transfers.
+
+Deed acquisitions: 0
+Mortgage assignments (ASST): 16
+
+When a mortgage lender or note holder appears as grantee on an ASST record in ACRIS,
+it has received a mortgage assignment, not title to the property. This is routine
+loan servicing or note-purchase activity. JOVIA has not acquired real property through
+these records and is not operating as a landlord.
+
+Record window: 2025-04-23 to 2026-02-27
+
+ENTITIES
+--------
+- JOVIA FINANCIAL FEDERAL CREDIT UNION: 12 record(s)
+- JOVIA FINANCIAL CREDIT UNION: 4 record(s)
+
+DOCUMENT TYPE BREAKDOWN
+-----------------------
+- ASST: 16
+
+MONTHLY PACE (assignments)
+--------------------------
+2025-04: ## (2)
+2025-05: ## (2)
+2025-06: #### (4)
+2025-07: ## (2)
+2025-08: # (1)
+2025-12: ## (2)
+2026-02: ### (3)
+
+GEOGRAPHIC FOOTPRINT (zip codes of assigned BBLs)
+-------------------------------------------------
+11385: 2 BBL(s)  (displacement score 41.1)
+11215: 1 BBL(s)  (displacement score 45.0)
+11233: 1 BBL(s)  (displacement score 66.0)
+11216: 1 BBL(s)  (displacement score 79.5)
+11222: 1 BBL(s)  (displacement score 51.1)
+11237: 1 BBL(s)  (displacement score 47.8)
+11221: 1 BBL(s)  (displacement score 70.6)
+
+Average displacement score across these BBLs: 55.3
+BBLs in high-displacement zips (score >= 40): 100.0%
+
+These metrics describe where JOVIA's borrowers / note counterparties are, not where
+JOVIA operates as an owner. A lender making loans in high-displacement zips is not
+itself a displacement actor.
+
+COMPLETE BBL FOOTPRINT (sorted by first record date)
+----------------------------------------------------
+- 2025-04-23  207 18 STREET                                  zip  11215  ds  45.0  1 rec (ASST)  HPD 8 B/C
+- 2025-04-25  44 ROCKAWAY AVENUE                             zip  11233  ds  66.0  1 rec (ASST)  HPD 3 B/C
+- 2025-05-28  3030510016                                     zip    N/A  ds   N/A  2 rec (ASST)  HPD 0 B/C
+- 2025-06-13  298 STOCKHOLM STREET                           zip  11237  ds  47.8  2 rec (ASST)  HPD 2 B/C
+- 2025-06-24  1647 SUMMERFIELD STREET                        zip  11385  ds  41.1  1 rec (ASST)  HPD 3 B/C
+- 2025-06-27  188 FREEMAN STREET                             zip  11222  ds  51.1  1 rec (ASST)  HPD 0 B/C
+- 2025-07-07  3-61 ST NICHOLAS AVENUE                        zip  11385  ds  41.1  1 rec (ASST)  HPD 0 B/C
+- 2025-07-18  3071291034                                     zip    N/A  ds   N/A  1 rec (ASST)  HPD 0 B/C
+- 2025-08-06  1038 JEFFERSON AVENUE                          zip  11221  ds  70.6  1 rec (ASST)  HPD 0 B/C
+- 2025-12-02  3073210040                                     zip    N/A  ds   N/A  2 rec (ASST)  HPD 0 B/C
+- 2026-02-27  23 SPENCER PLACE                               zip  11216  ds  79.5  2 rec (ASST)  HPD 3 B/C
+- 2026-02-27  3073770070                                     zip    N/A  ds   N/A  1 rec (ASST)  HPD 0 B/C
+
+EVICTION-THEN-BUY ANALYSIS
+--------------------------
+N/A. JOVIA has no deed acquisitions, so there is nothing to time-align against
+eviction executions. The eviction counts shown in the BBL footprint above reflect
+evictions on properties where JOVIA later received a mortgage assignment, which
+has no causal relationship to JOVIA's activity.
+
+HPD VIOLATIONS CROSS-REFERENCE
+------------------------------
+HPD violation counts are listed per BBL above for completeness. These violations
+belong to the property owners (borrowers), not to JOVIA. JOVIA is not responsible
+for conditions at properties against which it holds a mortgage note.
+
+ASSESSMENT
+----------
+JOVIA is a clean mortgage-lender false positive. It does not own residential real
+estate in NYC; it holds or services mortgage paper. The high-displacement-zip
+concentration flagged in weekly_operator_diff reflects borrower geography, not
+operator behavior.
+
+RECOMMENDATION: Exclude JOVIA from operator monitoring.
+Recommended fix: Add JOVIA to _BANK_ROOTS in operator_network_analysis.py. Credit-union naming (FINANCIAL CREDIT UNION, FEDERAL CREDIT UNION) is a catchable pattern; consider adding 'CREDIT' as a root-level block token alongside BANK / MORTGAGE / FUNDING.
+==========================================================================
