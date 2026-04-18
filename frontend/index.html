@@ -4,6 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>PulseCities — NYC Displacement Risk Intelligence Tool</title>
+
+    <!-- SEO -->
+    <meta name="description" content="NYC displacement risk scores for 178 neighborhoods, updated daily from ACRIS deeds, HPD violations, DOB permits, evictions, and rent stabilization data.">
+    <link rel="canonical" href="https://pulsecities.com/">
+    <meta name="google-site-verification" content="REPLACE_WITH_GSC_VERIFICATION_CODE">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="PulseCities: NYC Displacement Risk Intelligence">
+    <meta property="og:description" content="Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and assessment spikes.">
+    <meta property="og:url" content="https://pulsecities.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="PulseCities">
+    <meta property="og:image" content="https://pulsecities.com/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="PulseCities displacement risk map showing heat scores across all 178 NYC neighborhoods">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PulseCities: NYC Displacement Risk Intelligence">
+    <meta name="twitter:description" content="Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and assessment spikes.">
+    <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+    <meta name="twitter:image:alt" content="PulseCities displacement risk map showing heat scores across all 178 NYC neighborhoods">
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "PulseCities",
+        "description": "Real-time displacement risk intelligence for all 178 NYC neighborhoods, built on six public data signals.",
+        "url": "https://pulsecities.com",
+        "applicationCategory": "DataVisualization",
+        "operatingSystem": "Web",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "author": { "@type": "Person", "name": "Michael Espin" },
+        "about": { "@type": "Thing", "name": "NYC Housing Displacement" }
+    }
+    </script>
+    <!-- Rewrite canonical to the neighborhood URL when viewing /neighborhood/{zip} -->
+    <script>(function(){var p=location.pathname;if(p.startsWith('/neighborhood/')){var el=document.querySelector('link[rel="canonical"]');if(el)el.href='https://pulsecities.com'+p;}})();</script>
+
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
     <!-- Privacy-friendly analytics by Plausible -->
@@ -331,7 +373,7 @@
             <div id="compare-hint" class="hidden absolute top-4 left-0 right-0 flex justify-center z-10 pointer-events-none">
                 <div class="bg-slate-900/90 backdrop-blur-sm text-sm text-slate-200 px-4 py-2.5 rounded-full border border-slate-700 shadow-lg flex items-center gap-3 pointer-events-auto">
                     <span id="compare-hint-text">Select a second neighborhood to compare</span>
-                    <button onclick="exitCompareMode()" class="text-slate-500 hover:text-slate-200 transition-colors leading-none" style="min-height:32px;min-width:24px;font-size:1rem;">&times;</button>
+                    <button onclick="exitCompareMode()" class="text-slate-500 hover:text-slate-200 transition-colors leading-none" aria-label="Exit comparison mode" style="min-height:32px;min-width:24px;font-size:1rem;">&times;</button>
                 </div>
             </div>
         </div>
@@ -347,7 +389,7 @@
                     <p class="text-sm text-base-content/60 mt-1">NYC Displacement Risk</p>
                 </div>
                 <div class="flex items-center gap-1">
-                    <button id="lang-toggle" class="text-xs text-base-content/50 hover:text-base-content mt-1" style="min-height:44px;min-width:44px;">
+                    <button id="lang-toggle" class="text-xs text-base-content/50 hover:text-base-content mt-1" aria-label="Toggle language" style="min-height:44px;min-width:44px;">
                         EN / ES
                     </button>
                     <!-- Close sheet — mobile only -->
@@ -392,7 +434,7 @@
             <div id="detail-panel" class="hidden flex-1 flex flex-col gap-4">
                 <!-- Back to at-risk list — mobile only, shown only when user navigated from the list -->
                 <button id="back-to-list-btn" onclick="showMobileMap()" class="flex items-center gap-1.5 text-xs text-base-content/50 hover:text-sky-400 transition-colors -mb-1" style="display:none;min-height:36px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="15 18 9 12 15 6"/></svg>
                     <span id="back-to-list-label">At-risk list</span>
                 </button>
                 <!-- Zip + score -->
@@ -485,7 +527,7 @@
                     <details>
                         <summary class="text-xs font-semibold text-base-content/60 uppercase tracking-wider cursor-pointer select-none flex items-center justify-between">
                             <span id="signal-breakdown-title">Signal Breakdown</span>
-                            <svg class="details-chevron text-base-content/30" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                            <svg class="details-chevron text-base-content/30" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
                         </summary>
                         <p id="signal-breakdown-note" class="text-xs text-base-content/40 mt-2 mb-3">Scores are 0–100 relative to all NYC neighborhoods, normalized per residential unit.</p>
                         <div id="signal-rows" class="flex flex-col gap-2"></div>
@@ -600,11 +642,11 @@
                     <p id="most-at-risk-title" class="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-2">Most at-risk neighborhoods right now</p>
                     <div id="desktop-borough-filters" class="flex gap-1 flex-wrap mb-3">
                         <button class="borough-pill active" data-borough="">All</button>
-                        <button class="borough-pill" data-borough="Brooklyn">BK</button>
-                        <button class="borough-pill" data-borough="Manhattan">MN</button>
-                        <button class="borough-pill" data-borough="Queens">QN</button>
-                        <button class="borough-pill" data-borough="Bronx">BX</button>
-                        <button class="borough-pill" data-borough="Staten Island">SI</button>
+                        <button class="borough-pill" data-borough="Brooklyn" aria-label="Brooklyn">BK</button>
+                        <button class="borough-pill" data-borough="Manhattan" aria-label="Manhattan">MN</button>
+                        <button class="borough-pill" data-borough="Queens" aria-label="Queens">QN</button>
+                        <button class="borough-pill" data-borough="Bronx" aria-label="Bronx">BX</button>
+                        <button class="borough-pill" data-borough="Staten Island" aria-label="Staten Island">SI</button>
                     </div>
                     <div id="top-risk-list" class="flex flex-col">
                         <div id="top-risk-skeleton" class="flex flex-col gap-2.5 animate-pulse">
@@ -670,6 +712,7 @@
                 <button
                     class="text-base-content/50 hover:text-base-content text-xl leading-none"
                     style="min-height: 44px; min-width: 44px;"
+                    aria-label="Close"
                     onclick="document.getElementById('methodology-modal').classList.add('hidden')"
                 >&#10005;</button>
             </div>
@@ -737,17 +780,17 @@
             <div style="width:36px;height:4px;background:rgba(148,163,184,0.2);border-radius:2px;margin:0 auto 10px;"></div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
                 <span id="mobile-drawer-title" style="font-size:13px;font-weight:600;color:rgba(148,163,184,0.55);text-transform:uppercase;letter-spacing:0.07em;">10 most at-risk neighborhoods</span>
-                <svg id="mobile-drawer-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.4)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;"><polyline points="18 15 12 9 6 15"/></svg>
+                <svg id="mobile-drawer-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.4)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;" aria-hidden="true" focusable="false"><polyline points="18 15 12 9 6 15"/></svg>
             </div>
         </button>
         <div id="mobile-drawer-list">
             <div id="mobile-borough-filters" style="display:flex;gap:6px;flex-wrap:wrap;padding:0 0 10px;">
                 <button class="borough-pill active" data-borough="">All</button>
-                <button class="borough-pill" data-borough="Brooklyn">BK</button>
-                <button class="borough-pill" data-borough="Manhattan">MN</button>
-                <button class="borough-pill" data-borough="Queens">QN</button>
-                <button class="borough-pill" data-borough="Bronx">BX</button>
-                <button class="borough-pill" data-borough="Staten Island">SI</button>
+                <button class="borough-pill" data-borough="Brooklyn" aria-label="Brooklyn">BK</button>
+                <button class="borough-pill" data-borough="Manhattan" aria-label="Manhattan">MN</button>
+                <button class="borough-pill" data-borough="Queens" aria-label="Queens">QN</button>
+                <button class="borough-pill" data-borough="Bronx" aria-label="Bronx">BX</button>
+                <button class="borough-pill" data-borough="Staten Island" aria-label="Staten Island">SI</button>
             </div>
             <div id="mobile-drawer-skeleton" style="display:flex;flex-direction:column;gap:8px;">
                 <div style="height:44px;background:rgba(148,163,184,0.07);border-radius:8px;"></div>
