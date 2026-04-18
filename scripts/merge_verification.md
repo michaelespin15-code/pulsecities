@@ -1,8 +1,23 @@
-# Merge Verification Report
+# Operator Affiliation Report
 
 Generated from `scripts/entity_resolution_audit.json` (2026-04-18).
-Review each candidate below before approving any cluster merge.
-Do not merge without sign-off — this file is the gate.
+
+## Decision: No merges — 2026-04-18
+
+All five candidate pairs were reviewed and **no clusters were merged**.
+Transparency takes precedence over a cleaner map. Every operator stays
+as the public records show them.
+
+Relationships are instead published on each operator's profile page
+(`/operator/{root}`) as evidence for readers to evaluate themselves.
+Shared properties, name signals, and geographic overlap are shown as
+data — not collapsed into a single cluster. Counts and scores are never
+combined across operators.
+
+This decision is final for this data set. The affiliation signals remain
+in `entity_resolution_audit.json` under `by_operator` for API use.
+
+---
 
 ---
 
@@ -57,7 +72,7 @@ Do not merge without sign-off — this file is the gate.
 ### Decision
 
 - [ ] Approve merge
-- [ ] Reject — separate operators
+- [x] Reject — separate operators
 - [ ] Needs further investigation
 
 **Notes:**
@@ -132,7 +147,7 @@ _(none — match driven by name signal only)_
 ### Decision
 
 - [ ] Approve merge
-- [ ] Reject — separate operators
+- [x] Reject — separate operators
 - [ ] Needs further investigation
 
 **Notes:**
@@ -188,7 +203,7 @@ _(none — match driven by name signal only)_
 ### Decision
 
 - [ ] Approve merge
-- [ ] Reject — separate operators
+- [x] Reject — separate operators
 - [ ] Needs further investigation
 
 **Notes:**
@@ -249,7 +264,7 @@ _(none — match driven by name signal only)_
 ### Decision
 
 - [ ] Approve merge
-- [ ] Reject — separate operators
+- [x] Reject — separate operators
 - [ ] Needs further investigation
 
 **Notes:**
@@ -305,7 +320,7 @@ _(none — match driven by name signal only)_
 ### Decision
 
 - [ ] Approve merge
-- [ ] Reject — separate operators
+- [x] Reject — separate operators
 - [ ] Needs further investigation
 
 **Notes:**
