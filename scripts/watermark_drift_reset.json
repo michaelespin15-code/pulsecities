@@ -1,0 +1,59 @@
+{
+  "generated_at": "2026-04-18T16:17:04.614897+00:00",
+  "dry_run": true,
+  "scrapers": [
+    {
+      "scraper": "311_complaints",
+      "current_watermark": "2026-04-16T02:50:00+00:00",
+      "socrata_max_event_date": "2026-04-17T02:05:41+00:00",
+      "local_max_event_date": "2026-04-16T02:50:00+00:00",
+      "drifted": false,
+      "action": "ok"
+    },
+    {
+      "scraper": "dob_permits",
+      "current_watermark": "2026-04-16T00:00:00+00:00",
+      "socrata_max_event_date": null,
+      "local_max_event_date": "2026-04-16T00:00:00+00:00",
+      "drifted": false,
+      "action": "ok"
+    },
+    {
+      "scraper": "acris_ownership",
+      "current_watermark": "2026-03-31T00:00:00+00:00",
+      "socrata_max_event_date": "2026-03-31T00:00:00+00:00",
+      "local_max_event_date": "2026-04-15T02:58:35.504419+00:00",
+      "drifted": false,
+      "action": "ok"
+    },
+    {
+      "scraper": "evictions",
+      "current_watermark": "2026-04-15T00:00:00+00:00",
+      "socrata_max_event_date": "2026-04-17T00:00:00+00:00",
+      "local_max_event_date": "2026-04-15T00:00:00+00:00",
+      "drifted": false,
+      "action": "ok"
+    },
+    {
+      "scraper": "dcwp_licenses",
+      "current_watermark": "2026-04-16T00:00:00+00:00",
+      "socrata_max_event_date": "2026-04-16T00:00:00+00:00",
+      "local_max_event_date": "2026-04-16T00:00:00+00:00",
+      "drifted": false,
+      "action": "ok"
+    },
+    {
+      "scraper": "hpd_violations",
+      "current_watermark": null,
+      "socrata_max_event_date": "2026-04-16T00:00:00+00:00",
+      "local_max_event_date": "2025-07-15T00:00:00+00:00",
+      "drifted": false,
+      "action": "skip \u2014 no watermark (scraper has never run successfully)"
+    }
+  ],
+  "summary": {
+    "total_checked": 6,
+    "drifted": 0,
+    "reset": 0
+  }
+}
