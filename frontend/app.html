@@ -1070,6 +1070,17 @@
                     complaint_rate:   'complaints',
                     rs_unit_loss:     'RS unit loss',
                     assessment_spike: 'tax spike',
+                },
+                summary: {
+                    critical_opening: 'This neighborhood shows critical displacement pressure (score {score}).',
+                    high_opening:     'This neighborhood shows high displacement pressure (score {score}).',
+                    moderate_opening: 'This neighborhood shows moderate displacement pressure (score {score}).',
+                    low_opening:      'This neighborhood shows low displacement pressure relative to the rest of NYC (score {score}).',
+                    no_data:          'Displacement risk data is not yet available for this neighborhood.',
+                    low_detail:       'No individual signal stands out above citywide averages.',
+                    no_dominant:      'Signals are present but no single factor dominates.',
+                    primary_driver:   'The primary driver is {signal}.',
+                    two_drivers:      'The dominant drivers are {signal1} and {signal2}.',
                 }
             },
             es: {
@@ -1196,6 +1207,17 @@
                     complaint_rate:   'quejas',
                     rs_unit_loss:     'pérdida RS',
                     assessment_spike: 'valuación fiscal',
+                },
+                summary: {
+                    critical_opening: 'Este vecindario muestra presión de desplazamiento crítica (puntuación {score}).',
+                    high_opening:     'Este vecindario muestra alta presión de desplazamiento (puntuación {score}).',
+                    moderate_opening: 'Este vecindario muestra presión de desplazamiento moderada (puntuación {score}).',
+                    low_opening:      'Este vecindario muestra baja presión de desplazamiento en comparación con el resto de NYC (puntuación {score}).',
+                    no_data:          'Los datos de riesgo de desplazamiento aún no están disponibles para este vecindario.',
+                    low_detail:       'Ninguna señal individual sobresale por encima de los promedios de la ciudad.',
+                    no_dominant:      'Hay señales presentes, pero ningún factor domina.',
+                    primary_driver:   'El factor principal es {signal}.',
+                    two_drivers:      'Los factores dominantes son {signal1} y {signal2}.',
                 }
             }
         };
@@ -1411,6 +1433,29 @@
         function translateEvictionType(type) {
             if (!type) return t('eviction_label', 'fallback');
             return t('eviction_label', type.toLowerCase()) || t('eviction_label', 'fallback');
+        }
+
+        function buildSummary(score, breakdown) {
+            if (score === null || score === undefined) return t('summary', 'no_data');
+            const s = Math.round(score * 10) / 10;
+            let opening;
+            if (s >= 76)      opening = t('summary', 'critical_opening').replace('{score}', s);
+            else if (s >= 56) opening = t('summary', 'high_opening').replace('{score}', s);
+            else if (s >= 34) opening = t('summary', 'moderate_opening').replace('{score}', s);
+            else              opening = t('summary', 'low_opening').replace('{score}', s);
+
+            const active = Object.entries(breakdown || {})
+                .filter(([, v]) => typeof v === 'number' && v > 30)
+                .sort((a, b) => b[1] - a[1]);
+            const top = active.slice(0, 2).map(([k]) => t('count_label', k));
+
+            let detail;
+            if (s < 34)         detail = t('summary', 'low_detail');
+            else if (!top.length) detail = t('summary', 'no_dominant');
+            else if (top.length === 1) detail = t('summary', 'primary_driver').replace('{signal}', top[0]);
+            else detail = t('summary', 'two_drivers').replace('{signal1}', top[0]).replace('{signal2}', top[1]);
+
+            return opening + ' ' + detail;
         }
 
         function countUp(el, target, color, duration) {
@@ -1674,8 +1719,8 @@
             updatedEl.textContent = lastUpdated ? relativeTime(lastUpdated) : '';
 
             const summaryEl = document.getElementById('detail-summary');
-            if (summaryText) {
-                summaryEl.textContent = summaryText;
+            if (score !== null && score !== undefined) {
+                summaryEl.textContent = buildSummary(score, breakdown);
                 summaryEl.classList.remove('hidden');
             } else {
                 summaryEl.textContent = '';
