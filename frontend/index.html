@@ -184,6 +184,13 @@
                 </div>
             </div>
 
+            <!-- Watchlist (returning users only — hidden when empty) -->
+            <div id="watchlist-section" class="w-full mt-6" style="display:none;">
+                <div class="text-xs font-mono uppercase tracking-widest mb-3 text-center"
+                     style="color:#94a3b8;letter-spacing:0.1em;" data-i18n="your_watchlist">Your Watchlist</div>
+                <div id="watchlist-cards" class="flex flex-wrap gap-3 justify-center"></div>
+            </div>
+
             <!-- Live top-risk ZIP cards -->
             <div id="zip-cards" class="flex flex-wrap gap-3 justify-center w-full mt-2"></div>
 
@@ -240,6 +247,7 @@
                 operator_profile:   'Operator profile \u2192',
                 hook_ratio:         '{ratio} LLC transfers for every eviction filed this month.',
                 hook_neutral:       '{llc} LLC transfers and {evictions} eviction filings in the last 30 days',
+                your_watchlist:     'Your Watchlist',
                 moving_this_week:   'Moving This Week',
                 sig_llc:            'LLC acquisitions',
                 sig_evictions:      'evictions',
@@ -258,6 +266,7 @@
                 operator_profile:   'Perfil del operador \u2192',
                 hook_ratio:         '{ratio} transferencias LLC por cada desalojo presentado este mes.',
                 hook_neutral:       '{llc} transferencias LLC y {evictions} desalojos registrados este mes',
+                your_watchlist:     'Tu Lista de Seguimiento',
                 moving_this_week:   'Esta Semana',
                 sig_llc:            'adquisiciones LLC',
                 sig_evictions:      'desalojos',
@@ -429,6 +438,49 @@
             .then(r => r.ok ? r.json() : null)
             .then(data => { if (data) renderMovers(data.neighborhoods || []); })
             .catch(() => {});
+
+        (function loadWatchlist() {
+            let zips;
+            try { zips = JSON.parse(localStorage.getItem('pc-watchlist') || '[]'); } catch { zips = []; }
+            if (!zips.length) return;
+            Promise.all(zips.map(zip =>
+                fetch(`/api/neighborhoods/${zip}/score`).then(r => r.ok ? r.json() : null).catch(() => null)
+            )).then(results => {
+                const section = document.getElementById('watchlist-section');
+                const container = document.getElementById('watchlist-cards');
+                if (!section || !container) return;
+                let rendered = 0;
+                results.forEach((data, i) => {
+                    const zip = zips[i];
+                    const score = data ? data.score : null;
+                    const name = data ? (data.name || zip) : zip;
+                    const color = scoreColor(score);
+                    const card = document.createElement('a');
+                    card.href = `/map?q=${encodeURIComponent(zip)}`;
+                    card.className = 'zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block relative';
+                    card.style.cssText = 'background:rgba(30,41,59,0.7);min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;';
+                    card.innerHTML = `
+                        <button class="watch-remove absolute top-2 right-2 text-slate-600 hover:text-slate-300 transition-colors leading-none" data-zip="${zip}" style="font-size:14px;background:none;border:none;cursor:pointer;padding:2px 4px;" aria-label="Remove">&#10005;</button>
+                        <div class="font-mono text-sm font-bold text-slate-100 mb-0.5 pr-4">${zip}</div>
+                        <div class="text-xs text-slate-400 truncate mb-1">${name}</div>
+                        <div class="font-mono text-sm font-semibold" style="color:${color};">${score != null ? score.toFixed(1) : '\u2014'}</div>
+                    `;
+                    card.querySelector('.watch-remove').addEventListener('click', e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        let list;
+                        try { list = JSON.parse(localStorage.getItem('pc-watchlist') || '[]'); } catch { list = []; }
+                        list = list.filter(z => z !== zip);
+                        localStorage.setItem('pc-watchlist', JSON.stringify(list));
+                        card.remove();
+                        if (!container.children.length) section.style.display = 'none';
+                    });
+                    container.appendChild(card);
+                    rendered++;
+                });
+                if (rendered) section.style.display = '';
+            });
+        })();
 
         function handleSearch() {
             const q = document.getElementById('search-input').value.trim();

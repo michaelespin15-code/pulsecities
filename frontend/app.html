@@ -252,6 +252,26 @@
                 gap: 8px;
                 padding: 0 4px;
             }
+            /* Move legend to top-right on mobile — permanently clear of drawer */
+            #map-legend {
+                top: 8px !important;
+                bottom: auto !important;
+                left: auto !important;
+                right: 8px !important;
+                z-index: 31 !important;
+                font-size: 10px !important;
+                padding: 5px 9px !important;
+                gap: 3px !important;
+            }
+            /* Score history chart — taller on mobile for readability */
+            #history-chart-wrap {
+                height: 140px !important;
+            }
+            /* Signal breakdown rows — more tap-friendly vertical spacing */
+            #signal-rows > div {
+                padding-top: 10px !important;
+                padding-bottom: 10px !important;
+            }
         }
         /* Pulse dot animation — hero overlay center stat (D-10) */
         @keyframes hero-pulse-dot {
@@ -301,19 +321,20 @@
                 <div style="width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);"></div>
             </div>
             <!-- Header -->
-            <div class="mb-3 md:mb-6 flex items-start justify-between">
-                <div>
-                    <button onclick="resetToHero()" class="text-left leading-none" title="Return to home" style="background:none;border:none;padding:0;cursor:pointer;">
-                        <h1 class="text-xl font-semibold" style="color: #38bdf8;">PulseCities</h1>
-                    </button>
-                    <p class="text-sm text-slate-400 mt-1">NYC Displacement Risk</p>
+            <div class="mb-3 md:mb-6">
+                <div class="flex items-center justify-between mb-2">
+                    <a href="/" class="text-xs text-slate-500 hover:text-slate-300 transition-colors" style="min-height:32px;display:flex;align-items:center;">&#8592; Home</a>
+                    <div class="flex items-center gap-1">
+                        <button id="lang-toggle" class="text-xs text-slate-400 hover:text-base-content" aria-label="Toggle language" style="min-height:44px;min-width:44px;">
+                            EN / ES
+                        </button>
+                        <!-- Close sheet — mobile only -->
+                        <button onclick="showMobileMap()" class="md:hidden text-slate-400 hover:text-base-content transition-colors" aria-label="Close" style="min-height:44px;min-width:36px;font-size:1.25rem;line-height:1;">&#x2715;</button>
+                    </div>
                 </div>
-                <div class="flex items-center gap-1">
-                    <button id="lang-toggle" class="text-xs text-slate-400 hover:text-base-content mt-1" aria-label="Toggle language" style="min-height:44px;min-width:44px;">
-                        EN / ES
-                    </button>
-                    <!-- Close sheet — mobile only -->
-                    <button onclick="showMobileMap()" class="md:hidden text-slate-400 hover:text-base-content transition-colors" aria-label="Close" style="min-height:44px;min-width:36px;font-size:1.25rem;line-height:1;">&#x2715;</button>
+                <div class="text-center">
+                    <h1 class="text-xl font-semibold leading-none" style="color: #38bdf8;">PulseCities</h1>
+                    <p class="text-sm text-slate-400 mt-1">NYC Displacement Risk</p>
                 </div>
             </div>
 
@@ -370,6 +391,7 @@
                         <span id="detail-risk-label">Displacement Risk</span>
                         <div class="flex items-center gap-3">
                             <span id="detail-updated"></span>
+                            <button id="watch-btn" onclick="toggleWatch()" class="transition-colors font-medium" style="min-height:32px;color:rgba(56,189,248,0.7);">Watch</button>
                             <button id="compare-btn" onclick="enterCompareMode()" class="text-orange-400/70 hover:text-orange-400 transition-colors font-medium" style="min-height:32px;">Compare</button>
                         </div>
                     </div>
@@ -417,7 +439,7 @@
                     <details>
                         <summary class="text-xs font-semibold text-slate-400 uppercase tracking-wider cursor-pointer select-none mb-3 flex items-center justify-between">
                             <span id="pulse-section-title">Neighborhood Pulse</span>
-                            <span id="pulse-last-days" class="text-slate-500 text-xs normal-case tracking-normal font-normal">past 365 days</span>
+                            <span id="pulse-last-days" class="text-slate-500 text-xs normal-case tracking-normal font-normal">past 90 days</span>
                         </summary>
 
                         <!-- LLC Acquisitions subsection -->
@@ -458,16 +480,14 @@
                         </summary>
                         <p id="signal-breakdown-note" class="text-xs text-slate-400 mt-2 mb-3">Scores are 0–100 relative to all NYC neighborhoods, normalized per residential unit. Signals measured over the past 365 days.</p>
                         <div id="signal-rows" class="flex flex-col gap-2"></div>
-                        <a
+                        <button
                             id="methodology-trigger"
-                            href="/methodology"
-                            target="_blank"
-                            rel="noopener"
+                            onclick="document.getElementById('methodology-modal').classList.remove('hidden')"
                             class="text-xs text-sky-400 hover:text-sky-300 text-left underline mt-2 block"
-                            style="min-height: 44px; display: flex; align-items: center;"
+                            style="min-height: 44px; display: flex; align-items: center; background: none; border: none; padding: 0; cursor: pointer;"
                         >
                             How scores work
-                        </a>
+                        </button>
                     </details>
                 </div>
 
@@ -654,7 +674,7 @@
             <div class="flex flex-col gap-4 text-sm">
                 <div>
                     <h3 class="font-semibold text-base-content mb-1">LLC Acquisitions <span class="text-slate-400 font-normal">(weight: 26%)</span></h3>
-                    <p class="text-base-content/70">Deed transfers to limited liability companies via ACRIS. LLC ownership is associated with speculative purchasing patterns and rapid rent increases. Financial institution transfers (mortgage servicers, foreclosure deeds) are excluded. Source: NYC ACRIS (bnx9-e6tj, 636b-3b5g, 8h5j-fqxa).</p>
+                    <p class="text-base-content/70">Deed transfers to limited liability companies via ACRIS. LLC ownership is associated with speculative purchasing patterns and rapid rent increases. Financial institution transfers (mortgage servicers, foreclosure deeds) are excluded. Source: NYC ACRIS (bnx9-e6tj, 636b-3b5g, 8h5j-fqxa). The current signal counts all LLC acquisitions in the 365-day window. Refinement to exclude corporate-to-corporate transfers (seller already LLC) is planned for v2. Data transparency over signal precision for launch.</p>
                 </div>
                 <div>
                     <h3 class="font-semibold text-base-content mb-1">Permit Filings <span class="text-slate-400 font-normal">(weight: 21%)</span></h3>
@@ -957,7 +977,7 @@
                 },
                 pulse: {
                     section_title:    'Neighborhood Pulse',
-                    last_n_days:      'past 365 days',
+                    last_n_days:      'past 90 days',
                     llc_header:       'LLC Acquisitions',
                     permits_header:   'Recent Permits',
                     evictions_header: 'Recent Evictions',
@@ -1134,7 +1154,7 @@
                 },
                 pulse: {
                     section_title:    'Pulso del Vecindario',
-                    last_n_days:      'últimos 365 días',
+                    last_n_days:      'últimos 90 días',
                     llc_header:       'Adquisiciones por LLC',
                     permits_header:   'Permisos Recientes',
                     evictions_header: 'Desalojos Recientes',
@@ -1597,9 +1617,9 @@
         function formatDate(isoString) {
             if (!isoString) return '';
             const d = new Date(isoString);
-            const now = new Date();
-            const opts = { month: 'short', day: 'numeric' };
-            if (d.getFullYear() !== now.getFullYear()) opts.year = 'numeric';
+            const nowYear = new Date().getUTCFullYear();
+            const opts = { month: 'short', day: 'numeric', timeZone: 'UTC' };
+            if (d.getUTCFullYear() !== nowYear) opts.year = 'numeric';
             return d.toLocaleDateString('en-US', opts);
         }
 
@@ -1763,8 +1783,10 @@
             this.textContent = isHidden ? t('ui', 'hide') : t('ui', 'reno_flip_toggle');
         });
 
-        function showDetail(zip, score, breakdown, lastUpdated, signalLastUpdated, summaryText, name, borough) {
+        function showDetail(zip, score, breakdown, lastUpdated, signalLastUpdated, summaryText, name, borough, rawCounts) {
             setPanel('detail');
+            const sidebarEl = document.getElementById('sidebar');
+            if (sidebarEl) sidebarEl.scrollTop = 0;
             // Clear stale sparkline on new neighborhood selection
             const staleSparkline = document.querySelector('#detail-score')?.parentElement?.querySelector('svg.sparkline');
             if (staleSparkline) staleSparkline.remove();
@@ -1775,6 +1797,7 @@
             document.getElementById('recent-activity-section').classList.add('hidden');
 
             document.getElementById('detail-zip').textContent = zip;
+            _updateWatchBtn(zip);
             const hoodEl = document.getElementById('detail-neighborhood');
             if (hoodEl) hoodEl.textContent = (name && name !== zip) ? name : (borough || '');
 
@@ -1821,6 +1844,14 @@
                 rs_unit_loss:      t('signals', 'rs_unit_loss')
             };
             const slu = signalLastUpdated || {};
+            const counts = rawCounts || {};
+
+            const _countLabel = {
+                llc_acquisitions: n => `${n} acquisition${n !== 1 ? 's' : ''} this year`,
+                evictions:        n => `${n} eviction${n !== 1 ? 's' : ''} this year`,
+                permits:          n => `${n} alteration permit${n !== 1 ? 's' : ''} this year`,
+                complaint_rate:   n => `${n} housing complaint${n !== 1 ? 's' : ''} this year`,
+            };
 
             const rows = document.getElementById('signal-rows');
             rows.innerHTML = '';
@@ -1832,6 +1863,10 @@
                     const label = signalNames[key] || key;
                     const ts = slu[key] ? formatDate(slu[key]) : '';
                     const barPct = numVal !== null ? Math.max(0, Math.min(100, numVal)) : 0;
+                    const rawN = counts[key];
+                    const countLine = (rawN > 0 && _countLabel[key])
+                        ? `<div class="text-xs text-slate-500 mt-0.5">${_countLabel[key](rawN)}</div>`
+                        : '';
 
                     const row = document.createElement('div');
                     row.className = 'py-2 border-b border-base-content/[0.06] last:border-0';
@@ -1843,6 +1878,7 @@
                         <div style="height:3px;border-radius:2px;background:rgba(148,163,184,0.12);">
                             <div style="height:100%;border-radius:2px;width:${barPct}%;background:${numVal !== null ? signalBarColor(numVal) : 'transparent'};transition:width 0.4s ease;"></div>
                         </div>
+                        ${countLine}
                         ${ts ? `<div class="text-xs text-sky-400 mt-1">Updated ${ts}</div>` : ''}
                     `;
                     rows.appendChild(row);
@@ -1878,7 +1914,8 @@
                     _cachedZipData.signalLastUpdated,
                     _cachedZipData.summaryText,
                     _cachedZipData.name,
-                    _cachedZipData.borough
+                    _cachedZipData.borough,
+                    _cachedZipData.rawCounts
                 );
                 renderPulse(_cachedZip);
             }
@@ -1915,6 +1952,30 @@
             document.getElementById('compare-hint').classList.add('hidden');
             const btn = document.getElementById('compare-btn');
             if (btn) { btn.textContent = t('ui', 'compare'); btn.onclick = enterCompareMode; }
+        }
+
+        function _watchList() {
+            try { return JSON.parse(localStorage.getItem('pc-watchlist') || '[]'); }
+            catch { return []; }
+        }
+
+        function _updateWatchBtn(zip) {
+            const btn = document.getElementById('watch-btn');
+            if (!btn) return;
+            const watched = _watchList().includes(zip);
+            btn.textContent = watched ? 'Watching' : 'Watch';
+            btn.style.color = watched ? '#38bdf8' : 'rgba(56,189,248,0.7)';
+        }
+
+        function toggleWatch() {
+            const zip = document.getElementById('detail-zip').textContent.trim();
+            if (!zip || zip === '\u2014') return;
+            const list = _watchList();
+            const idx = list.indexOf(zip);
+            if (idx >= 0) { list.splice(idx, 1); }
+            else { list.unshift(zip); if (list.length > 12) list.pop(); }
+            localStorage.setItem('pc-watchlist', JSON.stringify(list));
+            _updateWatchBtn(zip);
         }
 
         async function selectComparison(zip1, zip2) {
@@ -2500,7 +2561,8 @@
                     _cachedZipData.signalLastUpdated,
                     _cachedZipData.summaryText,
                     _cachedZipData.name,
-                    _cachedZipData.borough
+                    _cachedZipData.borough,
+                    _cachedZipData.rawCounts
                 );
             } else if (_cachedZip) {
                 setPanel('detail');
@@ -2604,6 +2666,52 @@
             }
         });
 
+        // Mobile: fade legend after 8s or on first map/drawer interaction.
+        // A "See legend" button appears after dismissal so users can bring it back.
+        if (window.innerWidth < 768) {
+            const _legend = document.getElementById('map-legend');
+            let _legendGone = false;
+
+            const _seeLegendBtn = document.createElement('button');
+            _seeLegendBtn.textContent = 'See legend';
+            _seeLegendBtn.style.cssText = 'display:none;position:absolute;top:8px;right:8px;z-index:31;font-size:10px;color:rgba(148,163,184,0.7);background:rgba(15,23,42,0.8);border:1px solid rgba(148,163,184,0.15);border-radius:4px;padding:4px 8px;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);';
+            const _mapEl    = document.getElementById('map');
+            const _drawerHandle = document.getElementById('mobile-drawer-handle');
+            let _hideTimer  = null;
+
+            function _armDismiss() {
+                clearTimeout(_hideTimer);
+                _hideTimer = setTimeout(_hideLegend, 8000);
+                _mapEl.addEventListener('click', _hideLegend, { once: true });
+                _drawerHandle.addEventListener('click', _hideLegend, { once: true });
+            }
+
+            function _hideLegend() {
+                if (_legendGone || !_legend) return;
+                _legendGone = true;
+                clearTimeout(_hideTimer);
+                _legend.style.transition = 'opacity 0.4s ease';
+                _legend.style.opacity = '0';
+                setTimeout(() => {
+                    _legend.style.display = 'none';
+                    _seeLegendBtn.style.display = 'block';
+                }, 420);
+            }
+
+            _seeLegendBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                _legendGone = false;
+                _legend.style.transition = 'opacity 0.4s ease';
+                _legend.style.display = '';
+                _legend.style.opacity = '1';
+                _seeLegendBtn.style.display = 'none';
+                _armDismiss();
+            });
+            document.getElementById('map').appendChild(_seeLegendBtn);
+
+            _armDismiss();
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const label = lang === 'es' ? 'ES / EN' : 'EN / ES';
             const toggleBtn = document.getElementById('lang-toggle');
@@ -2660,9 +2768,10 @@
                         lastUpdated: data.last_updated,
                         signalLastUpdated: data.signal_last_updated,
                         name: data.name,
-                        borough: data.borough
+                        borough: data.borough,
+                        rawCounts: data.signal_raw_counts || {}
                     };
-                    showDetail(zip, data.score, data.signal_breakdown, data.last_updated, data.signal_last_updated, data.summary_text, data.name, data.borough);
+                    showDetail(zip, data.score, data.signal_breakdown, data.last_updated, data.signal_last_updated, data.summary_text, data.name, data.borough, data.signal_raw_counts);
                     renderPulse(zip);
                     renderRenovationFlip(zip);
                     renderScoreHistory(zip, _historyDays);
@@ -2807,6 +2916,7 @@
             const handle = document.getElementById('mobile-drawer-handle');
             const chevron = document.getElementById('mobile-drawer-chevron');
             const expanded = drawer.classList.toggle('drawer-expanded');
+            document.body.classList.toggle('drawer-open', expanded);
             if (handle) handle.setAttribute('aria-expanded', expanded);
             if (chevron) chevron.style.transform = expanded ? 'rotate(180deg)' : '';
         }
