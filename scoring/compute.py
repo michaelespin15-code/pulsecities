@@ -107,10 +107,14 @@ def _assert_score_valid(zip_code: str, score: float, breakdown: dict) -> None:
 
 def _aggregate_permits(db: Session, cutoff: date | None = None) -> List[Tuple[str, int]]:
     """
-    Return (zip_code, count) for permits filed in the past 365 days,
+    Return (zip_code, count) for alteration permits filed in the past 365 days,
     restricted to residential parcels (parcels.units_res > 0).
-    Commercial permits (office towers, retail) are excluded — they inflate
-    scores for mixed-use and already-gentrified zips (e.g. 10018, 10013).
+    Only permit_type = 'AL' (alterations to occupied buildings) on parcels with
+    3+ residential units is counted. New Building (NB), Foundation (FO), Demolition
+    (DM), and equipment/plumbing permits are excluded — they reflect construction on
+    already-cleared sites or routine maintenance, not active tenant displacement.
+    Single- and two-family parcels (units_res < 3) are excluded because alteration
+    permits there are almost always owner-driven renovations, not landlord harassment.
     Permits without a BBL match in parcels are excluded (can't confirm residential).
     cutoff: explicit start-of-window date; defaults to today - 365 days when None.
     """
@@ -124,7 +128,8 @@ def _aggregate_permits(db: Session, cutoff: date | None = None) -> List[Tuple[st
             WHERE pr.zip_code IS NOT NULL
               AND pr.bbl IS NOT NULL
               AND pr.filing_date >= :cutoff
-              AND p.units_res > 0
+              AND p.units_res >= 3
+              AND pr.permit_type = 'AL'
             GROUP BY pr.zip_code
             ORDER BY permit_count DESC
             """
@@ -173,7 +178,8 @@ def _aggregate_llc_acquisitions(db: Session, cutoff: date | None = None) -> List
     These are not speculative investor purchases and would otherwise inflate LLC
     scores in lower-income neighborhoods, inverting the displacement signal.
     Excluded patterns (case-insensitive substring): MORTGAGE, LOAN SERVICING,
-    LOAN SERVICE, FEDERAL SAVINGS, CREDIT UNION.
+    LOAN SERVICE, LOAN FUNDER, FEDERAL SAVINGS, CREDIT UNION, LENDING,
+    [ ]FINANCIAL[ ], [ ]FINANCIAL LLC, REVERSE LLC, GUIDANCE RESIDENTIAL.
     cutoff: explicit start-of-window date; defaults to today - 365 days when None.
     """
     effective = cutoff if cutoff is not None else (date.today() - timedelta(days=365))
@@ -192,8 +198,14 @@ def _aggregate_llc_acquisitions(db: Session, cutoff: date | None = None) -> List
               AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
               AND o.party_name_normalized NOT ILIKE '%LOAN SERVICING%'
               AND o.party_name_normalized NOT ILIKE '%LOAN SERVICE%'
+              AND o.party_name_normalized NOT ILIKE '%LOAN FUNDER%'
               AND o.party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
               AND o.party_name_normalized NOT ILIKE '%CREDIT UNION%'
+              AND o.party_name_normalized NOT ILIKE '%LENDING%'
+              AND o.party_name_normalized NOT ILIKE '% FINANCIAL %'
+              AND o.party_name_normalized NOT ILIKE '% FINANCIAL LLC'
+              AND o.party_name_normalized NOT ILIKE '%REVERSE LLC'
+              AND o.party_name_normalized NOT ILIKE '%GUIDANCE RESIDENTIAL%'
             GROUP BY p.zip_code
             ORDER BY llc_count DESC
             """

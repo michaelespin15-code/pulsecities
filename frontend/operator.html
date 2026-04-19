@@ -44,14 +44,12 @@
                 <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span style="font-size: 0.85rem; color: rgba(148,163,184,0.6);">PulseCities</span>
             </a>
-            <div style="display:flex;align-items:center;gap:16px;">
-                <a href="/" style="font-size: 0.78rem; color: rgba(148,163,184,0.5);" data-i18n="back_map">← Map</a>
-                <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
-            </div>
+            <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
         </div>
     </nav>
 
     <div style="max-width: 860px; margin: 0 auto; padding: 32px 20px 80px;">
+        <a href="/" style="font-size: 0.75rem; color: rgba(148,163,184,0.7); display: inline-block; margin-bottom: 20px;" data-i18n="back_map">← Home</a>
 
         <!-- Loading -->
         <div id="loading-state" style="justify-content: center; padding: 80px 0; color: rgba(148,163,184,0.4); font-size: 0.85rem; font-family: 'JetBrains Mono', monospace;" data-i18n="loading">
@@ -63,7 +61,7 @@
             <div style="font-size: 2rem; margin-bottom: 12px;">404</div>
             <div style="color: rgba(148,163,184,0.6); font-size: 0.9rem;" id="error-msg">Operator not found.</div>
             <div style="margin-top: 16px;">
-                <a href="/" style="font-size: 0.8rem; color: rgba(249,115,22,0.8);">← Back to map</a>
+                <a href="/" style="font-size: 0.8rem; color: rgba(249,115,22,0.8);">← Back to home</a>
             </div>
         </div>
 
@@ -75,11 +73,11 @@
                     <div>
                         <h1 id="op-root" class="mono accent" style="font-size: 1.8rem; font-weight: 400; letter-spacing: 0.04em;"></h1>
                         <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
-                            <span class="signal-chip">18-month window</span>
-                            <span class="signal-chip">public records</span>
+                            <span class="signal-chip" data-i18n="chip_window">18-month window</span>
+                            <span class="signal-chip" data-i18n="chip_public_records">public records</span>
                         </div>
                     </div>
-                    <div style="font-size: 0.72rem; color: rgba(148,163,184,0.35); font-family: 'JetBrains Mono', monospace; padding-top: 6px;">
+                    <div style="font-size: 0.72rem; color: rgba(148,163,184,0.35); font-family: 'JetBrains Mono', monospace; padding-top: 6px;" data-i18n="source_acris">
                         Source: NYC ACRIS
                     </div>
                 </div>
@@ -169,7 +167,7 @@
 
     const i18n = {
         en: {
-            back_map:            '\u2190 Map',
+            back_map:            '\u2190 Home',
             loading:             'Loading operator profile...',
             not_found:           'Operator not found.',
             stat_properties:     'Properties',
@@ -196,9 +194,17 @@
             confidence:          '{pct}% confidence \u00b7 {props} props',
             rel_strong:          'strong affiliation',
             rel_possible:        'possible affiliation',
+            chip_window:         '18-month window',
+            chip_public_records: 'public records',
+            source_acris:        'Source: NYC ACRIS',
+            sig_name_embedding:  'name embedding',
+            sig_shared_bbl:      'shared bbl',
+            sig_shared_address:  'shared address',
+            sig_geo_overlap:     'geographic overlap',
+            sig_name_similarity: 'name similarity',
         },
         es: {
-            back_map:            '\u2190 Mapa',
+            back_map:            '\u2190 Inicio',
             loading:             'Cargando perfil del operador...',
             not_found:           'Operador no encontrado.',
             stat_properties:     'Propiedades',
@@ -225,6 +231,14 @@
             confidence:          '{pct}% confianza \u00b7 {props} propiedades',
             rel_strong:          'afiliaci\u00f3n fuerte',
             rel_possible:        'posible afiliaci\u00f3n',
+            chip_window:         'ventana de 18 meses',
+            chip_public_records: 'registros p\u00fablicos',
+            source_acris:        'Fuente: NYC ACRIS',
+            sig_name_embedding:  'similitud de nombre',
+            sig_shared_bbl:      'BBL compartido',
+            sig_shared_address:  'direcci\u00f3n compartida',
+            sig_geo_overlap:     'superposici\u00f3n geogr\u00e1fica',
+            sig_name_similarity: 'similitud de nombre',
         }
     };
 
@@ -338,7 +352,9 @@
             const chip = document.createElement('span');
             chip.className   = 'signal-chip';
             chip.title       = sig.detail || '';
-            chip.textContent = sig.signal_type.replace(/_/g, ' ');
+            chip.textContent = t('sig_' + sig.signal_type) !== 'sig_' + sig.signal_type
+                ? t('sig_' + sig.signal_type)
+                : sig.signal_type.replace(/_/g, ' ');
             sigRow.appendChild(chip);
             if (sig.detail) {
                 const detail = document.createElement('div');
