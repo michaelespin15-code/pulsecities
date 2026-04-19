@@ -612,7 +612,7 @@
                 </div>
                 <!-- Attribution -->
                 <div id="sidebar-attribution" class="pt-3 border-t border-base-content/10 text-[13px] sm:text-xs text-slate-500 text-center">
-                    Built by
+                    <span id="sidebar-built-by">Built by</span>
                     <a
                         href="https://www.linkedin.com/in/michaelespin"
                         target="_blank"
@@ -695,7 +695,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11" aria-hidden="true" focusable="false">
             <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
         </svg>
-        Built by Michael Espin
+        <span id="map-credit-label">Built by</span> Michael Espin
     </a>
 
 
@@ -1025,7 +1025,8 @@
                     subscribe:           'Subscribe',
                     no_data:             'No data available.',
                     unable_to_load:      'Unable to load neighborhoods.',
-                    top_risk_window:     'Counts reflect the past 365 days'
+                    top_risk_window:     'Counts reflect the past 365 days',
+                    built_by:            'Built by'
                 },
                 risk_signal: {
                     permits:          'Surge in renovation permit filings',
@@ -1163,7 +1164,8 @@
                     subscribe:           'Suscribirse',
                     no_data:             'Sin datos disponibles.',
                     unable_to_load:      'No se pudieron cargar los vecindarios.',
-                    top_risk_window:     'Datos de los últimos 365 días'
+                    top_risk_window:     'Datos de los últimos 365 días',
+                    built_by:            'Creado por'
                 },
                 risk_signal: {
                     permits:          'Aumento en solicitudes de permisos de renovación',
@@ -1267,6 +1269,8 @@
                 'cmp-new-btn':                t('ui', 'cmp_new'),
                 'most-at-risk-title':         t('ui', 'most_at_risk'),
                 'top-risk-window-note':       t('ui', 'top_risk_window'),
+                'sidebar-built-by':           t('ui', 'built_by'),
+                'map-credit-label':           t('ui', 'built_by'),
                 'mobile-drawer-title':        t('ui', 'mobile_drawer_title'),
                 'compare-hint-text':          t('ui', 'compare_hint'),
                 'landlord-section-title':     t('ui', 'landlord_title'),
