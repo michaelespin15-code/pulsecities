@@ -44,16 +44,17 @@
                 <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span style="font-size: 0.85rem; color: rgba(148,163,184,0.6);">PulseCities</span>
             </a>
-            <a href="/" style="font-size: 0.78rem; color: rgba(148,163,184,0.5); display: flex; align-items: center; gap-4px;">
-                ← Map
-            </a>
+            <div style="display:flex;align-items:center;gap:16px;">
+                <a href="/" style="font-size: 0.78rem; color: rgba(148,163,184,0.5);" data-i18n="back_map">← Map</a>
+                <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
+            </div>
         </div>
     </nav>
 
     <div style="max-width: 860px; margin: 0 auto; padding: 32px 20px 80px;">
 
         <!-- Loading -->
-        <div id="loading-state" style="justify-content: center; padding: 80px 0; color: rgba(148,163,184,0.4); font-size: 0.85rem; font-family: 'JetBrains Mono', monospace;">
+        <div id="loading-state" style="justify-content: center; padding: 80px 0; color: rgba(148,163,184,0.4); font-size: 0.85rem; font-family: 'JetBrains Mono', monospace;" data-i18n="loading">
             Loading operator profile...
         </div>
 
@@ -88,19 +89,19 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 24px;">
                 <div class="panel" style="padding: 14px 16px;">
                     <div class="stat-val" id="stat-properties">—</div>
-                    <div class="stat-label">Properties</div>
+                    <div class="stat-label" data-i18n="stat_properties">Properties</div>
                 </div>
                 <div class="panel" style="padding: 14px 16px;">
                     <div class="stat-val" id="stat-acquisitions">—</div>
-                    <div class="stat-label">Acquisitions</div>
+                    <div class="stat-label" data-i18n="stat_acquisitions">Acquisitions</div>
                 </div>
                 <div class="panel" style="padding: 14px 16px;">
                     <div class="stat-val" id="stat-llcs">—</div>
-                    <div class="stat-label">LLC Entities</div>
+                    <div class="stat-label" data-i18n="stat_llcs">LLC Entities</div>
                 </div>
                 <div class="panel" style="padding: 14px 16px;">
                     <div class="stat-val" id="stat-zips">—</div>
-                    <div class="stat-label">Zip Codes</div>
+                    <div class="stat-label" data-i18n="stat_zips">Zip Codes</div>
                 </div>
             </div>
 
@@ -108,7 +109,7 @@
             <div class="panel" style="margin-bottom: 16px;">
                 <details>
                     <summary style="padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;">
-                        <span style="font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8);">LLC Entities</span>
+                        <span style="font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8);" data-i18n="llc_entities_header">LLC Entities</span>
                         <span style="display: flex; align-items: center; gap: 8px;">
                             <span id="llc-count-badge" class="mono" style="font-size: 0.72rem; color: rgba(148,163,184,0.4);"></span>
                             <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.4)" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
@@ -120,41 +121,41 @@
 
             <!-- Related Operators -->
             <div id="related-section" style="display: none; margin-bottom: 16px;">
-                <div style="font-size: 0.78rem; font-weight: 600; color: rgba(148,163,184,0.5); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;">
+                <div style="font-size: 0.78rem; font-weight: 600; color: rgba(148,163,184,0.5); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;" data-i18n="related_operators">
                     Related Operators
                 </div>
-                <div style="font-size: 0.75rem; color: rgba(148,163,184,0.4); margin-bottom: 14px; line-height: 1.5;">
-                    These clusters are not the same operator. The signals below are evidence of a possible relationship — shared properties, name patterns, or geographic overlap. Each operator remains as the public records show them.
+                <div style="font-size: 0.75rem; color: rgba(148,163,184,0.4); margin-bottom: 14px; line-height: 1.5;" data-i18n="related_caveat">
+                    These clusters are not the same operator. The signals below are evidence of a possible relationship: shared properties, name patterns, or geographic overlap. Each operator remains as the public records show them.
                 </div>
                 <div id="related-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
             </div>
 
             <!-- Pattern note (operator-specific, shown only when note exists) -->
             <div id="pattern-note" style="display:none; margin-bottom:16px; padding:12px 16px; background:rgba(249,115,22,0.05); border:1px solid rgba(249,115,22,0.12); border-radius:8px;">
-                <div style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; color:rgba(249,115,22,0.5); margin-bottom:6px; font-family:'JetBrains Mono',monospace;">Pattern note</div>
+                <div style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; color:rgba(249,115,22,0.5); margin-bottom:6px; font-family:'JetBrains Mono',monospace;" data-i18n="pattern_note_header">Pattern note</div>
                 <div id="pattern-note-text" style="font-size:0.8rem; color:rgba(148,163,184,0.7); line-height:1.55;"></div>
             </div>
 
             <!-- Recent acquisitions -->
             <div class="panel">
                 <div style="padding: 14px 16px 10px; font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8); border-bottom: 1px solid rgba(148,163,184,0.07);">
-                    Recent Acquisitions <span style="font-size: 0.72rem; font-weight: 400; color: rgba(148,163,184,0.35);">(last 18 months, up to 50)</span>
+                    <span data-i18n="recent_acq_header">Recent Acquisitions</span> <span style="font-size: 0.72rem; font-weight: 400; color: rgba(148,163,184,0.35);" data-i18n="recent_acq_window">(last 18 months, up to 50)</span>
                 </div>
                 <div id="acq-table" style="overflow-x: auto;">
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.78rem;">
                         <thead>
                             <tr style="color: rgba(148,163,184,0.4); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em;">
-                                <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;">Address</th>
-                                <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;">Zip</th>
-                                <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;">Buyer LLC</th>
-                                <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;">Date</th>
-                                <th scope="col" style="padding: 8px 8px 8px 16px; text-align: right; font-weight: 400;">Amount</th>
+                                <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_address">Address</th>
+                                <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_zip">Zip</th>
+                                <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_buyer">Buyer LLC</th>
+                                <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_date">Date</th>
+                                <th scope="col" style="padding: 8px 8px 8px 16px; text-align: right; font-weight: 400;" data-i18n="th_amount">Amount</th>
                             </tr>
                         </thead>
                         <tbody id="acq-rows"></tbody>
                     </table>
                 </div>
-                <div id="acq-empty" style="display: none; padding: 24px 16px; font-size: 0.8rem; color: rgba(148,163,184,0.35); text-align: center;">
+                <div id="acq-empty" style="display: none; padding: 24px 16px; font-size: 0.8rem; color: rgba(148,163,184,0.35); text-align: center;" data-i18n="acq_empty">
                     No acquisitions found in the 18-month window.
                 </div>
             </div>
@@ -163,16 +164,264 @@
     </div>
 
     <script>
-    (function () {
-        const parts = location.pathname.replace(/\/$/, '').split('/');
-        const root = (parts[2] || '').toUpperCase();
+    let _lang       = localStorage.getItem('pc-lang') || 'en';
+    let _cachedData = null, _cachedZipNames = null;
 
-        if (!root) {
-            showError('No operator specified.');
-            return;
+    const i18n = {
+        en: {
+            back_map:            '\u2190 Map',
+            loading:             'Loading operator profile...',
+            not_found:           'Operator not found.',
+            stat_properties:     'Properties',
+            stat_acquisitions:   'Acquisitions',
+            stat_llcs:           'LLC Entities',
+            stat_zips:           'Zip Codes',
+            llc_entities_header: 'LLC Entities',
+            related_operators:   'Related Operators',
+            related_caveat:      'These clusters are not the same operator. The signals below are evidence of a possible relationship: shared properties, name patterns, or geographic overlap. Each operator remains as the public records show them.',
+            pattern_note_header: 'Pattern note',
+            recent_acq_header:   'Recent Acquisitions',
+            recent_acq_window:   '(last 18 months, up to 50)',
+            th_address:          'Address',
+            th_zip:              'Zip',
+            th_buyer:            'Buyer LLC',
+            th_date:             'Date',
+            th_amount:           'Amount',
+            acq_empty:           'No acquisitions found in the 18-month window.',
+            entities_badge:      '{n} entities',
+            shared_properties:   'Shared Properties',
+            llc_in_cluster:      'LLC entities in {name} cluster',
+            view_profile:        'View {name} profile \u2192',
+            more:                '+{n} more',
+            confidence:          '{pct}% confidence \u00b7 {props} props',
+            rel_strong:          'strong affiliation',
+            rel_possible:        'possible affiliation',
+        },
+        es: {
+            back_map:            '\u2190 Mapa',
+            loading:             'Cargando perfil del operador...',
+            not_found:           'Operador no encontrado.',
+            stat_properties:     'Propiedades',
+            stat_acquisitions:   'Adquisiciones',
+            stat_llcs:           'Entidades LLC',
+            stat_zips:           'C\u00f3digos Postales',
+            llc_entities_header: 'Entidades LLC',
+            related_operators:   'Operadores Relacionados',
+            related_caveat:      'Estos grupos no son el mismo operador. Las se\u00f1ales a continuaci\u00f3n son evidencia de una posible relaci\u00f3n: propiedades compartidas, patrones de nombres o superposici\u00f3n geogr\u00e1fica. Cada operador se muestra tal como aparece en los registros p\u00fablicos.',
+            pattern_note_header: 'Nota de patr\u00f3n',
+            recent_acq_header:   'Adquisiciones Recientes',
+            recent_acq_window:   '(\u00faltimos 18 meses, hasta 50)',
+            th_address:          'Direcci\u00f3n',
+            th_zip:              'ZIP',
+            th_buyer:            'Comprador LLC',
+            th_date:             'Fecha',
+            th_amount:           'Monto',
+            acq_empty:           'No se encontraron adquisiciones en la ventana de 18 meses.',
+            entities_badge:      '{n} entidades',
+            shared_properties:   'Propiedades Compartidas',
+            llc_in_cluster:      'Entidades LLC en el grupo {name}',
+            view_profile:        'Ver perfil de {name} \u2192',
+            more:                '+{n} m\u00e1s',
+            confidence:          '{pct}% confianza \u00b7 {props} propiedades',
+            rel_strong:          'afiliaci\u00f3n fuerte',
+            rel_possible:        'posible afiliaci\u00f3n',
+        }
+    };
+
+    function t(key) {
+        const s = i18n[_lang] || i18n.en;
+        return s[key] !== undefined ? s[key] : (i18n.en[key] || key);
+    }
+
+    function applyTranslations() {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const val = t(el.dataset.i18n);
+            if (val) el.textContent = val;
+        });
+    }
+
+    function esc(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    const PATTERN_NOTES = {
+        'BREDIF':  '64 of 66 properties were acquired in a single January 2026 bulk transfer of distressed note portfolios, with individual transaction amounts not disclosed. The two remaining acquisitions from June 2025 are standard deed transfers. Dollar values showing $0 in the table reflect the note portfolio pricing structure, not missing data.',
+        'MTEK':    '37 properties at an average of $1M each, concentrated in Brooklyn displacement corridors from Bushwick to East Flatbush. Each LLC is tied to a specific street or neighborhood (MTEK FORT GREENE, MTEK FULTON, MTEK UNION), grouping nearby acquisitions under a single shell and fragmenting the full portfolio across public entity searches.',
+        'PHANTOM': '64 direct-purchase acquisitions averaging $827K each across South Bronx and East Brooklyn, using 32 LLC shells spun up in numbered sequences (PHANTOM CAPITAL 10, 11, 12...). The fragmentation is deliberate: no single entity name in public records reveals more than a fraction of the portfolio\'s true scale.',
+    };
+
+    function render(data, zipNames) {
+        _cachedData     = data;
+        _cachedZipNames = zipNames || {};
+        zipNames        = _cachedZipNames;
+
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('content').style.display       = 'block';
+        document.getElementById('op-root').textContent         = data.operator_root;
+
+        const note = PATTERN_NOTES[data.operator_root];
+        if (note) {
+            document.getElementById('pattern-note').style.display      = 'block';
+            document.getElementById('pattern-note-text').textContent   = note;
         }
 
-        document.title = root + ' — PulseCities Operator Profile';
+        document.getElementById('stat-properties').textContent  = data.total_properties;
+        document.getElementById('stat-acquisitions').textContent = data.total_acquisitions;
+        document.getElementById('stat-llcs').textContent        = data.llc_entities.length;
+        document.getElementById('stat-zips').textContent        = (data.zip_codes || []).length;
+
+        const llcList = document.getElementById('llc-list');
+        data.llc_entities.forEach(name => {
+            const pill = document.createElement('span');
+            pill.className   = 'llc-pill';
+            pill.textContent = name;
+            llcList.appendChild(pill);
+        });
+        document.getElementById('llc-count-badge').textContent =
+            t('entities_badge').replace('{n}', data.llc_entities.length);
+
+        if (data.related_operators && data.related_operators.length > 0) {
+            document.getElementById('related-section').style.display = 'block';
+            const relList = document.getElementById('related-list');
+            data.related_operators.forEach(rel => renderRelated(relList, rel));
+        }
+
+        const rows = data.recent_acquisitions || [];
+        if (rows.length === 0) {
+            document.getElementById('acq-table').style.display = 'none';
+            document.getElementById('acq-empty').style.display = 'block';
+        } else {
+            const tbody = document.getElementById('acq-rows');
+            rows.forEach((r, i) => {
+                const tr = document.createElement('tr');
+                tr.style.borderTop = '1px solid rgba(148,163,184,0.06)';
+                if (i % 2 === 0) tr.style.background = 'rgba(15,23,42,0.2)';
+                tr.innerHTML =
+                    '<td style="padding:8px 16px;color:rgba(241,245,249,0.85);">' + esc(r.address) + '</td>' +
+                    '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.6);font-size:0.72rem;line-height:1.3;">' + esc(r.zip_code || '') + (r.zip_code && zipNames[r.zip_code] ? '<br><span style="font-size:0.65rem;color:rgba(148,163,184,0.35);font-family:inherit;">' + esc(zipNames[r.zip_code]) + '</span>' : '') + '</td>' +
+                    '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.55);font-size:0.7rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(r.buyer_name || '') + '</td>' +
+                    '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.5);font-size:0.72rem;white-space:nowrap;">' + esc(r.doc_date || '') + '</td>' +
+                    '<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:rgba(148,163,184,0.6);font-size:0.72rem;white-space:nowrap;">' + (r.doc_amount ? '$' + Math.round(r.doc_amount).toLocaleString() : '\u2014') + '</td>';
+                tbody.appendChild(tr);
+            });
+        }
+    }
+
+    function renderRelated(container, rel) {
+        const isStrong = rel.relationship_type === 'strong_affiliation';
+        const pct      = Math.round(rel.combined_confidence * 100);
+        const relTag   = isStrong ? t('rel_strong') : t('rel_possible');
+
+        const card = document.createElement('div');
+        card.className     = 'panel';
+        card.style.padding = '0';
+
+        const header = document.createElement('div');
+        header.style.cssText = 'padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;';
+        header.innerHTML =
+            '<div style="display:flex;align-items:center;gap:10px;">' +
+                '<a href="/operator/' + esc(rel.operator_root) + '" class="mono accent" style="font-size:1rem;letter-spacing:0.04em;">' + esc(rel.operator_root) + '</a>' +
+                '<span class="' + (isStrong ? 'tag-strong' : 'tag-possible') + '">' + esc(relTag) + '</span>' +
+            '</div>' +
+            '<div class="mono" style="font-size:0.72rem;color:rgba(148,163,184,0.4);">' +
+                t('confidence').replace('{pct}', pct).replace('{props}', rel.total_properties) +
+            '</div>';
+        card.appendChild(header);
+
+        const sigRow = document.createElement('div');
+        sigRow.style.cssText = 'padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:6px;';
+        (rel.signals || []).forEach(sig => {
+            const chip = document.createElement('span');
+            chip.className   = 'signal-chip';
+            chip.title       = sig.detail || '';
+            chip.textContent = sig.signal_type.replace(/_/g, ' ');
+            sigRow.appendChild(chip);
+            if (sig.detail) {
+                const detail = document.createElement('div');
+                detail.style.cssText = 'width:100%;font-size:0.7rem;color:rgba(148,163,184,0.45);padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
+                detail.textContent = sig.detail;
+                sigRow.appendChild(detail);
+            }
+        });
+        card.appendChild(sigRow);
+
+        if (rel.shared_properties && rel.shared_properties.length > 0) {
+            const sharedDiv = document.createElement('div');
+            sharedDiv.style.cssText = 'border-top:1px solid rgba(148,163,184,0.07);padding:10px 16px;';
+            const label = document.createElement('div');
+            label.style.cssText  = 'font-size:0.68rem;color:rgba(148,163,184,0.4);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;';
+            label.textContent    = t('shared_properties');
+            sharedDiv.appendChild(label);
+            rel.shared_properties.forEach(prop => {
+                const row = document.createElement('div');
+                row.style.cssText = 'font-size:0.75rem;color:rgba(148,163,184,0.65);padding:2px 0;font-family:"JetBrains Mono",monospace;';
+                const zipLabel    = prop.zip_code
+                    ? ' \u00b7 ' + prop.zip_code + (_cachedZipNames[prop.zip_code] ? ' ' + _cachedZipNames[prop.zip_code] : '')
+                    : '';
+                row.textContent = prop.address + zipLabel;
+                sharedDiv.appendChild(row);
+            });
+            card.appendChild(sharedDiv);
+        }
+
+        if (rel.llc_entities && rel.llc_entities.length > 0) {
+            const entityDiv = document.createElement('div');
+            entityDiv.style.cssText = 'border-top:1px solid rgba(148,163,184,0.07);';
+            const det  = document.createElement('details');
+            const summ = document.createElement('summary');
+            summ.style.cssText = 'padding:10px 16px;display:flex;align-items:center;justify-content:space-between;';
+            summ.innerHTML =
+                '<span style="font-size:0.72rem;color:rgba(148,163,184,0.4);">' +
+                    t('llc_in_cluster').replace('{name}', esc(rel.operator_root)) +
+                '</span>' +
+                '<svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.3)" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>';
+            det.appendChild(summ);
+            const pills = document.createElement('div');
+            pills.style.cssText = 'padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:5px;';
+            rel.llc_entities.slice(0, 30).forEach(name => {
+                const p = document.createElement('span');
+                p.className   = 'llc-pill';
+                p.textContent = name;
+                pills.appendChild(p);
+            });
+            if (rel.llc_entities.length > 30) {
+                const more = document.createElement('span');
+                more.className   = 'llc-pill';
+                more.style.color = 'rgba(148,163,184,0.35)';
+                more.textContent = t('more').replace('{n}', rel.llc_entities.length - 30);
+                pills.appendChild(more);
+            }
+            det.appendChild(pills);
+            entityDiv.appendChild(det);
+            card.appendChild(entityDiv);
+        }
+
+        const footer = document.createElement('div');
+        footer.style.cssText = 'border-top:1px solid rgba(148,163,184,0.07);padding:10px 16px;text-align:right;';
+        footer.innerHTML = '<a href="/operator/' + esc(rel.operator_root) + '" style="font-size:0.75rem;color:rgba(249,115,22,0.7);">' +
+            t('view_profile').replace('{name}', esc(rel.operator_root)) + '</a>';
+        card.appendChild(footer);
+
+        container.appendChild(card);
+    }
+
+    function showError(msg) {
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('error-state').style.display   = 'block';
+        document.getElementById('error-msg').textContent       = msg;
+    }
+
+    // Operator data loading
+    (function () {
+        const parts = location.pathname.replace(/\/$/, '').split('/');
+        const root  = (parts[2] || '').toUpperCase();
+        if (!root) { showError('No operator specified.'); return; }
+
+        document.title = root + ' \u2014 PulseCities Operator Profile';
         document.getElementById('canonical-url').href = 'https://pulsecities.com/operator/' + root;
 
         const _opFetch = fetch('/api/operators/' + encodeURIComponent(root))
@@ -188,180 +437,29 @@
         Promise.all([_opFetch, _namesFetch])
             .then(([data, zipNames]) => render(data, zipNames))
             .catch(err => showError(err.message));
-
-        const PATTERN_NOTES = {
-            'BREDIF':  '64 of 66 properties were acquired in a single January 2026 bulk transfer of distressed note portfolios, with individual transaction amounts not disclosed. The two remaining acquisitions from June 2025 are standard deed transfers. Dollar values showing $0 in the table reflect the note portfolio pricing structure, not missing data.',
-            'MTEK':    '37 properties at an average of $1M each, concentrated in Brooklyn displacement corridors from Bushwick to East Flatbush. Each LLC is tied to a specific street or neighborhood (MTEK FORT GREENE, MTEK FULTON, MTEK UNION), grouping nearby acquisitions under a single shell and fragmenting the full portfolio across public entity searches.',
-            'PHANTOM': '64 direct-purchase acquisitions averaging $827K each across South Bronx and East Brooklyn, using 32 LLC shells spun up in numbered sequences (PHANTOM CAPITAL 10, 11, 12...). The fragmentation is deliberate: no single entity name in public records reveals more than a fraction of the portfolio\'s true scale.',
-        };
-
-        function render(data, zipNames) {
-            zipNames = zipNames || {};
-            document.getElementById('loading-state').style.display = 'none';
-            document.getElementById('content').style.display = 'block';
-
-            document.getElementById('op-root').textContent = data.operator_root;
-
-            const note = PATTERN_NOTES[data.operator_root];
-            if (note) {
-                document.getElementById('pattern-note').style.display = 'block';
-                document.getElementById('pattern-note-text').textContent = note;
-            }
-            document.getElementById('stat-properties').textContent = data.total_properties;
-            document.getElementById('stat-acquisitions').textContent = data.total_acquisitions;
-            document.getElementById('stat-llcs').textContent = data.llc_entities.length;
-            document.getElementById('stat-zips').textContent = (data.zip_codes || []).length;
-
-            // LLC list
-            const llcList = document.getElementById('llc-list');
-            data.llc_entities.forEach(name => {
-                const pill = document.createElement('span');
-                pill.className = 'llc-pill';
-                pill.textContent = name;
-                llcList.appendChild(pill);
-            });
-            document.getElementById('llc-count-badge').textContent = data.llc_entities.length + ' entities';
-
-            // Related operators
-            if (data.related_operators && data.related_operators.length > 0) {
-                document.getElementById('related-section').style.display = 'block';
-                const relList = document.getElementById('related-list');
-                data.related_operators.forEach(rel => renderRelated(relList, rel));
-            }
-
-            // Acquisitions table
-            const rows = data.recent_acquisitions || [];
-            if (rows.length === 0) {
-                document.getElementById('acq-table').style.display = 'none';
-                document.getElementById('acq-empty').style.display = 'block';
-            } else {
-                const tbody = document.getElementById('acq-rows');
-                rows.forEach((r, i) => {
-                    const tr = document.createElement('tr');
-                    tr.style.borderTop = '1px solid rgba(148,163,184,0.06)';
-                    if (i % 2 === 0) tr.style.background = 'rgba(15,23,42,0.2)';
-                    tr.innerHTML =
-                        '<td style="padding:8px 16px;color:rgba(241,245,249,0.85);">' + esc(r.address) + '</td>' +
-                        '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.6);font-size:0.72rem;line-height:1.3;">' + esc(r.zip_code || '') + (r.zip_code && zipNames[r.zip_code] ? '<br><span style="font-size:0.65rem;color:rgba(148,163,184,0.35);font-family:inherit;">' + esc(zipNames[r.zip_code]) + '</span>' : '') + '</td>' +
-                        '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.55);font-size:0.7rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(r.buyer_name || '') + '</td>' +
-                        '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.5);font-size:0.72rem;white-space:nowrap;">' + esc(r.doc_date || '') + '</td>' +
-                        '<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:rgba(148,163,184,0.6);font-size:0.72rem;white-space:nowrap;">' + (r.doc_amount ? '$' + Math.round(r.doc_amount).toLocaleString() : '—') + '</td>';
-                    tbody.appendChild(tr);
-                });
-            }
-        }
-
-        function renderRelated(container, rel) {
-            const isStrong = rel.relationship_type === 'strong_affiliation';
-            const pct = Math.round(rel.combined_confidence * 100);
-
-            const card = document.createElement('div');
-            card.className = 'panel';
-            card.style.padding = '0';
-
-            const header = document.createElement('div');
-            header.style.cssText = 'padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;';
-            header.innerHTML =
-                '<div style="display:flex;align-items:center;gap:10px;">' +
-                    '<a href="/operator/' + esc(rel.operator_root) + '" class="mono accent" style="font-size:1rem;letter-spacing:0.04em;">' + esc(rel.operator_root) + '</a>' +
-                    '<span class="' + (isStrong ? 'tag-strong' : 'tag-possible') + '">' + esc(rel.relationship_type.replace('_', ' ')) + '</span>' +
-                '</div>' +
-                '<div class="mono" style="font-size:0.72rem;color:rgba(148,163,184,0.4);">' + pct + '% confidence · ' + rel.total_properties + ' props</div>';
-            card.appendChild(header);
-
-            // Signals
-            const sigRow = document.createElement('div');
-            sigRow.style.cssText = 'padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:6px;';
-            (rel.signals || []).forEach(sig => {
-                const chip = document.createElement('span');
-                chip.className = 'signal-chip';
-                chip.title = sig.detail || '';
-                chip.textContent = sig.signal_type.replace('_', ' ');
-                sigRow.appendChild(chip);
-
-                if (sig.detail) {
-                    const detail = document.createElement('div');
-                    detail.style.cssText = 'width:100%;font-size:0.7rem;color:rgba(148,163,184,0.45);padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
-                    detail.textContent = sig.detail;
-                    sigRow.appendChild(detail);
-                }
-            });
-            card.appendChild(sigRow);
-
-            // Shared properties
-            if (rel.shared_properties && rel.shared_properties.length > 0) {
-                const sharedDiv = document.createElement('div');
-                sharedDiv.style.cssText = 'border-top:1px solid rgba(148,163,184,0.07);padding:10px 16px;';
-                const label = document.createElement('div');
-                label.style.cssText = 'font-size:0.68rem;color:rgba(148,163,184,0.4);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;';
-                label.textContent = 'Shared Properties';
-                sharedDiv.appendChild(label);
-                rel.shared_properties.forEach(prop => {
-                    const row = document.createElement('div');
-                    row.style.cssText = 'font-size:0.75rem;color:rgba(148,163,184,0.65);padding:2px 0;font-family:"JetBrains Mono",monospace;';
-                    const zipLabel = prop.zip_code
-                        ? ' · ' + prop.zip_code + (zipNames[prop.zip_code] ? ' ' + zipNames[prop.zip_code] : '')
-                        : '';
-                    row.textContent = prop.address + zipLabel;
-                    sharedDiv.appendChild(row);
-                });
-                card.appendChild(sharedDiv);
-            }
-
-            // Related LLC entities (collapsible)
-            if (rel.llc_entities && rel.llc_entities.length > 0) {
-                const entityDiv = document.createElement('div');
-                entityDiv.style.cssText = 'border-top:1px solid rgba(148,163,184,0.07);';
-                const det = document.createElement('details');
-                const summ = document.createElement('summary');
-                summ.style.cssText = 'padding:10px 16px;display:flex;align-items:center;justify-content:space-between;';
-                summ.innerHTML =
-                    '<span style="font-size:0.72rem;color:rgba(148,163,184,0.4);">LLC entities in ' + esc(rel.operator_root) + ' cluster</span>' +
-                    '<svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.3)" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>';
-                det.appendChild(summ);
-                const pills = document.createElement('div');
-                pills.style.cssText = 'padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:5px;';
-                rel.llc_entities.slice(0, 30).forEach(name => {
-                    const p = document.createElement('span');
-                    p.className = 'llc-pill';
-                    p.textContent = name;
-                    pills.appendChild(p);
-                });
-                if (rel.llc_entities.length > 30) {
-                    const more = document.createElement('span');
-                    more.className = 'llc-pill';
-                    more.style.color = 'rgba(148,163,184,0.35)';
-                    more.textContent = '+' + (rel.llc_entities.length - 30) + ' more';
-                    pills.appendChild(more);
-                }
-                det.appendChild(pills);
-                entityDiv.appendChild(det);
-                card.appendChild(entityDiv);
-            }
-
-            // View profile link
-            const footer = document.createElement('div');
-            footer.style.cssText = 'border-top:1px solid rgba(148,163,184,0.07);padding:10px 16px;text-align:right;';
-            footer.innerHTML = '<a href="/operator/' + esc(rel.operator_root) + '" style="font-size:0.75rem;color:rgba(249,115,22,0.7);">View ' + esc(rel.operator_root) + ' profile →</a>';
-            card.appendChild(footer);
-
-            container.appendChild(card);
-        }
-
-        function showError(msg) {
-            document.getElementById('loading-state').style.display = 'none';
-            document.getElementById('error-state').style.display = 'block';
-            document.getElementById('error-msg').textContent = msg;
-        }
-
-        function esc(str) {
-            return String(str || '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
-        }
     })();
+
+    // Lang toggle
+    const langToggle = document.getElementById('lang-toggle');
+    langToggle.textContent = _lang === 'es' ? 'ES / EN' : 'EN / ES';
+    langToggle.addEventListener('click', () => {
+        _lang = _lang === 'en' ? 'es' : 'en';
+        localStorage.setItem('pc-lang', _lang);
+        langToggle.textContent = _lang === 'es' ? 'ES / EN' : 'EN / ES';
+        applyTranslations();
+        if (_cachedData) {
+            ['llc-list', 'related-list', 'acq-rows'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = '';
+            });
+            document.getElementById('related-section').style.display = 'none';
+            document.getElementById('acq-table').style.display       = '';
+            document.getElementById('acq-empty').style.display       = 'none';
+            render(_cachedData, _cachedZipNames);
+        }
+    });
+
+    applyTranslations();
     </script>
 </body>
 </html>
