@@ -2640,6 +2640,10 @@
             if (skeleton) skeleton.remove();
             const list = document.getElementById(listId);
             if (!list) return;
+            // Clear existing rows before re-rendering (prevents duplicates on language toggle)
+            Array.from(list.children).forEach(child => {
+                if (child.id !== 'mobile-borough-filters') child.remove();
+            });
             if (!data || !data.neighborhoods || !data.neighborhoods.length) {
                 list.insertAdjacentHTML('beforeend', `<p class="text-xs text-slate-400 py-2">${t('ui', 'no_data')}</p>`);
                 return;
