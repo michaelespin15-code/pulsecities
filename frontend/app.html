@@ -957,14 +957,33 @@
                 },
                 pulse: {
                     section_title:    'Neighborhood Pulse',
-                    last_n_days:      'last 90 days',
+                    last_n_days:      'past 365 days',
                     llc_header:       'LLC Acquisitions',
                     permits_header:   'Recent Permits',
                     evictions_header: 'Recent Evictions',
                     acquired_by:      'Acquired by',
                     filed:            'filed',
-                    executed:         'Residential',
+                    executed:         'Residential eviction',
                     empty:            'No recent activity in this ZIP.'
+                },
+                risk_level: {
+                    critical: 'CRITICAL RISK',
+                    high:     'HIGH RISK',
+                    moderate: 'MODERATE RISK',
+                    low:      'LOW RISK',
+                },
+                permit_label: {
+                    major_renovation: 'Major Renovation',
+                    alteration:       'Alteration',
+                    new_building:     'New Building',
+                },
+                eviction_label: {
+                    commercial:  'Commercial eviction',
+                    residential: 'Residential eviction',
+                    fallback:    'Eviction',
+                },
+                activity: {
+                    llc_sublabel: 'LLC Acquisition',
                 },
                 ui: {
                     looking_up:          'Looking up...',
@@ -1064,14 +1083,33 @@
                 },
                 pulse: {
                     section_title:    'Pulso del Vecindario',
-                    last_n_days:      'últimos 90 días',
+                    last_n_days:      'últimos 365 días',
                     llc_header:       'Adquisiciones por LLC',
                     permits_header:   'Permisos Recientes',
                     evictions_header: 'Desalojos Recientes',
                     acquired_by:      'adquirido por',
                     filed:            'presentado',
-                    executed:         'ejecutado',
+                    executed:         'Desalojo residencial',
                     empty:            'Sin actividad reciente en este código postal.'
+                },
+                risk_level: {
+                    critical: 'RIESGO CRÍTICO',
+                    high:     'ALTO RIESGO',
+                    moderate: 'RIESGO MODERADO',
+                    low:      'RIESGO BAJO',
+                },
+                permit_label: {
+                    major_renovation: 'Renovación mayor',
+                    alteration:       'Remodelación',
+                    new_building:     'Edificio nuevo',
+                },
+                eviction_label: {
+                    commercial:  'Desalojo comercial',
+                    residential: 'Desalojo residencial',
+                    fallback:    'Desalojo',
+                },
+                activity: {
+                    llc_sublabel: 'Adquisición LLC',
                 },
                 ui: {
                     looking_up:          'Buscando...',
@@ -1359,10 +1397,20 @@
 
         function riskLabel(score) {
             if (score === null || score === undefined) return '';
-            if (score >= 70) return 'CRITICAL RISK';
-            if (score >= 40) return 'HIGH RISK';
-            if (score >= 15) return 'MODERATE RISK';
-            return 'LOW RISK';
+            if (score >= 70) return t('risk_level', 'critical');
+            if (score >= 40) return t('risk_level', 'high');
+            if (score >= 15) return t('risk_level', 'moderate');
+            return t('risk_level', 'low');
+        }
+
+        function translatePermitLabel(label) {
+            const key = (label || '').toLowerCase().replace(/\s+/g, '_');
+            return t('permit_label', key) || label;
+        }
+
+        function translateEvictionType(type) {
+            if (!type) return t('eviction_label', 'fallback');
+            return t('eviction_label', type.toLowerCase()) || t('eviction_label', 'fallback');
         }
 
         function countUp(el, target, color, duration) {
@@ -1500,7 +1548,7 @@
                                     <span class="text-xs font-medium text-base-content/90 leading-snug">${item.address || item.bbl}</span>
                                     ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
                                 </div>
-                                <div class="text-xs text-slate-400 mt-0.5">${item.permit_type_label || item.permit_type} ${t('pulse', 'filed')}</div>
+                                <div class="text-xs text-slate-400 mt-0.5">${translatePermitLabel(item.permit_type_label || item.permit_type)} ${t('pulse', 'filed')}</div>
                             `;
                             return el;
                         }, 5);
@@ -1516,7 +1564,7 @@
                             el.setAttribute('tabindex', '0');
                             el.setAttribute('role', 'listitem');
                             const dateStr = item.executed_date ? new Date(item.executed_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
-                            const typeStr = item.eviction_type || t('pulse', 'executed');
+                            const typeStr = translateEvictionType(item.eviction_type);
                             el.setAttribute('aria-label', `Eviction at ${item.address || 'unknown address'}${dateStr ? ', ' + dateStr : ''}, ${typeStr}`);
                             el.innerHTML = `
                                 <div class="flex justify-between items-baseline gap-2">
@@ -2884,7 +2932,7 @@
                     sortDate: item.doc_date,
                     addrKey: addr.toLowerCase().trim(),
                     addr, dateStr,
-                    sublabel: 'LLC Acquisition',
+                    sublabel: t('activity', 'llc_sublabel'),
                 });
             });
 
@@ -2897,7 +2945,7 @@
                     sortDate: item.filing_date,
                     addrKey: addr.toLowerCase().trim(),
                     addr, dateStr,
-                    sublabel: `${item.permit_type_label || item.permit_type} filed`,
+                    sublabel: `${translatePermitLabel(item.permit_type_label || item.permit_type)} ${t('pulse', 'filed')}`,
                 });
             });
 
@@ -2910,7 +2958,7 @@
                     sortDate: item.executed_date,
                     addrKey: addr.toLowerCase().trim(),
                     addr, dateStr,
-                    sublabel: `${item.eviction_type || 'Eviction'} eviction`,
+                    sublabel: translateEvictionType(item.eviction_type),
                 });
             });
 
