@@ -1798,6 +1798,7 @@
 
             document.getElementById('detail-zip').textContent = zip;
             _updateWatchBtn(zip);
+            plausible('Neighborhood View', { props: { zip_code: zip } });
             const hoodEl = document.getElementById('detail-neighborhood');
             if (hoodEl) hoodEl.textContent = (name && name !== zip) ? name : (borough || '');
 
@@ -1973,7 +1974,7 @@
             const list = _watchList();
             const idx = list.indexOf(zip);
             if (idx >= 0) { list.splice(idx, 1); }
-            else { list.unshift(zip); if (list.length > 12) list.pop(); }
+            else { list.unshift(zip); if (list.length > 12) list.pop(); plausible('Watchlist Add', { props: { zip_code: zip } }); }
             localStorage.setItem('pc-watchlist', JSON.stringify(list));
             _updateWatchBtn(zip);
         }
@@ -3284,6 +3285,7 @@
 
                 if (resp.ok || resp.status === 409) {
                     document.getElementById('subscribe-form-wrap').classList.add('hidden');
+                    if (resp.ok) plausible('Subscribe', { props: { zip_code: _cachedZip } });
                     msgEl.textContent = resp.status === 409
                         ? t('ui', 'subscribe_duplicate')
                         : t('ui', 'subscribe_success');

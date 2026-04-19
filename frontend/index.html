@@ -485,6 +485,7 @@
         function handleSearch() {
             const q = document.getElementById('search-input').value.trim();
             if (!q) return;
+            plausible('Search', { props: { source: 'landing' } });
             window.location.href = `/map?q=${encodeURIComponent(q)}`;
         }
 
@@ -492,6 +493,7 @@
         document.getElementById('search-input').addEventListener('keydown', e => {
             if (e.key === 'Enter') handleSearch();
         });
+        document.getElementById('cta-explore').addEventListener('click', () => plausible('Explore Map'));
 
         const langToggle = document.getElementById('lang-toggle');
         langToggle.textContent = _lang === 'es' ? 'ES / EN' : 'EN / ES';
