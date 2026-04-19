@@ -42,6 +42,41 @@
         "about": { "@type": "Thing", "name": "NYC Housing Displacement" }
     }
     </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        "name": "NYC Displacement Risk Scores",
+        "description": "Daily displacement risk scores for all 178 NYC neighborhoods, derived from six public data signals: LLC property acquisitions, renovation permits, tenant complaints, eviction filings, rent-stabilized unit loss, and tax assessment spikes.",
+        "url": "https://pulsecities.com",
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "creator": { "@type": "Person", "name": "Michael Espin", "url": "https://pulsecities.com" },
+        "temporalCoverage": "2020/..",
+        "spatialCoverage": {
+            "@type": "Place",
+            "name": "New York City",
+            "address": { "@type": "PostalAddress", "addressLocality": "New York", "addressRegion": "NY", "addressCountry": "US" }
+        },
+        "variableMeasured": [
+            { "@type": "PropertyValue", "name": "Displacement Risk Score", "minValue": 0, "maxValue": 100 },
+            { "@type": "PropertyValue", "name": "LLC Acquisition Rate" },
+            { "@type": "PropertyValue", "name": "Eviction Rate" },
+            { "@type": "PropertyValue", "name": "Permit Intensity" },
+            { "@type": "PropertyValue", "name": "Tenant Complaint Rate" },
+            { "@type": "PropertyValue", "name": "Rent-Stabilized Unit Loss" }
+        ],
+        "isBasedOn": [
+            "https://data.cityofnewyork.us/City-Government/ACRIS-Real-Property-Master/bnx9-e6tj",
+            "https://data.cityofnewyork.us/Housing-Development/Evictions/6z8x-wfk4",
+            "https://data.cityofnewyork.us/Housing-Development/Building-Permits/ipu4-2q9a"
+        ],
+        "distribution": {
+            "@type": "DataDownload",
+            "encodingFormat": "application/json",
+            "contentUrl": "https://pulsecities.com/api/neighborhoods"
+        }
+    }
+    </script>
 
     <!-- Redirect /neighborhood/{zip} deep links to the app -->
     <script>(function(){var m=location.pathname.match(/^\/neighborhood\/(\d{5})$/);if(m)location.replace('/map?q='+m[1]);})();</script>
