@@ -1414,6 +1414,14 @@
             return d.toLocaleDateString('en-US', opts);
         }
 
+        function esc(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
         function renderPulse(zip) {
             const section = document.getElementById('pulse-section');
             section.classList.add('hidden');  // hide while loading
@@ -1686,7 +1694,8 @@
             }
         }
         document.getElementById('lang-toggle').addEventListener('click', () => setLanguage(lang === 'en' ? 'es' : 'en'));
-        document.getElementById('hero-lang-toggle').addEventListener('click', () => setLanguage(lang === 'en' ? 'es' : 'en'));
+        const _heroLangToggle = document.getElementById('hero-lang-toggle');
+        if (_heroLangToggle) _heroLangToggle.addEventListener('click', () => setLanguage(lang === 'en' ? 'es' : 'en'));
 
         // --- Address Search and Block Panel Logic ---
 

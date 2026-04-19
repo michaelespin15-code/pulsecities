@@ -100,7 +100,7 @@
             <h1 class="font-mono font-semibold mb-2" style="font-size:2.2rem;color:#38bdf8;letter-spacing:-0.02em;">
                 PulseCities
             </h1>
-            <p class="text-base text-slate-300 mb-10 text-center" style="max-width:36ch;">
+            <p class="text-base text-slate-300 mb-10 text-center" style="max-width:36ch;" data-i18n="tagline">
                 The displacement story NYC doesn't officially tell.
             </p>
 
@@ -108,7 +108,7 @@
             <div class="hidden md:grid md:grid-cols-3 gap-8 mb-6 w-full" id="stats-desktop">
                 <div id="stat-left" class="text-center" style="opacity:0;transform:translateY(8px);">
                     <div id="llc-count" class="text-4xl font-mono font-bold text-slate-100" style="letter-spacing:-0.02em;">&#8212;</div>
-                    <div class="text-xs text-slate-400 mt-1">LLC transfers (30d)</div>
+                    <div class="text-xs text-slate-400 mt-1" data-i18n="llc_label">LLC transfers (30d)</div>
                 </div>
                 <div id="stat-center" class="text-center" style="opacity:0;transform:translateY(8px);">
                     <div id="zip-code" class="font-mono font-bold text-slate-100" style="font-size:2.8rem;letter-spacing:-0.02em;">&#8212;</div>
@@ -120,14 +120,14 @@
                 </div>
                 <div id="stat-right" class="text-center" style="opacity:0;transform:translateY(8px);">
                     <div id="eviction-count" class="text-4xl font-mono font-bold text-slate-100" style="letter-spacing:-0.02em;">&#8212;</div>
-                    <div class="text-xs text-slate-400 mt-1">evictions (30d)</div>
+                    <div class="text-xs text-slate-400 mt-1" data-i18n="eviction_label">evictions (30d)</div>
                 </div>
             </div>
 
             <!-- Mobile stats: highest-risk ZIP first, LLC + evictions below -->
             <div class="flex flex-col items-center gap-5 mb-6 w-full md:hidden">
                 <div class="text-center">
-                    <div class="text-xs font-mono uppercase tracking-widest mb-1" style="color:#94a3b8;letter-spacing:0.1em;">highest risk zip</div>
+                    <div class="text-xs font-mono uppercase tracking-widest mb-1" style="color:#94a3b8;letter-spacing:0.1em;" data-i18n="highest_risk">highest risk zip</div>
                     <div class="font-mono font-bold text-slate-100" style="font-size:2.2rem;letter-spacing:-0.02em;" data-bind="zip-code">&#8212;</div>
                     <div class="text-xs mt-0.5 text-slate-300" data-bind="zip-place">&#8212;</div>
                     <div class="flex items-center justify-center gap-1.5 mt-1">
@@ -138,11 +138,11 @@
                 <div class="flex gap-8">
                     <div class="text-center">
                         <div class="text-2xl font-mono font-bold text-slate-100" data-bind="llc-count">&#8212;</div>
-                        <div class="text-xs mt-1 text-slate-300">LLC transfers (30d)</div>
+                        <div class="text-xs mt-1 text-slate-300" data-i18n="llc_label">LLC transfers (30d)</div>
                     </div>
                     <div class="text-center">
                         <div class="text-2xl font-mono font-bold text-slate-100" data-bind="eviction-count">&#8212;</div>
-                        <div class="text-xs mt-1 text-slate-300">evictions (30d)</div>
+                        <div class="text-xs mt-1 text-slate-300" data-i18n="eviction_label">evictions (30d)</div>
                     </div>
                 </div>
             </div>
@@ -162,13 +162,16 @@
                            autocomplete="off" />
                     <button id="search-btn"
                             class="btn shrink-0"
-                            style="background-color:#f59e0b;border-color:#f59e0b;color:#1a1a2e;font-weight:600;">
+                            style="background-color:#f59e0b;border-color:#f59e0b;color:#1a1a2e;font-weight:600;"
+                            data-i18n="search_btn">
                         Search
                     </button>
                 </div>
                 <a href="/map"
+                   id="cta-explore"
                    class="btn w-full font-mono text-sm"
-                   style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.35);color:#38bdf8;font-weight:600;letter-spacing:0.01em;">
+                   style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.35);color:#38bdf8;font-weight:600;letter-spacing:0.01em;"
+                   data-i18n="explore_map">
                     Explore the Map &#8594;
                 </a>
                 <div class="flex items-center justify-end px-1">
@@ -188,25 +191,25 @@
             <!-- Recent Findings: operator profiles -->
             <div class="w-full mt-8">
                 <div class="text-xs font-mono uppercase tracking-widest mb-3 text-center"
-                     style="color:#94a3b8;letter-spacing:0.1em;">Recent Findings</div>
+                     style="color:#94a3b8;letter-spacing:0.1em;" data-i18n="recent_findings">Recent Findings</div>
                 <div class="flex flex-wrap gap-3 justify-center">
                     <a href="/operator/MTEK"
                        class="zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block"
                        style="background:rgba(30,41,59,0.7);min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;">
                         <div class="font-mono text-sm font-bold text-slate-100 mb-0.5">MTEK</div>
-                        <div class="text-xs text-slate-400">Operator profile &#8594;</div>
+                        <div class="text-xs text-slate-400" data-i18n="operator_profile">Operator profile &#8594;</div>
                     </a>
                     <a href="/operator/PHANTOM"
                        class="zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block"
                        style="background:rgba(30,41,59,0.7);min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;">
                         <div class="font-mono text-sm font-bold text-slate-100 mb-0.5">PHANTOM</div>
-                        <div class="text-xs text-slate-400">Operator profile &#8594;</div>
+                        <div class="text-xs text-slate-400" data-i18n="operator_profile">Operator profile &#8594;</div>
                     </a>
                     <a href="/operator/BREDIF"
                        class="zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block"
                        style="background:rgba(30,41,59,0.7);min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;">
                         <div class="font-mono text-sm font-bold text-slate-100 mb-0.5">BREDIF</div>
-                        <div class="text-xs text-slate-400">Operator profile &#8594;</div>
+                        <div class="text-xs text-slate-400" data-i18n="operator_profile">Operator profile &#8594;</div>
                     </a>
                 </div>
             </div>
@@ -215,7 +218,51 @@
     </div>
 
     <script>
-        const _lang = localStorage.getItem('pc-lang') || 'en';
+        let _lang = localStorage.getItem('pc-lang') || 'en';
+        let _liveLlc = 0, _liveEvictions = 0;
+
+        const i18n = {
+            en: {
+                tagline:            "The displacement story NYC doesn't officially tell.",
+                llc_label:          'LLC transfers (30d)',
+                eviction_label:     'evictions (30d)',
+                highest_risk:       'highest risk zip',
+                search_placeholder: 'Enter address, ZIP, or landlord name',
+                search_btn:         'Search',
+                explore_map:        'Explore the Map \u2192',
+                recent_findings:    'Recent Findings',
+                operator_profile:   'Operator profile \u2192',
+                hook_ratio:         '{ratio} LLC transfers for every eviction filed this month.',
+                hook_neutral:       '{llc} LLC transfers and {evictions} eviction filings in the last 30 days.',
+            },
+            es: {
+                tagline:            'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
+                llc_label:          'transferencias LLC (30d)',
+                eviction_label:     'desalojos (30d)',
+                highest_risk:       'ZIP de mayor riesgo',
+                search_placeholder: 'Ingrese direcci\u00f3n, c\u00f3digo postal o nombre del propietario',
+                search_btn:         'Buscar',
+                explore_map:        'Explorar el Mapa \u2192',
+                recent_findings:    'Hallazgos Recientes',
+                operator_profile:   'Perfil del operador \u2192',
+                hook_ratio:         '{ratio} transferencias LLC por cada desalojo presentado este mes.',
+                hook_neutral:       '{llc} transferencias LLC y {evictions} desalojos registrados este mes.',
+            }
+        };
+
+        function applyTranslations(lang) {
+            const s = i18n[lang] || i18n.en;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (s[key] !== undefined) el.textContent = s[key];
+            });
+            const inp = document.getElementById('search-input');
+            if (inp) inp.placeholder = s.search_placeholder;
+            const hookEl = document.getElementById('hook-line');
+            if (hookEl && parseFloat(hookEl.style.opacity) > 0 && (_liveLlc || _liveEvictions)) {
+                hookEl.textContent = buildHookLine(_liveLlc, _liveEvictions);
+            }
+        }
 
         function scoreColor(score) {
             if (score == null) return '#94a3b8';
@@ -246,22 +293,27 @@
         }
 
         function buildHookLine(llc, evictions) {
+            const s = i18n[_lang] || i18n.en;
             if (!llc && !evictions) return '';
             if (evictions > 0 && llc / evictions > 1.5)
-                return `${(llc / evictions).toFixed(1)} LLC transfers for every eviction filed this month.`;
-            return `${llc.toLocaleString()} LLC transfers and ${evictions.toLocaleString()} eviction filings in the last 30 days.`;
+                return s.hook_ratio.replace('{ratio}', (llc / evictions).toFixed(1));
+            return s.hook_neutral
+                .replace('{llc}', llc.toLocaleString())
+                .replace('{evictions}', evictions.toLocaleString());
         }
 
         function populateStats(data) {
-            const llc      = data.llc_transfers_30d || 0;
-            const evictions = data.evictions_30d    || 0;
+            const llc       = data.llc_transfers_30d || 0;
+            const evictions = data.evictions_30d     || 0;
             const top       = data.top_risk;
+            _liveLlc        = llc;
+            _liveEvictions  = evictions;
 
             if (top) {
                 const color = scoreColor(top.score);
-                const zip   = top.zip_code || '&#8212;';
-                const place = top.name     || '&#8212;';
-                const score = top.score != null ? top.score.toFixed(1) : '&#8212;';
+                const zip   = top.zip_code || '\u2014';
+                const place = top.name     || '\u2014';
+                const score = top.score != null ? top.score.toFixed(1) : '\u2014';
 
                 document.getElementById('zip-code').textContent  = zip;
                 document.getElementById('zip-place').textContent = place;
@@ -311,7 +363,7 @@
                         <span class="font-mono text-sm font-bold text-slate-100">${n.zip_code}</span>
                     </div>
                     <div class="text-xs text-slate-400 truncate mb-1">${n.name || ''}</div>
-                    <div class="font-mono text-sm font-semibold" style="color:${color};">${n.score != null ? n.score.toFixed(1) : '&#8212;'}</div>
+                    <div class="font-mono text-sm font-semibold" style="color:${color};">${n.score != null ? n.score.toFixed(1) : '\u2014'}</div>
                 `;
                 container.appendChild(card);
             });
@@ -340,11 +392,13 @@
         const langToggle = document.getElementById('lang-toggle');
         langToggle.textContent = _lang === 'es' ? 'ES / EN' : 'EN / ES';
         langToggle.addEventListener('click', () => {
-            const cur  = localStorage.getItem('pc-lang') || 'en';
-            const next = cur === 'en' ? 'es' : 'en';
-            localStorage.setItem('pc-lang', next);
-            langToggle.textContent = next === 'es' ? 'ES / EN' : 'EN / ES';
+            _lang = _lang === 'en' ? 'es' : 'en';
+            localStorage.setItem('pc-lang', _lang);
+            langToggle.textContent = _lang === 'es' ? 'ES / EN' : 'EN / ES';
+            applyTranslations(_lang);
         });
+
+        applyTranslations(_lang);
     </script>
 </body>
 </html>
