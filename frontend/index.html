@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <!-- Preconnect to external CDN origins -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <title>PulseCities — NYC Displacement Risk Intelligence</title>
 
     <meta name="description" content="NYC displacement risk scores for 178 neighborhoods, updated daily from ACRIS deeds, HPD violations, DOB permits, evictions, and rent stabilization data.">
@@ -57,21 +64,12 @@
         body {
             font-family: 'Inter', sans-serif;
             min-height: 100dvh;
-            /* Heat-map glow positioned to approximate NYC's borough geography,
-               layered over a subtle street-grid pattern. No map library needed. */
-            background-color: #0f172a;
+            background-color: #0a0a1a;
             background-image:
-                radial-gradient(ellipse 65% 45% at 40% 60%, rgba(249,115,22,0.09) 0%, transparent 55%),
-                radial-gradient(ellipse 38% 28% at 72% 28%, rgba(239,68,68,0.06) 0%, transparent 50%),
-                radial-gradient(ellipse 50% 20% at 50% 46%, rgba(234,179,8,0.04) 0%, transparent 60%),
-                linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(56,189,248,0.02) 1px, transparent 1px),
-                linear-gradient(rgba(56,189,248,0.012) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(56,189,248,0.008) 1px, transparent 1px);
-            background-size:
-                100% 100%, 100% 100%, 100% 100%,
-                80px 80px, 80px 80px,
-                16px 16px, 16px 16px;
+                radial-gradient(ellipse 60% 50% at 35% 65%, rgba(249,115,22,0.13) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 30% at 70% 30%, rgba(239,68,68,0.09) 0%, transparent 55%),
+                radial-gradient(ellipse 35% 25% at 55% 50%, rgba(234,179,8,0.06) 0%, transparent 60%),
+                linear-gradient(160deg, #0a0a1a 0%, #0f172a 55%, #1a1a2e 100%);
         }
 
         .font-mono { font-family: 'JetBrains Mono', monospace; }
@@ -87,6 +85,7 @@
     </style>
 </head>
 <body>
+
     <div class="min-h-dvh flex flex-col items-center justify-center px-4 py-10 relative">
 
         <button id="lang-toggle"
@@ -101,7 +100,7 @@
                 PulseCities
             </h1>
             <p class="text-base text-slate-300 mb-10 text-center" style="max-width:36ch;" data-i18n="tagline">
-                The displacement story NYC doesn't officially tell.
+                The displacement story NYC doesn't officially tell
             </p>
 
             <!-- Desktop stats: 3-column editorial layout -->
@@ -223,7 +222,7 @@
 
         const i18n = {
             en: {
-                tagline:            "The displacement story NYC doesn't officially tell.",
+                tagline:            "The displacement story NYC doesn't officially tell",
                 llc_label:          'LLC transfers (30d)',
                 eviction_label:     'evictions (30d)',
                 highest_risk:       'highest risk zip',
@@ -233,10 +232,10 @@
                 recent_findings:    'Recent Findings',
                 operator_profile:   'Operator profile \u2192',
                 hook_ratio:         '{ratio} LLC transfers for every eviction filed this month.',
-                hook_neutral:       '{llc} LLC transfers and {evictions} eviction filings in the last 30 days.',
+                hook_neutral:       '{llc} LLC transfers and {evictions} eviction filings in the last 30 days',
             },
             es: {
-                tagline:            'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
+                tagline:            'La historia del desplazamiento en NYC que oficialmente no se cuenta',
                 llc_label:          'transferencias LLC (30d)',
                 eviction_label:     'desalojos (30d)',
                 highest_risk:       'ZIP de mayor riesgo',
@@ -246,7 +245,7 @@
                 recent_findings:    'Hallazgos Recientes',
                 operator_profile:   'Perfil del operador \u2192',
                 hook_ratio:         '{ratio} transferencias LLC por cada desalojo presentado este mes.',
-                hook_neutral:       '{llc} transferencias LLC y {evictions} desalojos registrados este mes.',
+                hook_neutral:       '{llc} transferencias LLC y {evictions} desalojos registrados este mes',
             }
         };
 
