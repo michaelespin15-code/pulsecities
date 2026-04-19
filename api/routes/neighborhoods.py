@@ -15,6 +15,7 @@ from slowapi.util import get_remote_address
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
 from models.database import get_db
 from models.neighborhoods import Neighborhood
 from models.scores import DisplacementScore
@@ -168,6 +169,11 @@ _BOROUGH_CASE = """
 # Filters out junk/sentinel ZIP codes that fall outside all NYC borough ranges.
 _VALID_NYC_ZIP_CLAUSE = " OR ".join(f"({v})" for v in _BOROUGH_ZIP_CLAUSE.values())
 
+# TTL cache for /top-risk — data only changes at nightly scoring (2am UTC).
+# Key: (limit, borough); value: (result_list, expires_at_unix_timestamp).
+_TOP_RISK_CACHE: dict = {}
+_TOP_RISK_TTL = 3600  # 1 hour
+
 
 @router.get("/top-risk")
 @limiter.limit("60/minute")
@@ -191,8 +197,14 @@ def get_top_risk_neighborhoods(
             detail=f"borough must be one of: {', '.join(sorted(_VALID_BOROUGHS))}",
         )
 
+    import time as _time
     capped = min(max(1, limit), 25)
-    params: dict = {"limit": capped}
+    cache_key = (capped, borough)
+    cached = _TOP_RISK_CACHE.get(cache_key)
+    if cached and _time.monotonic() < cached[1]:
+        return {"neighborhoods": cached[0]}
+
+    params: dict = {"limit": capped, "complaint_types": list(DISPLACEMENT_COMPLAINT_TYPES)}
     # Use the specific borough range when filtered; otherwise restrict to all valid NYC ZIPs
     # so junk/sentinel values (00000, 12345, etc.) never appear in results.
     zip_filter = (
@@ -241,11 +253,14 @@ def get_top_risk_neighborhoods(
                 GROUP BY zip_code
             ),
             complaint_counts AS (
-                -- complaints_raw uses created_date (not open_date).
+                -- Filter to displacement-relevant types only — matches scoring/compute.py.
+                -- Unfiltered 365-day scan over all complaint types took ~12s (full table).
+                -- The composite index on (complaint_type, created_date) makes this fast.
                 SELECT zip_code, COUNT(*) AS cnt
                 FROM complaints_raw
                 WHERE created_date >= CURRENT_DATE - INTERVAL '365 days'
                   AND zip_code IS NOT NULL
+                  AND complaint_type = ANY(:complaint_types)
                 GROUP BY zip_code
             ),
             rs_loss_counts AS (
@@ -355,6 +370,8 @@ def get_top_risk_neighborhoods(
             }
         )
 
+    import time as _time
+    _TOP_RISK_CACHE[cache_key] = (result, _time.monotonic() + _TOP_RISK_TTL)
     return {"neighborhoods": result}
 
 
