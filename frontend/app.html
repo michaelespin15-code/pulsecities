@@ -2086,7 +2086,7 @@
                 const pulseEl = centerEl ? centerEl.querySelector('.pulse-dot') : null;
                 if (pulseEl && topRisk.last_updated) {
                     const dateStr = new Date(topRisk.last_updated).toLocaleDateString('en-US', {
-                        month: 'short', day: 'numeric'
+                        month: 'short', day: 'numeric', timeZone: 'UTC'
                     });
                     pulseEl.title = `${t('hero', 'pulse_tooltip_pre')} ${dateStr} ${t('hero', 'pulse_tooltip_suf')}`;
 
