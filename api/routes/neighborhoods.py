@@ -102,20 +102,18 @@ def get_neighborhood_score(
 
     hood = db.query(Neighborhood).filter(Neighborhood.zip_code == zip_code).first()
 
-    breakdown = score.signal_breakdown or {}
+    breakdown   = score.signal_breakdown or {}
+    raw_counts  = _fetch_raw_counts(db, zip_code)
     return {
         "zip_code": zip_code,
         "name": hood.name if hood else None,
         "borough": _borough_from_zip(zip_code),
         "score": round(score.score, 1) if score.score is not None else None,
-        # Five-signal breakdown — all values normalized to [0–100].
-        # Keys: permits, evictions, llc_acquisitions, assessment_spike, complaint_rate.
-        # assessment_spike is 0.0 (dormant Phase 4 — no YoY DOF baseline yet).
         "signal_breakdown": breakdown,
-        # Human-readable summary — generated from score tier + top signals.
-        "summary_text": _build_summary(score.score, breakdown),
-        # Per-signal data freshness — ISO-8601 UTC timestamps.
-        # Used by the UI freshness display panel (Phase 5).
+        # Raw event counts behind each normalized score — used by UI and digest
+        # to show "27 LLC acquisitions" rather than just the 0–100 index value.
+        "signal_raw_counts": raw_counts,
+        "summary_text": _build_summary(score.score, breakdown, raw_counts),
         "signal_last_updated": score.signal_last_updated or {},
         "last_updated": (
             score.cache_generated_at.isoformat() if score.cache_generated_at else None
@@ -169,10 +167,12 @@ _BOROUGH_CASE = """
 # Filters out junk/sentinel ZIP codes that fall outside all NYC borough ranges.
 _VALID_NYC_ZIP_CLAUSE = " OR ".join(f"({v})" for v in _BOROUGH_ZIP_CLAUSE.values())
 
-# TTL cache for /top-risk — data only changes at nightly scoring (2am UTC).
-# Key: (limit, borough); value: (result_list, expires_at_unix_timestamp).
+# TTL caches — data only changes at nightly scoring (2am UTC).
 _TOP_RISK_CACHE: dict = {}
-_TOP_RISK_TTL = 3600  # 1 hour
+_TOP_RISK_TTL = 3600
+
+_TOP_MOVERS_CACHE: dict = {}
+_TOP_MOVERS_TTL = 3600
 
 
 @router.get("/top-risk")
@@ -214,7 +214,12 @@ def get_top_risk_neighborhoods(
     )
     # When a borough filter is active the PERCENT_RANK() window covers only those ZIPs.
     # For the un-filtered case the window covers all valid NYC ZIPs (D-15 denominator).
-    outer_where = f"WHERE ({_BOROUGH_ZIP_CLAUSE[borough]})" if borough else ""
+    # outer_where is placed after "SELECT * FROM ranked" where ds alias is out of scope —
+    # use bare zip_code (the column name ranked exposes) instead of ds.zip_code.
+    outer_where = (
+        f"WHERE ({_BOROUGH_ZIP_CLAUSE[borough].replace('ds.zip_code', 'zip_code')})"
+        if borough else ""
+    )
 
     rows = db.execute(
         text(
@@ -375,6 +380,85 @@ def get_top_risk_neighborhoods(
     return {"neighborhoods": result}
 
 
+@router.get("/top-movers")
+@limiter.limit("60/minute")
+def get_top_movers(
+    request: Request,
+    response: Response,
+    limit: int = 8,
+    db: Session = Depends(get_db),
+):
+    """
+    Returns neighborhoods with the largest week-over-week displacement score change.
+    Pulls from score_history snapshots; limit capped at 20.
+    """
+    import time as _time
+    capped = min(max(1, limit), 20)
+    cached = _TOP_MOVERS_CACHE.get(capped)
+    if cached and _time.monotonic() < cached[1]:
+        return {"neighborhoods": cached[0]}
+
+    valid_zip = _VALID_NYC_ZIP_CLAUSE.replace("ds.zip_code", "l.zip_code")
+
+    rows = db.execute(text(f"""
+        WITH latest AS (
+            SELECT DISTINCT ON (zip_code)
+                zip_code, composite_score,
+                llc_acquisition_rate, eviction_rate,
+                permit_intensity, complaint_rate
+            FROM score_history
+            ORDER BY zip_code, scored_at DESC
+        ),
+        week_ago AS (
+            SELECT DISTINCT ON (zip_code)
+                zip_code, composite_score AS prev_score
+            FROM score_history
+            WHERE scored_at <= CURRENT_DATE - INTERVAL '6 days'
+            ORDER BY zip_code, scored_at DESC
+        )
+        SELECT
+            l.zip_code,
+            n.name,
+            ROUND((l.composite_score - w.prev_score)::numeric, 1) AS delta,
+            ROUND(l.composite_score::numeric, 1)                   AS score_now,
+            ROUND(w.prev_score::numeric, 1)                        AS score_prev,
+            l.llc_acquisition_rate,
+            l.eviction_rate,
+            l.permit_intensity,
+            l.complaint_rate
+        FROM latest l
+        JOIN week_ago w ON l.zip_code = w.zip_code
+        LEFT JOIN neighborhoods n ON l.zip_code = n.zip_code
+        WHERE l.composite_score - w.prev_score >= 0.5
+          AND ({valid_zip})
+        ORDER BY delta DESC
+        LIMIT :limit
+    """), {"limit": capped}).fetchall()
+
+    result = []
+    for row in rows:
+        signals = {
+            "llc_acquisitions": float(row.llc_acquisition_rate or 0),
+            "evictions":        float(row.eviction_rate or 0),
+            "permits":          float(row.permit_intensity or 0),
+            "complaint_rate":   float(row.complaint_rate or 0),
+        }
+        dominant = max(signals, key=signals.__getitem__) if any(v > 0 for v in signals.values()) else None
+        result.append({
+            "zip_code":              row.zip_code,
+            "name":                  row.name,
+            "borough":               _borough_from_zip(row.zip_code),
+            "score_now":             float(row.score_now),
+            "score_prev":            float(row.score_prev),
+            "delta":                 float(row.delta),
+            "dominant_signal":       dominant,
+            "dominant_signal_label": _SIGNAL_LABELS.get(dominant, "") if dominant else "",
+        })
+
+    _TOP_MOVERS_CACHE[capped] = (result, _time.monotonic() + _TOP_MOVERS_TTL)
+    return {"neighborhoods": result}
+
+
 def _dominant_signal(breakdown: dict) -> tuple:
     """Returns (key, value) for the highest-scoring signal in the breakdown."""
     valid = {k: v for k, v in breakdown.items() if isinstance(v, (int, float))}
@@ -413,7 +497,56 @@ _SIGNAL_LABELS = {
 }
 
 
-def _build_summary(score: float | None, breakdown: dict[str, Any]) -> str:
+def _fetch_raw_counts(db: Session, zip_code: str) -> dict[str, int]:
+    """Raw event counts for the past 365 days — same filters as the scoring engine."""
+    rows = db.execute(text("""
+        SELECT
+            (SELECT COUNT(*) FROM ownership_raw o
+             JOIN parcels p ON o.bbl = p.bbl
+             WHERE p.zip_code = :zip AND o.party_type = '2'
+               AND o.doc_type IN ('DEED','DEEDP','ASST')
+               AND o.doc_date >= CURRENT_DATE - INTERVAL '365 days'
+               AND p.units_res > 0
+               AND o.party_name_normalized LIKE '%LLC%'
+               AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
+               AND o.party_name_normalized NOT ILIKE '%LENDING%'
+               AND o.party_name_normalized NOT ILIKE '%LOAN SERVICING%'
+               AND o.party_name_normalized NOT ILIKE '%LOAN SERVICE%'
+               AND o.party_name_normalized NOT ILIKE '%LOAN FUNDER%'
+               AND o.party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
+               AND o.party_name_normalized NOT ILIKE '%CREDIT UNION%'
+               AND o.party_name_normalized NOT ILIKE '% FINANCIAL %'
+               AND o.party_name_normalized NOT ILIKE '% FINANCIAL LLC'
+               AND o.party_name_normalized NOT ILIKE '%REVERSE LLC'
+               AND o.party_name_normalized NOT ILIKE '%GUIDANCE RESIDENTIAL%'
+            ) AS llc_acquisitions,
+            (SELECT COUNT(*) FROM evictions_raw
+             WHERE zip_code = :zip
+               AND executed_date >= CURRENT_DATE - INTERVAL '365 days'
+               AND eviction_type ILIKE 'R%'
+            ) AS evictions,
+            (SELECT COUNT(*) FROM permits_raw pr
+             JOIN parcels p ON pr.bbl = p.bbl
+             WHERE p.zip_code = :zip AND pr.permit_type = 'AL'
+               AND pr.filing_date >= CURRENT_DATE - INTERVAL '365 days'
+               AND p.units_res >= 3
+            ) AS permits,
+            (SELECT COUNT(*) FROM complaints_raw
+             WHERE zip_code = :zip
+               AND created_date >= CURRENT_DATE - INTERVAL '365 days'
+               AND complaint_type = ANY(:ctypes)
+            ) AS complaint_rate
+    """), {"zip": zip_code, "ctypes": list(DISPLACEMENT_COMPLAINT_TYPES)}).fetchone()
+
+    return {
+        "llc_acquisitions": int(rows[0] or 0),
+        "evictions":        int(rows[1] or 0),
+        "permits":          int(rows[2] or 0),
+        "complaint_rate":   int(rows[3] or 0),
+    }
+
+
+def _build_summary(score: float | None, breakdown: dict[str, Any], raw_counts: dict[str, int] | None = None) -> str:
     """
     Generate a 1–2 sentence plain-English summary from score + signal breakdown.
 
@@ -451,15 +584,33 @@ def _build_summary(score: float | None, breakdown: dict[str, Any]) -> str:
         key=lambda x: x[1],
         reverse=True,
     )
-    top = [_SIGNAL_LABELS.get(k, k) for k, _ in active[:2]]
+
+    counts = raw_counts or {}
+
+    # Build count phrases for the top active signals
+    _count_labels = {
+        "llc_acquisitions": lambda n: f"{n} LLC acquisition{'s' if n != 1 else ''}",
+        "evictions":        lambda n: f"{n} residential eviction{'s' if n != 1 else ''}",
+        "permits":          lambda n: f"{n} alteration permit{'s' if n != 1 else ''}",
+        "complaint_rate":   lambda n: f"{n} housing complaint{'s' if n != 1 else ''}",
+    }
+
+    count_parts = []
+    for key, _ in active[:3]:
+        n = counts.get(key, 0)
+        if n > 0 and key in _count_labels:
+            count_parts.append(_count_labels[key](n))
 
     if tier == "Low":
         detail = "No individual signal stands out above citywide averages."
-    elif not top:
+    elif not active:
         detail = "Signals are present but no single factor dominates."
-    elif len(top) == 1:
-        detail = f"The primary driver is {top[0]}."
+    elif count_parts:
+        detail = "In the past year: " + ", ".join(count_parts) + "."
+    elif len(active) == 1:
+        detail = f"The primary driver is {_SIGNAL_LABELS.get(active[0][0], active[0][0])}."
     else:
+        top = [_SIGNAL_LABELS.get(k, k) for k, _ in active[:2]]
         detail = f"The dominant drivers are {top[0]} and {top[1]}."
 
     return f"{opening} {detail}"

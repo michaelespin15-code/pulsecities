@@ -100,7 +100,7 @@
                 PulseCities
             </h1>
             <p class="text-base text-slate-300 mb-10 text-center" style="max-width:36ch;" data-i18n="tagline">
-                The displacement story NYC doesn't officially tell
+                The displacement story NYC doesn't officially tell.
             </p>
 
             <!-- Desktop stats: 3-column editorial layout -->
@@ -187,6 +187,13 @@
             <!-- Live top-risk ZIP cards -->
             <div id="zip-cards" class="flex flex-wrap gap-3 justify-center w-full mt-2"></div>
 
+            <!-- Top Movers -->
+            <div id="movers-section" class="w-full mt-8" style="display:none;">
+                <div class="text-xs font-mono uppercase tracking-widest mb-3 text-center"
+                     style="color:#94a3b8;letter-spacing:0.1em;" data-i18n="moving_this_week">Moving This Week</div>
+                <div id="movers-cards" class="flex flex-wrap gap-3 justify-center"></div>
+            </div>
+
             <!-- Recent Findings: operator profiles -->
             <div class="w-full mt-8">
                 <div class="text-xs font-mono uppercase tracking-widest mb-3 text-center"
@@ -222,9 +229,9 @@
 
         const i18n = {
             en: {
-                tagline:            "The displacement story NYC doesn't officially tell",
-                llc_label:          'LLC transfers (30d)',
-                eviction_label:     'evictions (30d)',
+                tagline:            "The displacement story NYC doesn't officially tell.",
+                llc_label:          'LLC Transfers (30d)',
+                eviction_label:     'Evictions (30d)',
                 highest_risk:       'highest risk zip',
                 search_placeholder: 'Enter address, ZIP, or landlord name',
                 search_btn:         'Search',
@@ -233,9 +240,14 @@
                 operator_profile:   'Operator profile \u2192',
                 hook_ratio:         '{ratio} LLC transfers for every eviction filed this month.',
                 hook_neutral:       '{llc} LLC transfers and {evictions} eviction filings in the last 30 days',
+                moving_this_week:   'Moving This Week',
+                sig_llc:            'LLC acquisitions',
+                sig_evictions:      'evictions',
+                sig_permits:        'permit filings',
+                sig_complaints:     'tenant complaints',
             },
             es: {
-                tagline:            'La historia del desplazamiento en NYC que oficialmente no se cuenta',
+                tagline:            'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
                 llc_label:          'transferencias LLC (30d)',
                 eviction_label:     'desalojos (30d)',
                 highest_risk:       'ZIP de mayor riesgo',
@@ -246,6 +258,11 @@
                 operator_profile:   'Perfil del operador \u2192',
                 hook_ratio:         '{ratio} transferencias LLC por cada desalojo presentado este mes.',
                 hook_neutral:       '{llc} transferencias LLC y {evictions} desalojos registrados este mes',
+                moving_this_week:   'Esta Semana',
+                sig_llc:            'adquisiciones LLC',
+                sig_evictions:      'desalojos',
+                sig_permits:        'permisos de obra',
+                sig_complaints:     'quejas de inquilinos',
             }
         };
 
@@ -368,6 +385,37 @@
             });
         }
 
+        function moverSignalLabel(dominant) {
+            const s = i18n[_lang] || i18n.en;
+            return { llc_acquisitions: s.sig_llc, evictions: s.sig_evictions,
+                     permits: s.sig_permits, complaint_rate: s.sig_complaints }[dominant] || '';
+        }
+
+        function renderMovers(list) {
+            if (!list || !list.length) return;
+            const section = document.getElementById('movers-section');
+            const container = document.getElementById('movers-cards');
+            if (!section || !container) return;
+            list.forEach(n => {
+                const card = document.createElement('a');
+                card.href = `/map?q=${encodeURIComponent(n.zip_code)}`;
+                card.className = 'zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block';
+                card.style.cssText = 'background:rgba(30,41,59,0.7);min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;';
+                const deltaStr = `+${n.delta.toFixed(1)}`;
+                const label = moverSignalLabel(n.dominant_signal);
+                card.innerHTML = `
+                    <div class="flex items-baseline gap-2 mb-0.5">
+                        <span class="font-mono text-sm font-bold text-slate-100">${n.zip_code}</span>
+                        <span class="font-mono text-xs font-semibold" style="color:#ef4444;">${deltaStr}</span>
+                    </div>
+                    <div class="text-xs text-slate-400 truncate mb-1">${n.name || ''}</div>
+                    <div class="text-xs" style="color:rgba(148,163,184,0.55);">${label}</div>
+                `;
+                container.appendChild(card);
+            });
+            section.style.display = '';
+        }
+
         fetch('/api/stats')
             .then(r => r.ok ? r.json() : null)
             .then(data => {
@@ -375,6 +423,11 @@
                 populateStats(data);
                 renderZipCards(data.top_risk_list || []);
             })
+            .catch(() => {});
+
+        fetch('/api/neighborhoods/top-movers?limit=8')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => { if (data) renderMovers(data.neighborhoods || []); })
             .catch(() => {});
 
         function handleSearch() {
