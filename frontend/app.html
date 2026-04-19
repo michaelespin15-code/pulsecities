@@ -277,12 +277,12 @@
                        border-radius:6px 0 0 6px;color:#64748b;font-size:0.85rem;cursor:pointer;">›</button>
             <!-- Map legend — bottom-left, always visible -->
             <div id="map-legend" class="absolute bottom-9 left-4 z-10 rounded-lg px-3 py-2 flex flex-col gap-1" style="background:rgba(15,23,42,0.88);backdrop-filter:blur(6px);border:1px solid rgba(148,163,184,0.15);font-size:11px;">
-                <div class="text-slate-400 font-mono uppercase tracking-wider mb-0.5" style="font-size:10px;letter-spacing:0.08em;">displacement risk</div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#22c55e;display:inline-block;flex-shrink:0;"></span><span class="text-slate-300">Low (0–33)</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#eab308;display:inline-block;flex-shrink:0;"></span><span class="text-slate-300">Moderate (34–66)</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#f97316;display:inline-block;flex-shrink:0;"></span><span class="text-slate-300">High (67–84)</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block;flex-shrink:0;"></span><span class="text-slate-300">Critical (85+)</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#94a3b8;display:inline-block;flex-shrink:0;"></span><span class="text-slate-300">No data</span></div>
+                <div class="text-slate-400 font-mono uppercase tracking-wider mb-0.5" style="font-size:10px;letter-spacing:0.08em;"><span id="legend-header">displacement risk</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#22c55e;display:inline-block;flex-shrink:0;"></span><span id="legend-low" class="text-slate-300">Low (0–33)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#eab308;display:inline-block;flex-shrink:0;"></span><span id="legend-moderate" class="text-slate-300">Moderate (34–66)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#f97316;display:inline-block;flex-shrink:0;"></span><span id="legend-high" class="text-slate-300">High (67–84)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block;flex-shrink:0;"></span><span id="legend-critical" class="text-slate-300">Critical (85+)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#94a3b8;display:inline-block;flex-shrink:0;"></span><span id="legend-no-data" class="text-slate-300">No data</span></div>
                 <div id="map-data-updated" class="text-slate-500 mt-1" style="font-size:10px;"></div>
             </div>
             <!-- Comparison mode overlay — floats over map center while user picks a second zip -->
@@ -1026,7 +1026,29 @@
                     no_data:             'No data available.',
                     unable_to_load:      'Unable to load neighborhoods.',
                     top_risk_window:     'Counts reflect the past 365 days',
-                    built_by:            'Built by'
+                    built_by:            'Built by',
+                    legend_header:       'displacement risk',
+                    legend_low:          'Low (0–33)',
+                    legend_moderate:     'Moderate (34–66)',
+                    legend_high:         'High (67–84)',
+                    legend_critical:     'Critical (85+)',
+                    legend_no_data:      'No data',
+                    data_last_updated:   'Data last updated: {date}',
+                    show_more:           '+{n} more',
+                    hide:                'Hide',
+                    subscribe_invalid_email: 'Enter a valid email address.',
+                    subscribe_no_zip:        'Select a neighborhood on the map first.',
+                    subscribe_duplicate:     "You're already subscribed for this ZIP.",
+                    subscribe_success:       "You're on the list. Updates drop every Monday.",
+                    subscribe_error:         'Something went wrong. Try again.',
+                    landlord_no_results:     'No properties found for "{query}" in ACRIS records.',
+                    copy_success:            'Copied!',
+                    copy_fail:               'Copy failed',
+                    back_to:                 '← Back to {zip}',
+                    bbl_label:               'BBL: {bbl}',
+                    reno_flip_count:         '{n} propert{plural} with LLC acquisition + renovation permit within 60 days',
+                    reno_flip_acquired:      'acquired by',
+                    reno_flip_permit:        'permit'
                 },
                 risk_signal: {
                     permits:          'Surge in renovation permit filings',
@@ -1083,7 +1105,23 @@
                     no_dominant:      'Signals are present but no single factor dominates.',
                     primary_driver:   'The primary driver is {signal}.',
                     two_drivers:      'The dominant drivers are {signal1} and {signal2}.',
-                }
+                },
+                time: {
+                    today:       'today',
+                    yesterday:   'yesterday',
+                    days_ago:    '{n}d ago',
+                    weeks_ago:   '{n}w ago',
+                    months_ago:  '{n}mo ago',
+                    years_ago:   '{n}y ago',
+                },
+                signal_desc: {
+                    permits:          'Renovation permit filings signal landlords preparing to flip or push out tenants',
+                    evictions:        'Court-ordered eviction filings — a direct measure of tenant displacement',
+                    llc_acquisitions: 'Buildings acquired by LLCs face higher rates of rent increase and harassment',
+                    complaint_rate:   'High 311 complaint volume indicates landlord pressure to vacate',
+                    rs_unit_loss:     'Net loss of rent-stabilized apartments — affordable housing permanently removed',
+                    assessment_spike: 'Sharp property tax assessment increases signal speculative acquisition activity',
+                },
             },
             es: {
                 signals: {
@@ -1129,7 +1167,7 @@
                     searching:           'Buscando...',
                     addr_placeholder:    '123 Broadway, Brooklyn',
                     landlord_placeholder:'Blackstone',
-                    addr_not_found:      'Dirección no encontrada. Incluya el condado (p. ej. "123 Main St, Brooklyn").',
+                    addr_not_found:      'Dirección no encontrada. Incluya el área, p. ej. "123 Main St, Brooklyn".',
                     addr_bbl_fail:       'No se pudo resolver la dirección.',
                     addr_block_fail:     'No se pudieron cargar los datos del edificio.',
                     network_error:       'Error de red. Intente de nuevo.',
@@ -1146,7 +1184,7 @@
                     reno_flip_title:     'Patrón de Renovación-Reventa Detectado',
                     reno_flip_toggle:    'Ver direcciones',
                     signal_breakdown:    'Desglose de Señales',
-                    signal_note:         'Las puntuaciones son de 0 a 100 en relación a todos los vecindarios de NYC, normalizadas por unidad residencial.',
+                    signal_note:         'Las puntuaciones son de 0 a 100 en relación a todos los vecindarios de NYC, normalizadas por unidad de vivienda.',
                     how_scores_work:     'Cómo funcionan las puntuaciones',
                     no_score:            'Sin puntuación calculada para este código postal.',
                     look_up_building:    'Buscar un Edificio',
@@ -1165,7 +1203,29 @@
                     no_data:             'Sin datos disponibles.',
                     unable_to_load:      'No se pudieron cargar los vecindarios.',
                     top_risk_window:     'Datos de los últimos 365 días',
-                    built_by:            'Creado por'
+                    built_by:            'Creado por',
+                    legend_header:       'riesgo de desplazamiento',
+                    legend_low:          'Bajo (0–33)',
+                    legend_moderate:     'Moderado (34–66)',
+                    legend_high:         'Alto (67–84)',
+                    legend_critical:     'Crítico (85+)',
+                    legend_no_data:      'Sin datos',
+                    data_last_updated:   'Datos actualizados: {date}',
+                    show_more:           '+{n} más',
+                    hide:                'Ocultar',
+                    subscribe_invalid_email: 'Ingrese un correo electrónico válido.',
+                    subscribe_no_zip:        'Seleccione un vecindario en el mapa primero.',
+                    subscribe_duplicate:     'Ya está suscrito para este código postal.',
+                    subscribe_success:       'Está en la lista. Actualizaciones cada lunes.',
+                    subscribe_error:         'Algo salió mal. Intente de nuevo.',
+                    landlord_no_results:     'Sin propiedades encontradas para "{query}" en registros ACRIS.',
+                    copy_success:            '¡Copiado!',
+                    copy_fail:               'Error al copiar',
+                    back_to:                 '← Volver a {zip}',
+                    bbl_label:               'BBL: {bbl}',
+                    reno_flip_count:         '{n} propiedad{plural} con adquisición LLC y permiso de renovación en 60 días',
+                    reno_flip_acquired:      'adquirida por',
+                    reno_flip_permit:        'permiso'
                 },
                 risk_signal: {
                     permits:          'Aumento en solicitudes de permisos de renovación',
@@ -1222,7 +1282,23 @@
                     no_dominant:      'Hay señales presentes, pero ningún factor domina.',
                     primary_driver:   'El factor principal es {signal}.',
                     two_drivers:      'Los factores dominantes son {signal1} y {signal2}.',
-                }
+                },
+                time: {
+                    today:       'hoy',
+                    yesterday:   'ayer',
+                    days_ago:    'hace {n} días',
+                    weeks_ago:   'hace {n} sem.',
+                    months_ago:  'hace {n} mes.',
+                    years_ago:   'hace {n} años',
+                },
+                signal_desc: {
+                    permits:          'Los permisos de renovación indican que los propietarios se preparan para desplazar inquilinos',
+                    evictions:        'Desalojos ejecutados por orden judicial — una medida directa del desplazamiento',
+                    llc_acquisitions: 'Los edificios adquiridos por LLC enfrentan mayores aumentos de renta y presión a inquilinos',
+                    complaint_rate:   'Alto volumen de quejas al 311 indica presión del propietario para desalojar',
+                    rs_unit_loss:     'Pérdida neta de apartamentos de renta estabilizada — vivienda asequible eliminada permanentemente',
+                    assessment_spike: 'Aumentos bruscos en la valuación fiscal indican actividad especulativa de compra',
+                },
             }
         };
 
@@ -1285,6 +1361,12 @@
                 'hero-llc-label':             t('hero', 'llc_label'),
                 'hero-eviction-label':        t('hero', 'eviction_label'),
                 'hero-explore-map':           t('hero', 'explore_map'),
+                'legend-header':              t('ui', 'legend_header'),
+                'legend-low':                 t('ui', 'legend_low'),
+                'legend-moderate':            t('ui', 'legend_moderate'),
+                'legend-high':                t('ui', 'legend_high'),
+                'legend-critical':            t('ui', 'legend_critical'),
+                'legend-no-data':             t('ui', 'legend_no_data'),
             };
             for (const [id, text] of Object.entries(map)) {
                 const el = document.getElementById(id);
@@ -1480,22 +1562,17 @@
         function relativeTime(isoString) {
             if (!isoString) return '';
             const diffDays = Math.floor((Date.now() - new Date(isoString).getTime()) / 86400000);
-            if (diffDays === 0) return 'today';
-            if (diffDays === 1) return 'yesterday';
-            if (diffDays < 7) return `${diffDays}d ago`;
-            if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-            if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`;
-            return `${Math.floor(diffDays / 365)}y ago`;
+            if (diffDays === 0)   return t('time', 'today');
+            if (diffDays === 1)   return t('time', 'yesterday');
+            if (diffDays < 7)     return t('time', 'days_ago').replace('{n}', diffDays);
+            if (diffDays < 30)    return t('time', 'weeks_ago').replace('{n}', Math.floor(diffDays / 7));
+            if (diffDays < 365)   return t('time', 'months_ago').replace('{n}', Math.floor(diffDays / 30));
+            return t('time', 'years_ago').replace('{n}', Math.floor(diffDays / 365));
         }
 
-        const SIGNAL_DESCRIPTIONS = {
-            permits:          'Renovation permit filings signal landlords preparing to flip or push out tenants',
-            evictions:        'Court-ordered eviction filings — a direct measure of tenant displacement',
-            llc_acquisitions: 'Buildings acquired by LLCs face higher rates of rent increase and harassment',
-            complaint_rate:   'High 311 complaint volume (heat, leaks, pests) indicates pressure to vacate',
-            rs_unit_loss:     'Net loss of rent-stabilized apartments — affordable housing permanently removed',
-            assessment_spike: 'Sharp property tax assessment increases signal speculative acquisition activity'
-        };
+        function signalDesc(key) {
+            return t('signal_desc', key);
+        }
 
         function truncate(str, n) {
             return str && str.length > n ? str.slice(0, n) + '\u2026' : (str || '');
@@ -1509,7 +1586,7 @@
             const btn = document.createElement('button');
             btn.className = 'text-xs text-slate-400 hover:text-slate-300 mt-2 text-left block';
             btn.style.minHeight = '32px';
-            btn.textContent = `+${remainder.length} more`;
+            btn.textContent = t('ui', 'show_more').replace('{n}', remainder.length);
             btn.onclick = () => {
                 remainder.forEach(item => container.insertBefore(makeEl(item), btn));
                 btn.remove();
@@ -1652,7 +1729,8 @@
                     }
                     // Populate and show
                     const countEl = document.getElementById('renovation-flip-count');
-                    countEl.textContent = `${data.count} propert${data.count === 1 ? 'y' : 'ies'} with LLC acquisition + renovation permit within 60 days`;
+                    const _renoPlural = data.count === 1 ? 'y' : 'ies';
+                    countEl.textContent = t('ui', 'reno_flip_count').replace('{n}', data.count).replace('{plural}', _renoPlural);
 
                     const list = document.getElementById('renovation-flip-list');
                     list.innerHTML = '';
@@ -1666,7 +1744,7 @@
                         detail.className = 'text-xs text-slate-400';
                         const transferDate = p.transfer_date ? new Date(p.transfer_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
                         const days = p.days_between != null ? `${p.days_between}d later` : '';
-                        detail.textContent = `${p.buyer || ''}` + (transferDate ? ` \u2014 ${transferDate}` : '') + (days ? ` \u2014 permit ${days}` : '');
+                        detail.textContent = `${p.buyer || ''}` + (transferDate ? ` \u2014 ${transferDate}` : '') + (days ? ` \u2014 ${t('ui', 'reno_flip_permit')} ${days}` : '');
                         el.appendChild(addr);
                         el.appendChild(detail);
                         list.appendChild(el);
@@ -1682,7 +1760,7 @@
             const list = document.getElementById('renovation-flip-list');
             const isHidden = list.classList.contains('hidden');
             list.classList.toggle('hidden', !isHidden);
-            this.textContent = isHidden ? 'Hide addresses' : 'See addresses';
+            this.textContent = isHidden ? t('ui', 'hide') : t('ui', 'reno_flip_toggle');
         });
 
         function showDetail(zip, score, breakdown, lastUpdated, signalLastUpdated, summaryText, name, borough) {
@@ -1759,7 +1837,7 @@
                     row.className = 'py-2 border-b border-base-content/[0.06] last:border-0';
                     row.innerHTML = `
                         <div class="flex justify-between items-baseline mb-1">
-                            <span class="text-xs text-slate-400" title="${SIGNAL_DESCRIPTIONS[key] || ''}">${label}</span>
+                            <span class="text-xs text-slate-400" title="${signalDesc(key)}">${label}</span>
                             <span class="font-mono text-sm text-base-content">${numVal !== null ? numVal : '\u2014'}</span>
                         </div>
                         <div style="height:3px;border-radius:2px;background:rgba(148,163,184,0.12);">
@@ -1845,7 +1923,7 @@
 
             // Immediate skeleton state
             setPanel('comparison');
-            document.getElementById('cmp-back-btn').textContent = '\u2190 Back to ' + zip1;
+            document.getElementById('cmp-back-btn').textContent = t('ui', 'back_to').replace('{zip}', zip1);
             document.getElementById('cmp-zip-1').textContent = zip1;
             document.getElementById('cmp-zip-2').textContent = zip2;
             document.getElementById('cmp-name-1').textContent = '';
@@ -2093,7 +2171,7 @@
                     // Map legend data freshness stamp
                     const updatedLegendEl = document.getElementById('map-data-updated');
                     if (updatedLegendEl) {
-                        updatedLegendEl.textContent = `Data last updated: ${dateStr}`;
+                        updatedLegendEl.textContent = t('ui', 'data_last_updated').replace('{date}', dateStr);
                     }
                 }
             }
@@ -2143,7 +2221,7 @@
             const centerEl  = document.getElementById('hero-stat-center');
 
             if (leftStat && leftTip) {
-                leftTip.textContent = 'LLC property acquisitions tracked in NYC deed records in the last 30 days.';
+                leftTip.textContent = t('hero', 'llc_tooltip');
                 leftStat.addEventListener('mouseenter', () => {
                     leftTip.classList.remove('hidden');
                     leftTip.style.opacity = '0';
@@ -2154,7 +2232,7 @@
             }
 
             if (rightStat && rightTip) {
-                rightTip.textContent = 'Eviction cases filed in NYC Housing Court in the last 30 days.';
+                rightTip.textContent = t('hero', 'eviction_tooltip');
                 rightStat.addEventListener('mouseenter', () => {
                     rightTip.classList.remove('hidden');
                     rightTip.style.opacity = '0';
@@ -2332,10 +2410,10 @@
             setPanel('block');
 
             // Back button shows current zip (D-10)
-            document.getElementById('back-btn').textContent = '\u2190 Back to ' + (_cachedZip || '');
+            document.getElementById('back-btn').textContent = t('ui', 'back_to').replace('{zip}', _cachedZip || '');
 
             // BBL display
-            document.getElementById('block-bbl').textContent = 'BBL: ' + bbl;
+            document.getElementById('block-bbl').textContent = t('ui', 'bbl_label').replace('{bbl}', bbl);
 
             // Score
             const scoreEl = document.getElementById('block-score');
@@ -2815,7 +2893,7 @@
             if (!data.results || data.results.length === 0) {
                 const emptyEl = document.createElement('p');
                 emptyEl.className = 'text-xs text-slate-400 py-2 text-center';
-                emptyEl.textContent = `No properties found for "${data.query || 'that search'}" in ACRIS records.`;
+                emptyEl.textContent = t('ui', 'landlord_no_results').replace('{query}', data.query || 'that search');
                 list.appendChild(emptyEl);
                 resultsEl.classList.remove('hidden');
                 return;
@@ -2953,11 +3031,11 @@
                 lines.push(line);
             });
             navigator.clipboard.writeText(lines.join('\n')).then(() => {
-                this.textContent = 'Copied!';
-                setTimeout(() => { this.textContent = 'Copy'; }, 2000);
+                this.textContent = t('ui', 'copy_success');
+                setTimeout(() => { this.textContent = t('ui', 'landlord_copy'); }, 2000);
             }).catch(() => {
-                this.textContent = 'Copy failed';
-                setTimeout(() => { this.textContent = 'Copy'; }, 2000);
+                this.textContent = t('ui', 'copy_fail');
+                setTimeout(() => { this.textContent = t('ui', 'landlord_copy'); }, 2000);
             });
         });
 
@@ -3071,13 +3149,13 @@
             msgEl.classList.add('hidden');
 
             if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-                msgEl.textContent = 'Enter a valid email address.';
+                msgEl.textContent = t('ui', 'subscribe_invalid_email');
                 msgEl.className   = 'text-xs mt-1.5 text-error';
                 msgEl.classList.remove('hidden');
                 return;
             }
             if (!_cachedZip) {
-                msgEl.textContent = 'Select a neighborhood on the map first.';
+                msgEl.textContent = t('ui', 'subscribe_no_zip');
                 msgEl.className   = 'text-xs mt-1.5 text-slate-400';
                 msgEl.classList.remove('hidden');
                 setTimeout(() => msgEl.classList.add('hidden'), 3000);
@@ -3097,19 +3175,19 @@
                 if (resp.ok || resp.status === 409) {
                     document.getElementById('subscribe-form-wrap').classList.add('hidden');
                     msgEl.textContent = resp.status === 409
-                        ? "You're already subscribed for this zip."
-                        : "You're on the list. Updates drop every Monday.";
+                        ? t('ui', 'subscribe_duplicate')
+                        : t('ui', 'subscribe_success');
                     msgEl.className = 'text-xs mt-1.5 text-green-400';
                     msgEl.classList.remove('hidden');
                 } else {
                     throw new Error('server error');
                 }
             } catch {
-                msgEl.textContent = 'Something went wrong. Try again.';
+                msgEl.textContent = t('ui', 'subscribe_error');
                 msgEl.className   = 'text-xs mt-1.5 text-error';
                 msgEl.classList.remove('hidden');
                 this.disabled    = false;
-                this.textContent = 'Subscribe';
+                this.textContent = t('ui', 'subscribe');
             }
         });
 
