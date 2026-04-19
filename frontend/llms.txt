@@ -1,0 +1,53 @@
+# PulseCities
+
+> Real-time displacement risk intelligence for all 178 NYC neighborhoods, built on six public data signals updated daily from city records.
+
+PulseCities tracks housing displacement pressure across New York City by aggregating and scoring six signals from public datasets: LLC property acquisitions (ACRIS), renovation permit filings (DOB), tenant complaint rates (311/HPD), residential eviction filings, rent-stabilized unit loss, and tax assessment spikes. Each of the 178 ZIP code neighborhoods receives a daily composite score from 0–100.
+
+## What this site provides
+
+- Displacement risk scores (0–100) for all 178 NYC neighborhoods, updated nightly
+- Six-signal breakdown showing which factors drive pressure in each area
+- Week-over-week score changes to identify neighborhoods under acute pressure
+- LLC operator profiles linking corporate entities to their NYC property portfolios
+- Block-level investigation tools: address search, renovation-flip pattern detection, civic event timelines
+- Weekly email digests for subscribers tracking specific neighborhoods
+
+## Current high-risk neighborhoods (as of latest scoring run)
+
+- Bedford-Stuyvesant (11216, Brooklyn) — score 79.7, high displacement pressure
+- Bushwick (11237, Brooklyn) — score 65.9, high displacement pressure
+- Wakefield (10466, Bronx) — score 65.3, high displacement pressure
+- Hunts Point (10474, Bronx) — score 65.1, high displacement pressure
+
+## Data sources
+
+All signals are derived from NYC open data:
+
+- **ACRIS** (NYC Department of Finance) — deed transfers to LLC entities
+- **DOB NOW** (NYC Department of Buildings) — alteration permit filings on residential buildings
+- **311 / HPD** (NYC Open Data) — tenant complaints filtered to displacement-relevant types
+- **NYC Marshal Evictions** — residential eviction executions
+- **DHCR Rent Stabilization** — rent-stabilized unit counts by building, year over year
+- **DOF Property Assessment** — annual tax assessment values
+
+Scoring methodology: each signal is normalized 0–100 relative to all NYC neighborhoods (per residential unit), then weighted and composited. Weights: LLC acquisitions 26%, permits 21%, RS unit loss 15%, complaints 17%, evictions 13%, assessment spikes 8%.
+
+## API
+
+- `GET /api/neighborhoods` — GeoJSON FeatureCollection of all 178 neighborhoods with scores
+- `GET /api/neighborhoods/{zip}/score` — score and signal breakdown for a ZIP code
+- `GET /api/neighborhoods/top-risk` — top N neighborhoods by current score
+- `GET /api/neighborhoods/top-movers` — neighborhoods with largest week-over-week score increase
+
+## Key pages
+
+- https://pulsecities.com/ — landing page with live stats and top-risk neighborhoods
+- https://pulsecities.com/map — interactive heatmap of all 178 neighborhoods
+- https://pulsecities.com/neighborhood/{zip} — per-neighborhood detail (e.g. /neighborhood/11216)
+- https://pulsecities.com/operator/{name} — LLC operator portfolio profiles
+- https://pulsecities.com/methodology — full scoring methodology
+
+## About
+
+Built by Michael Espin. PulseCities is a free public tool. The underlying data pipeline, scoring engine, and API are open for journalistic and research use.
