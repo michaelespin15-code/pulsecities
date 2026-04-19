@@ -208,7 +208,7 @@ def get_top_risk_neighborhoods(
         text(
             f"""
             WITH
-            -- Actual 30-day raw counts per ZIP from source tables (Option B per RESEARCH.md).
+            -- 365-day raw counts per ZIP from source tables — matches scoring window.
             -- ownership_raw has no zip_code column — join via parcels to resolve ZIP.
             llc_counts AS (
                 SELECT p.zip_code, COUNT(*) AS cnt
@@ -217,7 +217,7 @@ def get_top_risk_neighborhoods(
                 WHERE o.party_type = '2'
                   AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
                   AND o.party_name_normalized LIKE '%LLC%'
-                  AND o.doc_date >= CURRENT_DATE - INTERVAL '30 days'
+                  AND o.doc_date >= CURRENT_DATE - INTERVAL '365 days'
                   AND p.zip_code IS NOT NULL
                   AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
                   AND o.party_name_normalized NOT ILIKE '%LOAN SERVICING%'
@@ -229,14 +229,14 @@ def get_top_risk_neighborhoods(
             eviction_counts AS (
                 SELECT zip_code, COUNT(*) AS cnt
                 FROM evictions_raw
-                WHERE executed_date >= CURRENT_DATE - INTERVAL '30 days'
+                WHERE executed_date >= CURRENT_DATE - INTERVAL '365 days'
                   AND zip_code IS NOT NULL
                 GROUP BY zip_code
             ),
             permit_counts AS (
                 SELECT zip_code, COUNT(*) AS cnt
                 FROM permits_raw
-                WHERE filing_date >= CURRENT_DATE - INTERVAL '30 days'
+                WHERE filing_date >= CURRENT_DATE - INTERVAL '365 days'
                   AND zip_code IS NOT NULL
                 GROUP BY zip_code
             ),
@@ -244,7 +244,7 @@ def get_top_risk_neighborhoods(
                 -- complaints_raw uses created_date (not open_date).
                 SELECT zip_code, COUNT(*) AS cnt
                 FROM complaints_raw
-                WHERE created_date >= CURRENT_DATE - INTERVAL '30 days'
+                WHERE created_date >= CURRENT_DATE - INTERVAL '365 days'
                   AND zip_code IS NOT NULL
                 GROUP BY zip_code
             ),
