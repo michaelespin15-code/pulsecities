@@ -1,0 +1,3009 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Explore — PulseCities</title>
+
+    <!-- SEO -->
+    <meta name="description" content="NYC displacement risk scores for 178 neighborhoods, updated daily from ACRIS deeds, HPD violations, DOB permits, evictions, and rent stabilization data.">
+    <link rel="canonical" href="https://pulsecities.com/">
+    <meta name="google-site-verification" content="REPLACE_WITH_GSC_VERIFICATION_CODE">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="PulseCities: NYC Displacement Risk Intelligence">
+    <meta property="og:description" content="Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and assessment spikes.">
+    <meta property="og:url" content="https://pulsecities.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="PulseCities">
+    <meta property="og:image" content="https://pulsecities.com/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="PulseCities displacement risk map showing heat scores across all 178 NYC neighborhoods">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PulseCities: NYC Displacement Risk Intelligence">
+    <meta name="twitter:description" content="Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and assessment spikes.">
+    <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+    <meta name="twitter:image:alt" content="PulseCities displacement risk map showing heat scores across all 178 NYC neighborhoods">
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "PulseCities",
+        "description": "Real-time displacement risk intelligence for all 178 NYC neighborhoods, built on six public data signals.",
+        "url": "https://pulsecities.com",
+        "applicationCategory": "DataVisualization",
+        "operatingSystem": "Web",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "author": { "@type": "Person", "name": "Michael Espin" },
+        "about": { "@type": "Thing", "name": "NYC Housing Displacement" }
+    }
+    </script>
+    <!-- Rewrite canonical to the neighborhood URL when viewing /neighborhood/{zip} -->
+    <script>(function(){var p=location.pathname;if(p.startsWith('/neighborhood/')){var el=document.querySelector('link[rel="canonical"]');if(el)el.href='https://pulsecities.com'+p;}})();</script>
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>
+    <script>
+        window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+        plausible.init()
+    </script>
+
+    <!-- Tailwind CSS (required by DaisyUI) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- DaisyUI 4.12.24 -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- MapLibre GL CSS 5.2.0 -->
+    <link href="https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.css" rel="stylesheet" />
+
+    <!-- Google Fonts: Inter + JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+        #map {
+            height: 100vh;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Prevent long LLC names / addresses from causing horizontal scroll in event list */
+        #block-events {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+        #block-panel {
+            overflow-wrap: anywhere;
+        }
+        /* Borough filter pills — used in both desktop sidebar and mobile drawer */
+        .borough-pill {
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            border: 1px solid rgba(148,163,184,0.18);
+            background: transparent;
+            color: #94a3b8;
+            cursor: pointer;
+            min-height: 26px;
+            transition: background 0.12s, color 0.12s, border-color 0.12s;
+        }
+        .borough-pill:hover { color: #cbd5e1; border-color: rgba(148,163,184,0.35); }
+        .borough-pill.active {
+            background: rgba(249,115,22,0.15);
+            border-color: rgba(249,115,22,0.4);
+            color: #f97316;
+        }
+        /* Score history range toggle pills */
+        .history-pill {
+            font-size: 10px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            border: 1px solid rgba(148,163,184,0.18);
+            background: transparent;
+            color: #94a3b8;
+            cursor: pointer;
+            min-height: 22px;
+            transition: background 0.12s, color 0.12s, border-color 0.12s;
+        }
+        .history-pill:hover { color: #cbd5e1; border-color: rgba(148,163,184,0.3); }
+        .history-pill.active {
+            background: rgba(249,115,22,0.15);
+            border-color: rgba(249,115,22,0.4);
+            color: #f97316;
+        }
+        /* details/summary reset + chevron animation */
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        .details-chevron { transition: transform 0.2s; flex-shrink: 0; }
+        details[open] .details-chevron { transform: rotate(180deg); }
+        /* Desktop sidebar collapse */
+        @media (min-width: 768px) {
+            #sidebar {
+                transition: width 0.25s cubic-bezier(0.4,0,0.2,1),
+                            padding 0.25s cubic-bezier(0.4,0,0.2,1);
+            }
+            #sidebar.collapsed {
+                width: 0 !important;
+                min-width: 0 !important;
+                padding: 0 !important;
+                overflow: hidden;
+            }
+        }
+        /* Mobile: sidebar is a bottom sheet that slides up over the map */
+        @media (max-width: 767px) {
+            #sidebar {
+                position: fixed;
+                bottom: 0; left: 0; right: 0;
+                width: 100%;
+                max-height: 75dvh;
+                border-radius: 16px 16px 0 0;
+                transform: translateY(100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 50;
+                overflow-y: auto;
+                padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+            }
+            #sidebar.mobile-visible { transform: translateY(0); }
+            /* at-risk section lives in the drawer on mobile, not the sidebar */
+            #at-risk-section { display: none !important; }
+            /* Hero leaves 30vh at bottom so map is visible on first load */
+            #hero-overlay {
+                bottom: 30vh !important;
+                overflow-y: auto;
+                justify-content: flex-start;
+                padding-top: max(24px, env(safe-area-inset-top, 24px));
+                padding-bottom: 16px;
+            }
+        }
+        /* Mobile bottom drawer */
+        #mobile-drawer {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 30;
+            background: #1e293b;
+            border-radius: 12px 12px 0 0;
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.45);
+        }
+        @media (max-width: 767px) {
+            #mobile-drawer {
+                display: block;
+                padding-bottom: env(safe-area-inset-bottom, 0px);
+            }
+        }
+        #mobile-drawer-list {
+            display: none;
+            overflow-y: auto;
+            max-height: 55vh;
+            padding: 0 16px 16px;
+        }
+        #mobile-drawer.drawer-expanded #mobile-drawer-list { display: block; }
+        /* On mobile, move the builder credit to top-left so the bottom drawer doesn't cover it */
+        @media (max-width: 767px) {
+            #map-credit {
+                top: 8px !important;
+                bottom: auto !important;
+                z-index: 35 !important;
+                font-size: 13px !important;
+                padding: 5px 10px !important;
+                color: rgba(241,245,249,0.7) !important;
+                background: rgba(15,23,42,0.88) !important;
+            }
+            #map-credit svg {
+                width: 14px !important;
+                height: 14px !important;
+            }
+        }
+        /* Mobile touch target and layout fixes */
+        @media (max-width: 767px) {
+            .borough-pill {
+                min-height: 44px;
+                padding: 10px 14px;
+                font-size: 12px;
+            }
+            .history-pill {
+                min-height: 36px;
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+            #subscribe-email,
+            #subscribe-btn {
+                min-height: 40px !important;
+                font-size: 12px !important;
+            }
+            #landlord-input,
+            #landlord-search-btn {
+                min-height: 44px !important;
+            }
+            #landlord-copy-btn,
+            #landlord-clear-btn {
+                min-height: 40px !important;
+            }
+            #hero-zip-cards {
+                gap: 8px;
+                padding: 0 4px;
+            }
+        }
+        /* Pulse dot animation — hero overlay center stat (D-10) */
+        @keyframes hero-pulse-dot {
+            0%, 100% { opacity: 0.4; }
+            50%       { opacity: 1.0; }
+        }
+        .pulse-dot {
+            display: inline-block;
+            animation: hero-pulse-dot 2.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="flex h-screen">
+        <!-- Map container: flex-1 fills remaining width -->
+        <div id="map" class="flex-1 relative">
+            <!-- Sidebar collapse tab — right edge of map, desktop only -->
+            <button id="sidebar-collapse-btn" onclick="toggleSidebar()" class="hidden md:flex" aria-label="Collapse sidebar"
+                style="position:absolute;right:0;top:50%;transform:translateY(-50%);z-index:10;
+                       width:18px;height:48px;align-items:center;justify-content:center;
+                       background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-right:none;
+                       border-radius:6px 0 0 6px;color:#64748b;font-size:0.85rem;cursor:pointer;">›</button>
+            <!-- Map legend — bottom-left, always visible -->
+            <div id="map-legend" class="absolute bottom-9 left-4 z-10 rounded-lg px-3 py-2 flex flex-col gap-1" style="background:rgba(15,23,42,0.88);backdrop-filter:blur(6px);border:1px solid rgba(148,163,184,0.15);font-size:11px;">
+                <div class="text-slate-400 font-mono uppercase tracking-wider mb-0.5" style="font-size:10px;letter-spacing:0.08em;">displacement risk</div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#22c55e;display:inline-block;flex-shrink:0;"></span><span class="text-slate-300">Low (0–33)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#eab308;display:inline-block;flex-shrink:0;"></span><span class="text-slate-300">Moderate (34–66)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#f97316;display:inline-block;flex-shrink:0;"></span><span class="text-slate-300">High (67–84)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block;flex-shrink:0;"></span><span class="text-slate-300">Critical (85+)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#94a3b8;display:inline-block;flex-shrink:0;"></span><span class="text-slate-300">No data</span></div>
+            </div>
+            <!-- Comparison mode overlay — floats over map center while user picks a second zip -->
+            <div id="compare-hint" class="hidden absolute top-4 left-0 right-0 flex justify-center z-10 pointer-events-none">
+                <div class="bg-slate-900/90 backdrop-blur-sm text-sm text-slate-200 px-4 py-2.5 rounded-full border border-slate-700 shadow-lg flex items-center gap-3 pointer-events-auto">
+                    <span id="compare-hint-text">Select a second neighborhood to compare</span>
+                    <button onclick="exitCompareMode()" class="text-slate-500 hover:text-slate-200 transition-colors leading-none" aria-label="Exit comparison mode" style="min-height:32px;min-width:24px;font-size:1rem;">&times;</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar: full-width on mobile, fixed 288/320px on desktop -->
+        <aside id="sidebar" class="w-full md:w-72 lg:w-80 bg-base-200 p-4 md:p-6 overflow-y-auto flex flex-col relative">
+            <!-- Drag handle — mobile only -->
+            <div class="md:hidden flex justify-center mb-3 -mt-1">
+                <div style="width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);"></div>
+            </div>
+            <!-- Header -->
+            <div class="mb-3 md:mb-6 flex items-start justify-between">
+                <div>
+                    <button onclick="resetToHero()" class="text-left leading-none" title="Return to home" style="background:none;border:none;padding:0;cursor:pointer;">
+                        <h1 class="text-xl font-semibold" style="color: #38bdf8;">PulseCities</h1>
+                    </button>
+                    <p class="text-sm text-slate-400 mt-1">NYC Displacement Risk</p>
+                </div>
+                <div class="flex items-center gap-1">
+                    <button id="lang-toggle" class="text-xs text-slate-400 hover:text-base-content mt-1" aria-label="Toggle language" style="min-height:44px;min-width:44px;">
+                        EN / ES
+                    </button>
+                    <!-- Close sheet — mobile only -->
+                    <button onclick="showMobileMap()" class="md:hidden text-slate-400 hover:text-base-content transition-colors" aria-label="Close" style="min-height:44px;min-width:36px;font-size:1.25rem;line-height:1;">&#x2715;</button>
+                </div>
+            </div>
+
+            <!-- Landlord portfolio search — always visible, no neighborhood selection required -->
+            <div class="bg-base-300 rounded-xl p-3 mb-4">
+                <h3 id="landlord-section-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Search Landlord or LLC Name</h3>
+                <div class="flex gap-2">
+                    <input
+                        id="landlord-input"
+                        type="text"
+                        placeholder="Blackstone"
+                        class="input input-sm input-bordered flex-1 text-sm font-mono min-w-0"
+                        style="min-height: 36px;"
+                    />
+                    <button
+                        id="landlord-search-btn"
+                        class="btn btn-sm btn-primary shrink-0"
+                        style="min-height: 36px;"
+                    >Search</button>
+                </div>
+                <div id="landlord-error" class="hidden text-xs text-error mt-2"></div>
+                <div id="landlord-results" class="hidden">
+                    <p id="landlord-summary" class="text-xs text-slate-400 mt-2 mb-2 leading-relaxed"></p>
+                    <div id="landlord-list" class="flex flex-col max-h-52 overflow-y-auto -mx-1 px-1"></div>
+                    <div class="flex items-center mt-2">
+                        <button id="landlord-copy-btn" class="text-xs text-slate-400 hover:text-base-content/70 transition-colors" style="min-height:32px;">Copy</button>
+                        <button id="landlord-clear-btn" class="text-xs text-slate-400 hover:text-base-content/70 transition-colors ml-auto" style="min-height:32px;">Clear</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Landing state: shown before any neighborhood is selected -->
+            <div id="empty-state" class="flex flex-col">
+                <p id="landing-hint-text" class="text-xs text-slate-400 leading-relaxed px-1">Click any neighborhood on the map to see its displacement risk score, or pick one from the list below.</p>
+            </div>
+
+            <!-- Neighborhood detail panel (hidden by default) -->
+            <div id="detail-panel" class="hidden flex-1 flex flex-col gap-4">
+                <!-- Back to at-risk list — mobile only, shown only when user navigated from the list -->
+                <button id="back-to-list-btn" onclick="showMobileMap()" class="flex items-center gap-1.5 text-xs text-slate-400 hover:text-sky-400 transition-colors -mb-1" style="display:none;min-height:36px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="15 18 9 12 15 6"/></svg>
+                    <span id="back-to-list-label">At-risk list</span>
+                </button>
+                <!-- Zip + score -->
+                <div class="bg-base-300 rounded-xl p-4">
+                    <div class="flex items-baseline justify-between mb-1">
+                        <div class="flex items-baseline gap-2 min-w-0">
+                            <span id="detail-zip" class="font-mono text-lg font-semibold text-base-content shrink-0"></span>
+                            <span id="detail-neighborhood" class="text-xs text-slate-400 truncate"></span>
+                        </div>
+                        <span id="detail-score" class="font-mono text-3xl font-semibold shrink-0 ml-2"></span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs text-slate-400 mt-1">
+                        <span id="detail-risk-label">Displacement Risk</span>
+                        <div class="flex items-center gap-3">
+                            <span id="detail-updated"></span>
+                            <button id="compare-btn" onclick="enterCompareMode()" class="text-orange-400/70 hover:text-orange-400 transition-colors font-medium" style="min-height:32px;">Compare</button>
+                        </div>
+                    </div>
+                    <p id="detail-summary" class="hidden text-xs text-base-content/70 mt-3 leading-relaxed"></p>
+                </div>
+
+                <!-- Score History Timeline -->
+                <div id="history-section" class="hidden bg-base-300 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 id="history-section-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Score History</h3>
+                        <div class="flex gap-1">
+                            <button class="history-pill" data-days="30">30d</button>
+                            <button class="history-pill active" data-days="90">90d</button>
+                            <button class="history-pill" data-days="180">180d</button>
+                        </div>
+                    </div>
+                    <p id="history-loading" class="hidden text-xs text-slate-400 text-center py-3">Loading&hellip;</p>
+                    <p id="history-empty" class="hidden text-xs text-slate-400 text-center py-3">No history yet for this ZIP.</p>
+                    <div id="history-chart-wrap" style="position:relative;height:110px;display:none;">
+                        <canvas id="history-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent activity — 3 most recent events from pulse data, no extra fetch needed -->
+                <div id="recent-activity-section" class="hidden bg-base-300 rounded-xl p-4">
+                    <h3 id="recent-activity-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Recent Activity</h3>
+                    <div id="recent-activity-list" class="flex flex-col gap-2"></div>
+                </div>
+
+                <!-- Renovation-Flip Pattern alert (Phase 6: Plan 04) — hidden by default -->
+                <div id="renovation-flip-alert" class="hidden rounded-xl p-4 border border-amber-500/40 bg-amber-500/10">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <p id="reno-flip-title" class="text-sm font-semibold text-amber-400">Renovation-Flip Pattern Detected</p>
+                            <p id="renovation-flip-count" class="text-xs text-slate-400 mt-0.5"></p>
+                        </div>
+                        <button id="renovation-flip-toggle" class="text-xs text-amber-400/70 hover:text-amber-400 whitespace-nowrap" style="min-height:44px;">See addresses</button>
+                    </div>
+                    <div id="renovation-flip-list" class="hidden mt-3 flex flex-col gap-1 text-sm"></div>
+                    <p class="text-xs text-slate-400 mt-3 italic">Based on LLC acquisitions followed by renovation permits (A1/A2) within 60 days. Affordable housing LLCs and seasonal construction may produce false positives.</p>
+                </div>
+
+                <!-- Neighborhood Pulse feed (Phase 6: Plan 03) -->
+                <div id="pulse-section" class="bg-base-300 rounded-xl p-4 hidden">
+                    <details>
+                        <summary class="text-xs font-semibold text-slate-400 uppercase tracking-wider cursor-pointer select-none mb-3 flex items-center justify-between">
+                            <span id="pulse-section-title">Neighborhood Pulse</span>
+                            <span id="pulse-last-days" class="text-slate-500 text-xs normal-case tracking-normal font-normal">last 90 days</span>
+                        </summary>
+
+                        <!-- LLC Acquisitions subsection -->
+                        <div id="pulse-llc-section" class="hidden mb-4 mt-3">
+                            <h4 id="pulse-llc-header" class="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-2">LLC Acquisitions</h4>
+                            <div id="pulse-llc-list" class="flex flex-col gap-1 text-sm"></div>
+                            <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:rgba(148,163,184,0.35);">Source: NYC ACRIS (bnx9-e6tj)</div>
+                        </div>
+
+                        <!-- Recent Permits subsection -->
+                        <div id="pulse-permits-section" class="hidden mb-4">
+                            <h4 id="pulse-permits-header" class="text-xs font-semibold text-sky-400 uppercase tracking-wider mb-2">Recent Permits</h4>
+                            <div id="pulse-permits-list" class="flex flex-col gap-1 text-sm"></div>
+                            <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:rgba(148,163,184,0.35);">Source: NYC DOB (ipu4-2q9a)</div>
+                        </div>
+
+                        <!-- Recent Evictions subsection -->
+                        <div id="pulse-evictions-section" class="hidden">
+                            <h4 id="pulse-evictions-header" class="text-xs font-semibold text-red-400 uppercase tracking-wider mb-1">Recent Evictions</h4>
+                            <p class="text-xs text-slate-400 italic mb-2">Eviction filings typically appear 2&ndash;4 weeks after they occur.</p>
+                            <div id="pulse-evictions-list" class="flex flex-col gap-1 text-sm" role="list"></div>
+                            <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:rgba(148,163,184,0.35);">Source: NYC Open Data (6z8x-wfk4)</div>
+                        </div>
+
+                        <!-- Empty state -->
+                        <p id="pulse-empty" class="hidden text-sm text-slate-400 text-center py-2">
+                            No recent activity in this ZIP.
+                        </p>
+                    </details>
+                </div>
+
+                <!-- Signal breakdown — collapsed by default -->
+                <div class="bg-base-300 rounded-xl p-4">
+                    <details>
+                        <summary class="text-xs font-semibold text-slate-400 uppercase tracking-wider cursor-pointer select-none flex items-center justify-between">
+                            <span id="signal-breakdown-title">Signal Breakdown</span>
+                            <svg class="details-chevron text-slate-500" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
+                        </summary>
+                        <p id="signal-breakdown-note" class="text-xs text-slate-400 mt-2 mb-3">Scores are 0–100 relative to all NYC neighborhoods, normalized per residential unit.</p>
+                        <div id="signal-rows" class="flex flex-col gap-2"></div>
+                        <a
+                            id="methodology-trigger"
+                            href="/methodology"
+                            target="_blank"
+                            rel="noopener"
+                            class="text-xs text-sky-400 hover:text-sky-300 text-left underline mt-2 block"
+                            style="min-height: 44px; display: flex; align-items: center;"
+                        >
+                            How scores work
+                        </a>
+                    </details>
+                </div>
+
+                <!-- No score state -->
+                <div id="no-score-msg" class="hidden text-sm text-slate-400 text-center px-2">
+                    No score computed yet for this zip code.
+                </div>
+
+                <!-- Address search — resolves to block detail panel (D-07) -->
+                <div class="bg-base-300 rounded-xl p-4">
+                    <h3 id="address-lookup-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Look Up a Building</h3>
+                    <div class="flex gap-2">
+                        <input
+                            id="address-input"
+                            type="text"
+                            placeholder="123 Broadway, Brooklyn"
+                            class="input input-sm input-bordered flex-1 text-sm font-mono break-all"
+                            style="min-height: 44px;"
+                        />
+                        <button
+                            id="address-search-btn"
+                            class="btn btn-sm btn-primary"
+                            style="min-height: 44px;"
+                        >Search</button>
+                    </div>
+                    <div id="address-error" class="hidden text-xs text-error mt-2"></div>
+                </div>
+
+                <!-- Skeleton loading state (scope addition A) — shown during BBL resolution -->
+                <div id="block-skeleton" class="hidden bg-base-300 rounded-xl p-4 flex flex-col gap-3">
+                    <div class="h-4 bg-base-content/10 rounded animate-pulse w-3/4"></div>
+                    <div class="h-4 bg-base-content/10 rounded animate-pulse w-1/2"></div>
+                    <div class="h-4 bg-base-content/10 rounded animate-pulse w-5/6"></div>
+                </div>
+            </div>
+
+            <!-- Block detail panel — shown after address search resolves (D-08, D-09, D-10) -->
+            <div id="block-panel" class="hidden flex-1 flex flex-col gap-4">
+                <!-- Back navigation (D-10) -->
+                <button id="back-btn" class="text-sm text-sky-400 text-left hover:underline" style="min-height: 44px;">
+                    &#8592; Back to &#8212;
+                </button>
+
+                <!-- Block score card -->
+                <div class="bg-base-300 rounded-xl p-4">
+                    <div class="flex items-baseline justify-between mb-1">
+                        <span id="block-bbl" class="font-mono text-sm text-slate-400"></span>
+                        <span id="block-score" class="font-mono text-3xl font-semibold"></span>
+                    </div>
+                    <div id="block-risk-label" class="text-xs text-slate-400 mt-1">Displacement Risk</div>
+                </div>
+
+                <!-- Block event list — civic events, newest first (D-09, D-16) -->
+                <div class="bg-base-300 rounded-xl p-4">
+                    <h3 id="civic-events-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Civic Events</h3>
+                    <div id="block-events" class="flex flex-col gap-2 text-sm break-words"></div>
+                    <!-- Empty state (scope addition B) -->
+                    <div id="block-empty-state" class="hidden text-sm text-slate-400 text-center py-4">
+                        No recorded activity for this address
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison panel — side-by-side zip comparison (hidden by default) -->
+            <div id="comparison-panel" class="hidden flex-1 flex flex-col gap-4">
+                <button id="cmp-back-btn" class="text-sm text-sky-400 text-left hover:underline" style="min-height:44px;">
+                    &#8592; Back
+                </button>
+
+                <!-- Two score cards -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-base-300 rounded-xl p-3">
+                        <div class="font-mono text-base font-semibold text-base-content" id="cmp-zip-1"></div>
+                        <div class="text-xs text-slate-400 mt-0.5 truncate" id="cmp-name-1"></div>
+                        <div class="font-mono text-2xl font-semibold mt-1" id="cmp-score-1"></div>
+                        <div id="cmp-risk-label-1" class="text-xs text-slate-400 mt-0.5">Displacement Risk</div>
+                    </div>
+                    <div class="bg-base-300 rounded-xl p-3">
+                        <div class="font-mono text-base font-semibold text-base-content" id="cmp-zip-2"></div>
+                        <div class="text-xs text-slate-400 mt-0.5 truncate" id="cmp-name-2"></div>
+                        <div class="font-mono text-2xl font-semibold mt-1" id="cmp-score-2"></div>
+                        <div id="cmp-risk-label-2" class="text-xs text-slate-400 mt-0.5">Displacement Risk</div>
+                    </div>
+                </div>
+
+                <!-- Signal breakdown — dual bar rows -->
+                <div class="bg-base-300 rounded-xl p-4">
+                    <h3 id="cmp-signal-breakdown-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Signal Breakdown</h3>
+                    <p id="cmp-signal-note" class="text-xs text-slate-400 mb-3">0–100 relative to all NYC neighborhoods.</p>
+                    <div id="cmp-signal-rows" class="flex flex-col gap-3"></div>
+                </div>
+
+                <button id="cmp-new-btn" class="text-xs text-orange-400/70 hover:text-orange-400 transition-colors text-left" style="min-height:44px;">
+                    &#8644; Compare different neighborhoods
+                </button>
+            </div>
+
+            <!-- At-risk section: desktop sidebar only — mobile uses #mobile-drawer -->
+            <div id="at-risk-section" class="hidden md:flex flex-col gap-4 mt-2">
+                <div class="bg-base-300 rounded-xl p-4">
+                    <p id="most-at-risk-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Most at-risk neighborhoods right now</p>
+                    <div id="desktop-borough-filters" class="flex gap-1 flex-wrap mb-3">
+                        <button class="borough-pill active" data-borough="">All</button>
+                        <button class="borough-pill" data-borough="Brooklyn" aria-label="Brooklyn">BK</button>
+                        <button class="borough-pill" data-borough="Manhattan" aria-label="Manhattan">MN</button>
+                        <button class="borough-pill" data-borough="Queens" aria-label="Queens">QN</button>
+                        <button class="borough-pill" data-borough="Bronx" aria-label="Bronx">BX</button>
+                        <button class="borough-pill" data-borough="Staten Island" aria-label="Staten Island">SI</button>
+                    </div>
+                    <div id="top-risk-list" class="flex flex-col">
+                        <div id="top-risk-skeleton" class="flex flex-col gap-2.5 animate-pulse">
+                            <div class="h-9 bg-base-content/10 rounded-lg"></div>
+                            <div class="h-9 bg-base-content/10 rounded-lg"></div>
+                            <div class="h-9 bg-base-content/10 rounded-lg"></div>
+                            <div class="h-9 bg-base-content/10 rounded-lg"></div>
+                            <div class="h-9 bg-base-content/10 rounded-lg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subscribe strip + attribution — persistent sidebar footer -->
+            <div class="mt-auto flex flex-col">
+                <!-- Slim subscribe row — always visible, not tied to neighborhood selection -->
+                <div class="pt-3 pb-2 border-t border-base-content/[0.08]">
+                    <div id="subscribe-form-wrap" class="flex gap-2">
+                        <input
+                            id="subscribe-email"
+                            type="email"
+                            placeholder="your@email.com"
+                            class="input input-sm input-bordered flex-1 min-w-0"
+                            style="min-height:30px;font-size:11px;"
+                        />
+                        <button
+                            id="subscribe-btn"
+                            class="btn btn-sm shrink-0"
+                            style="min-height:30px;background:#f97316;border-color:#f97316;color:#fff;font-size:11px;"
+                        >Subscribe</button>
+                    </div>
+                    <div id="subscribe-msg" class="hidden text-xs mt-1.5"></div>
+                </div>
+                <!-- Attribution -->
+                <div id="sidebar-attribution" class="pt-3 border-t border-base-content/10 text-[13px] sm:text-xs text-slate-500 text-center">
+                    Built by
+                    <a
+                        href="https://www.linkedin.com/in/michaelespin"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex items-center gap-1 text-slate-400 hover:text-[#0A66C2] transition-colors duration-150"
+                        aria-label="Michael Espin on LinkedIn"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true" focusable="false">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                        Michael Espin
+                    </a>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Methodology modal (scope addition C) — accessible: Escape closes, backdrop click closes -->
+    <div
+        id="methodology-modal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+        onclick="if(event.target===this)this.classList.add('hidden')"
+    >
+        <div class="bg-base-200 rounded-2xl p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-lg font-semibold" style="color: #38bdf8;">How Scores Work</h2>
+                <button
+                    class="text-slate-400 hover:text-base-content text-xl leading-none"
+                    style="min-height: 44px; min-width: 44px;"
+                    aria-label="Close"
+                    onclick="document.getElementById('methodology-modal').classList.add('hidden')"
+                >&#10005;</button>
+            </div>
+            <p class="text-sm text-base-content/70 mb-4">
+                Each neighborhood receives a displacement risk score from 1&ndash;100, computed nightly from six public data signals. Methodology follows
+                <a href="https://anhd.org" target="_blank" class="text-sky-400 underline">ANHD (Association for Neighborhood and Housing Development)</a>
+                displacement risk indicators.
+            </p>
+            <div class="flex flex-col gap-4 text-sm">
+                <div>
+                    <h3 class="font-semibold text-base-content mb-1">LLC Acquisitions <span class="text-slate-400 font-normal">(weight: 26%)</span></h3>
+                    <p class="text-base-content/70">Deed transfers to limited liability companies via ACRIS. LLC ownership is associated with speculative purchasing patterns and rapid rent increases. Financial institution transfers (mortgage servicers, foreclosure deeds) are excluded. Source: NYC ACRIS (bnx9-e6tj, 636b-3b5g, 8h5j-fqxa).</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-base-content mb-1">Permit Filings <span class="text-slate-400 font-normal">(weight: 21%)</span></h3>
+                    <p class="text-base-content/70">DOB building permit applications &mdash; renovation and alteration permits signal landlord investment that often precedes tenant displacement. Source: NYC Department of Buildings (Socrata ipu4-2q9a).</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-base-content mb-1">Complaint Rate <span class="text-slate-400 font-normal">(weight: 17%)</span></h3>
+                    <p class="text-base-content/70">311 housing complaints (heat, hot water, pests, mold) per residential unit &mdash; a proxy for deteriorating conditions that precede forced moves. Source: NYC 311 (erm2-nwe9).</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-base-content mb-1">Eviction Executions <span class="text-slate-400 font-normal">(weight: 13%)</span></h3>
+                    <p class="text-base-content/70">Residential evictions carried out by NYC marshals (executed evictions, not filings). Filed cases often resolve without execution &mdash; this signal tracks actual removals. OCA data lags executed date by 2&ndash;4 weeks. Source: NYC Open Data (6z8x-wfk4).</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-base-content mb-1">Assessment Spike <span class="text-slate-400 font-normal">(weight: 8%)</span></h3>
+                    <p class="text-base-content/70">Year-over-year increase in NYC Department of Finance property assessment &mdash; a leading indicator of market pressure. Currently dormant &mdash; requires two consecutive years of DOF assessment history. Source: NYC Department of Finance (w7rz-68fs).</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-base-content mb-1">RS Unit Loss <span class="text-slate-400 font-normal">(weight: 15%)</span></h3>
+                    <p class="text-base-content/70">Year-over-year loss in rent-stabilized units per building via DHCR registration data. The single most direct signal of affordable housing erosion. Currently in data collection phase &mdash; signal becomes active after two consecutive annual snapshots. Source: DHCR Building Registrations (kj4p-ruqc).</p>
+                </div>
+            </div>
+            <p class="text-xs text-slate-400 mt-4">Scores are normalized per residential unit using MapPLUTO unit counts to prevent bias toward dense commercial areas. All data is public record.</p>
+        </div>
+    </div>
+
+    <!-- Builder credit — fixed bottom-left, always above map, hidden when sidebar is active on mobile -->
+    <a
+        id="map-credit"
+        href="https://www.linkedin.com/in/michaelespin"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Michael Espin on LinkedIn"
+        style="position:fixed;bottom:8px;left:8px;z-index:20;display:inline-flex;align-items:center;gap:4px;background:rgba(15,23,42,0.72);backdrop-filter:blur(4px);color:#94a3b8;font-size:11px;font-family:'Inter',sans-serif;padding:3px 7px;border-radius:4px;text-decoration:none;transition:color 0.15s;"
+        onmouseover="this.style.color='#0A66C2'"
+        onmouseout="this.style.color='#94a3b8'"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11" aria-hidden="true" focusable="false">
+            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+        </svg>
+        Built by Michael Espin
+    </a>
+
+
+    <!-- Mobile bottom drawer: at-risk neighborhoods list -->
+    <div id="mobile-drawer" aria-label="Most at-risk neighborhoods">
+        <button
+            id="mobile-drawer-handle"
+            onclick="toggleDrawer()"
+            aria-expanded="false"
+            style="width:100%;min-height:52px;padding:12px 20px 14px;background:transparent;border:none;cursor:pointer;text-align:left;"
+        >
+            <div style="width:36px;height:4px;background:rgba(148,163,184,0.2);border-radius:2px;margin:0 auto 10px;"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span id="mobile-drawer-title" style="font-size:13px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;">10 most at-risk neighborhoods</span>
+                <svg id="mobile-drawer-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.4)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;" aria-hidden="true" focusable="false"><polyline points="18 15 12 9 6 15"/></svg>
+            </div>
+        </button>
+        <div id="mobile-drawer-list">
+            <div id="mobile-borough-filters" style="display:flex;gap:6px;flex-wrap:wrap;padding:0 0 10px;">
+                <button class="borough-pill active" data-borough="">All</button>
+                <button class="borough-pill" data-borough="Brooklyn" aria-label="Brooklyn">BK</button>
+                <button class="borough-pill" data-borough="Manhattan" aria-label="Manhattan">MN</button>
+                <button class="borough-pill" data-borough="Queens" aria-label="Queens">QN</button>
+                <button class="borough-pill" data-borough="Bronx" aria-label="Bronx">BX</button>
+                <button class="borough-pill" data-borough="Staten Island" aria-label="Staten Island">SI</button>
+            </div>
+            <div id="mobile-drawer-skeleton" style="display:flex;flex-direction:column;gap:8px;">
+                <div style="height:44px;background:rgba(148,163,184,0.07);border-radius:8px;"></div>
+                <div style="height:44px;background:rgba(148,163,184,0.07);border-radius:8px;"></div>
+                <div style="height:44px;background:rgba(148,163,184,0.07);border-radius:8px;"></div>
+                <div style="height:44px;background:rgba(148,163,184,0.07);border-radius:8px;"></div>
+                <div style="height:44px;background:rgba(148,163,184,0.07);border-radius:8px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sparkline tooltip div — positioned absolutely, shown on SVG hover -->
+    <div id="sparkline-tip" style="display:none;position:absolute;pointer-events:none;background:#1e293b;color:#f1f5f9;font-size:11px;padding:3px 7px;border-radius:4px;white-space:nowrap;z-index:1000;"></div>
+
+    <!-- Chart.js 4.4.4 — score history timeline -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+    <!-- MapLibre GL JS 5.2.0 -->
+    <script src="https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.js"></script>
+    <script>
+        // --- Sparkline helpers (Phase 6, Plan 02) ---
+
+        function sparkline(scores, { width = 60, height = 20, strokeWidth = 1.5 } = {}) {
+            if (!scores || scores.length < 2) return '';
+            const min = Math.min(...scores), max = Math.max(...scores);
+            const range = max - min || 1;
+            const pad = strokeWidth;
+            const points = scores.map((v, i) => {
+                const x = pad + (i / (scores.length - 1)) * (width - pad * 2);
+                const y = pad + (1 - (v - min) / range) * (height - pad * 2);
+                return `${x.toFixed(1)},${y.toFixed(1)}`;
+            }).join(' ');
+            const win = Math.min(7, Math.floor(scores.length / 2));
+            const recentAvg = scores.slice(-win).reduce((a, b) => a + b, 0) / win;
+            const earlyAvg  = scores.slice(0, win).reduce((a, b) => a + b, 0) / win;
+            const color = scores.length < 7 ? '#94a3b8'
+                        : recentAvg > earlyAvg + 2 ? '#f97316'
+                        : recentAvg < earlyAvg - 2 ? '#22c55e'
+                        : '#94a3b8';
+            const dashAttr = scores.length < 7 ? 'stroke-dasharray="3,3"' : '';
+            return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" class="sparkline" data-scores='${JSON.stringify(scores)}' style="vertical-align:middle;margin-right:6px;" ${scores.length < 7 ? 'data-sparse="true"' : ''}><polyline points="${points}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linejoin="round" stroke-linecap="round" ${dashAttr}/></svg>`;
+        }
+
+        function wireSparklineTooltips(dateLabels) {
+            const tip = document.getElementById('sparkline-tip');
+            document.querySelectorAll('svg.sparkline').forEach(svg => {
+                const scores = JSON.parse(svg.dataset.scores);
+                svg.addEventListener('mousemove', (e) => {
+                    const rect = svg.getBoundingClientRect();
+                    const relX = e.clientX - rect.left;
+                    const idx = Math.max(0, Math.min(scores.length - 1, Math.round((relX / rect.width) * (scores.length - 1))));
+                    const label = dateLabels && dateLabels[idx] ? dateLabels[idx] : `Day ${idx + 1}`;
+                    tip.textContent = `Score: ${scores[idx].toFixed(1)} \u2014 ${label}`;
+                    tip.style.left = `${e.pageX + 8}px`;
+                    tip.style.top  = `${e.pageY - 24}px`;
+                    tip.style.display = 'block';
+                });
+                svg.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+            });
+        }
+
+        // --- End sparkline helpers ---
+
+        // ---------------------------------------------------------------------------
+        // Score History Timeline
+        // ---------------------------------------------------------------------------
+
+        let _historyChart = null;
+        let _historyDays  = 90;
+        let _historyZip   = null;
+        let _historySeq   = 0;  // incremented on each fetch; stale responses are dropped
+
+        function _destroyHistoryChart() {
+            if (_historyChart) {
+                _historyChart.destroy();
+                _historyChart = null;
+            }
+            const wrap = document.getElementById('history-chart-wrap');
+            const empty = document.getElementById('history-empty');
+            const loading = document.getElementById('history-loading');
+            if (wrap) wrap.style.display = 'none';
+            if (empty) empty.classList.add('hidden');
+            if (loading) loading.classList.add('hidden');
+            document.getElementById('history-section').classList.add('hidden');
+        }
+
+        function renderScoreHistory(zip, days) {
+            _historyZip  = zip;
+            _historyDays = days;
+            const seq = ++_historySeq;
+
+            const section  = document.getElementById('history-section');
+            const loading  = document.getElementById('history-loading');
+            const empty    = document.getElementById('history-empty');
+            const wrap     = document.getElementById('history-chart-wrap');
+
+            section.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            empty.classList.add('hidden');
+            wrap.style.display = 'none';
+
+            document.querySelectorAll('.history-pill').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.dataset.days) === days);
+            });
+
+            fetch(`/api/score-history/${zip}?days=${days}`)
+                .then(r => r.ok ? r.json() : [])
+                .then(hist => {
+                    if (seq !== _historySeq) return;  // superseded by a newer fetch
+                    loading.classList.add('hidden');
+
+                    if (!hist || hist.length < 2) {
+                        empty.classList.remove('hidden');
+                        return;
+                    }
+
+                    wrap.style.display = 'block';
+
+                    const labels = hist.map(h => {
+                        const d = new Date(h.date + 'T00:00:00');
+                        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    });
+                    const scores = hist.map(h => h.score);
+
+                    // Flag points where the score moved >= 4 points from the previous day
+                    const radii = scores.map((s, i) =>
+                        i > 0 && Math.abs(s - scores[i - 1]) >= 4 ? 4 : 0
+                    );
+
+                    if (_historyChart) {
+                        _historyChart.data.labels = labels;
+                        _historyChart.data.datasets[0].data = scores;
+                        _historyChart.data.datasets[0].pointRadius = radii;
+                        _historyChart.update('none');
+                        return;
+                    }
+
+                    const canvas = document.getElementById('history-chart');
+                    const ctx = canvas.getContext('2d');
+
+                    _historyChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels,
+                            datasets: [{
+                                data: scores,
+                                borderColor: '#f97316',
+                                borderWidth: 1.5,
+                                backgroundColor: 'rgba(249,115,22,0.07)',
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: radii,
+                                pointBackgroundColor: '#f97316',
+                                pointBorderColor: '#1e293b',
+                                pointBorderWidth: 1.5,
+                                pointHitRadius: 10,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            animation: { duration: 250 },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        title: items => items[0].label,
+                                        label: item => `Score: ${item.raw.toFixed(1)}`
+                                    },
+                                    backgroundColor: '#1e293b',
+                                    borderColor: 'rgba(148,163,184,0.15)',
+                                    borderWidth: 1,
+                                    titleColor: '#94a3b8',
+                                    bodyColor: '#f1f5f9',
+                                    titleFont: { size: 10 },
+                                    bodyFont: { size: 11, family: "'JetBrains Mono', monospace" },
+                                    padding: 6,
+                                    displayColors: false,
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: { display: false },
+                                    ticks: {
+                                        color: '#94a3b8',
+                                        font: { size: 9 },
+                                        maxTicksLimit: 5,
+                                        maxRotation: 0,
+                                    },
+                                    border: { display: false },
+                                },
+                                y: {
+                                    min: 0,
+                                    max: 100,
+                                    grid: { color: 'rgba(148,163,184,0.07)' },
+                                    ticks: {
+                                        color: '#94a3b8',
+                                        font: { size: 9 },
+                                        maxTicksLimit: 4,
+                                        stepSize: 25,
+                                    },
+                                    border: { display: false },
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(() => {
+                    if (seq !== _historySeq) return;
+                    loading.classList.add('hidden');
+                    empty.classList.remove('hidden');
+                });
+        }
+
+        document.querySelectorAll('.history-pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (_historyZip) renderScoreHistory(_historyZip, parseInt(btn.dataset.days));
+            });
+        });
+
+        // --- End score history ---
+
+        // ---- i18n: lightweight EN/ES support ----
+        const STRINGS = {
+            en: {
+                signals: {
+                    permits:           'Permit Filings',
+                    evictions:         'Evictions',
+                    llc_acquisitions:  'LLC Acquisitions',
+                    assessment_spike:  'Assessment Spike',
+                    complaint_rate:    'Complaints',
+                    rs_unit_loss:      'RS Unit Loss'
+                },
+                pulse: {
+                    section_title:    'Neighborhood Pulse',
+                    last_n_days:      'last 90 days',
+                    llc_header:       'LLC Acquisitions',
+                    permits_header:   'Recent Permits',
+                    evictions_header: 'Recent Evictions',
+                    acquired_by:      'Acquired by',
+                    filed:            'filed',
+                    executed:         'Residential',
+                    empty:            'No recent activity in this ZIP.'
+                },
+                ui: {
+                    looking_up:          'Looking up...',
+                    searching:           'Searching...',
+                    addr_placeholder:    '123 Broadway, Brooklyn',
+                    landlord_placeholder:'Blackstone',
+                    addr_not_found:      'Address not found. Try including borough (e.g. "123 Main St, Brooklyn").',
+                    addr_bbl_fail:       'Could not resolve address to a BBL.',
+                    addr_block_fail:     'Could not load block data.',
+                    network_error:       'Network error — please try again.',
+                    server_error:        'Unexpected server response — please try again.',
+                    landing_hint:        'Click any neighborhood on the map to see its displacement risk score, or pick one from the list below.',
+                    displacement_risk:   'Displacement Risk',
+                    compare:             'Compare',
+                    cancel:              'Cancel',
+                    at_risk_list:        'At-risk list',
+                    score_history:       'Score History',
+                    history_empty:       'No history yet for this ZIP.',
+                    history_loading:     'Loading…',
+                    recent_activity:     'Recent Activity',
+                    reno_flip_title:     'Renovation-Flip Pattern Detected',
+                    reno_flip_toggle:    'See addresses',
+                    signal_breakdown:    'Signal Breakdown',
+                    signal_note:         'Scores are 0–100 relative to all NYC neighborhoods, normalized per residential unit.',
+                    how_scores_work:     'How scores work',
+                    no_score:            'No score computed yet for this zip code.',
+                    look_up_building:    'Look Up a Building',
+                    search:              'Search',
+                    civic_events:        'Civic Events',
+                    no_activity:         'No recorded activity for this address',
+                    cmp_signal_note:     '0–100 relative to all NYC neighborhoods.',
+                    cmp_new:             '⇄ Compare different neighborhoods',
+                    most_at_risk:        'Most at-risk neighborhoods right now',
+                    mobile_drawer_title: '10 most at-risk neighborhoods',
+                    compare_hint:        'Select a second neighborhood to compare',
+                    landlord_title:      'Search Landlord or LLC Name',
+                    landlord_copy:       'Copy',
+                    landlord_clear:      'Clear',
+                    subscribe:           'Subscribe',
+                    no_data:             'No data available.',
+                    unable_to_load:      'Unable to load neighborhoods.'
+                },
+                risk_signal: {
+                    permits:          'Surge in renovation permit filings',
+                    evictions:        'Elevated eviction filing rate',
+                    llc_acquisitions: 'LLC buyouts of rental buildings',
+                    complaint_rate:   'High tenant complaint volume',
+                    rs_unit_loss:     'Rent-stabilized unit loss',
+                    assessment_spike: 'Tax assessment spike'
+                },
+                hero: {
+                    title:             'PulseCities',
+                    tagline:           "The displacement story NYC doesn't officially tell.",
+                    search_placeholder:'Enter address, ZIP, or landlord name',
+                    explore_map:       'or, explore the map →',
+                    addr_not_found:    'Address not found. Try "123 Main St, Brooklyn".',
+                    zip_not_found:     'ZIP not found. Try a 5-digit ZIP code.',
+                    network_error:     'Network error. Try again.',
+                    search_btn:        'Search',
+                    llc_label:         'LLC transfers (30d)',
+                    eviction_label:    'evictions (30d)',
+                    llc_tooltip:       'LLC property acquisitions tracked in NYC deed records in the last 30 days.',
+                    eviction_tooltip:  'Eviction cases filed in NYC Housing Court in the last 30 days.',
+                    pulse_tooltip_pre: 'Scores updated',
+                    pulse_tooltip_suf: '· nightly at 2am UTC',
+                    hook_shifting:     'Ownership is shifting.',
+                    hook_ratio_tpl:    'LLC transfers outpace eviction filings {ratio}× this month.',
+                    hook_neutral_a:    '{llc} buildings changed LLC hands.',
+                    hook_neutral_b:    '{evictions} eviction filings recorded citywide this month.',
+                    citywide:          'citywide',
+                },
+                count_label: {
+                    permits:          'renovation permit filings',
+                    evictions:        'eviction filings',
+                    llc_acquisitions: 'LLC property acquisitions',
+                    complaint_rate:   'tenant complaints',
+                    rs_unit_loss:     'rent-stabilized unit loss',
+                    assessment_spike: 'tax assessment increases',
+                },
+                signal_short: {
+                    permits:          'permit filings',
+                    evictions:        'eviction cases',
+                    llc_acquisitions: 'LLC buys',
+                    complaint_rate:   'complaints',
+                    rs_unit_loss:     'RS unit loss',
+                    assessment_spike: 'tax spike',
+                }
+            },
+            es: {
+                signals: {
+                    permits:           'Solicitudes de Permisos',
+                    evictions:         'Desalojos',
+                    llc_acquisitions:  'Adquisiciones por LLC',
+                    assessment_spike:  'Aumento de Valuación',
+                    complaint_rate:    'Quejas al 311',
+                    rs_unit_loss:      'Pérdida de Estabilización'
+                },
+                pulse: {
+                    section_title:    'Pulso del Vecindario',
+                    last_n_days:      'últimos 90 días',
+                    llc_header:       'Adquisiciones por LLC',
+                    permits_header:   'Permisos Recientes',
+                    evictions_header: 'Desalojos Recientes',
+                    acquired_by:      'adquirido por',
+                    filed:            'presentado',
+                    executed:         'ejecutado',
+                    empty:            'Sin actividad reciente en este código postal.'
+                },
+                ui: {
+                    looking_up:          'Buscando...',
+                    searching:           'Buscando...',
+                    addr_placeholder:    '123 Broadway, Brooklyn',
+                    landlord_placeholder:'Blackstone',
+                    addr_not_found:      'Dirección no encontrada. Incluya el condado (p. ej. "123 Main St, Brooklyn").',
+                    addr_bbl_fail:       'No se pudo resolver la dirección.',
+                    addr_block_fail:     'No se pudieron cargar los datos del edificio.',
+                    network_error:       'Error de red. Intente de nuevo.',
+                    server_error:        'Respuesta inesperada del servidor. Intente de nuevo.',
+                    landing_hint:        'Haz clic en cualquier vecindario del mapa para ver su puntuación de riesgo de desplazamiento, o elige uno de la lista de abajo.',
+                    displacement_risk:   'Riesgo de Desplazamiento',
+                    compare:             'Comparar',
+                    cancel:              'Cancelar',
+                    at_risk_list:        'Lista de riesgo',
+                    score_history:       'Historial de Puntuación',
+                    history_empty:       'Sin historial para este código postal.',
+                    history_loading:     'Cargando…',
+                    recent_activity:     'Actividad Reciente',
+                    reno_flip_title:     'Patrón de Renovación-Reventa Detectado',
+                    reno_flip_toggle:    'Ver direcciones',
+                    signal_breakdown:    'Desglose de Señales',
+                    signal_note:         'Las puntuaciones son de 0 a 100 en relación a todos los vecindarios de NYC, normalizadas por unidad residencial.',
+                    how_scores_work:     'Cómo funcionan las puntuaciones',
+                    no_score:            'Sin puntuación calculada para este código postal.',
+                    look_up_building:    'Buscar un Edificio',
+                    search:              'Buscar',
+                    civic_events:        'Eventos Cívicos',
+                    no_activity:         'Sin actividad registrada para esta dirección',
+                    cmp_signal_note:     '0 a 100 en relación a todos los vecindarios de NYC.',
+                    cmp_new:             '⇄ Comparar vecindarios diferentes',
+                    most_at_risk:        'Vecindarios de mayor riesgo ahora',
+                    mobile_drawer_title: '10 vecindarios de mayor riesgo',
+                    compare_hint:        'Selecciona un segundo vecindario para comparar',
+                    landlord_title:      'Buscar propietario o nombre de LLC',
+                    landlord_copy:       'Copiar',
+                    landlord_clear:      'Limpiar',
+                    subscribe:           'Suscribirse',
+                    no_data:             'Sin datos disponibles.',
+                    unable_to_load:      'No se pudieron cargar los vecindarios.'
+                },
+                risk_signal: {
+                    permits:          'Aumento en solicitudes de permisos de renovación',
+                    evictions:        'Tasa elevada de desalojos',
+                    llc_acquisitions: 'Compras de edificios por LLC',
+                    complaint_rate:   'Alto volumen de quejas de inquilinos',
+                    rs_unit_loss:     'Pérdida de unidades de renta estabilizada',
+                    assessment_spike: 'Aumento en valuación fiscal'
+                },
+                hero: {
+                    title:             'PulseCities',
+                    tagline:           'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
+                    search_placeholder:'Ingrese dirección, código postal o nombre del propietario',
+                    explore_map:       'o, explorar el mapa →',
+                    addr_not_found:    'Dirección no encontrada. Intente "123 Main St, Brooklyn".',
+                    zip_not_found:     'Código postal no encontrado. Intente un ZIP de 5 dígitos.',
+                    network_error:     'Error de red. Intente de nuevo.',
+                    search_btn:        'Buscar',
+                    llc_label:         'transferencias LLC (30d)',
+                    eviction_label:    'desalojos (30d)',
+                    llc_tooltip:       'Adquisiciones de propiedades LLC registradas en escrituras de NYC en los últimos 30 días.',
+                    eviction_tooltip:  'Casos de desalojo presentados en el Tribunal de Vivienda de NYC en los últimos 30 días.',
+                    pulse_tooltip_pre: 'Puntajes actualizados',
+                    pulse_tooltip_suf: '· cada noche a las 2am UTC',
+                    hook_shifting:     'La propiedad está cambiando de manos.',
+                    hook_ratio_tpl:    'Las transferencias LLC superan los desalojos {ratio}× este mes.',
+                    hook_neutral_a:    '{llc} edificios cambiaron de dueños LLC.',
+                    hook_neutral_b:    '{evictions} desalojos registrados en toda la ciudad este mes.',
+                    citywide:          'en toda la ciudad',
+                },
+                count_label: {
+                    permits:          'solicitudes de permiso de renovación',
+                    evictions:        'desalojos',
+                    llc_acquisitions: 'adquisiciones de propiedad LLC',
+                    complaint_rate:   'quejas de inquilinos',
+                    rs_unit_loss:     'pérdida de unidades estabilizadas',
+                    assessment_spike: 'aumentos de valuación fiscal',
+                },
+                signal_short: {
+                    permits:          'permisos',
+                    evictions:        'desalojos',
+                    llc_acquisitions: 'compras LLC',
+                    complaint_rate:   'quejas',
+                    rs_unit_loss:     'pérdida RS',
+                    assessment_spike: 'valuación fiscal',
+                }
+            }
+        };
+
+        let lang = localStorage.getItem('pulsecities_lang') || 'en';
+
+        function t(section, key) {
+            const lang_strings = STRINGS[lang] || STRINGS['en'];
+            const section_strings = lang_strings[section] || STRINGS['en'][section] || {};
+            return section_strings[key] || (STRINGS['en'][section] || {})[key] || key;
+        }
+        // ---- end i18n ----
+
+        const _prefetchStats   = fetch('/api/stats').then(r => r.ok ? r.json() : null).catch(() => null);
+        const _prefetchTopRisk = fetch('/api/neighborhoods/top-risk?limit=10').then(r => r.ok ? r.json() : null).catch(() => null);
+
+        let _heroLlcCount = 0;
+        let _heroEvictionCount = 0;
+
+        // Updates every static text node that carries an i18n ID.
+        // Called on page load and whenever the language toggles.
+        function applyStaticTranslations() {
+            const map = {
+                'landing-hint-text':          t('ui', 'landing_hint'),
+                'detail-risk-label':          t('ui', 'displacement_risk'),
+                'history-section-title':      t('ui', 'score_history'),
+                'history-loading':            t('ui', 'history_loading'),
+                'history-empty':              t('ui', 'history_empty'),
+                'recent-activity-title':      t('ui', 'recent_activity'),
+                'reno-flip-title':            t('ui', 'reno_flip_title'),
+                'renovation-flip-toggle':     t('ui', 'reno_flip_toggle'),
+                'signal-breakdown-title':     t('ui', 'signal_breakdown'),
+                'signal-breakdown-note':      t('ui', 'signal_note'),
+                'methodology-trigger':        t('ui', 'how_scores_work'),
+                'no-score-msg':               t('ui', 'no_score'),
+                'address-lookup-title':       t('ui', 'look_up_building'),
+                'address-search-btn':         t('ui', 'search'),
+                'block-risk-label':           t('ui', 'displacement_risk'),
+                'civic-events-title':         t('ui', 'civic_events'),
+                'block-empty-state':          t('ui', 'no_activity'),
+                'cmp-risk-label-1':           t('ui', 'displacement_risk'),
+                'cmp-risk-label-2':           t('ui', 'displacement_risk'),
+                'cmp-signal-breakdown-title': t('ui', 'signal_breakdown'),
+                'cmp-signal-note':            t('ui', 'cmp_signal_note'),
+                'cmp-new-btn':                t('ui', 'cmp_new'),
+                'most-at-risk-title':         t('ui', 'most_at_risk'),
+                'mobile-drawer-title':        t('ui', 'mobile_drawer_title'),
+                'compare-hint-text':          t('ui', 'compare_hint'),
+                'landlord-section-title':     t('ui', 'landlord_title'),
+                'landlord-search-btn':        t('ui', 'search'),
+                'landlord-copy-btn':          t('ui', 'landlord_copy'),
+                'landlord-clear-btn':         t('ui', 'landlord_clear'),
+                'subscribe-btn':              t('ui', 'subscribe'),
+                'back-to-list-label':         t('ui', 'at_risk_list'),
+                'hero-title':                 t('hero', 'title'),
+                'hero-tagline':               t('hero', 'tagline'),
+                'hero-search-btn':            t('hero', 'search_btn'),
+                'hero-llc-label':             t('hero', 'llc_label'),
+                'hero-eviction-label':        t('hero', 'eviction_label'),
+                'hero-explore-map':           t('hero', 'explore_map'),
+            };
+            for (const [id, text] of Object.entries(map)) {
+                const el = document.getElementById(id);
+                if (el) el.textContent = text;
+            }
+            const heroInput = document.getElementById('hero-search-input');
+            if (heroInput) heroInput.placeholder = t('hero', 'search_placeholder');
+            const addrInput = document.getElementById('address-input');
+            if (addrInput) addrInput.placeholder = t('ui', 'addr_placeholder');
+            const landlordInput = document.getElementById('landlord-input');
+            if (landlordInput) landlordInput.placeholder = t('ui', 'landlord_placeholder');
+            if (_heroLlcCount || _heroEvictionCount) {
+                const hookEl = document.getElementById('hero-hook-line');
+                if (hookEl) hookEl.textContent = buildHookLine(_heroLlcCount, _heroEvictionCount);
+            }
+            // compare-btn shows 'Compare' unless comparison mode is active (showing 'Cancel')
+            const cmpBtn = document.getElementById('compare-btn');
+            if (cmpBtn && !_comparingMode) cmpBtn.textContent = t('ui', 'compare');
+        }
+
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+            center: [-74.0060, 40.7128],
+            zoom: 11,
+            customAttribution: 'Built by <a href="https://www.linkedin.com/in/michaelespin" target="_blank" rel="noopener noreferrer" aria-label="Michael Espin on LinkedIn" style="display:inline-flex;align-items:center;gap:3px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11" aria-hidden="true" focusable="false"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>Michael Espin</a>'
+        });
+
+        map.on('load', function () {
+            // Load neighborhood boundaries from the API
+            map.addSource('neighborhoods', {
+                type: 'geojson',
+                data: '/api/neighborhoods'
+            });
+
+            // Choropleth fill layer — green to red by displacement score
+            map.addLayer({
+                id: 'neighborhood-fill',
+                type: 'fill',
+                source: 'neighborhoods',
+                paint: {
+                    'fill-color': [
+                        'case',
+                        ['==', ['get', 'score'], null], '#94a3b8',
+                        [
+                            'interpolate', ['linear'], ['get', 'score'],
+                            0,   '#22c55e',
+                            40,  '#eab308',
+                            70,  '#f97316',
+                            100, '#ef4444'
+                        ]
+                    ],
+                    'fill-opacity': 0.65
+                }
+            });
+
+            // Neighborhood boundary outlines
+            map.addLayer({
+                id: 'neighborhood-outline',
+                type: 'line',
+                source: 'neighborhoods',
+                paint: {
+                    'line-color': '#1e293b',
+                    'line-width': 0.5
+                }
+            });
+
+            // Pointer cursor on hover
+            map.on('mouseenter', 'neighborhood-fill', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+            map.on('mouseleave', 'neighborhood-fill', () => {
+                map.getCanvas().style.cursor = '';
+            });
+
+            // Click -> selectNeighborhood, or capture second zip when comparison mode is active
+            map.on('click', 'neighborhood-fill', (e) => {
+                const zip = e.features[0].properties.zip_code;
+                if (_comparingMode) {
+                    _comparingMode = false;
+                    document.getElementById('compare-hint').classList.add('hidden');
+                    const btn = document.getElementById('compare-btn');
+                    if (btn) { btn.textContent = t('ui', 'compare'); btn.onclick = enterCompareMode; }
+                    selectComparison(_comparisonZip1, zip);
+                } else {
+                    _navFromList = false;
+                    selectNeighborhood(zip);
+                }
+            });
+
+            // Landlord search result dots — starts empty, populated after a portfolio search
+            map.addSource('landlord-results', {
+                type: 'geojson',
+                data: { type: 'FeatureCollection', features: [] }
+            });
+
+            // Outer pulse ring animated via requestAnimationFrame
+            map.addLayer({
+                id: 'landlord-results-pulse',
+                type: 'circle',
+                source: 'landlord-results',
+                paint: {
+                    'circle-radius': 6,
+                    'circle-color': '#ffffff',
+                    'circle-opacity': 0,
+                    'circle-stroke-width': 0
+                }
+            });
+
+            // Solid inner dot
+            map.addLayer({
+                id: 'landlord-results-dots',
+                type: 'circle',
+                source: 'landlord-results',
+                paint: {
+                    'circle-radius': 6,
+                    'circle-color': '#ffffff',
+                    'circle-opacity': 0.9,
+                    'circle-stroke-width': 1.5,
+                    'circle-stroke-color': 'rgba(255,255,255,0.35)'
+                }
+            });
+        });
+
+        function scoreColor(score) {
+            if (score === null) return '#94a3b8';
+            if (score >= 70) return '#ef4444';
+            if (score >= 40) return '#f97316';
+            if (score >= 15) return '#eab308';
+            return '#22c55e';
+        }
+
+        function signalBarColor(v) {
+            if (v >= 70) return '#ef4444';
+            if (v >= 40) return '#f97316';
+            if (v >= 15) return '#eab308';
+            return '#22c55e';
+        }
+
+        function riskLabel(score) {
+            if (score === null || score === undefined) return '';
+            if (score >= 70) return 'CRITICAL RISK';
+            if (score >= 40) return 'HIGH RISK';
+            if (score >= 15) return 'MODERATE RISK';
+            return 'LOW RISK';
+        }
+
+        function countUp(el, target, color, duration) {
+            const startTime = performance.now();
+            el.style.color = color;
+            function step(now) {
+                const p = Math.min((now - startTime) / duration, 1);
+                const eased = 1 - Math.pow(1 - p, 3);
+                el.textContent = (target * eased).toFixed(1);
+                if (p < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        function relativeTime(isoString) {
+            if (!isoString) return '';
+            const diffDays = Math.floor((Date.now() - new Date(isoString).getTime()) / 86400000);
+            if (diffDays === 0) return 'today';
+            if (diffDays === 1) return 'yesterday';
+            if (diffDays < 7) return `${diffDays}d ago`;
+            if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+            if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`;
+            return `${Math.floor(diffDays / 365)}y ago`;
+        }
+
+        const SIGNAL_DESCRIPTIONS = {
+            permits:          'Renovation permit filings signal landlords preparing to flip or push out tenants',
+            evictions:        'Court-ordered eviction filings — a direct measure of tenant displacement',
+            llc_acquisitions: 'Buildings acquired by LLCs face higher rates of rent increase and harassment',
+            complaint_rate:   'High 311 complaint volume (heat, leaks, pests) indicates pressure to vacate',
+            rs_unit_loss:     'Net loss of rent-stabilized apartments — affordable housing permanently removed',
+            assessment_spike: 'Sharp property tax assessment increases signal speculative acquisition activity'
+        };
+
+        function truncate(str, n) {
+            return str && str.length > n ? str.slice(0, n) + '\u2026' : (str || '');
+        }
+
+        // Renders up to `limit` items then a "+N more" button that expands inline.
+        function appendWithMore(items, container, makeEl, limit) {
+            items.slice(0, limit).forEach(item => container.appendChild(makeEl(item)));
+            if (items.length <= limit) return;
+            const remainder = items.slice(limit);
+            const btn = document.createElement('button');
+            btn.className = 'text-xs text-slate-400 hover:text-slate-300 mt-2 text-left block';
+            btn.style.minHeight = '32px';
+            btn.textContent = `+${remainder.length} more`;
+            btn.onclick = () => {
+                remainder.forEach(item => container.insertBefore(makeEl(item), btn));
+                btn.remove();
+            };
+            container.appendChild(btn);
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return '';
+            const d = new Date(isoString);
+            const now = new Date();
+            const opts = { month: 'short', day: 'numeric' };
+            if (d.getFullYear() !== now.getFullYear()) opts.year = 'numeric';
+            return d.toLocaleDateString('en-US', opts);
+        }
+
+        function renderPulse(zip) {
+            const section = document.getElementById('pulse-section');
+            section.classList.add('hidden');  // hide while loading
+            // TODO: pass lang=${lang} to summary API when endpoint is added
+
+            fetch(`/api/neighborhoods/${zip}/pulse`, { signal: AbortSignal.timeout(10000) })
+                .then(r => r.ok ? r.json() : null)
+                .then(data => {
+                    if (!data) return;
+                    // Update translatable section headers
+                    const sectionTitle = document.getElementById('pulse-section-title');
+                    if (sectionTitle) sectionTitle.textContent = t('pulse', 'section_title');
+                    const lastDays = document.getElementById('pulse-last-days');
+                    if (lastDays) lastDays.textContent = t('pulse', 'last_n_days');
+                    const llcHeader = document.getElementById('pulse-llc-header');
+                    if (llcHeader) llcHeader.textContent = t('pulse', 'llc_header');
+                    const permHeader = document.getElementById('pulse-permits-header');
+                    if (permHeader) permHeader.textContent = t('pulse', 'permits_header');
+                    const evictHeader = document.getElementById('pulse-evictions-header');
+                    if (evictHeader) evictHeader.textContent = t('pulse', 'evictions_header');
+                    const llcList = document.getElementById('pulse-llc-list');
+                    const permList = document.getElementById('pulse-permits-list');
+                    const evictList = document.getElementById('pulse-evictions-list');
+                    const llcSec = document.getElementById('pulse-llc-section');
+                    const permSec = document.getElementById('pulse-permits-section');
+                    const evictSec = document.getElementById('pulse-evictions-section');
+                    const emptyEl = document.getElementById('pulse-empty');
+
+                    llcList.innerHTML = '';
+                    permList.innerHTML = '';
+                    evictList.innerHTML = '';
+
+                    const hasLLC = data.llc_acquisitions && data.llc_acquisitions.length > 0;
+                    const hasPerm = data.recent_permits && data.recent_permits.length > 0;
+                    const hasEvict = data.recent_evictions && data.recent_evictions.length > 0;
+
+                    if (hasLLC) {
+                        llcSec.classList.remove('hidden');
+                        appendWithMore(data.llc_acquisitions, llcList, item => {
+                            const el = document.createElement('div');
+                            el.className = 'py-1.5 border-b border-base-content/10 last:border-0';
+                            const dateStr = item.doc_date ? new Date(item.doc_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+                            el.innerHTML = `
+                                <div class="flex justify-between items-baseline gap-2">
+                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${item.address || item.bbl}</span>
+                                    ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
+                                </div>
+                                <div class="text-xs text-slate-400 mt-0.5">${t('pulse', 'acquired_by')} ${item.buyer_name || ''}</div>
+                            `;
+                            return el;
+                        }, 5);
+                    } else {
+                        llcSec.classList.add('hidden');
+                    }
+
+                    if (hasPerm) {
+                        permSec.classList.remove('hidden');
+                        appendWithMore(data.recent_permits, permList, item => {
+                            const el = document.createElement('div');
+                            el.className = 'py-1.5 border-b border-base-content/10 last:border-0';
+                            const dateStr = item.filing_date ? new Date(item.filing_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+                            el.innerHTML = `
+                                <div class="flex justify-between items-baseline gap-2">
+                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${item.address || item.bbl}</span>
+                                    ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
+                                </div>
+                                <div class="text-xs text-slate-400 mt-0.5">${item.permit_type_label || item.permit_type} ${t('pulse', 'filed')}</div>
+                            `;
+                            return el;
+                        }, 5);
+                    } else {
+                        permSec.classList.add('hidden');
+                    }
+
+                    if (hasEvict) {
+                        evictSec.classList.remove('hidden');
+                        appendWithMore(data.recent_evictions, evictList, item => {
+                            const el = document.createElement('div');
+                            el.className = 'py-1.5 border-b border-base-content/10 last:border-0 rounded focus:outline-none focus:ring-2 focus:ring-red-400/50';
+                            el.setAttribute('tabindex', '0');
+                            el.setAttribute('role', 'listitem');
+                            const dateStr = item.executed_date ? new Date(item.executed_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+                            const typeStr = item.eviction_type || t('pulse', 'executed');
+                            el.setAttribute('aria-label', `Eviction at ${item.address || 'unknown address'}${dateStr ? ', ' + dateStr : ''}, ${typeStr}`);
+                            el.innerHTML = `
+                                <div class="flex justify-between items-baseline gap-2">
+                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${item.address || 'Unknown address'}</span>
+                                    ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
+                                </div>
+                                <div class="text-xs text-slate-400 mt-0.5">${typeStr}</div>
+                            `;
+                            return el;
+                        }, 5);
+                    } else {
+                        evictSec.classList.add('hidden');
+                    }
+
+                    emptyEl.textContent = t('pulse', 'empty');
+                    emptyEl.classList.toggle('hidden', hasLLC || hasPerm || hasEvict);
+                    renderRecentActivity(data);
+                    section.classList.remove('hidden');
+                })
+                .catch(() => {}); // best-effort, silently ignore
+        }
+
+        function renderRenovationFlip(zip) {
+            const alertEl = document.getElementById('renovation-flip-alert');
+            alertEl.classList.add('hidden');
+
+            fetch(`/api/neighborhoods/${zip}/renovation-flip`)
+                .then(r => r.ok ? r.json() : null)
+                .then(data => {
+                    if (!data || !data.detected) {
+                        alertEl.classList.add('hidden');
+                        return;
+                    }
+                    // Populate and show
+                    const countEl = document.getElementById('renovation-flip-count');
+                    countEl.textContent = `${data.count} propert${data.count === 1 ? 'y' : 'ies'} with LLC acquisition + renovation permit within 60 days`;
+
+                    const list = document.getElementById('renovation-flip-list');
+                    list.innerHTML = '';
+                    (data.properties || []).forEach(p => {
+                        const el = document.createElement('div');
+                        el.className = 'py-1 border-b border-base-content/10 last:border-0';
+                        const addr = document.createElement('div');
+                        addr.className = 'text-base-content font-medium';
+                        addr.textContent = p.address || p.bbl;
+                        const detail = document.createElement('div');
+                        detail.className = 'text-xs text-slate-400';
+                        const transferDate = p.transfer_date ? new Date(p.transfer_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+                        const days = p.days_between != null ? `${p.days_between}d later` : '';
+                        detail.textContent = `${p.buyer || ''}` + (transferDate ? ` \u2014 ${transferDate}` : '') + (days ? ` \u2014 permit ${days}` : '');
+                        el.appendChild(addr);
+                        el.appendChild(detail);
+                        list.appendChild(el);
+                    });
+
+                    alertEl.classList.remove('hidden');
+                })
+                .catch(() => {}); // best-effort
+        }
+
+        // Toggle address list visibility
+        document.getElementById('renovation-flip-toggle').addEventListener('click', function() {
+            const list = document.getElementById('renovation-flip-list');
+            const isHidden = list.classList.contains('hidden');
+            list.classList.toggle('hidden', !isHidden);
+            this.textContent = isHidden ? 'Hide addresses' : 'See addresses';
+        });
+
+        function showDetail(zip, score, breakdown, lastUpdated, signalLastUpdated, summaryText, name, borough) {
+            setPanel('detail');
+            // Clear stale sparkline on new neighborhood selection
+            const staleSparkline = document.querySelector('#detail-score')?.parentElement?.querySelector('svg.sparkline');
+            if (staleSparkline) staleSparkline.remove();
+            // Clear history chart, pulse section, renovation-flip alert, and recent activity while new data loads
+            _destroyHistoryChart();
+            document.getElementById('pulse-section').classList.add('hidden');
+            document.getElementById('renovation-flip-alert').classList.add('hidden');
+            document.getElementById('recent-activity-section').classList.add('hidden');
+
+            document.getElementById('detail-zip').textContent = zip;
+            const hoodEl = document.getElementById('detail-neighborhood');
+            if (hoodEl) hoodEl.textContent = (name && name !== zip) ? name : (borough || '');
+
+            const scoreEl = document.getElementById('detail-score');
+            const riskLabelEl = document.getElementById('detail-risk-label');
+            if (score !== null && score !== undefined) {
+                countUp(scoreEl, score, scoreColor(score), 600);
+                document.getElementById('no-score-msg').classList.add('hidden');
+                if (riskLabelEl) {
+                    const tier = riskLabel(score);
+                    riskLabelEl.textContent = tier ? tier + ' \u00b7 ' + t('ui', 'displacement_risk') : t('ui', 'displacement_risk');
+                    riskLabelEl.style.color = scoreColor(score);
+                    riskLabelEl.style.opacity = '0.8';
+                }
+            } else {
+                scoreEl.textContent = '\u2014';
+                scoreEl.style.color = '#94a3b8';
+                document.getElementById('no-score-msg').classList.remove('hidden');
+                if (riskLabelEl) {
+                    riskLabelEl.textContent = t('ui', 'displacement_risk');
+                    riskLabelEl.style.color = '';
+                    riskLabelEl.style.opacity = '';
+                }
+            }
+
+            const updatedEl = document.getElementById('detail-updated');
+            updatedEl.textContent = lastUpdated ? relativeTime(lastUpdated) : '';
+
+            const summaryEl = document.getElementById('detail-summary');
+            if (summaryText) {
+                summaryEl.textContent = summaryText;
+                summaryEl.classList.remove('hidden');
+            } else {
+                summaryEl.textContent = '';
+                summaryEl.classList.add('hidden');
+            }
+
+            const signalNames = {
+                permits:           t('signals', 'permits'),
+                evictions:         t('signals', 'evictions'),
+                llc_acquisitions:  t('signals', 'llc_acquisitions'),
+                assessment_spike:  t('signals', 'assessment_spike'),
+                complaint_rate:    t('signals', 'complaint_rate'),
+                rs_unit_loss:      t('signals', 'rs_unit_loss')
+            };
+            const slu = signalLastUpdated || {};
+
+            const rows = document.getElementById('signal-rows');
+            rows.innerHTML = '';
+            if (breakdown) {
+                Object.keys(breakdown)
+                    .sort((a, b) => (breakdown[b] ?? -1) - (breakdown[a] ?? -1))
+                    .forEach(key => {
+                    const numVal = typeof breakdown[key] === 'number' ? breakdown[key] : null;
+                    const label = signalNames[key] || key;
+                    const ts = slu[key] ? formatDate(slu[key]) : '';
+                    const barPct = numVal !== null ? Math.max(0, Math.min(100, numVal)) : 0;
+
+                    const row = document.createElement('div');
+                    row.className = 'py-2 border-b border-base-content/[0.06] last:border-0';
+                    row.innerHTML = `
+                        <div class="flex justify-between items-baseline mb-1">
+                            <span class="text-xs text-slate-400" title="${SIGNAL_DESCRIPTIONS[key] || ''}">${label}</span>
+                            <span class="font-mono text-sm text-base-content">${numVal !== null ? numVal : '\u2014'}</span>
+                        </div>
+                        <div style="height:3px;border-radius:2px;background:rgba(148,163,184,0.12);">
+                            <div style="height:100%;border-radius:2px;width:${barPct}%;background:${numVal !== null ? signalBarColor(numVal) : 'transparent'};transition:width 0.4s ease;"></div>
+                        </div>
+                        ${ts ? `<div class="text-xs text-sky-400 mt-1">Updated ${ts}</div>` : ''}
+                    `;
+                    rows.appendChild(row);
+
+                    if (key === 'evictions') {
+                        const lagNote = document.createElement('div');
+                        lagNote.className = 'text-xs text-slate-400 italic pb-1';
+                        lagNote.textContent = 'Eviction filings typically appear 2\u20134 weeks after they occur.';
+                        rows.appendChild(lagNote);
+                    }
+                });
+            }
+        }
+
+        // --- Language toggle — shared handler, updates both hero and sidebar buttons ---
+        function setLanguage(l) {
+            lang = l;
+            localStorage.setItem('pulsecities_lang', lang);
+            const label = lang === 'es' ? 'ES / EN' : 'EN / ES';
+            const sidebar = document.getElementById('lang-toggle');
+            const hero = document.getElementById('hero-lang-toggle');
+            if (sidebar) sidebar.textContent = label;
+            if (hero) hero.textContent = label;
+            applyStaticTranslations();
+            renderHeroZipCards();
+            renderTopRisk();
+            if (_currentPanel === 'detail' && _cachedZipData) {
+                showDetail(
+                    _cachedZip,
+                    _cachedZipData.score,
+                    _cachedZipData.breakdown,
+                    _cachedZipData.lastUpdated,
+                    _cachedZipData.signalLastUpdated,
+                    _cachedZipData.summaryText,
+                    _cachedZipData.name,
+                    _cachedZipData.borough
+                );
+                renderPulse(_cachedZip);
+            }
+        }
+        document.getElementById('lang-toggle').addEventListener('click', () => setLanguage(lang === 'en' ? 'es' : 'en'));
+        document.getElementById('hero-lang-toggle').addEventListener('click', () => setLanguage(lang === 'en' ? 'es' : 'en'));
+
+        // --- Address Search and Block Panel Logic ---
+
+        // State for back-navigation (D-10: restore without re-fetching)
+        let _cachedZip = null;
+        let _cachedZipData = null;  // { score, breakdown, lastUpdated, signalLastUpdated }
+        let _navFromList = false;   // true only when detail was opened via the at-risk list
+
+        // Comparison state
+        let _comparingMode = false; // waiting for user to pick second zip on the map
+        let _comparisonZip1 = null;
+        let _comparisonData = null; // { zip1, zip2, d1, d2 }
+
+        function enterCompareMode() {
+            if (!_cachedZip) return;
+            _comparingMode = true;
+            _comparisonZip1 = _cachedZip;
+            document.getElementById('compare-hint').classList.remove('hidden');
+            const btn = document.getElementById('compare-btn');
+            if (btn) { btn.textContent = t('ui', 'cancel'); btn.onclick = exitCompareMode; }
+            // On mobile, drop the sidebar so the map is accessible
+            if (window.innerWidth < 768) showMobileMap();
+        }
+
+        function exitCompareMode() {
+            _comparingMode = false;
+            document.getElementById('compare-hint').classList.add('hidden');
+            const btn = document.getElementById('compare-btn');
+            if (btn) { btn.textContent = t('ui', 'compare'); btn.onclick = enterCompareMode; }
+        }
+
+        async function selectComparison(zip1, zip2) {
+            _comparisonData = null;
+            if (window.innerWidth < 768) showMobileSidebar();
+
+            // Immediate skeleton state
+            setPanel('comparison');
+            document.getElementById('cmp-back-btn').textContent = '\u2190 Back to ' + zip1;
+            document.getElementById('cmp-zip-1').textContent = zip1;
+            document.getElementById('cmp-zip-2').textContent = zip2;
+            document.getElementById('cmp-name-1').textContent = '';
+            document.getElementById('cmp-name-2').textContent = '';
+            const s1 = document.getElementById('cmp-score-1');
+            const s2 = document.getElementById('cmp-score-2');
+            s1.textContent = '\u2014'; s1.style.color = '#94a3b8';
+            s2.textContent = '\u2014'; s2.style.color = '#94a3b8';
+            document.getElementById('cmp-signal-rows').innerHTML = '';
+
+            try {
+                const [r1, r2] = await Promise.all([
+                    fetch(`/api/neighborhoods/${zip1}/score`),
+                    fetch(`/api/neighborhoods/${zip2}/score`)
+                ]);
+                const d1 = r1.ok ? await r1.json() : null;
+                const d2 = r2.ok ? await r2.json() : null;
+                _comparisonData = { zip1, zip2, d1, d2 };
+                renderComparison(zip1, zip2, d1, d2);
+            } catch (err) {
+                console.error('Comparison fetch failed:', err);
+            }
+        }
+
+        function renderComparison(zip1, zip2, d1, d2) {
+            const score1 = d1?.score ?? null;
+            const score2 = d2?.score ?? null;
+
+            const s1 = document.getElementById('cmp-score-1');
+            s1.textContent = score1 !== null ? score1.toFixed(1) : '\u2014';
+            s1.style.color = score1 !== null ? scoreColor(score1) : '#94a3b8';
+
+            const s2 = document.getElementById('cmp-score-2');
+            s2.textContent = score2 !== null ? score2.toFixed(1) : '\u2014';
+            s2.style.color = score2 !== null ? scoreColor(score2) : '#94a3b8';
+
+            const _cmpName = (d, zip) => (d?.name && d.name !== zip) ? d.name : (d?.borough || '');
+            document.getElementById('cmp-name-1').textContent = _cmpName(d1, zip1);
+            document.getElementById('cmp-name-2').textContent = _cmpName(d2, zip2);
+
+            const bd1 = d1?.signal_breakdown || {};
+            const bd2 = d2?.signal_breakdown || {};
+
+            const signalNames = {
+                permits:           t('signals', 'permits'),
+                evictions:         t('signals', 'evictions'),
+                llc_acquisitions:  t('signals', 'llc_acquisitions'),
+                assessment_spike:  t('signals', 'assessment_spike'),
+                complaint_rate:    t('signals', 'complaint_rate'),
+                rs_unit_loss:      t('signals', 'rs_unit_loss')
+            };
+
+            // Sort by the higher of the two values so dominant signals surface first
+            const sorted = Object.keys(signalNames).sort((a, b) => {
+                const maxA = Math.max(bd1[a] ?? 0, bd2[a] ?? 0);
+                const maxB = Math.max(bd1[b] ?? 0, bd2[b] ?? 0);
+                return maxB - maxA;
+            });
+
+            const rows = document.getElementById('cmp-signal-rows');
+            rows.innerHTML = '';
+
+            sorted.forEach(key => {
+                const v1 = typeof bd1[key] === 'number' ? bd1[key] : null;
+                const v2 = typeof bd2[key] === 'number' ? bd2[key] : null;
+                const label = signalNames[key] || key;
+
+                const row = document.createElement('div');
+                row.className = 'pb-2 border-b border-base-content/[0.06] last:border-0';
+
+                const labelEl = document.createElement('div');
+                labelEl.className = 'text-xs text-slate-400 mb-1.5';
+                labelEl.textContent = label;
+                row.appendChild(labelEl);
+
+                [[zip1, v1], [zip2, v2]].forEach(([zip, val]) => {
+                    const pct = val !== null ? Math.max(0, Math.min(100, val)) : 0;
+
+                    const barRow = document.createElement('div');
+                    barRow.className = 'flex items-center gap-2 mb-1 last:mb-0';
+
+                    const zipLbl = document.createElement('span');
+                    zipLbl.className = 'font-mono text-xs text-slate-500 w-11 shrink-0';
+                    zipLbl.textContent = zip;
+                    barRow.appendChild(zipLbl);
+
+                    const track = document.createElement('div');
+                    track.style.cssText = 'flex:1;height:4px;border-radius:2px;background:rgba(148,163,184,0.12);';
+                    const fill = document.createElement('div');
+                    fill.style.cssText = `height:100%;border-radius:2px;width:${pct}%;background:${val !== null ? signalBarColor(val) : 'transparent'};transition:width 0.5s ease;`;
+                    track.appendChild(fill);
+                    barRow.appendChild(track);
+
+                    const valEl = document.createElement('span');
+                    valEl.className = 'font-mono text-xs text-base-content/70 w-7 text-right shrink-0';
+                    valEl.textContent = val !== null ? val.toFixed(0) : '\u2014';
+                    barRow.appendChild(valEl);
+
+                    row.appendChild(barRow);
+                });
+
+                rows.appendChild(row);
+            });
+        }
+
+        // ---------------------------------------------------------------------------
+        // Panel state machine — single source of truth for which panel is visible.
+        // Always call setPanel() instead of toggling classList directly on panels.
+        // ---------------------------------------------------------------------------
+        let _currentPanel = 'empty'; // 'empty' | 'detail' | 'block' | 'comparison'
+
+        // --- Hero overlay state machine (D-01, D-05, D-06) ---
+        // Independent of setPanel() — the overlay sits on the map layer (z-40),
+        // not inside the sidebar panel system.
+        let _heroVisible = true;
+
+        function showHero() {
+            _heroVisible = true;
+            const el = document.getElementById('hero-overlay');
+            if (!el) return;
+            el.classList.remove('hidden');
+            el.style.opacity = '1';
+            el.style.pointerEvents = 'auto';
+        }
+
+        function hideHero(callback) {
+            _heroVisible = false;
+            const el = document.getElementById('hero-overlay');
+            if (!el) return;
+            el.style.transition = 'opacity 0.3s ease';
+            el.style.opacity = '0';
+            el.style.pointerEvents = 'none';
+            // After fade completes, fully remove from event flow (Pitfall 1 prevention)
+            setTimeout(() => {
+                el.classList.add('hidden');
+                if (typeof callback === 'function') callback();
+            }, 310);
+        }
+
+        function resetToHero() {
+            window.location.href = '/';
+        }
+        // --- End hero state machine ---
+
+        // --- Hero overlay dynamic behavior (Plan 03) ---
+
+        // Integer count-up for hero stat chips (LLC count, eviction count).
+        // countUp() uses .toFixed(1) — incompatible with display of whole-number counts.
+        // Do NOT modify countUp() — it serves score display elsewhere.
+        function countUpInt(el, target, color, duration) {
+            const startTime = performance.now();
+            el.style.color = color;
+            function step(now) {
+                const p = Math.min((now - startTime) / duration, 1);
+                const eased = 1 - Math.pow(1 - p, 3);
+                el.textContent = Math.round(target * eased).toLocaleString();
+                if (p < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        // Cascade: center fades in first (200ms), left 150ms after, right 150ms after that,
+        // hook line 150ms after right. Elements start at opacity:0 translateY(8px) (set in HTML).
+        function animateHeroStats() {
+            function fadeIn(el) {
+                if (!el) return;
+                el.style.transition = 'opacity 0.2s ease-out, transform 0.2s ease-out';
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }
+            // Center stat starts at time 0
+            setTimeout(() => fadeIn(document.getElementById('hero-stat-center')), 0);
+            // Left: 200ms (center duration) + 150ms delay
+            setTimeout(() => fadeIn(document.getElementById('hero-stat-left')),   350);
+            // Right: 350ms + 150ms
+            setTimeout(() => fadeIn(document.getElementById('hero-stat-right')),  500);
+            // Hook line: 500ms + 150ms
+            setTimeout(() => fadeIn(document.getElementById('hero-hook-line')),   650);
+        }
+
+        // D-11: two sentences, no em dashes, dynamically generated from live counts.
+        // Uses \xD7 (multiplication sign ×), NOT an em dash.
+        function buildHookLine(llcCount, evictionCount) {
+            if (llcCount === 0 && evictionCount === 0) return '';
+            if (evictionCount > 0 && (llcCount / evictionCount) > 1.5) {
+                const ratio = (llcCount / evictionCount).toFixed(1);
+                return t('hero', 'hook_shifting') + ' ' + t('hero', 'hook_ratio_tpl').replace('{ratio}', ratio);
+            }
+            return t('hero', 'hook_neutral_a').replace('{llc}', llcCount.toLocaleString())
+                + ' '
+                + t('hero', 'hook_neutral_b').replace('{evictions}', evictionCount.toLocaleString());
+        }
+
+        // Fetches /api/stats once on hero reveal. Populates all three editorial stat columns
+        // and triggers the cascade animation.
+        async function initHeroStats() {
+            const data = await _prefetchStats;
+            if (!data) return;
+
+            const { llc_transfers_30d: llcCount, evictions_30d: evictionCount, top_risk: topRisk } = data;
+            _heroLlcCount = llcCount;
+            _heroEvictionCount = evictionCount;
+
+            // Populate flanking stats — animate both desktop and mobile elements in parallel.
+            // The data-hero-bind sync below runs synchronously and would copy mid-animation
+            // values (dashes) if we relied on it for countUpInt targets.
+            const llcEl = document.getElementById('hero-llc-count');
+            if (llcEl) countUpInt(llcEl, llcCount, '#e2e8f0', 400);
+            document.querySelectorAll('[data-hero-bind="hero-llc-count"]').forEach(el =>
+                countUpInt(el, llcCount, '#e2e8f0', 400));
+
+            const evEl = document.getElementById('hero-eviction-count');
+            if (evEl) countUpInt(evEl, evictionCount, '#e2e8f0', 400);
+            document.querySelectorAll('[data-hero-bind="hero-eviction-count"]').forEach(el =>
+                countUpInt(el, evictionCount, '#e2e8f0', 400));
+
+            // Populate center stat (D-07/D-08: ZIP large, place small, score smallest + pulse)
+            if (topRisk) {
+                const zipEl = document.getElementById('hero-zip-code');
+                if (zipEl) zipEl.textContent = topRisk.zip_code;
+
+                const placeEl = document.getElementById('hero-zip-place');
+                if (placeEl) {
+                    const placeParts = [topRisk.name, topRisk.borough].filter(Boolean);
+                    placeEl.textContent = placeParts.join(', ');
+                }
+
+                const scoreEl = document.getElementById('hero-zip-score');
+                if (scoreEl) countUp(scoreEl, topRisk.score, '#f97316', 400);
+                document.querySelectorAll('[data-hero-bind="hero-zip-score"]').forEach(el =>
+                    countUp(el, topRisk.score, '#f97316', 400));
+
+                // Store ZIP for sparkline hover (D-12)
+                const centerEl = document.getElementById('hero-stat-center');
+                if (centerEl) centerEl.dataset.zip = topRisk.zip_code;
+
+                // Pulse dot tooltip (D-10): "Scores updated Apr 17 · nightly at 2am UTC"
+                const pulseEl = centerEl ? centerEl.querySelector('.pulse-dot') : null;
+                if (pulseEl && topRisk.last_updated) {
+                    const dateStr = new Date(topRisk.last_updated).toLocaleDateString('en-US', {
+                        month: 'short', day: 'numeric'
+                    });
+                    pulseEl.title = `${t('hero', 'pulse_tooltip_pre')} ${dateStr} ${t('hero', 'pulse_tooltip_suf')}`;
+                }
+            }
+
+            // Mirror text-only values to mobile elements via data-hero-bind.
+            // Animated fields (llc-count, eviction-count, zip-score) are handled directly
+            // above — skipping them here prevents the race with countUpInt/countUp.
+            const _animatedBinds = new Set(['hero-llc-count', 'hero-eviction-count', 'hero-zip-score']);
+            document.querySelectorAll('[data-hero-bind]').forEach(el => {
+                const sourceId = el.dataset.heroBind;
+                if (_animatedBinds.has(sourceId)) return;
+                const source = document.getElementById(sourceId);
+                if (source) el.textContent = source.textContent;
+            });
+
+            // Hook line (D-11)
+            const hookEl = document.getElementById('hero-hook-line');
+            if (hookEl) hookEl.textContent = buildHookLine(llcCount, evictionCount);
+
+            // Trigger cascade animation after data is rendered
+            animateHeroStats();
+        }
+
+        // D-12: On hover over center stat, fetch 7-day score history and render
+        // a 60x20px SVG sparkline using the existing sparkline() function.
+        async function showCenterStatSparkline(zip) {
+            if (!zip) return;
+            try {
+                const resp = await fetch(`/api/score-history/${zip}?days=7`);
+                if (!resp.ok) return;
+                const hist = await resp.json();
+                const scores = hist.map(h => h.score).filter(s => s != null);
+                if (scores.length < 2) return;
+                const el = document.getElementById('hero-stat-sparkline');
+                if (el) {
+                    el.innerHTML = sparkline(scores, { width: 60, height: 20 });
+                    el.classList.remove('hidden');
+                }
+            } catch { /* silent */ }
+        }
+
+        function wireHeroTooltips() {
+            const leftStat  = document.getElementById('hero-stat-left');
+            const rightStat = document.getElementById('hero-stat-right');
+            const leftTip   = document.getElementById('hero-llc-tooltip');
+            const rightTip  = document.getElementById('hero-eviction-tooltip');
+            const centerEl  = document.getElementById('hero-stat-center');
+
+            if (leftStat && leftTip) {
+                leftTip.textContent = 'LLC property acquisitions tracked in NYC deed records in the last 30 days.';
+                leftStat.addEventListener('mouseenter', () => {
+                    leftTip.classList.remove('hidden');
+                    leftTip.style.opacity = '0';
+                    leftTip.style.transition = 'opacity 0.15s ease';
+                    setTimeout(() => { leftTip.style.opacity = '1'; }, 10);
+                });
+                leftStat.addEventListener('mouseleave', () => { leftTip.classList.add('hidden'); });
+            }
+
+            if (rightStat && rightTip) {
+                rightTip.textContent = 'Eviction cases filed in NYC Housing Court in the last 30 days.';
+                rightStat.addEventListener('mouseenter', () => {
+                    rightTip.classList.remove('hidden');
+                    rightTip.style.opacity = '0';
+                    rightTip.style.transition = 'opacity 0.15s ease';
+                    setTimeout(() => { rightTip.style.opacity = '1'; }, 10);
+                });
+                rightStat.addEventListener('mouseleave', () => { rightTip.classList.add('hidden'); });
+            }
+
+            if (centerEl) {
+                centerEl.addEventListener('mouseenter', () => {
+                    const zip = centerEl.dataset.zip;
+                    if (zip) showCenterStatSparkline(zip);
+                });
+                centerEl.addEventListener('mouseleave', () => {
+                    const sparkEl = document.getElementById('hero-stat-sparkline');
+                    if (sparkEl) sparkEl.classList.add('hidden');
+                });
+            }
+        }
+
+        // --- Hero search (D-05) ---
+        // On submit: resolve input to a zip_code, fade out hero, open in sidebar.
+        // Supports raw 5-digit ZIPs and full address strings.
+        (function wireHeroSearch() {
+            const input = document.getElementById('hero-search-input');
+            const btn   = document.getElementById('hero-search-btn');
+            if (!input || !btn) return;
+
+            async function handleHeroSearch() {
+                const query = input.value.trim();
+                if (!query) return;
+
+                btn.disabled = true;
+                btn.textContent = t('ui', 'looking_up');
+
+                // Fast path: 5-digit ZIP code entered directly
+                if (/^\d{5}$/.test(query)) {
+                    hideHero(() => selectNeighborhood(query));
+                    btn.disabled = false;
+                    btn.textContent = t('hero', 'search_btn');
+                    return;
+                }
+
+                // Address path: resolve address to property, extract zip_code
+                try {
+                    const searchResp = await fetch(`/api/properties/search?address=${encodeURIComponent(query)}`);
+                    if (!searchResp.ok) {
+                        input.placeholder = t('hero', 'addr_not_found');
+                        btn.disabled = false;
+                        btn.textContent = t('hero', 'search_btn');
+                        return;
+                    }
+                    const searchData = await searchResp.json();
+                    const zip = (searchData.parcel && searchData.parcel.zip_code) || searchData.zip_code || (searchData.results && searchData.results[0] && searchData.results[0].zip_code);
+                    if (zip) {
+                        hideHero(() => selectNeighborhood(zip));
+                    } else {
+                        input.placeholder = t('hero', 'zip_not_found');
+                    }
+                } catch {
+                    input.placeholder = t('hero', 'network_error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = t('hero', 'search_btn') || 'Search';
+                }
+            }
+
+            btn.addEventListener('click', handleHeroSearch);
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') handleHeroSearch();
+            });
+        })();
+        // --- End hero search ---
+
+        // Resolves ?q= param from landing page and opens the matching neighborhood.
+        async function autoSearchOnLoad(q) {
+            if (/^\d{5}$/.test(q)) {
+                selectNeighborhood(q);
+                return;
+            }
+            try {
+                const resp = await fetch(`/api/properties/search?address=${encodeURIComponent(q)}`);
+                if (!resp.ok) return;
+                const data = await resp.json();
+                const zip = (data.parcel && data.parcel.zip_code) || data.zip_code ||
+                            (data.results && data.results[0] && data.results[0].zip_code);
+                if (zip) selectNeighborhood(zip);
+            } catch { /* silent — user can search manually from the sidebar */ }
+        }
+
+        // D-03: Each ZIP card calls selectNeighborhood(zip) on click, fading hero first.
+        // D-16: Same format as leaderboard rows — rank, ZIP, place, score, signal count+percentile.
+        function buildHeroZipCard(n) {
+            const card = document.createElement('button');
+            card.className = 'text-left rounded-lg border border-slate-700 px-4 py-3 hover:border-slate-500 transition-colors';
+            card.style.cssText = 'background:rgba(30,41,59,0.7); min-width:min(160px, calc(50vw - 24px)); max-width:200px;';
+
+            // Rank + ZIP
+            const topRow = document.createElement('div');
+            topRow.className = 'flex items-baseline gap-2 mb-0.5';
+            const rankEl = document.createElement('span');
+            rankEl.className = 'text-xs font-mono text-slate-500';
+            rankEl.textContent = `#${n.rank}`;
+            const zipEl = document.createElement('span');
+            zipEl.className = 'font-mono text-sm font-bold text-slate-100';
+            zipEl.textContent = n.zip_code;
+            topRow.append(rankEl, zipEl);
+
+            // Place (name + borough)
+            const placeEl = document.createElement('div');
+            placeEl.className = 'text-xs text-slate-400 truncate mb-1';
+            const placeParts = [n.name, n.borough].filter(Boolean);
+            placeEl.textContent = placeParts.join(', ');
+
+            // Score
+            const scoreEl = document.createElement('div');
+            scoreEl.className = 'font-mono text-sm font-semibold';
+            scoreEl.style.color = scoreColor(n.score);
+            scoreEl.textContent = n.score.toFixed(1);
+
+            if (n.raw_count && n.dominant_signal) {
+                const sigEl = document.createElement('div');
+                sigEl.className = 'mt-1.5 font-mono text-xs';
+                const countSpan = document.createElement('span');
+                countSpan.style.color = scoreColor(n.score);
+                countSpan.style.fontWeight = '600';
+                countSpan.textContent = n.raw_count;
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'text-slate-500';
+                labelSpan.textContent = ' ' + t('signal_short', n.dominant_signal);
+                sigEl.append(countSpan, labelSpan);
+                card.append(topRow, placeEl, scoreEl, sigEl);
+            } else {
+                card.append(topRow, placeEl, scoreEl);
+            }
+
+            // D-03: clicking fades hero and opens the ZIP in sidebar
+            card.addEventListener('click', () => hideHero(() => selectNeighborhood(n.zip_code)));
+            return card;
+        }
+
+        function renderHeroZipCards() {
+            const container = document.getElementById('hero-zip-cards');
+            if (!container) return;
+            _prefetchStats
+                .then(data => {
+                    if (!data || !data.top_risk_list) return;
+                    container.innerHTML = '';
+                    data.top_risk_list.forEach(n => container.appendChild(buildHeroZipCard(n)));
+                })
+                .catch(() => {});
+        }
+
+        // --- End hero ZIP cards ---
+
+        function setPanel(name) {
+            const panels = { empty: 'empty-state', detail: 'detail-panel', block: 'block-panel', comparison: 'comparison-panel' };
+            Object.entries(panels).forEach(([panelName, id]) => {
+                const el = document.getElementById(id);
+                const active = panelName === name;
+                el.classList.toggle('hidden', !active);
+                // detail-panel, block-panel, comparison-panel are flex containers; empty-state is block
+                if (id !== 'empty-state') el.classList.toggle('flex', active);
+            });
+            _currentPanel = name;
+        }
+
+        function showEmptyState() {
+            setPanel('empty');
+            history.pushState(null, '', '/');
+        }
+
+        function showBlockPanel(bbl, data) {
+            setPanel('block');
+
+            // Back button shows current zip (D-10)
+            document.getElementById('back-btn').textContent = '\u2190 Back to ' + (_cachedZip || '');
+
+            // BBL display
+            document.getElementById('block-bbl').textContent = 'BBL: ' + bbl;
+
+            // Score
+            const scoreEl = document.getElementById('block-score');
+            if (data.score !== null && data.score !== undefined) {
+                scoreEl.textContent = data.score.toFixed(1);
+                scoreEl.style.color = scoreColor(data.score);
+            } else {
+                scoreEl.textContent = '\u2014';
+                scoreEl.style.color = '#94a3b8';
+            }
+
+            // Events list (D-09, D-15, D-16: journalism-first raw data)
+            const eventsContainer = document.getElementById('block-events');
+            const emptyState = document.getElementById('block-empty-state');
+            eventsContainer.innerHTML = '';
+
+            if (!data.events || data.events.length === 0) {
+                emptyState.classList.remove('hidden');
+                eventsContainer.classList.add('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                eventsContainer.classList.remove('hidden');
+                data.events.forEach(ev => {
+                    const item = document.createElement('div');
+                    item.className = 'flex flex-col gap-0.5 py-2 border-b border-base-content/10 last:border-0 break-words';
+
+                    // Event type badge — keys from local dict are safe; ev.type fallback uses textContent
+                    const typeColors = {
+                        permit: 'text-sky-400',
+                        eviction: 'text-red-400',
+                        ownership_transfer: 'text-amber-400',
+                        complaint: 'text-orange-400'
+                    };
+                    const typeLabels = {
+                        permit: 'Permit',
+                        eviction: 'Eviction',
+                        ownership_transfer: 'LLC Transfer',
+                        complaint: '311 Complaint'
+                    };
+                    const typeClass = typeColors[ev.type] || 'text-slate-400';
+                    const typeLabel = typeLabels[ev.type] || ev.type;
+
+                    // Build header row with DOM methods to prevent XSS from API strings
+                    const headerRow = document.createElement('div');
+                    headerRow.className = 'flex justify-between items-start gap-2';
+
+                    const badgeEl = document.createElement('span');
+                    badgeEl.className = 'text-xs font-semibold ' + typeClass + ' uppercase tracking-wide';
+                    badgeEl.textContent = typeLabel;
+                    headerRow.appendChild(badgeEl);
+
+                    const dateEl = document.createElement('span');
+                    dateEl.className = 'text-xs text-slate-400 whitespace-nowrap font-mono';
+                    dateEl.textContent = ev.date || '\u2014';
+                    headerRow.appendChild(dateEl);
+
+                    item.appendChild(headerRow);
+
+                    const descEl = document.createElement('span');
+                    descEl.className = 'text-sm text-base-content';
+                    descEl.textContent = ev.description || '';
+                    item.appendChild(descEl);
+
+                    if (ev.detail) {
+                        const detailEl = document.createElement('span');
+                        detailEl.className = 'text-xs text-slate-400';
+                        detailEl.textContent = ev.detail;
+                        item.appendChild(detailEl);
+                    }
+
+                    eventsContainer.appendChild(item);
+                });
+            }
+        }
+
+        function restoreNeighborhoodPanel() {
+            // Restore neighborhood panel from cache (D-10: no re-fetch)
+            if (_cachedZipData) {
+                showDetail(
+                    _cachedZip,
+                    _cachedZipData.score,
+                    _cachedZipData.breakdown,
+                    _cachedZipData.lastUpdated,
+                    _cachedZipData.signalLastUpdated,
+                    _cachedZipData.summaryText,
+                    _cachedZipData.name,
+                    _cachedZipData.borough
+                );
+            } else if (_cachedZip) {
+                setPanel('detail');
+            } else {
+                showEmptyState();
+            }
+        }
+
+        // Back button click handler
+        document.getElementById('back-btn').addEventListener('click', restoreNeighborhoodPanel);
+
+        // Comparison panel navigation
+        document.getElementById('cmp-back-btn').addEventListener('click', function() {
+            if (_comparisonData?.zip1) {
+                selectNeighborhood(_comparisonData.zip1);
+            } else {
+                showEmptyState();
+            }
+        });
+
+        document.getElementById('cmp-new-btn').addEventListener('click', showEmptyState);
+
+        // Address search handler
+        document.getElementById('address-search-btn').addEventListener('click', async function() {
+            const input = document.getElementById('address-input');
+            const errEl = document.getElementById('address-error');
+            const skeleton = document.getElementById('block-skeleton');
+            const address = input.value.trim();
+
+            if (!address) return;
+
+            // Show skeleton immediately — panel must never be blank (scope addition A)
+            errEl.classList.add('hidden');
+            skeleton.classList.remove('hidden');
+            this.disabled = true;
+            this.textContent = t('ui', 'looking_up');
+
+            try {
+                // Step 1: Resolve address -> BBL via GeoSearch-backed endpoint
+                const searchResp = await fetch(`/api/properties/search?address=${encodeURIComponent(address)}`);
+                if (!searchResp.ok) {
+                    skeleton.classList.add('hidden');
+                    errEl.textContent = t('ui', 'addr_not_found');
+                    errEl.classList.remove('hidden');
+                    return;
+                }
+                let searchData;
+                try {
+                    searchData = await searchResp.json();
+                } catch {
+                    skeleton.classList.add('hidden');
+                    errEl.textContent = t('ui', 'server_error');
+                    errEl.classList.remove('hidden');
+                    return;
+                }
+                const bbl = searchData.bbl;
+
+                if (!bbl) {
+                    skeleton.classList.add('hidden');
+                    errEl.textContent = t('ui', 'addr_bbl_fail');
+                    errEl.classList.remove('hidden');
+                    return;
+                }
+
+                // Step 2: Fetch block events
+                const blockResp = await fetch(`/api/blocks/${bbl}`);
+                skeleton.classList.add('hidden');
+
+                if (!blockResp.ok) {
+                    errEl.textContent = t('ui', 'addr_block_fail');
+                    errEl.classList.remove('hidden');
+                    return;
+                }
+                const blockData = await blockResp.json();
+
+                // Show block panel (empty state if no events — scope addition B)
+                showBlockPanel(bbl, blockData);
+
+            } catch (err) {
+                skeleton.classList.add('hidden');
+                errEl.textContent = t('ui', 'network_error');
+                errEl.classList.remove('hidden');
+                console.error('Address search error:', err);
+            } finally {
+                this.disabled = false;
+                this.textContent = t('ui', 'search');
+            }
+        });
+
+        // Allow pressing Enter in the address input to trigger search
+        document.getElementById('address-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('address-search-btn').click();
+            }
+        });
+
+        // Methodology modal — close on Escape (scope addition C)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('methodology-modal').classList.add('hidden');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const label = lang === 'es' ? 'ES / EN' : 'EN / ES';
+            const toggleBtn = document.getElementById('lang-toggle');
+            if (toggleBtn) toggleBtn.textContent = label;
+            applyStaticTranslations();
+
+            renderTopRisk();
+            _wireBoroughFilters();
+
+            // /neighborhood/{zip} deep links (shared URLs)
+            const pathMatch = window.location.pathname.match(/^\/neighborhood\/(\d{5})$/);
+            if (pathMatch) {
+                selectNeighborhood(pathMatch[1], { suppressMobileSheet: window.innerWidth < 768 });
+                return;
+            }
+
+            // ?q= from landing page search
+            const q = new URLSearchParams(window.location.search).get('q') || '';
+            if (q.trim()) autoSearchOnLoad(q.trim());
+        });
+
+        // Sync UI to browser back/forward navigation
+        window.addEventListener('popstate', function() {
+            const m = window.location.pathname.match(/^\/neighborhood\/(\d{5})$/);
+            const zip = m ? m[1] : null;
+            if (zip) { _navFromList = false; selectNeighborhood(zip); }
+            else if (window.innerWidth < 768) showMobileMap();
+            else showEmptyState();
+        });
+
+        // ---------------------------------------------------------------------------
+        // Neighborhood selection — shared between map clicks and at-risk list
+        // ---------------------------------------------------------------------------
+
+        async function selectNeighborhood(zip, { suppressMobileSheet = false } = {}) {
+            _cachedZip = zip;
+            _cachedZipData = null;
+            history.pushState(null, '', '/neighborhood/' + zip);
+            showDetail(zip, null, null);
+            if (window.innerWidth < 768 && !suppressMobileSheet) {
+                showMobileSidebar();
+                const backBtn = document.getElementById('back-to-list-btn');
+                if (backBtn) backBtn.style.display = _navFromList ? 'flex' : 'none';
+                _navFromList = false;
+            }
+            try {
+                const resp = await fetch(`/api/neighborhoods/${zip}/score`);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    _cachedZipData = {
+                        score: data.score,
+                        breakdown: data.signal_breakdown,
+                        summaryText: data.summary_text,
+                        lastUpdated: data.last_updated,
+                        signalLastUpdated: data.signal_last_updated,
+                        name: data.name,
+                        borough: data.borough
+                    };
+                    showDetail(zip, data.score, data.signal_breakdown, data.last_updated, data.signal_last_updated, data.summary_text, data.name, data.borough);
+                    renderPulse(zip);
+                    renderRenovationFlip(zip);
+                    renderScoreHistory(zip, _historyDays);
+                } else {
+                    showDetail(zip, null, null);
+                    if (resp.status !== 404) console.error('Score fetch returned', resp.status);
+                }
+            } catch (err) {
+                console.error('Score fetch failed:', err);
+            }
+        }
+
+        // ---------------------------------------------------------------------------
+        // Landing page: "Most at-risk neighborhoods right now"
+        // ---------------------------------------------------------------------------
+
+        function _riskSignalLine(signal) {
+            return t('risk_signal', signal);
+        }
+
+        function _buildTopRiskItem(n) {
+            const btn = document.createElement('button');
+            btn.className = 'w-full text-left py-2.5 border-b border-base-content/[0.06] last:border-0 hover:bg-base-content/5 -mx-1 px-1 rounded transition-colors';
+            btn.style.minHeight = '44px';
+
+            const topRow = document.createElement('div');
+            topRow.className = 'flex items-baseline justify-between gap-2';
+
+            const left = document.createElement('div');
+            left.className = 'flex items-baseline gap-2 min-w-0';
+
+            const rankEl = document.createElement('span');
+            rankEl.className = 'text-xs text-slate-500 font-mono w-4 shrink-0 text-right';
+            rankEl.textContent = n.rank;
+
+            const zipEl = document.createElement('span');
+            zipEl.className = 'font-mono text-sm font-semibold text-base-content';
+            zipEl.textContent = n.zip_code;
+
+            const placeEl = document.createElement('span');
+            placeEl.className = 'text-xs text-slate-400 truncate';
+            placeEl.textContent = (n.name && n.name !== n.zip_code) ? n.name : (n.borough || '');
+
+            left.append(rankEl, zipEl, placeEl);
+
+            const scoreEl = document.createElement('span');
+            scoreEl.className = 'font-mono text-sm font-semibold shrink-0';
+            scoreEl.style.color = scoreColor(n.score);
+            scoreEl.textContent = n.score.toFixed(1);
+
+            topRow.append(left, scoreEl);
+            btn.appendChild(topRow);
+
+            const descEl = document.createElement('p');
+            descEl.className = 'text-xs font-mono mt-0.5 ml-6';
+            if (n.raw_count && n.dominant_signal) {
+                const countSpan = document.createElement('span');
+                countSpan.style.color = scoreColor(n.score);
+                countSpan.style.fontWeight = '600';
+                countSpan.textContent = n.raw_count;
+                const labelSpan = document.createElement('span');
+                labelSpan.style.color = '#94a3b8';
+                labelSpan.textContent = ' ' + t('signal_short', n.dominant_signal);
+                descEl.append(countSpan, labelSpan);
+            } else {
+                const fallback = _riskSignalLine(n.dominant_signal);
+                if (!fallback) {
+                    btn.addEventListener('click', () => { _navFromList = true; selectNeighborhood(n.zip_code); });
+                    return btn;
+                }
+                descEl.textContent = fallback;
+            }
+            btn.appendChild(descEl);
+
+            btn.addEventListener('click', () => { _navFromList = true; selectNeighborhood(n.zip_code); });
+            return btn;
+        }
+
+        let _selectedBorough = null;
+
+        function _wireBoroughFilters() {
+            document.querySelectorAll('.borough-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    const borough = pill.dataset.borough || null;
+                    if (borough === _selectedBorough) return;
+                    _selectedBorough = borough;
+                    document.querySelectorAll('.borough-pill').forEach(p => {
+                        p.classList.toggle('active', (p.dataset.borough || null) === _selectedBorough);
+                    });
+                    // Clear items (preserve permanent filter rows)
+                    ['top-risk-list', 'mobile-drawer-list'].forEach(listId => {
+                        const list = document.getElementById(listId);
+                        if (!list) return;
+                        Array.from(list.children).forEach(child => {
+                            if (child.id !== 'mobile-borough-filters') child.remove();
+                        });
+                    });
+                    renderTopRisk();
+                });
+            });
+        }
+
+        function _populateTopRiskList(listId, skeletonId, data) {
+            const skeleton = document.getElementById(skeletonId);
+            if (skeleton) skeleton.remove();
+            const list = document.getElementById(listId);
+            if (!list) return;
+            if (!data || !data.neighborhoods || !data.neighborhoods.length) {
+                list.insertAdjacentHTML('beforeend', `<p class="text-xs text-slate-400 py-2">${t('ui', 'no_data')}</p>`);
+                return;
+            }
+            data.neighborhoods.forEach(n => list.appendChild(_buildTopRiskItem(n)));
+        }
+
+        function renderTopRisk() {
+            const qs = _selectedBorough ? `&borough=${encodeURIComponent(_selectedBorough)}` : '';
+            const req = qs
+                ? fetch(`/api/neighborhoods/top-risk?limit=10${qs}`).then(r => r.ok ? r.json() : null)
+                : _prefetchTopRisk;
+            req.then(data => {
+                    _populateTopRiskList('top-risk-list', 'top-risk-skeleton', data);
+                    _populateTopRiskList('mobile-drawer-list', 'mobile-drawer-skeleton', data);
+                })
+                .catch(() => {
+                    ['top-risk-skeleton', 'mobile-drawer-skeleton'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.remove();
+                    });
+                    ['top-risk-list', 'mobile-drawer-list'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.insertAdjacentHTML('beforeend', `<p class="text-xs text-slate-400 py-2">${t('ui', 'unable_to_load')}</p>`);
+                    });
+                });
+        }
+
+        function toggleDrawer() {
+            const drawer = document.getElementById('mobile-drawer');
+            const handle = document.getElementById('mobile-drawer-handle');
+            const chevron = document.getElementById('mobile-drawer-chevron');
+            const expanded = drawer.classList.toggle('drawer-expanded');
+            if (handle) handle.setAttribute('aria-expanded', expanded);
+            if (chevron) chevron.style.transform = expanded ? 'rotate(180deg)' : '';
+        }
+
+        function showMobileMap() {
+            // Slide the detail sheet back down, restore collapsed drawer
+            document.getElementById('sidebar').classList.remove('mobile-visible');
+            document.getElementById('map-credit').style.display = 'inline-flex';
+            const backBtn = document.getElementById('back-to-list-btn');
+            if (backBtn) backBtn.style.display = 'none';
+            _navFromList = false;
+            const drawer = document.getElementById('mobile-drawer');
+            if (drawer) {
+                drawer.style.display = 'block';
+                drawer.classList.remove('drawer-expanded');
+                const chevron = document.getElementById('mobile-drawer-chevron');
+                if (chevron) chevron.style.transform = '';
+                const handle = document.getElementById('mobile-drawer-handle');
+                if (handle) handle.setAttribute('aria-expanded', 'false');
+            }
+            if (typeof map !== 'undefined') map.resize();
+        }
+
+        function showMobileSidebar() {
+            // Hide drawer, slide sidebar sheet up over the map (map stays visible behind)
+            const drawer = document.getElementById('mobile-drawer');
+            if (drawer) drawer.style.display = 'none';
+            document.getElementById('sidebar').classList.add('mobile-visible');
+            document.getElementById('map-credit').style.display = 'none';
+        }
+        // ---------------------------------------------------------------------------
+        // Landlord portfolio search
+        // ---------------------------------------------------------------------------
+
+        let _landlordData = null; // last successful search response
+        let _landlordPulseAnim = null;
+        let _landlordPulsePhase = 0;
+
+        function _startLandlordPulse() {
+            if (_landlordPulseAnim) return;
+            function step() {
+                _landlordPulsePhase = (_landlordPulsePhase + 0.03) % (Math.PI * 2);
+                const t = (Math.sin(_landlordPulsePhase) + 1) / 2; // oscillates 0..1
+                const radius  = 6 + t * 8;         // 6..14
+                const opacity = 0.05 + t * 0.35;   // 0.05..0.40
+                if (map.getLayer('landlord-results-pulse')) {
+                    map.setPaintProperty('landlord-results-pulse', 'circle-radius', radius);
+                    map.setPaintProperty('landlord-results-pulse', 'circle-opacity', opacity);
+                }
+                _landlordPulseAnim = requestAnimationFrame(step);
+            }
+            _landlordPulseAnim = requestAnimationFrame(step);
+        }
+
+        function _stopLandlordPulse() {
+            if (_landlordPulseAnim) {
+                cancelAnimationFrame(_landlordPulseAnim);
+                _landlordPulseAnim = null;
+            }
+            if (map.getLayer('landlord-results-pulse')) {
+                map.setPaintProperty('landlord-results-pulse', 'circle-opacity', 0);
+            }
+        }
+
+        function _renderLandlordResults(data) {
+            const s = data.summary;
+            const summaryEl = document.getElementById('landlord-summary');
+            const list = document.getElementById('landlord-list');
+            const resultsEl = document.getElementById('landlord-results');
+
+            // Summary line — dollar amount only when > 0
+            const propLabel = s.total_properties === 1 ? 'property' : 'properties';
+            const zipLabel  = s.unique_zip_codes   === 1 ? 'zip code' : 'zip codes';
+            const llcLabel  = s.total_llc_names    === 1 ? 'LLC name' : 'LLC names';
+            let summary = `Found ${s.total_properties} ${propLabel} across ${s.unique_zip_codes} ${zipLabel} \u2014 ${s.total_llc_names} ${llcLabel}`;
+            if (s.estimated_total_value > 0) {
+                const millions = s.estimated_total_value / 1_000_000;
+                summary += ` \u2014 ~$${millions.toFixed(1)}M in acquisitions`;
+            }
+            summaryEl.textContent = summary;
+
+            // Results list — each row clicks to select zip AND fly to the property
+            list.innerHTML = '';
+            if (!data.results || data.results.length === 0) {
+                const emptyEl = document.createElement('p');
+                emptyEl.className = 'text-xs text-slate-400 py-2 text-center';
+                emptyEl.textContent = `No properties found for "${data.query || 'that search'}" in ACRIS records.`;
+                list.appendChild(emptyEl);
+                resultsEl.classList.remove('hidden');
+                return;
+            }
+            data.results.forEach(r => {
+                const row = document.createElement('button');
+                row.className = 'w-full text-left py-2 px-1 border-b border-base-content/[0.06] last:border-0 hover:bg-base-content/5 rounded transition-colors';
+                row.style.minHeight = '44px';
+
+                const dateStr = r.doc_date
+                    ? new Date(r.doc_date + 'T00:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric'})
+                    : '';
+
+                const top = document.createElement('div');
+                top.className = 'flex justify-between items-baseline gap-2';
+
+                const addr = document.createElement('span');
+                addr.className = 'text-sm text-base-content font-medium truncate';
+                addr.textContent = r.address;
+                top.appendChild(addr);
+
+                if (dateStr) {
+                    const date = document.createElement('span');
+                    date.className = 'text-xs text-slate-500 shrink-0 font-mono';
+                    date.textContent = dateStr;
+                    top.appendChild(date);
+                }
+
+                const bottom = document.createElement('div');
+                bottom.className = 'text-xs text-slate-400 mt-0.5 truncate';
+                bottom.textContent = `${r.zip_code || ''} \u2014 ${r.buyer_name || ''}`;
+
+                row.appendChild(top);
+                row.appendChild(bottom);
+
+                row.addEventListener('click', () => {
+                    if (r.zip_code) selectNeighborhood(r.zip_code);
+                    if (r.latitude != null && r.longitude != null) {
+                        map.flyTo({ center: [r.longitude, r.latitude], zoom: 15, duration: 800 });
+                    }
+                });
+
+                list.appendChild(row);
+            });
+
+            // Update map layer with result coordinates
+            const features = data.results
+                .filter(r => r.latitude != null && r.longitude != null)
+                .map(r => ({
+                    type: 'Feature',
+                    geometry: { type: 'Point', coordinates: [r.longitude, r.latitude] },
+                    properties: { address: r.address, buyer_name: r.buyer_name }
+                }));
+            if (map.getSource('landlord-results')) {
+                map.getSource('landlord-results').setData({ type: 'FeatureCollection', features });
+            }
+            if (features.length > 0) _startLandlordPulse();
+
+            resultsEl.classList.remove('hidden');
+        }
+
+        function _clearLandlordSearch() {
+            document.getElementById('landlord-input').value = '';
+            document.getElementById('landlord-error').classList.add('hidden');
+            document.getElementById('landlord-results').classList.add('hidden');
+            document.getElementById('landlord-list').innerHTML = '';
+            _landlordData = null;
+            _stopLandlordPulse();
+            if (map.getSource('landlord-results')) {
+                map.getSource('landlord-results').setData({ type: 'FeatureCollection', features: [] });
+            }
+            map.flyTo({ center: [-74.0060, 40.7128], zoom: 11, duration: 800 });
+        }
+
+        document.getElementById('landlord-search-btn').addEventListener('click', async function() {
+            const input  = document.getElementById('landlord-input');
+            const errEl  = document.getElementById('landlord-error');
+            const resultsEl = document.getElementById('landlord-results');
+            const q = input.value.trim();
+
+            errEl.classList.add('hidden');
+            resultsEl.classList.add('hidden');
+            _stopLandlordPulse();
+
+            if (!q) return;
+
+            this.disabled = true;
+            this.textContent = t('ui', 'searching');
+
+            try {
+                const resp = await fetch(`/api/search/landlord?q=${encodeURIComponent(q)}`);
+                if (!resp.ok) {
+                    const body = await resp.json().catch(() => ({}));
+                    errEl.textContent = body.detail || t('ui', 'network_error');
+                    errEl.classList.remove('hidden');
+                    return;
+                }
+                const data = await resp.json();
+                _landlordData = data;
+                _renderLandlordResults(data);
+            } catch {
+                errEl.textContent = t('ui', 'network_error');
+                errEl.classList.remove('hidden');
+            } finally {
+                this.disabled = false;
+                this.textContent = t('ui', 'search');
+            }
+        });
+
+        document.getElementById('landlord-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') document.getElementById('landlord-search-btn').click();
+        });
+
+        document.getElementById('landlord-clear-btn').addEventListener('click', _clearLandlordSearch);
+
+        document.getElementById('landlord-copy-btn').addEventListener('click', function() {
+            if (!_landlordData) return;
+            const q = _landlordData.query;
+            const s = _landlordData.summary;
+            const propLabel = s.total_properties === 1 ? 'property' : 'properties';
+            const zipLabel  = s.unique_zip_codes  === 1 ? 'zip code' : 'zip codes';
+            const lines = [
+                `${q.toUpperCase()} Portfolio \u2014 ${s.total_properties} ${propLabel} across ${s.unique_zip_codes} ${zipLabel}`,
+                'Identified via NYC ACRIS public records by PulseCities (pulsecities.com)',
+                ''
+            ];
+            _landlordData.results.forEach(r => {
+                const dateStr = r.doc_date
+                    ? new Date(r.doc_date + 'T00:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})
+                    : '';
+                let line = `${r.address}, ${r.zip_code} \u2014 ${r.buyer_name} \u2014 ${dateStr}`;
+                if (r.doc_amount != null) {
+                    line += ` \u2014 $${r.doc_amount.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+                }
+                lines.push(line);
+            });
+            navigator.clipboard.writeText(lines.join('\n')).then(() => {
+                this.textContent = 'Copied!';
+                setTimeout(() => { this.textContent = 'Copy'; }, 2000);
+            }).catch(() => {
+                this.textContent = 'Copy failed';
+                setTimeout(() => { this.textContent = 'Copy'; }, 2000);
+            });
+        });
+
+        // ---------------------------------------------------------------------------
+        // Recent activity — 3 most recent events from the pulse data already fetched
+        // ---------------------------------------------------------------------------
+
+        function renderRecentActivity(data) {
+            const section = document.getElementById('recent-activity-section');
+            const list    = document.getElementById('recent-activity-list');
+            if (!section || !list) return;
+
+            // Type → sublabel text and color class (mirrors Neighborhood Pulse header colors)
+            const TYPE_META = {
+                llc:      { color: 'text-amber-400/70' },
+                permit:   { color: 'text-sky-400/70'   },
+                eviction: { color: 'text-red-400'      },
+            };
+
+            const combined = [];
+
+            (data.llc_acquisitions || []).forEach(item => {
+                if (!item.doc_date) return;
+                const addr = item.address || item.bbl;
+                const dateStr = new Date(item.doc_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                combined.push({
+                    type: 'llc',
+                    sortDate: item.doc_date,
+                    addrKey: addr.toLowerCase().trim(),
+                    addr, dateStr,
+                    sublabel: 'LLC Acquisition',
+                });
+            });
+
+            (data.recent_permits || []).forEach(item => {
+                if (!item.filing_date) return;
+                const addr = item.address || item.bbl;
+                const dateStr = new Date(item.filing_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                combined.push({
+                    type: 'permit',
+                    sortDate: item.filing_date,
+                    addrKey: addr.toLowerCase().trim(),
+                    addr, dateStr,
+                    sublabel: `${item.permit_type_label || item.permit_type} filed`,
+                });
+            });
+
+            (data.recent_evictions || []).forEach(item => {
+                if (!item.executed_date) return;
+                const addr = item.address || 'Unknown address';
+                const dateStr = new Date(item.executed_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                combined.push({
+                    type: 'eviction',
+                    sortDate: item.executed_date,
+                    addrKey: addr.toLowerCase().trim(),
+                    addr, dateStr,
+                    sublabel: `${item.eviction_type || 'Eviction'} eviction`,
+                });
+            });
+
+            combined.sort((a, b) => b.sortDate.localeCompare(a.sortDate));
+
+            // One event per signal type first (LLC → permit → eviction) for variety,
+            // then fill remaining slots with address-unique events.
+            const seen = new Set();
+            const pinned = { llc: null, permit: null, eviction: null };
+            combined.forEach(ev => {
+                if (pinned[ev.type] === null && !seen.has(ev.addrKey)) {
+                    pinned[ev.type] = ev;
+                    seen.add(ev.addrKey);
+                }
+            });
+            const result = Object.values(pinned).filter(Boolean);
+            if (result.length < 3) {
+                combined.forEach(ev => {
+                    if (result.length >= 3) return;
+                    if (!seen.has(ev.addrKey)) {
+                        result.push(ev);
+                        seen.add(ev.addrKey);
+                    }
+                });
+            }
+            result.sort((a, b) => b.sortDate.localeCompare(a.sortDate));
+
+            list.innerHTML = '';
+            result.forEach(ev => {
+                const meta = TYPE_META[ev.type];
+                const el = document.createElement('div');
+                el.className = 'py-1.5 border-b border-base-content/10 last:border-0';
+                el.innerHTML = `
+                    <div class="flex justify-between items-baseline gap-2">
+                        <span class="text-xs font-medium text-base-content/90 leading-snug">${ev.addr}</span>
+                        <span class="text-xs text-slate-500 shrink-0">${ev.dateStr}</span>
+                    </div>
+                    <div class="text-xs ${meta.color} mt-0.5">${ev.sublabel}</div>
+                `;
+                list.appendChild(el);
+            });
+
+            section.classList.toggle('hidden', result.length === 0);
+        }
+
+        // ---------------------------------------------------------------------------
+        // Email subscribe handler
+        // ---------------------------------------------------------------------------
+        document.getElementById('subscribe-btn').addEventListener('click', async function() {
+            const emailEl = document.getElementById('subscribe-email');
+            const msgEl   = document.getElementById('subscribe-msg');
+            const email   = emailEl.value.trim();
+
+            msgEl.classList.add('hidden');
+
+            if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+                msgEl.textContent = 'Enter a valid email address.';
+                msgEl.className   = 'text-xs mt-1.5 text-error';
+                msgEl.classList.remove('hidden');
+                return;
+            }
+            if (!_cachedZip) {
+                msgEl.textContent = 'Select a neighborhood on the map first.';
+                msgEl.className   = 'text-xs mt-1.5 text-slate-400';
+                msgEl.classList.remove('hidden');
+                setTimeout(() => msgEl.classList.add('hidden'), 3000);
+                return;
+            }
+
+            this.disabled    = true;
+            this.textContent = '\u2026';
+
+            try {
+                const resp = await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, zip_code: _cachedZip })
+                });
+
+                if (resp.ok || resp.status === 409) {
+                    document.getElementById('subscribe-form-wrap').classList.add('hidden');
+                    msgEl.textContent = resp.status === 409
+                        ? "You're already subscribed for this zip."
+                        : "You're on the list. Updates drop every Monday.";
+                    msgEl.className = 'text-xs mt-1.5 text-green-400';
+                    msgEl.classList.remove('hidden');
+                } else {
+                    throw new Error('server error');
+                }
+            } catch {
+                msgEl.textContent = 'Something went wrong. Try again.';
+                msgEl.className   = 'text-xs mt-1.5 text-error';
+                msgEl.classList.remove('hidden');
+                this.disabled    = false;
+                this.textContent = 'Subscribe';
+            }
+        });
+
+        document.getElementById('subscribe-email').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') document.getElementById('subscribe-btn').click();
+        });
+
+        // Swipe-to-dismiss bottom sheet on mobile
+        (function() {
+            const sheet = document.getElementById('sidebar');
+            let startY = 0;
+            sheet.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+            sheet.addEventListener('touchend', e => {
+                if (e.changedTouches[0].clientY - startY > 60) showMobileMap();
+            }, { passive: true });
+        })();
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const collapseBtn = document.getElementById('sidebar-collapse-btn');
+            const collapsed = sidebar.classList.toggle('collapsed');
+            collapseBtn.textContent = collapsed ? '‹' : '›';
+            collapseBtn.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+        }
+    </script>
+
+</body>
+</html>
