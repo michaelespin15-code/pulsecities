@@ -206,6 +206,12 @@ def _aggregate_llc_acquisitions(db: Session, cutoff: date | None = None) -> List
               AND o.party_name_normalized NOT ILIKE '% FINANCIAL LLC'
               AND o.party_name_normalized NOT ILIKE '%REVERSE LLC'
               AND o.party_name_normalized NOT ILIKE '%GUIDANCE RESIDENTIAL%'
+              AND NOT EXISTS (
+                SELECT 1 FROM ownership_raw seller
+                WHERE seller.document_id = o.document_id
+                  AND seller.party_type = '1'
+                  AND seller.party_name_normalized LIKE '%LLC%'
+              )
             GROUP BY p.zip_code
             ORDER BY llc_count DESC
             """

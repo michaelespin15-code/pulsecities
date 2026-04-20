@@ -241,6 +241,12 @@ def get_top_risk_neighborhoods(
                   AND o.party_name_normalized NOT ILIKE '%LOAN SERVICE%'
                   AND o.party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
                   AND o.party_name_normalized NOT ILIKE '%CREDIT UNION%'
+                  AND NOT EXISTS (
+                    SELECT 1 FROM ownership_raw seller
+                    WHERE seller.document_id = o.document_id
+                      AND seller.party_type = '1'
+                      AND seller.party_name_normalized LIKE '%LLC%'
+                  )
                 GROUP BY p.zip_code
             ),
             eviction_counts AS (
@@ -519,6 +525,12 @@ def _fetch_raw_counts(db: Session, zip_code: str) -> dict[str, int]:
                AND o.party_name_normalized NOT ILIKE '% FINANCIAL LLC'
                AND o.party_name_normalized NOT ILIKE '%REVERSE LLC'
                AND o.party_name_normalized NOT ILIKE '%GUIDANCE RESIDENTIAL%'
+               AND NOT EXISTS (
+                 SELECT 1 FROM ownership_raw seller
+                 WHERE seller.document_id = o.document_id
+                   AND seller.party_type = '1'
+                   AND seller.party_name_normalized LIKE '%LLC%'
+               )
             ) AS llc_acquisitions,
             (SELECT COUNT(*) FROM evictions_raw
              WHERE zip_code = :zip
