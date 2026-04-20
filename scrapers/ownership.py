@@ -32,7 +32,7 @@ import logging
 import re
 from datetime import date, datetime, timezone
 
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from sqlalchemy.dialects.postgresql import insert
 
 from config.nyc import ACRIS_TRANSFER_DOC_TYPES, SOCRATA_BASE_URL
@@ -52,6 +52,8 @@ BATCH_SIZE = 400
 
 # party_type = '2' is the Grantee (buyer/transferee) in ACRIS
 GRANTEE_PARTY_TYPE = "2"
+# party_type = '1' is the Grantor (seller/transferor) in ACRIS
+GRANTOR_PARTY_TYPE = "1"
 
 
 class AcrisMasterInput(BaseModel):
@@ -72,8 +74,8 @@ class AcrisPartyInput(BaseModel):
     document_id: str = ""
     party_type: str | None = None
     name: str | None = None
-    addr_1: str | None = None
-    addr_2: str | None = None
+    # Socrata field is address_1 (no addr_2 exists in this dataset)
+    address_1: str | None = Field(None, alias="address_1")
     city: str | None = None
     state: str | None = None
     zip: str | None = None
@@ -177,15 +179,18 @@ class OwnershipScraper(BaseScraper):
     ) -> tuple[int, int]:
         """
         For a batch of document_ids:
-        1. Fetch parties (party_type=2) → buyer names
+        1. Fetch parties (party_type 1+2) → seller and buyer names
         2. Fetch legals → BBLs
         3. Join all three → write to ownership_raw
         """
         doc_ids = list(master_batch.keys())
         id_list_sql = ", ".join(f"'{d}'" for d in doc_ids)
 
-        # --- Fetch parties (buyers) ---
-        parties: dict[str, AcrisPartyInput] = {}  # document_id → party record
+        # --- Fetch parties (buyers + sellers) ---
+        # grantees: one row per document (last seen wins — same behavior as before)
+        # grantors: one row per document, LLC-named preferred so the grantor-LLC filter works
+        grantees: dict[str, AcrisPartyInput] = {}
+        grantors: dict[str, AcrisPartyInput] = {}
         try:
             page = self._fetch_parties(id_list_sql)
             for r in page:
@@ -195,8 +200,21 @@ class OwnershipScraper(BaseScraper):
                     continue
                 did = party_rec.document_id.strip()
                 name = (party_rec.name or "").strip()
-                if did and name:
-                    parties[did] = party_rec
+                if not did or not name:
+                    continue
+                ptype = (party_rec.party_type or "").strip()
+                if ptype == GRANTEE_PARTY_TYPE:
+                    grantees[did] = party_rec
+                elif ptype == GRANTOR_PARTY_TYPE:
+                    norm = normalize_party_name(name)
+                    # Prefer an LLC-named grantor so the LLC-to-LLC filter is accurate
+                    # when a document has multiple sellers (e.g. tenants-in-common).
+                    existing = grantors.get(did)
+                    if existing is None or (
+                        norm and "LLC" in norm
+                        and "LLC" not in (normalize_party_name(existing.name) or "")
+                    ):
+                        grantors[did] = party_rec
         except Exception as e:
             logger.warning("ACRIS parties fetch failed for batch: %s", e)
             # Count entire batch as failed; can't score LLC acquisitions without party names
@@ -222,41 +240,40 @@ class OwnershipScraper(BaseScraper):
             v = (val or "").strip()
             return v or None
 
+        def _make_row(doc_id: str, master: dict, party: AcrisPartyInput | None, ptype: str) -> dict:
+            raw_name = (party.name or "").strip() if party else None
+            return {
+                "bbl": legals[doc_id],
+                "document_id": doc_id,
+                "doc_type": master["doc_type"],
+                "party_type": ptype,
+                "party_name": raw_name,
+                "party_name_normalized": normalize_party_name(raw_name),
+                "doc_date": master["doc_date"],
+                "doc_amount": master["doc_amount"],
+                "party_addr_1": _clean(party.address_1) if party else None,
+                "party_addr_2": None,
+                "party_city": _clean(party.city) if party else None,
+                "party_state": _clean(party.state) if party else None,
+                "party_zip": _clean(party.zip) if party else None,
+                "raw_data": {
+                    "doc_type": master["doc_type"],
+                    "doc_date": master["doc_date"].isoformat() if master["doc_date"] is not None else None,
+                    "doc_amount": str(master["doc_amount"]) if master["doc_amount"] is not None else None,
+                },
+            }
+
         # --- Join and write ---
         rows = []
         failed = 0
         for doc_id, master in master_batch.items():
-            party = parties.get(doc_id)
-            raw_party_name = (party.name or "").strip() if party else None
             bbl = legals.get(doc_id)
-
             if not bbl:
-                # Missing BBL means we can't join this record to a property
                 failed += 1
                 continue
-
-            rows.append(
-                {
-                    "bbl": bbl,
-                    "document_id": doc_id,
-                    "doc_type": master["doc_type"],
-                    "party_type": GRANTEE_PARTY_TYPE,
-                    "party_name": raw_party_name,
-                    "party_name_normalized": normalize_party_name(raw_party_name),
-                    "doc_date": master["doc_date"],
-                    "doc_amount": master["doc_amount"],
-                    "party_addr_1": _clean(party.addr_1) if party else None,
-                    "party_addr_2": _clean(party.addr_2) if party else None,
-                    "party_city": _clean(party.city) if party else None,
-                    "party_state": _clean(party.state) if party else None,
-                    "party_zip": _clean(party.zip) if party else None,
-                    "raw_data": {
-                        "doc_type": master["doc_type"],
-                        "doc_date": master["doc_date"].isoformat() if master["doc_date"] is not None else None,
-                        "doc_amount": str(master["doc_amount"]) if master["doc_amount"] is not None else None,
-                    },
-                }
-            )
+            rows.append(_make_row(doc_id, master, grantees.get(doc_id), GRANTEE_PARTY_TYPE))
+            if doc_id in grantors:
+                rows.append(_make_row(doc_id, master, grantors[doc_id], GRANTOR_PARTY_TYPE))
 
         processed = 0
         if rows:
@@ -274,13 +291,13 @@ class OwnershipScraper(BaseScraper):
         return processed, failed
 
     def _fetch_parties(self, id_list_sql: str) -> list[dict]:
-        """Fetch buyer (party_type=2) rows for the given document_ids."""
+        """Fetch buyer (party_type=2) and seller (party_type=1) rows for the given document_ids."""
         params = {
             "$where": (
                 f"document_id IN ({id_list_sql}) "
-                f"AND party_type = '{GRANTEE_PARTY_TYPE}'"
+                f"AND party_type IN ('{GRANTOR_PARTY_TYPE}', '{GRANTEE_PARTY_TYPE}')"
             ),
-            "$select": "document_id, party_type, name, addr_1, addr_2, city, state, zip",
+            "$select": "document_id, party_type, name, address_1, city, state, zip",
             "$limit": 10_000,
         }
         resp = self._http.get(self._parties_url, params=params, timeout=60)
