@@ -48,6 +48,7 @@ def get_score_history(
     Empty list (200) when the zip code has no history yet.
     400 when zip_code is not a 5-digit numeric string.
     """
+    response.headers["Cache-Control"] = "public, max-age=3600"
     # --- Input validation (T-06-01-01) ---
     if not (len(zip_code) == 5 and zip_code.isdigit()):
         raise HTTPException(

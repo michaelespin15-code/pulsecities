@@ -75,6 +75,7 @@ def get_neighborhood_pulse(
     if not (len(zip_code) == 5 and zip_code.isdigit()):
         raise HTTPException(status_code=400, detail="zip_code must be 5 digits")
 
+    response.headers["Cache-Control"] = "public, max-age=3600"
     # --- LLC Acquisitions query ---
     # Joins ownership_raw to parcels on BBL to get street address.
     # party_type = '2' is the ACRIS numeric code for GRANTEE (buyer).

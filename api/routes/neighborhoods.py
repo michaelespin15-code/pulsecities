@@ -5,6 +5,7 @@ GET /api/neighborhoods              — GeoJSON FeatureCollection (API-01)
 GET /api/neighborhoods/{zip_code}/score — score + signal breakdown (API-02)
 """
 
+import hashlib
 import json
 import logging
 from typing import Any
@@ -74,7 +75,18 @@ def list_neighborhoods_geojson(request: Request, response: Response, db: Session
             }
         )
 
-    return {"type": "FeatureCollection", "features": features}
+    body_bytes = json.dumps(
+        {"type": "FeatureCollection", "features": features},
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode()
+    etag = f'"{hashlib.md5(body_bytes).hexdigest()}"'
+    headers = {"Cache-Control": "public, max-age=3600", "ETag": etag}
+
+    if request.headers.get("if-none-match") == etag:
+        return Response(status_code=304, headers=headers)
+
+    return Response(content=body_bytes, media_type="application/json", headers=headers)
 
 
 @router.get("/{zip_code}/score")
@@ -88,6 +100,7 @@ def get_neighborhood_score(
     if not (len(zip_code) == 5 and zip_code.isdigit()):
         raise HTTPException(status_code=400, detail="zip_code must be a 5-digit string")
 
+    response.headers["Cache-Control"] = "public, max-age=3600"
     score = (
         db.query(DisplacementScore)
         .filter(DisplacementScore.zip_code == zip_code)
@@ -197,6 +210,7 @@ def get_top_risk_neighborhoods(
             detail=f"borough must be one of: {', '.join(sorted(_VALID_BOROUGHS))}",
         )
 
+    response.headers["Cache-Control"] = "public, max-age=3600"
     import time as _time
     capped = min(max(1, limit), 25)
     cache_key = (capped, borough)
@@ -404,6 +418,7 @@ def get_top_movers(
     Returns neighborhoods with the largest week-over-week displacement score change.
     Pulls from score_history snapshots; limit capped at 20.
     """
+    response.headers["Cache-Control"] = "public, max-age=3600"
     import time as _time
     capped = min(max(1, limit), 20)
     cached = _TOP_MOVERS_CACHE.get(capped)
@@ -697,6 +712,7 @@ def _build_summary(score: float | None, breakdown: dict[str, Any], raw_counts: d
 @limiter.limit("60/minute")
 def get_neighborhood_names(request: Request, response: Response, db: Session = Depends(get_db)):
     """Returns {zip_code: name} for all neighborhoods. Lightweight lookup for the UI."""
+    response.headers["Cache-Control"] = "public, max-age=3600"
     rows = db.execute(
         text("SELECT zip_code, name FROM neighborhoods WHERE zip_code != '99999' AND name IS NOT NULL")
     ).fetchall()
