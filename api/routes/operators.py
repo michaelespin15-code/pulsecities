@@ -124,6 +124,26 @@ def _load_audit() -> dict:
     return result
 
 
+@router.get("/top")
+@limiter.limit("60/minute")
+def get_top_operators(request: Request, response: Response, limit: int = 3):
+    """Top operators by total acquisition count. Used by the landing page."""
+    clusters = _load_audit()["clusters"]
+    top = sorted(
+        [{"operator_root": r, **c} for r, c in clusters.items()],
+        key=lambda x: x.get("total_acquisitions", 0),
+        reverse=True,
+    )[:max(1, min(limit, 10))]
+    return [
+        {
+            "operator_root": op["operator_root"],
+            "total_acquisitions": op.get("total_acquisitions", 0),
+            "llc_count": len(op.get("llc_entities") or []),
+        }
+        for op in top
+    ]
+
+
 @router.get("/{root}")
 @limiter.limit("30/minute")
 def get_operator_profile(

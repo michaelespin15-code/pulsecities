@@ -238,30 +238,11 @@
                 <div id="movers-cards" class="flex flex-wrap gap-3 justify-center"></div>
             </div>
 
-            <!-- Recent Findings: operator profiles -->
+            <!-- Recent Findings: top operator profiles, dynamically populated -->
             <div class="w-full mt-8">
                 <div class="text-xs font-mono uppercase tracking-widest mb-3 text-center"
                      style="color:#cbd5e1;letter-spacing:0.1em;" data-i18n="recent_findings">Recent Findings</div>
-                <div class="flex flex-wrap gap-3 justify-center">
-                    <a href="/operator/MTEK"
-                       class="zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block"
-                       style="background:rgba(30,41,59,0.7);min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;">
-                        <div class="font-mono text-sm font-bold text-slate-100 mb-0.5">MTEK</div>
-                        <div class="text-xs text-slate-400" data-i18n="operator_profile">Operator profile &#8594;</div>
-                    </a>
-                    <a href="/operator/PHANTOM"
-                       class="zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block"
-                       style="background:rgba(30,41,59,0.7);min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;">
-                        <div class="font-mono text-sm font-bold text-slate-100 mb-0.5">PHANTOM</div>
-                        <div class="text-xs text-slate-400" data-i18n="operator_profile">Operator profile &#8594;</div>
-                    </a>
-                    <a href="/operator/BREDIF"
-                       class="zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block"
-                       style="background:rgba(30,41,59,0.7);min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;">
-                        <div class="font-mono text-sm font-bold text-slate-100 mb-0.5">BREDIF</div>
-                        <div class="text-xs text-slate-400" data-i18n="operator_profile">Operator profile &#8594;</div>
-                    </a>
-                </div>
+                <div id="operator-cards" class="flex flex-wrap gap-3 justify-center"></div>
             </div>
 
         </div>
@@ -523,6 +504,27 @@
         fetch('/api/neighborhoods/top-movers?limit=8')
             .then(r => r.ok ? r.json() : null)
             .then(data => { if (data) renderMovers(data.neighborhoods || []); })
+            .catch(() => {});
+
+        fetch('/api/operators/top?limit=3')
+            .then(r => r.ok ? r.json() : null)
+            .then(ops => {
+                if (!ops || !ops.length) return;
+                const container = document.getElementById('operator-cards');
+                if (!container) return;
+                const profileLabel = i18n[_lang]?.operator_profile || 'Operator profile →';
+                ops.forEach(op => {
+                    const card = document.createElement('a');
+                    card.href = `/operator/${encodeURIComponent(op.operator_root)}`;
+                    card.className = 'zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block';
+                    card.style.cssText = 'background:rgba(30,41,59,0.7);min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;';
+                    card.innerHTML =
+                        `<div class="font-mono text-sm font-bold text-slate-100 mb-0.5">${op.operator_root}</div>` +
+                        `<div class="text-xs text-slate-500 mb-0.5">${op.llc_count} LLC${op.llc_count !== 1 ? 's' : ''} &middot; ${op.total_acquisitions} acq.</div>` +
+                        `<div class="text-xs text-slate-400">${profileLabel}</div>`;
+                    container.appendChild(card);
+                });
+            })
             .catch(() => {});
 
         (function loadWatchlist() {

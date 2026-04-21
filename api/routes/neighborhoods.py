@@ -701,3 +701,98 @@ def get_neighborhood_names(request: Request, response: Response, db: Session = D
         text("SELECT zip_code, name FROM neighborhoods WHERE zip_code != '99999' AND name IS NOT NULL")
     ).fetchall()
     return {r.zip_code: r.name for r in rows}
+
+
+import time as _time
+from pathlib import Path as _Path
+import json as _json
+
+_BUYERS_CACHE: dict[str, tuple[list, float]] = {}
+_BUYERS_TTL = 3600
+_SCRIPTS_DIR = _Path(__file__).parent.parent.parent / "scripts"
+
+
+@router.get("/{zip_code}/active-buyers")
+@limiter.limit("60/minute")
+def get_active_buyers(request: Request, response: Response, zip_code: str, db: Session = Depends(get_db)):
+    """
+    Top operator clusters actively acquiring in this ZIP over the past 365 days.
+    Matches raw LLC grantee names against known operator clusters.
+    """
+    if not (len(zip_code) == 5 and zip_code.isdigit()):
+        raise HTTPException(status_code=400, detail="Invalid ZIP code")
+
+    cached = _BUYERS_CACHE.get(zip_code)
+    if cached and _time.monotonic() < cached[1]:
+        return cached[0]
+
+    # Top LLC grantees in this ZIP (same filters as scoring engine)
+    rows = db.execute(text("""
+        SELECT o.party_name_normalized, COUNT(*) AS cnt
+        FROM ownership_raw o
+        JOIN parcels p ON o.bbl = p.bbl
+        WHERE p.zip_code = :zip
+          AND o.party_type = '2'
+          AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
+          AND o.doc_date >= CURRENT_DATE - INTERVAL '365 days'
+          AND p.units_res > 0
+          AND o.party_name_normalized LIKE '%LLC%'
+          AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
+          AND o.party_name_normalized NOT ILIKE '%LOAN SERVICING%'
+          AND o.party_name_normalized NOT ILIKE '%LOAN SERVICE%'
+          AND o.party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
+          AND o.party_name_normalized NOT ILIKE '%CREDIT UNION%'
+          AND o.party_name_normalized NOT ILIKE '% FINANCIAL %'
+          AND o.party_name_normalized NOT ILIKE '% FINANCIAL LLC'
+          AND NOT EXISTS (
+              SELECT 1 FROM ownership_raw seller
+              WHERE seller.document_id = o.document_id
+                AND seller.party_type = '1'
+                AND seller.party_name_normalized LIKE '%LLC%'
+          )
+        GROUP BY o.party_name_normalized
+        ORDER BY cnt DESC
+        LIMIT 50
+    """), {"zip": zip_code}).fetchall()
+
+    if not rows:
+        _BUYERS_CACHE[zip_code] = ([], _time.monotonic() + _BUYERS_TTL)
+        return []
+
+    # Load operator clusters and build name → root lookup
+    name_to_root: dict[str, str] = {}
+    analysis_path = _SCRIPTS_DIR / "operator_network_analysis.json"
+    if analysis_path.exists():
+        try:
+            data = _json.loads(analysis_path.read_text())
+            for op in data.get("operators", []):
+                root = op["operator_root"]
+                for entity in op.get("llc_entities", []):
+                    name_to_root[entity.upper()] = root
+        except Exception:
+            pass
+    for inv_path in sorted(_SCRIPTS_DIR.glob("*_investigation.json")):
+        try:
+            inv = _json.loads(inv_path.read_text())
+            root = str(inv.get("subject", inv_path.stem.replace("_investigation", "").upper())).upper().strip()
+            if " " not in root:
+                for entity in inv.get("llc_entities", []):
+                    name_to_root[entity.upper()] = root
+        except Exception:
+            pass
+
+    # Tally acquisitions per known cluster in this ZIP
+    cluster_counts: dict[str, int] = {}
+    for row in rows:
+        name = (row.party_name_normalized or "").upper()
+        root = name_to_root.get(name)
+        if root:
+            cluster_counts[root] = cluster_counts.get(root, 0) + int(row.cnt)
+
+    result = [
+        {"operator_root": root, "acquisitions_in_zip": cnt}
+        for root, cnt in sorted(cluster_counts.items(), key=lambda x: -x[1])
+    ][:3]
+
+    _BUYERS_CACHE[zip_code] = (result, _time.monotonic() + _BUYERS_TTL)
+    return result
