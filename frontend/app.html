@@ -2753,14 +2753,19 @@
         // Allow pressing Enter in the address input to trigger search
         document.getElementById('address-input').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
-                document.getElementById('address-search-btn').click();
+                const btn = document.getElementById('address-search-btn');
+                if (!btn.disabled) btn.click();
             }
         });
 
-        // Methodology modal — close on Escape (scope addition C)
+        // Escape closes the methodology modal and any open sidebar panel
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 document.getElementById('methodology-modal').classList.add('hidden');
+                if (_currentPanel !== 'empty') {
+                    if (window.innerWidth < 768) showMobileMap();
+                    else showEmptyState();
+                }
             }
         });
 
@@ -3226,7 +3231,10 @@
         });
 
         document.getElementById('landlord-input').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') document.getElementById('landlord-search-btn').click();
+            if (e.key === 'Enter') {
+                const btn = document.getElementById('landlord-search-btn');
+                if (!btn.disabled) btn.click();
+            }
         });
 
         document.getElementById('landlord-clear-btn').addEventListener('click', _clearLandlordSearch);
