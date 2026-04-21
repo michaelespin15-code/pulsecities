@@ -163,7 +163,7 @@
             <!-- Mobile stats: highest-risk ZIP first, LLC + evictions below -->
             <div class="flex flex-col items-center gap-5 mb-6 w-full md:hidden">
                 <div class="text-center">
-                    <div class="text-xs font-mono uppercase tracking-widest mb-1" style="color:#94a3b8;letter-spacing:0.1em;" data-i18n="highest_risk">highest risk zip</div>
+                    <div class="text-xs font-mono uppercase tracking-widest mb-1" style="color:#cbd5e1;letter-spacing:0.1em;" data-i18n="highest_risk">highest risk zip</div>
                     <div class="font-mono font-bold text-slate-100" style="font-size:2.2rem;letter-spacing:-0.02em;" data-bind="zip-code">&#8212;</div>
                     <div class="text-xs mt-0.5 text-slate-300" data-bind="zip-place">&#8212;</div>
                     <div class="flex items-center justify-center gap-1.5 mt-1">
@@ -224,7 +224,7 @@
             <!-- Watchlist (returning users only — hidden when empty) -->
             <div id="watchlist-section" class="w-full mt-6" style="display:none;">
                 <div class="text-xs font-mono uppercase tracking-widest mb-3 text-center"
-                     style="color:#94a3b8;letter-spacing:0.1em;" data-i18n="your_watchlist">Your Watchlist</div>
+                     style="color:#cbd5e1;letter-spacing:0.1em;" data-i18n="your_watchlist">Your Watchlist</div>
                 <div id="watchlist-cards" class="flex flex-wrap gap-3 justify-center"></div>
             </div>
 
@@ -234,14 +234,14 @@
             <!-- Top Movers -->
             <div id="movers-section" class="w-full mt-8" style="display:none;">
                 <div class="text-xs font-mono uppercase tracking-widest mb-3 text-center"
-                     style="color:#94a3b8;letter-spacing:0.1em;" data-i18n="moving_this_week">Moving This Week</div>
+                     style="color:#cbd5e1;letter-spacing:0.1em;" data-i18n="moving_this_week">Moving This Week</div>
                 <div id="movers-cards" class="flex flex-wrap gap-3 justify-center"></div>
             </div>
 
             <!-- Recent Findings: operator profiles -->
             <div class="w-full mt-8">
                 <div class="text-xs font-mono uppercase tracking-widest mb-3 text-center"
-                     style="color:#94a3b8;letter-spacing:0.1em;" data-i18n="recent_findings">Recent Findings</div>
+                     style="color:#cbd5e1;letter-spacing:0.1em;" data-i18n="recent_findings">Recent Findings</div>
                 <div class="flex flex-wrap gap-3 justify-center">
                     <a href="/operator/MTEK"
                        class="zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block"
@@ -347,6 +347,14 @@
             return '#22c55e';
         }
 
+        function scoreBorder(score) {
+            if (score == null) return 'rgba(51,65,85,1)';
+            if (score >= 70) return 'rgba(239,68,68,0.45)';
+            if (score >= 40) return 'rgba(249,115,22,0.35)';
+            if (score >= 15) return 'rgba(234,179,8,0.25)';
+            return 'rgba(51,65,85,1)';
+        }
+
         function countUpInt(el, target, duration) {
             const t0 = performance.now();
             (function step(now) {
@@ -436,11 +444,12 @@
                 card.className   = 'zip-card text-left rounded-lg border px-4 py-3 block';
                 card.style.cssText = [
                     'background:rgba(30,41,59,0.7)',
-                    `border-color:${isTop ? 'rgba(249,115,22,0.45)' : 'rgba(51,65,85,1)'}`,
+                    `border-color:${scoreBorder(n.score)}`,
                     'min-width:min(160px,calc(50vw - 24px))',
                     'max-width:200px',
                     'text-decoration:none',
                 ].join(';');
+                const nameLine = [n.name, n.borough].filter(Boolean).join(' · ');
                 let sigLine = '';
                 if (isTop && n.signal_counts) {
                     const top2 = Object.entries(n.signal_counts)
@@ -449,19 +458,19 @@
                         .slice(0, 2)
                         .map(([k, v]) => `<span data-signal="${k}" data-count="${v}">${v.toLocaleString()} ${moverSignalLabel(k, v)}</span>`)
                         .join(' · ');
-                    if (top2) sigLine = `<div class="text-xs mt-0.5" style="color:rgba(148,163,184,0.55);">${top2}</div>`;
+                    if (top2) sigLine = `<div class="text-xs mt-0.5" style="color:rgba(148,163,184,0.85);">${top2}</div>`;
                 } else if (n.dominant_signal) {
                     const lbl = moverSignalLabel(n.dominant_signal, n.raw_count);
                     const raw = n.raw_count ? `${n.raw_count.toLocaleString()} ${lbl}` : lbl;
-                    if (raw) sigLine = `<div class="text-xs mt-0.5" data-signal="${n.dominant_signal}" data-count="${n.raw_count || 0}" style="color:rgba(148,163,184,0.55);">${raw}</div>`;
+                    if (raw) sigLine = `<div class="text-xs mt-0.5" data-signal="${n.dominant_signal}" data-count="${n.raw_count || 0}" style="color:rgba(148,163,184,0.85);">${raw}</div>`;
                 }
                 card.innerHTML = `
                     <div class="flex items-baseline gap-2 mb-0.5">
                         <span class="font-mono text-xs font-semibold" style="color:${rankColor};">#${n.rank}</span>
                         <span class="font-mono text-sm font-bold text-slate-100">${n.zip_code}</span>
                     </div>
-                    <div class="text-xs text-slate-400 truncate mb-1">${n.name || ''}</div>
-                    <div class="font-mono text-sm font-semibold" style="color:${color};">${n.score != null ? n.score.toFixed(1) : '\u2014'}</div>
+                    <div class="text-xs text-slate-400 truncate mb-1">${nameLine}</div>
+                    <div class="font-mono text-sm font-semibold" style="color:${color};">${n.score != null ? n.score.toFixed(1) : '\u2014'}<span style="color:#475569;font-size:10px;font-weight:400;"> / 100</span></div>
                     ${sigLine}
                 `;
                 container.appendChild(card);
@@ -483,18 +492,19 @@
             list.forEach(n => {
                 const card = document.createElement('a');
                 card.href = `/map?q=${encodeURIComponent(n.zip_code)}`;
-                card.className = 'zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block';
-                card.style.cssText = 'background:rgba(30,41,59,0.7);min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;';
-                const deltaStr = `+${n.delta.toFixed(1)}`;
+                card.className = 'zip-card text-left rounded-lg border px-4 py-3 block';
+                card.style.cssText = `background:rgba(30,41,59,0.7);border-color:${scoreBorder(n.score_now)};min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;`;
+                const deltaStr = `+${n.delta.toFixed(1)} pts`;
                 const label = moverSignalLabel(n.dominant_signal, n.raw_count);
                 const moverSig = n.raw_count && label ? `${n.raw_count.toLocaleString()} ${label}` : label;
+                const moverName = [n.name, n.borough].filter(Boolean).join(' · ');
                 card.innerHTML = `
                     <div class="flex items-baseline gap-2 mb-0.5">
                         <span class="font-mono text-sm font-bold text-slate-100">${n.zip_code}</span>
                         <span class="font-mono text-xs font-semibold" style="color:#ef4444;">${deltaStr}</span>
                     </div>
-                    <div class="text-xs text-slate-400 truncate mb-1">${n.name || ''}</div>
-                    ${moverSig ? `<div class="text-xs" data-signal="${n.dominant_signal || ''}" data-count="${n.raw_count || 0}" style="color:rgba(148,163,184,0.55);">${moverSig}</div>` : ''}
+                    <div class="text-xs text-slate-400 truncate mb-1">${moverName}</div>
+                    ${moverSig ? `<div class="text-xs" data-signal="${n.dominant_signal || ''}" data-count="${n.raw_count || 0}" style="color:rgba(148,163,184,0.85);">${moverSig}</div>` : ''}
                 `;
                 container.appendChild(card);
             });
