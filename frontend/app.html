@@ -719,7 +719,7 @@
     >
         <div class="bg-base-200 rounded-2xl p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
             <div class="flex justify-between items-start mb-4">
-                <h2 class="text-lg font-semibold" style="color: #38bdf8;">How Scores Work</h2>
+                <h2 id="methodology-title" class="text-lg font-semibold" style="color: #38bdf8;">How Scores Work</h2>
                 <button
                     class="text-slate-400 hover:text-base-content text-xl leading-none"
                     style="min-height: 44px; min-width: 44px;"
@@ -727,39 +727,39 @@
                     onclick="document.getElementById('methodology-modal').classList.add('hidden')"
                 >&#10005;</button>
             </div>
-            <p class="text-sm text-base-content/70 mb-4">
+            <p id="methodology-intro" class="text-sm text-base-content/70 mb-4">
                 Each neighborhood receives a displacement risk score from 1&ndash;100, computed nightly from six public data signals. Methodology follows
                 <a href="https://anhd.org" target="_blank" class="text-sky-400 underline">ANHD (Association for Neighborhood and Housing Development)</a>
                 displacement risk indicators.
             </p>
             <div class="flex flex-col gap-4 text-sm">
                 <div>
-                    <h3 class="font-semibold text-base-content mb-1">LLC Acquisitions <span class="text-slate-400 font-normal">(weight: 26%)</span></h3>
-                    <p class="text-base-content/70">Deed transfers to limited liability companies via ACRIS. LLC ownership is associated with speculative purchasing patterns and rapid rent increases. Financial institution transfers (mortgage servicers, foreclosure deeds) are excluded. Source: NYC ACRIS (bnx9-e6tj, 636b-3b5g, 8h5j-fqxa). The current signal counts all LLC acquisitions in the 365-day window. Refinement to exclude corporate-to-corporate transfers (seller already LLC) is planned for v2. Data transparency over signal precision for launch.</p>
+                    <h3 class="font-semibold text-base-content mb-1" data-meth-signal="llc_acquisitions" data-meth-weight="26">LLC Acquisitions <span class="text-slate-400 font-normal">(weight: 26%)</span></h3>
+                    <p id="meth-desc-llc" class="text-base-content/70">Deed transfers to limited liability companies via ACRIS. LLC ownership is associated with speculative purchasing patterns and rapid rent increases. Financial institution transfers (mortgage servicers, foreclosure deeds) are excluded. Source: NYC ACRIS (bnx9-e6tj, 636b-3b5g, 8h5j-fqxa). The current signal counts all LLC acquisitions in the 365-day window. Refinement to exclude corporate-to-corporate transfers (seller already LLC) is planned for v2. Data transparency over signal precision for launch.</p>
                 </div>
                 <div>
-                    <h3 class="font-semibold text-base-content mb-1">Permit Filings <span class="text-slate-400 font-normal">(weight: 21%)</span></h3>
-                    <p class="text-base-content/70">DOB building permit applications &mdash; renovation and alteration permits signal landlord investment that often precedes tenant displacement. Source: NYC Department of Buildings (Socrata ipu4-2q9a).</p>
+                    <h3 class="font-semibold text-base-content mb-1" data-meth-signal="permits" data-meth-weight="21">Permit Filings <span class="text-slate-400 font-normal">(weight: 21%)</span></h3>
+                    <p id="meth-desc-permit" class="text-base-content/70">DOB building permit applications &mdash; renovation and alteration permits signal landlord investment that often precedes tenant displacement. Source: NYC Department of Buildings (Socrata ipu4-2q9a).</p>
                 </div>
                 <div>
-                    <h3 class="font-semibold text-base-content mb-1">Complaint Rate <span class="text-slate-400 font-normal">(weight: 17%)</span></h3>
-                    <p class="text-base-content/70">311 housing complaints (heat, hot water, pests, mold) per residential unit &mdash; a proxy for deteriorating conditions that precede forced moves. Source: NYC 311 (erm2-nwe9).</p>
+                    <h3 class="font-semibold text-base-content mb-1" data-meth-signal="complaint_rate" data-meth-weight="17">Complaint Rate <span class="text-slate-400 font-normal">(weight: 17%)</span></h3>
+                    <p id="meth-desc-complaint" class="text-base-content/70">311 housing complaints (heat, hot water, pests, mold) per residential unit &mdash; a proxy for deteriorating conditions that precede forced moves. Source: NYC 311 (erm2-nwe9).</p>
                 </div>
                 <div>
-                    <h3 class="font-semibold text-base-content mb-1">Eviction Executions <span class="text-slate-400 font-normal">(weight: 13%)</span></h3>
-                    <p class="text-base-content/70">Residential evictions carried out by NYC marshals (executed evictions, not filings). Filed cases often resolve without execution &mdash; this signal tracks actual removals. OCA data lags executed date by 2&ndash;4 weeks. Source: NYC Open Data (6z8x-wfk4).</p>
+                    <h3 class="font-semibold text-base-content mb-1" data-meth-signal="evictions" data-meth-weight="13">Eviction Executions <span class="text-slate-400 font-normal">(weight: 13%)</span></h3>
+                    <p id="meth-desc-eviction" class="text-base-content/70">Residential evictions carried out by NYC marshals (executed evictions, not filings). Filed cases often resolve without execution &mdash; this signal tracks actual removals. OCA data lags executed date by 2&ndash;4 weeks. Source: NYC Open Data (6z8x-wfk4).</p>
                 </div>
                 <div>
-                    <h3 class="font-semibold text-base-content mb-1">Assessment Spike <span class="text-slate-400 font-normal">(weight: 8%)</span></h3>
-                    <p class="text-base-content/70">Year-over-year increase in NYC Department of Finance property assessment &mdash; a leading indicator of market pressure. Currently dormant &mdash; requires two consecutive years of DOF assessment history. Source: NYC Department of Finance (w7rz-68fs).</p>
+                    <h3 class="font-semibold text-base-content mb-1" data-meth-signal="assessment_spike" data-meth-weight="8">Assessment Spike <span class="text-slate-400 font-normal">(weight: 8%)</span></h3>
+                    <p id="meth-desc-assessment" class="text-base-content/70">Year-over-year increase in NYC Department of Finance property assessment &mdash; a leading indicator of market pressure. Currently dormant &mdash; requires two consecutive years of DOF assessment history. Source: NYC Department of Finance (w7rz-68fs).</p>
                 </div>
                 <div>
-                    <h3 class="font-semibold text-base-content mb-1">RS Unit Loss <span class="text-slate-400 font-normal">(weight: 15%)</span></h3>
-                    <p class="text-base-content/70">Year-over-year loss in rent-stabilized units per building via DHCR registration data. The single most direct signal of affordable housing erosion. Currently in data collection phase &mdash; signal becomes active after two consecutive annual snapshots. Source: DHCR Building Registrations (kj4p-ruqc).</p>
+                    <h3 class="font-semibold text-base-content mb-1" data-meth-signal="rs_unit_loss" data-meth-weight="15">RS Unit Loss <span class="text-slate-400 font-normal">(weight: 15%)</span></h3>
+                    <p id="meth-desc-rs" class="text-base-content/70">Year-over-year loss in rent-stabilized units per building via DHCR registration data. The single most direct signal of affordable housing erosion. Currently in data collection phase &mdash; signal becomes active after two consecutive annual snapshots. Source: DHCR Building Registrations (kj4p-ruqc).</p>
                 </div>
             </div>
-            <p class="text-xs text-slate-400 mt-4">Scores are normalized per residential unit using MapPLUTO unit counts to prevent bias toward dense commercial areas. All data is public record.</p>
-            <a href="/methodology" target="_blank" rel="noopener noreferrer" class="block text-center text-xs text-sky-400 hover:text-sky-300 underline mt-4">Full details &rarr;</a>
+            <p id="methodology-note" class="text-xs text-slate-400 mt-4">Scores are normalized per residential unit using MapPLUTO unit counts to prevent bias toward dense commercial areas. All data is public record.</p>
+            <a id="methodology-full-link" href="/methodology" target="_blank" rel="noopener noreferrer" class="block text-center text-xs text-sky-400 hover:text-sky-300 underline mt-4">Full details &rarr;</a>
         </div>
     </div>
 
@@ -1242,6 +1242,19 @@
                     rs_unit_loss:     'Net loss of rent-stabilized apartments — affordable housing permanently removed',
                     assessment_spike: 'Sharp property tax assessment increases signal speculative acquisition activity',
                 },
+                methodology: {
+                    title:           'How Scores Work',
+                    weight:          '(weight: {pct}%)',
+                    intro:           'Each neighborhood receives a displacement risk score from 1–100, computed nightly from six public data signals. Methodology follows <a href="https://anhd.org" target="_blank" class="text-sky-400 underline">ANHD (Association for Neighborhood and Housing Development)</a> displacement risk indicators.',
+                    llc_desc:        'Deed transfers to limited liability companies via ACRIS. LLC ownership is associated with speculative purchasing patterns and rapid rent increases. Financial institution transfers (mortgage servicers, foreclosure deeds) are excluded. Source: NYC ACRIS (bnx9-e6tj, 636b-3b5g, 8h5j-fqxa). The current signal counts all LLC acquisitions in the 365-day window. Refinement to exclude corporate-to-corporate transfers (seller already LLC) is planned for v2. Data transparency over signal precision for launch.',
+                    permit_desc:     'DOB building permit applications — renovation and alteration permits signal landlord investment that often precedes tenant displacement. Source: NYC Department of Buildings (Socrata ipu4-2q9a).',
+                    complaint_desc:  '311 housing complaints (heat, hot water, pests, mold) per residential unit — a proxy for deteriorating conditions that precede forced moves. Source: NYC 311 (erm2-nwe9).',
+                    eviction_desc:   'Residential evictions carried out by NYC marshals (executed evictions, not filings). Filed cases often resolve without execution — this signal tracks actual removals. OCA data lags executed date by 2–4 weeks. Source: NYC Open Data (6z8x-wfk4).',
+                    assessment_desc: 'Year-over-year increase in NYC Department of Finance property assessment — a leading indicator of market pressure. Currently dormant — requires two consecutive years of DOF assessment history. Source: NYC Department of Finance (w7rz-68fs).',
+                    rs_desc:         'Year-over-year loss in rent-stabilized units per building via DHCR registration data. The single most direct signal of affordable housing erosion. Currently in data collection phase — signal becomes active after two consecutive annual snapshots. Source: DHCR Building Registrations (kj4p-ruqc).',
+                    note:            'Scores are normalized per residential unit using MapPLUTO unit counts to prevent bias toward dense commercial areas. All data is public record.',
+                    full_link:       'Full details →',
+                },
             },
             es: {
                 signals: {
@@ -1447,6 +1460,19 @@
                     rs_unit_loss:     'Pérdida neta de apartamentos de renta estabilizada — vivienda asequible eliminada permanentemente',
                     assessment_spike: 'Aumentos bruscos en la valuación fiscal indican actividad especulativa de compra',
                 },
+                methodology: {
+                    title:           'Cómo Funcionan las Puntuaciones',
+                    weight:          '(peso: {pct}%)',
+                    intro:           'Cada vecindario recibe una puntuación de riesgo de desplazamiento del 1 al 100, calculada cada noche a partir de seis señales de datos públicos. La metodología sigue los indicadores de riesgo de desplazamiento de <a href="https://anhd.org" target="_blank" class="text-sky-400 underline">ANHD (Association for Neighborhood and Housing Development)</a>.',
+                    llc_desc:        'Transferencias de escrituras a sociedades de responsabilidad limitada (LLC) a través de ACRIS. La propiedad mediante LLC se asocia con patrones de compra especulativa y aumentos rápidos de alquiler. Se excluyen las transferencias de instituciones financieras. Fuente: NYC ACRIS (bnx9-e6tj, 636b-3b5g, 8h5j-fqxa). La señal actual contabiliza todas las adquisiciones LLC en una ventana de 365 días. Se planea refinar para excluir transferencias entre empresas en v2.',
+                    permit_desc:     'Solicitudes de permisos de construcción del DOB — los permisos de renovación y remodelación indican inversión del propietario que a menudo precede al desplazamiento de inquilinos. Fuente: Departamento de Edificios de NYC (Socrata ipu4-2q9a).',
+                    complaint_desc:  'Quejas de vivienda al 311 (calefacción, agua caliente, plagas, moho) por unidad residencial — indicador indirecto de condiciones deterioradas que preceden a mudanzas forzadas. Fuente: NYC 311 (erm2-nwe9).',
+                    eviction_desc:   'Desalojos residenciales ejecutados por alguaciles de NYC (desalojos ejecutados, no solicitudes). Los casos presentados a menudo se resuelven sin ejecución — esta señal rastrea remociones reales. Los datos de OCA muestran un retraso de 2–4 semanas. Fuente: NYC Open Data (6z8x-wfk4).',
+                    assessment_desc: 'Aumento interanual en la valuación de propiedades del Departamento de Finanzas de NYC — indicador anticipado de presión del mercado. Actualmente inactivo — requiere dos años consecutivos de historial de valuaciones del DOF. Fuente: Departamento de Finanzas de NYC (w7rz-68fs).',
+                    rs_desc:         'Pérdida interanual de unidades con estabilización de alquiler por edificio según datos de registro DHCR. La señal más directa de erosión de vivienda asequible. Actualmente en fase de recolección de datos — la señal se activa tras dos instantáneas anuales consecutivas. Fuente: Registros de Edificios DHCR (kj4p-ruqc).',
+                    note:            'Las puntuaciones se normalizan por unidad residencial usando los recuentos de unidades de MapPLUTO para evitar sesgos hacia áreas comerciales densas. Todos los datos son de registros públicos.',
+                    full_link:       'Detalles completos →',
+                },
             }
         };
 
@@ -1520,11 +1546,29 @@
                 'legend-no-data':             t('ui', 'legend_no_data'),
                 'reno-flip-disclaimer':       t('ui', 'reno_flip_disclaimer'),
                 'see-legend-btn':             t('ui', 'see_legend'),
+                'methodology-title':          t('methodology', 'title'),
+                'meth-desc-llc':              t('methodology', 'llc_desc'),
+                'meth-desc-permit':           t('methodology', 'permit_desc'),
+                'meth-desc-complaint':        t('methodology', 'complaint_desc'),
+                'meth-desc-eviction':         t('methodology', 'eviction_desc'),
+                'meth-desc-assessment':       t('methodology', 'assessment_desc'),
+                'meth-desc-rs':               t('methodology', 'rs_desc'),
+                'methodology-note':           t('methodology', 'note'),
+                'methodology-full-link':      t('methodology', 'full_link'),
             };
             for (const [id, text] of Object.entries(map)) {
                 const el = document.getElementById(id);
                 if (el) el.textContent = text;
             }
+            // Methodology intro uses innerHTML — contains an <a> link
+            const _methIntro = document.getElementById('methodology-intro');
+            if (_methIntro) _methIntro.innerHTML = t('methodology', 'intro');
+            // Methodology signal headings — signal name + localized weight label
+            document.querySelectorAll('[data-meth-signal]').forEach(el => {
+                const name   = t('signals', el.dataset.methSignal);
+                const weight = t('methodology', 'weight').replace('{pct}', el.dataset.methWeight);
+                el.innerHTML = `${name} <span class="text-slate-400 font-normal">${weight}</span>`;
+            });
             const heroInput = document.getElementById('hero-search-input');
             if (heroInput) heroInput.placeholder = t('hero', 'search_placeholder');
             const addrInput = document.getElementById('address-input');
