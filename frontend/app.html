@@ -400,15 +400,13 @@
                         </div>
                         <span id="detail-score" class="font-mono text-3xl font-semibold shrink-0 ml-2"></span>
                     </div>
-                    <div class="flex justify-between items-center text-xs text-slate-400 mt-1">
-                        <div class="flex items-center gap-2">
-                            <span id="detail-risk-label">Displacement Risk</span>
-                            <span id="detail-percentile" class="hidden font-mono" style="color:rgba(148,163,184,0.4);">· top <span id="detail-percentile-val"></span>%</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <button id="watch-btn" onclick="toggleWatch()" class="transition-colors font-medium" style="min-height:32px;color:rgba(56,189,248,0.7);">Watch</button>
-                            <button id="compare-btn" onclick="enterCompareMode()" class="text-orange-400/70 hover:text-orange-400 transition-colors font-medium" style="min-height:32px;">Compare</button>
-                        </div>
+                    <div class="flex items-center gap-2 text-xs text-slate-400 mt-1">
+                        <span id="detail-risk-label">Displacement Risk</span>
+                        <span id="detail-percentile" class="hidden font-mono" style="color:rgba(148,163,184,0.4);">· top <span id="detail-percentile-val"></span>%</span>
+                    </div>
+                    <div class="flex items-center justify-end gap-3 mt-2">
+                        <button id="watch-btn" onclick="toggleWatch()" class="text-xs transition-colors font-medium" style="min-height:32px;color:rgba(56,189,248,0.7);">Watch</button>
+                        <button id="compare-btn" onclick="enterCompareMode()" class="text-xs text-orange-400/70 hover:text-orange-400 transition-colors font-medium" style="min-height:32px;">Compare</button>
                     </div>
                     <p id="detail-summary" class="hidden text-xs text-base-content/70 mt-3 leading-relaxed"></p>
                 </div>
