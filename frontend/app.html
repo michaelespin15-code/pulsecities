@@ -123,16 +123,16 @@
         }
         /* Score history range toggle pills */
         .history-pill {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
-            padding: 2px 8px;
+            padding: 4px 10px;
             border-radius: 9999px;
             border: 1px solid rgba(148,163,184,0.18);
             background: transparent;
             color: #94a3b8;
             cursor: pointer;
-            min-height: 22px;
+            min-height: 28px;
             transition: background 0.12s, color 0.12s, border-color 0.12s;
         }
         .history-pill:hover { color: #cbd5e1; border-color: rgba(148,163,184,0.3); }
@@ -232,13 +232,13 @@
                 font-size: 12px;
             }
             .history-pill {
-                min-height: 36px;
-                padding: 6px 10px;
-                font-size: 11px;
+                min-height: 44px;
+                padding: 10px 14px;
+                font-size: 12px;
             }
             #subscribe-email,
             #subscribe-btn {
-                min-height: 40px !important;
+                min-height: 44px !important;
                 font-size: 12px !important;
             }
             #landlord-input,
@@ -260,7 +260,7 @@
                 left: auto !important;
                 right: 8px !important;
                 z-index: 31 !important;
-                font-size: 10px !important;
+                font-size: 12px !important;
                 padding: 5px 9px !important;
                 gap: 3px !important;
             }
@@ -310,7 +310,7 @@
             <div id="compare-hint" class="hidden absolute top-4 left-0 right-0 flex justify-center z-10 pointer-events-none">
                 <div class="bg-slate-900/90 backdrop-blur-sm text-sm text-slate-200 px-4 py-2.5 rounded-full border border-slate-700 shadow-lg flex items-center gap-3 pointer-events-auto">
                     <span id="compare-hint-text">Select a second neighborhood to compare</span>
-                    <button onclick="exitCompareMode()" class="text-slate-500 hover:text-slate-200 transition-colors leading-none" aria-label="Exit comparison mode" style="min-height:32px;min-width:24px;font-size:1rem;">&times;</button>
+                    <button id="exit-compare-btn" onclick="exitCompareMode()" class="text-slate-500 hover:text-slate-200 transition-colors leading-none" aria-label="Exit comparison mode" style="min-height:44px;min-width:44px;font-size:1rem;">&times;</button>
                 </div>
             </div>
         </div>
@@ -324,18 +324,18 @@
             <!-- Header -->
             <div class="mb-3 md:mb-6">
                 <div class="flex items-center justify-between mb-2">
-                    <a href="/" class="text-xs text-slate-500 hover:text-slate-300 transition-colors" style="min-height:32px;display:flex;align-items:center;">&#8592; Home</a>
+                    <a id="home-link" href="/" class="text-xs text-slate-500 hover:text-slate-300 transition-colors" style="min-height:32px;display:flex;align-items:center;">&#8592; Home</a>
                     <div class="flex items-center gap-1">
                         <button id="lang-toggle" class="text-xs text-slate-400 hover:text-base-content" aria-label="Toggle language" style="min-height:44px;min-width:44px;">
                             EN / ES
                         </button>
                         <!-- Close sheet — mobile only -->
-                        <button onclick="showMobileMap()" class="md:hidden text-slate-400 hover:text-base-content transition-colors" aria-label="Close" style="min-height:44px;min-width:36px;font-size:1.25rem;line-height:1;">&#x2715;</button>
+                        <button id="close-sheet-btn" onclick="showMobileMap()" class="md:hidden text-slate-400 hover:text-base-content transition-colors" aria-label="Close" style="min-height:44px;min-width:36px;font-size:1.25rem;line-height:1;">&#x2715;</button>
                     </div>
                 </div>
                 <div class="text-center">
                     <h1 class="text-xl font-semibold leading-none" style="color: #38bdf8;">PulseCities</h1>
-                    <p class="text-sm text-slate-400 mt-1">NYC Displacement Risk</p>
+                    <p id="app-subtitle" class="text-sm text-slate-400 mt-1">NYC Displacement Risk</p>
                 </div>
             </div>
 
@@ -361,8 +361,8 @@
                     <p id="landlord-summary" class="text-xs text-slate-400 mt-2 mb-2 leading-relaxed"></p>
                     <div id="landlord-list" class="flex flex-col max-h-52 overflow-y-auto -mx-1 px-1"></div>
                     <div class="flex items-center mt-2">
-                        <button id="landlord-copy-btn" class="text-xs text-slate-400 hover:text-base-content/70 transition-colors" style="min-height:32px;">Copy</button>
-                        <button id="landlord-clear-btn" class="text-xs text-slate-400 hover:text-base-content/70 transition-colors ml-auto" style="min-height:32px;">Clear</button>
+                        <button id="landlord-copy-btn" class="text-xs text-slate-400 hover:text-base-content/70 transition-colors" style="min-height:36px;">Copy</button>
+                        <button id="landlord-clear-btn" class="text-xs text-slate-400 hover:text-base-content/70 transition-colors ml-auto" style="min-height:36px;">Clear</button>
                     </div>
                 </div>
             </div>
@@ -391,7 +391,6 @@
                     <div class="flex justify-between items-center text-xs text-slate-400 mt-1">
                         <span id="detail-risk-label">Displacement Risk</span>
                         <div class="flex items-center gap-3">
-                            <span id="detail-updated"></span>
                             <button id="watch-btn" onclick="toggleWatch()" class="transition-colors font-medium" style="min-height:32px;color:rgba(56,189,248,0.7);">Watch</button>
                             <button id="compare-btn" onclick="enterCompareMode()" class="text-orange-400/70 hover:text-orange-400 transition-colors font-medium" style="min-height:32px;">Compare</button>
                         </div>
@@ -432,7 +431,7 @@
                         <button id="renovation-flip-toggle" class="text-xs text-amber-400/70 hover:text-amber-400 whitespace-nowrap" style="min-height:44px;">See addresses</button>
                     </div>
                     <div id="renovation-flip-list" class="hidden mt-3 flex flex-col gap-1 text-sm"></div>
-                    <p class="text-xs text-slate-400 mt-3 italic">Based on LLC acquisitions followed by renovation permits (A1/A2) within 60 days. Affordable housing LLCs and seasonal construction may produce false positives.</p>
+                    <p id="reno-flip-disclaimer" class="text-xs text-slate-400 mt-3 italic">Based on LLC acquisitions followed by renovation permits (A1/A2) within 60 days. Affordable housing LLCs and seasonal construction may produce false positives.</p>
                 </div>
 
                 <!-- Neighborhood Pulse feed (Phase 6: Plan 03) -->
@@ -460,7 +459,7 @@
                         <!-- Recent Evictions subsection -->
                         <div id="pulse-evictions-section" class="hidden">
                             <h4 id="pulse-evictions-header" class="text-xs font-semibold text-red-400 uppercase tracking-wider mb-1">Recent Evictions</h4>
-                            <p class="text-xs text-slate-400 italic mb-2">Eviction filings typically appear 2&ndash;4 weeks after they occur.</p>
+                            <p id="eviction-lag-note" class="text-xs text-slate-400 italic mb-2">Eviction filings typically appear 2&ndash;4 weeks after they occur.</p>
                             <div id="pulse-evictions-list" class="flex flex-col gap-1 text-sm" role="list"></div>
                             <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:rgba(148,163,184,0.35);">Source: NYC Open Data (6z8x-wfk4)</div>
                         </div>
@@ -591,7 +590,7 @@
                 <div class="bg-base-300 rounded-xl p-4">
                     <p id="most-at-risk-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Most at-risk neighborhoods right now</p>
                     <div id="desktop-borough-filters" class="flex gap-1 flex-wrap mb-3">
-                        <button class="borough-pill active" data-borough="">All</button>
+                        <button id="all-filter-desktop" class="borough-pill active" data-borough="">All</button>
                         <button class="borough-pill" data-borough="Brooklyn" aria-label="Brooklyn">BK</button>
                         <button class="borough-pill" data-borough="Manhattan" aria-label="Manhattan">MN</button>
                         <button class="borough-pill" data-borough="Queens" aria-label="Queens">QN</button>
@@ -621,12 +620,12 @@
                             type="email"
                             placeholder="your@email.com"
                             class="input input-sm input-bordered flex-1 min-w-0"
-                            style="min-height:30px;font-size:11px;"
+                            style="min-height:36px;font-size:12px;"
                         />
                         <button
                             id="subscribe-btn"
                             class="btn btn-sm shrink-0"
-                            style="min-height:30px;background:#f97316;border-color:#f97316;color:#fff;font-size:11px;"
+                            style="min-height:36px;background:#f97316;border-color:#f97316;color:#fff;font-size:12px;"
                         >Subscribe</button>
                     </div>
                     <div id="subscribe-msg" class="hidden text-xs mt-1.5"></div>
@@ -1006,6 +1005,13 @@
                 activity: {
                     llc_sublabel: 'LLC Acquisition',
                 },
+                civic: {
+                    permit:             'Permit',
+                    eviction:           'Eviction',
+                    ownership_transfer: 'LLC Transfer',
+                    complaint:          '311 Complaint',
+                    unknown_address:    'Unknown address',
+                },
                 ui: {
                     looking_up:          'Looking up...',
                     searching:           'Searching...',
@@ -1069,7 +1075,14 @@
                     bbl_label:               'BBL: {bbl}',
                     reno_flip_count:         '{n} propert{plural} with LLC acquisition + renovation permit within 60 days',
                     reno_flip_acquired:      'acquired by',
-                    reno_flip_permit:        'permit'
+                    reno_flip_permit:        'permit',
+                    this_year:               'this year',
+                    signal_updated:          'Updated {date}',
+                    eviction_lag:            'Eviction filings typically appear 2\u20134 weeks after they occur.',
+                    reno_flip_disclaimer:    'Based on LLC acquisitions followed by renovation permits (A1/A2) within 60 days. Affordable housing LLCs and seasonal construction may produce false positives.',
+                    see_legend:              'See legend',
+                    watch:                   'Watch',
+                    watching:                'Watching',
                 },
                 risk_signal: {
                     permits:          'Surge in renovation permit filings',
@@ -1109,12 +1122,16 @@
                     assessment_spike: 'tax assessment increases',
                 },
                 signal_short: {
-                    permits:          'permit filings',
-                    evictions:        'eviction cases',
-                    llc_acquisitions: 'LLC buys',
-                    complaint_rate:   'complaints',
-                    rs_unit_loss:     'RS unit loss',
-                    assessment_spike: 'tax spike',
+                    permits:            'permit filings',
+                    permits_s:          'permit filing',
+                    evictions:          'eviction cases',
+                    evictions_s:        'eviction case',
+                    llc_acquisitions:   'LLC acquisitions',
+                    llc_acquisitions_s: 'LLC acquisition',
+                    complaint_rate:     'complaints',
+                    complaint_rate_s:   'complaint',
+                    rs_unit_loss:       'RS unit loss',
+                    assessment_spike:   'tax spike',
                 },
                 summary: {
                     critical_opening: 'This neighborhood shows critical displacement pressure (score {score}).',
@@ -1183,6 +1200,13 @@
                 activity: {
                     llc_sublabel: 'Adquisición LLC',
                 },
+                civic: {
+                    permit:             'Permiso',
+                    eviction:           'Desalojo',
+                    ownership_transfer: 'Transferencia LLC',
+                    complaint:          'Queja 311',
+                    unknown_address:    'Dirección desconocida',
+                },
                 ui: {
                     looking_up:          'Buscando...',
                     searching:           'Buscando...',
@@ -1246,7 +1270,14 @@
                     bbl_label:               'BBL: {bbl}',
                     reno_flip_count:         '{n} propiedad{plural} con adquisición LLC y permiso de renovación en 60 días',
                     reno_flip_acquired:      'adquirida por',
-                    reno_flip_permit:        'permiso'
+                    reno_flip_permit:        'permiso',
+                    this_year:               'este año',
+                    signal_updated:          'Actualizado {date}',
+                    eviction_lag:            'Los desalojos ejecutados suelen registrarse con 2\u20134 semanas de retraso.',
+                    reno_flip_disclaimer:    'Basado en adquisiciones LLC seguidas de permisos de renovación (A1/A2) en 60 días. Las LLC de vivienda asequible y la construcción estacional pueden generar falsos positivos.',
+                    see_legend:              'Ver leyenda',
+                    watch:                   'Seguir',
+                    watching:                'Siguiendo',
                 },
                 risk_signal: {
                     permits:          'Aumento en solicitudes de permisos de renovación',
@@ -1286,12 +1317,16 @@
                     assessment_spike: 'aumentos de valuación fiscal',
                 },
                 signal_short: {
-                    permits:          'permisos',
-                    evictions:        'desalojos',
-                    llc_acquisitions: 'compras LLC',
-                    complaint_rate:   'quejas',
-                    rs_unit_loss:     'pérdida RS',
-                    assessment_spike: 'valuación fiscal',
+                    permits:            'permisos',
+                    permits_s:          'permiso',
+                    evictions:          'desalojos',
+                    evictions_s:        'desalojo',
+                    llc_acquisitions:   'adquisiciones LLC',
+                    llc_acquisitions_s: 'adquisición LLC',
+                    complaint_rate:     'quejas',
+                    complaint_rate_s:   'queja',
+                    rs_unit_loss:       'pérdida RS',
+                    assessment_spike:   'valuación fiscal',
                 },
                 summary: {
                     critical_opening: 'Este vecindario muestra presión de desplazamiento crítica (puntuación {score}).',
@@ -1329,6 +1364,9 @@
             const lang_strings = STRINGS[lang] || STRINGS['en'];
             const section_strings = lang_strings[section] || STRINGS['en'][section] || {};
             return section_strings[key] || (STRINGS['en'][section] || {})[key] || key;
+        }
+        function tPlural(section, key, count) {
+            return count === 1 ? t(section, key + '_s') : t(section, key);
         }
         // ---- end i18n ----
 
@@ -1388,6 +1426,8 @@
                 'legend-high':                t('ui', 'legend_high'),
                 'legend-critical':            t('ui', 'legend_critical'),
                 'legend-no-data':             t('ui', 'legend_no_data'),
+                'reno-flip-disclaimer':       t('ui', 'reno_flip_disclaimer'),
+                'see-legend-btn':             t('ui', 'see_legend'),
             };
             for (const [id, text] of Object.entries(map)) {
                 const el = document.getElementById(id);
@@ -1652,6 +1692,8 @@
                     if (permHeader) permHeader.textContent = t('pulse', 'permits_header');
                     const evictHeader = document.getElementById('pulse-evictions-header');
                     if (evictHeader) evictHeader.textContent = t('pulse', 'evictions_header');
+                    const evictLagNote = document.getElementById('eviction-lag-note');
+                    if (evictLagNote) evictLagNote.textContent = t('ui', 'eviction_lag');
                     const llcList = document.getElementById('pulse-llc-list');
                     const permList = document.getElementById('pulse-permits-list');
                     const evictList = document.getElementById('pulse-evictions-list');
@@ -1718,7 +1760,7 @@
                             el.setAttribute('aria-label', `Eviction at ${item.address || 'unknown address'}${dateStr ? ', ' + dateStr : ''}, ${typeStr}`);
                             el.innerHTML = `
                                 <div class="flex justify-between items-baseline gap-2">
-                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${item.address || 'Unknown address'}</span>
+                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${item.address || t('civic', 'unknown_address')}</span>
                                     ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
                                 </div>
                                 <div class="text-xs text-slate-400 mt-0.5">${typeStr}</div>
@@ -1810,7 +1852,7 @@
                 document.getElementById('no-score-msg').classList.add('hidden');
                 if (riskLabelEl) {
                     const tier = riskLabel(score);
-                    riskLabelEl.textContent = tier ? tier + ' \u00b7 ' + t('ui', 'displacement_risk') : t('ui', 'displacement_risk');
+                    riskLabelEl.textContent = tier || t('ui', 'displacement_risk');
                     riskLabelEl.style.color = scoreColor(score);
                     riskLabelEl.style.opacity = '0.8';
                 }
@@ -1825,8 +1867,6 @@
                 }
             }
 
-            const updatedEl = document.getElementById('detail-updated');
-            updatedEl.textContent = lastUpdated ? relativeTime(lastUpdated) : '';
 
             const summaryEl = document.getElementById('detail-summary');
             if (score !== null && score !== undefined) {
@@ -1848,12 +1888,10 @@
             const slu = signalLastUpdated || {};
             const counts = rawCounts || {};
 
-            const _countLabel = {
-                llc_acquisitions: n => `${n} acquisition${n !== 1 ? 's' : ''} this year`,
-                evictions:        n => `${n} eviction${n !== 1 ? 's' : ''} this year`,
-                permits:          n => `${n} alteration permit${n !== 1 ? 's' : ''} this year`,
-                complaint_rate:   n => `${n} housing complaint${n !== 1 ? 's' : ''} this year`,
-            };
+            const _countLabel = {};
+            ['llc_acquisitions', 'evictions', 'permits', 'complaint_rate'].forEach(k => {
+                _countLabel[k] = n => `${n.toLocaleString()} ${t('signal_short', k)} ${t('ui', 'this_year')}`;
+            });
 
             const rows = document.getElementById('signal-rows');
             rows.innerHTML = '';
@@ -1881,14 +1919,14 @@
                             <div style="height:100%;border-radius:2px;width:${barPct}%;background:${numVal !== null ? signalBarColor(numVal) : 'transparent'};transition:width 0.4s ease;"></div>
                         </div>
                         ${countLine}
-                        ${ts ? `<div class="text-xs text-sky-400 mt-1">Updated ${ts}</div>` : ''}
+                        ${ts ? `<div class="text-xs text-sky-400 mt-1">${t('ui', 'signal_updated').replace('{date}', ts)}</div>` : ''}
                     `;
                     rows.appendChild(row);
 
                     if (key === 'evictions') {
                         const lagNote = document.createElement('div');
                         lagNote.className = 'text-xs text-slate-400 italic pb-1';
-                        lagNote.textContent = 'Eviction filings typically appear 2\u20134 weeks after they occur.';
+                        lagNote.textContent = t('ui', 'eviction_lag');
                         rows.appendChild(lagNote);
                     }
                 });
@@ -1965,7 +2003,7 @@
             const btn = document.getElementById('watch-btn');
             if (!btn) return;
             const watched = _watchList().includes(zip);
-            btn.textContent = watched ? 'Watching' : 'Watch';
+            btn.textContent = watched ? t('ui', 'watching') : t('ui', 'watch');
             btn.style.color = watched ? '#38bdf8' : 'rgba(56,189,248,0.7)';
         }
 
@@ -2415,19 +2453,17 @@
             const scoreEl = document.createElement('div');
             scoreEl.className = 'font-mono text-sm font-semibold';
             scoreEl.style.color = scoreColor(n.score);
-            scoreEl.textContent = n.score.toFixed(1);
+            scoreEl.textContent = n.score != null ? n.score.toFixed(1) : '\u2014';
 
-            if (n.raw_count && n.dominant_signal) {
+            const sigPairs = n.rank === 1 && n.signal_counts
+                ? Object.entries(n.signal_counts).filter(([, v]) => v > 0).sort(([, a], [, b]) => b - a).slice(0, 2)
+                : (n.raw_count && n.dominant_signal ? [[n.dominant_signal, n.raw_count]] : []);
+
+            if (sigPairs.length) {
                 const sigEl = document.createElement('div');
                 sigEl.className = 'mt-1.5 font-mono text-xs';
-                const countSpan = document.createElement('span');
-                countSpan.style.color = scoreColor(n.score);
-                countSpan.style.fontWeight = '600';
-                countSpan.textContent = n.raw_count;
-                const labelSpan = document.createElement('span');
-                labelSpan.className = 'text-slate-500';
-                labelSpan.textContent = ' ' + t('signal_short', n.dominant_signal);
-                sigEl.append(countSpan, labelSpan);
+                sigEl.textContent = sigPairs.map(([k, v]) => `${v.toLocaleString()} ${tPlural('signal_short', k, v)}`).join(' · ');
+                sigEl.style.color = 'rgba(148,163,184,0.7)';
                 card.append(topRow, placeEl, scoreEl, sigEl);
             } else {
                 card.append(topRow, placeEl, scoreEl);
@@ -2510,14 +2546,8 @@
                         ownership_transfer: 'text-amber-400',
                         complaint: 'text-orange-400'
                     };
-                    const typeLabels = {
-                        permit: 'Permit',
-                        eviction: 'Eviction',
-                        ownership_transfer: 'LLC Transfer',
-                        complaint: '311 Complaint'
-                    };
+                    const typeLabel = t('civic', ev.type) !== ev.type ? t('civic', ev.type) : ev.type;
                     const typeClass = typeColors[ev.type] || 'text-slate-400';
-                    const typeLabel = typeLabels[ev.type] || ev.type;
 
                     // Build header row with DOM methods to prevent XSS from API strings
                     const headerRow = document.createElement('div');
@@ -2675,7 +2705,8 @@
             let _legendGone = false;
 
             const _seeLegendBtn = document.createElement('button');
-            _seeLegendBtn.textContent = 'See legend';
+            _seeLegendBtn.id = 'see-legend-btn';
+            _seeLegendBtn.textContent = t('ui', 'see_legend');
             _seeLegendBtn.style.cssText = 'display:none;position:absolute;top:8px;right:8px;z-index:31;font-size:10px;color:rgba(148,163,184,0.7);background:rgba(15,23,42,0.8);border:1px solid rgba(148,163,184,0.15);border-radius:4px;padding:4px 8px;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);';
             const _mapEl    = document.getElementById('map');
             const _drawerHandle = document.getElementById('mobile-drawer-handle');
@@ -2822,7 +2853,7 @@
             const scoreEl = document.createElement('span');
             scoreEl.className = 'font-mono text-sm font-semibold shrink-0';
             scoreEl.style.color = scoreColor(n.score);
-            scoreEl.textContent = n.score.toFixed(1);
+            scoreEl.textContent = n.score != null ? n.score.toFixed(1) : '\u2014';
 
             topRow.append(left, scoreEl);
             btn.appendChild(topRow);
@@ -2836,7 +2867,7 @@
                 countSpan.textContent = n.raw_count;
                 const labelSpan = document.createElement('span');
                 labelSpan.style.color = '#94a3b8';
-                labelSpan.textContent = ' ' + t('signal_short', n.dominant_signal);
+                labelSpan.textContent = ' ' + tPlural('signal_short', n.dominant_signal, n.raw_count);
                 descEl.append(countSpan, labelSpan);
             } else {
                 const fallback = _riskSignalLine(n.dominant_signal);
@@ -3197,7 +3228,7 @@
 
             (data.recent_evictions || []).forEach(item => {
                 if (!item.executed_date) return;
-                const addr = item.address || 'Unknown address';
+                const addr = item.address || t('civic', 'unknown_address');
                 const dateStr = new Date(item.executed_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                 combined.push({
                     type: 'eviction',

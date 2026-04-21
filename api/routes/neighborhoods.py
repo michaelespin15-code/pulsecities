@@ -204,7 +204,9 @@ def get_top_risk_neighborhoods(
     if cached and _time.monotonic() < cached[1]:
         return {"neighborhoods": cached[0]}
 
-    params: dict = {"limit": capped, "complaint_types": list(DISPLACEMENT_COMPLAINT_TYPES)}
+    # Fetch extra rows so we can filter out any with raw_count == 0 and still fill the list.
+    fetch_limit = min(capped * 3, 75)
+    params: dict = {"limit": fetch_limit, "complaint_types": list(DISPLACEMENT_COMPLAINT_TYPES)}
     # Use the specific borough range when filtered; otherwise restrict to all valid NYC ZIPs
     # so junk/sentinel values (00000, 12345, etc.) never appear in results.
     zip_filter = (
@@ -355,21 +357,23 @@ def get_top_risk_neighborhoods(
         "assessment_spike": "pct_assessment_spike",
     }
 
-    result = []
-    for i, row in enumerate(rows):
+    candidates = []
+    for row in rows:
         dominant, _ = _dominant_signal(row.signal_breakdown or {})
 
         raw_col = RAW_COUNT_COLS.get(dominant) if dominant else None
         raw_count = int(getattr(row, raw_col, 0) or 0) if raw_col else 0
+
+        if not raw_count:
+            continue
 
         pct_col = PCT_RANK_COLS.get(dominant) if dominant else None
         pct_rank = float(getattr(row, pct_col, 0.0) or 0.0) if pct_col else 0.0
 
         raw_count_label = _SIGNAL_LABELS.get(dominant, dominant or "") if dominant else ""
 
-        result.append(
+        candidates.append(
             {
-                "rank": i + 1,
                 "zip_code": row.zip_code,
                 "name": row.name,
                 "borough": row.borough,
@@ -380,6 +384,8 @@ def get_top_risk_neighborhoods(
                 "percentile_tier": _percentile_tier(pct_rank),
             }
         )
+
+    result = [dict(entry, rank=i + 1) for i, entry in enumerate(candidates[:capped])]
 
     import time as _time
     _TOP_RISK_CACHE[cache_key] = (result, _time.monotonic() + _TOP_RISK_TTL)
@@ -421,6 +427,43 @@ def get_top_movers(
             FROM score_history
             WHERE scored_at <= CURRENT_DATE - INTERVAL '6 days'
             ORDER BY zip_code, scored_at DESC
+        ),
+        llc_counts AS (
+            SELECT p.zip_code, COUNT(*) AS cnt
+            FROM ownership_raw o
+            JOIN parcels p ON o.bbl = p.bbl
+            WHERE o.party_type = '2'
+              AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
+              AND o.party_name_normalized LIKE '%LLC%'
+              AND o.doc_date >= CURRENT_DATE - INTERVAL '30 days'
+              AND p.zip_code IS NOT NULL
+              AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
+              AND o.party_name_normalized NOT ILIKE '%LOAN SERVICING%'
+              AND o.party_name_normalized NOT ILIKE '%LOAN SERVICE%'
+              AND o.party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
+              AND o.party_name_normalized NOT ILIKE '%CREDIT UNION%'
+            GROUP BY p.zip_code
+        ),
+        eviction_counts AS (
+            SELECT zip_code, COUNT(*) AS cnt
+            FROM evictions_raw
+            WHERE executed_date >= CURRENT_DATE - INTERVAL '30 days'
+              AND zip_code IS NOT NULL
+            GROUP BY zip_code
+        ),
+        permit_counts AS (
+            SELECT zip_code, COUNT(*) AS cnt
+            FROM permits_raw
+            WHERE filing_date >= CURRENT_DATE - INTERVAL '30 days'
+              AND zip_code IS NOT NULL
+            GROUP BY zip_code
+        ),
+        complaint_counts AS (
+            SELECT zip_code, COUNT(*) AS cnt
+            FROM complaints_raw
+            WHERE created_date >= CURRENT_DATE - INTERVAL '30 days'
+              AND zip_code IS NOT NULL
+            GROUP BY zip_code
         )
         SELECT
             l.zip_code,
@@ -431,17 +474,32 @@ def get_top_movers(
             l.llc_acquisition_rate,
             l.eviction_rate,
             l.permit_intensity,
-            l.complaint_rate
+            l.complaint_rate,
+            COALESCE(lc.cnt, 0) AS raw_llc,
+            COALESCE(ec.cnt, 0) AS raw_evictions,
+            COALESCE(pc.cnt, 0) AS raw_permits,
+            COALESCE(cc.cnt, 0) AS raw_complaints
         FROM latest l
         JOIN week_ago w ON l.zip_code = w.zip_code
-        LEFT JOIN neighborhoods n ON l.zip_code = n.zip_code
+        LEFT JOIN neighborhoods n      ON l.zip_code = n.zip_code
+        LEFT JOIN llc_counts lc        ON lc.zip_code = l.zip_code
+        LEFT JOIN eviction_counts ec   ON ec.zip_code = l.zip_code
+        LEFT JOIN permit_counts pc     ON pc.zip_code = l.zip_code
+        LEFT JOIN complaint_counts cc  ON cc.zip_code = l.zip_code
         WHERE l.composite_score - w.prev_score >= 0.5
           AND ({valid_zip})
         ORDER BY delta DESC
         LIMIT :limit
-    """), {"limit": capped}).fetchall()
+    """), {"limit": min(capped * 3, 60)}).fetchall()
 
-    result = []
+    _RAW_COLS = {
+        "llc_acquisitions": "raw_llc",
+        "evictions":        "raw_evictions",
+        "permits":          "raw_permits",
+        "complaint_rate":   "raw_complaints",
+    }
+
+    candidates = []
     for row in rows:
         signals = {
             "llc_acquisitions": float(row.llc_acquisition_rate or 0),
@@ -450,7 +508,11 @@ def get_top_movers(
             "complaint_rate":   float(row.complaint_rate or 0),
         }
         dominant = max(signals, key=signals.__getitem__) if any(v > 0 for v in signals.values()) else None
-        result.append({
+        raw_col   = _RAW_COLS.get(dominant) if dominant else None
+        raw_count = int(getattr(row, raw_col, 0) or 0) if raw_col else 0
+        if not raw_count:
+            continue
+        candidates.append({
             "zip_code":              row.zip_code,
             "name":                  row.name,
             "borough":               _borough_from_zip(row.zip_code),
@@ -459,7 +521,10 @@ def get_top_movers(
             "delta":                 float(row.delta),
             "dominant_signal":       dominant,
             "dominant_signal_label": _SIGNAL_LABELS.get(dominant, "") if dominant else "",
+            "raw_count":             raw_count,
         })
+
+    result = candidates[:capped]
 
     _TOP_MOVERS_CACHE[capped] = (result, _time.monotonic() + _TOP_MOVERS_TTL)
     return {"neighborhoods": result}

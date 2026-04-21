@@ -287,9 +287,13 @@
                 your_watchlist:     'Your Watchlist',
                 moving_this_week:   'Moving This Week',
                 sig_llc:            'LLC acquisitions',
+                sig_llc_s:          'LLC acquisition',
                 sig_evictions:      'evictions',
+                sig_evictions_s:    'eviction',
                 sig_permits:        'permit filings',
+                sig_permits_s:      'permit filing',
                 sig_complaints:     'tenant complaints',
+                sig_complaints_s:   'tenant complaint',
             },
             es: {
                 tagline:            'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
@@ -306,9 +310,13 @@
                 your_watchlist:     'Tu Lista de Seguimiento',
                 moving_this_week:   'Esta Semana',
                 sig_llc:            'adquisiciones LLC',
+                sig_llc_s:          'adquisición LLC',
                 sig_evictions:      'desalojos',
+                sig_evictions_s:    'desalojo',
                 sig_permits:        'permisos de obra',
+                sig_permits_s:      'permiso de obra',
                 sig_complaints:     'quejas de inquilinos',
+                sig_complaints_s:   'queja de inquilinos',
             }
         };
 
@@ -317,6 +325,11 @@
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.dataset.i18n;
                 if (s[key] !== undefined) el.textContent = s[key];
+            });
+            document.querySelectorAll('[data-signal]').forEach(el => {
+                const cnt   = el.dataset.count ? parseInt(el.dataset.count) : null;
+                const label = moverSignalLabel(el.dataset.signal, cnt);
+                el.textContent = cnt != null ? `${cnt.toLocaleString()} ${label}` : label;
             });
             const inp = document.getElementById('search-input');
             if (inp) inp.placeholder = s.search_placeholder;
@@ -413,28 +426,53 @@
         function renderZipCards(list) {
             const container = document.getElementById('zip-cards');
             if (!container || !list) return;
+            const rankColors = ['#f97316', '#94a3b8', '#64748b'];
             list.forEach(n => {
-                const color = scoreColor(n.score);
-                const card  = document.createElement('a');
+                const color     = scoreColor(n.score);
+                const rankColor = rankColors[n.rank - 1] || '#64748b';
+                const isTop     = n.rank === 1;
+                const card      = document.createElement('a');
                 card.href        = `/map?q=${encodeURIComponent(n.zip_code)}`;
-                card.className   = 'zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block';
-                card.style.cssText = 'background:rgba(30,41,59,0.7);min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;';
+                card.className   = 'zip-card text-left rounded-lg border px-4 py-3 block';
+                card.style.cssText = [
+                    'background:rgba(30,41,59,0.7)',
+                    `border-color:${isTop ? 'rgba(249,115,22,0.45)' : 'rgba(51,65,85,1)'}`,
+                    'min-width:min(160px,calc(50vw - 24px))',
+                    'max-width:200px',
+                    'text-decoration:none',
+                ].join(';');
+                let sigLine = '';
+                if (isTop && n.signal_counts) {
+                    const top2 = Object.entries(n.signal_counts)
+                        .filter(([, v]) => v > 0)
+                        .sort(([, a], [, b]) => b - a)
+                        .slice(0, 2)
+                        .map(([k, v]) => `<span data-signal="${k}" data-count="${v}">${v.toLocaleString()} ${moverSignalLabel(k, v)}</span>`)
+                        .join(' · ');
+                    if (top2) sigLine = `<div class="text-xs mt-0.5" style="color:rgba(148,163,184,0.55);">${top2}</div>`;
+                } else if (n.dominant_signal) {
+                    const lbl = moverSignalLabel(n.dominant_signal, n.raw_count);
+                    const raw = n.raw_count ? `${n.raw_count.toLocaleString()} ${lbl}` : lbl;
+                    if (raw) sigLine = `<div class="text-xs mt-0.5" data-signal="${n.dominant_signal}" data-count="${n.raw_count || 0}" style="color:rgba(148,163,184,0.55);">${raw}</div>`;
+                }
                 card.innerHTML = `
                     <div class="flex items-baseline gap-2 mb-0.5">
-                        <span class="text-xs font-mono text-slate-500">#${n.rank}</span>
+                        <span class="font-mono text-xs font-semibold" style="color:${rankColor};">#${n.rank}</span>
                         <span class="font-mono text-sm font-bold text-slate-100">${n.zip_code}</span>
                     </div>
                     <div class="text-xs text-slate-400 truncate mb-1">${n.name || ''}</div>
                     <div class="font-mono text-sm font-semibold" style="color:${color};">${n.score != null ? n.score.toFixed(1) : '\u2014'}</div>
+                    ${sigLine}
                 `;
                 container.appendChild(card);
             });
         }
 
-        function moverSignalLabel(dominant) {
+        function moverSignalLabel(dominant, count) {
             const s = i18n[_lang] || i18n.en;
-            return { llc_acquisitions: s.sig_llc, evictions: s.sig_evictions,
-                     permits: s.sig_permits, complaint_rate: s.sig_complaints }[dominant] || '';
+            const plural   = { llc_acquisitions: s.sig_llc,   evictions: s.sig_evictions,   permits: s.sig_permits,   complaint_rate: s.sig_complaints   };
+            const singular = { llc_acquisitions: s.sig_llc_s, evictions: s.sig_evictions_s, permits: s.sig_permits_s, complaint_rate: s.sig_complaints_s };
+            return (count === 1 ? singular[dominant] : plural[dominant]) || plural[dominant] || '';
         }
 
         function renderMovers(list) {
@@ -448,14 +486,15 @@
                 card.className = 'zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block';
                 card.style.cssText = 'background:rgba(30,41,59,0.7);min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;';
                 const deltaStr = `+${n.delta.toFixed(1)}`;
-                const label = moverSignalLabel(n.dominant_signal);
+                const label = moverSignalLabel(n.dominant_signal, n.raw_count);
+                const moverSig = n.raw_count && label ? `${n.raw_count.toLocaleString()} ${label}` : label;
                 card.innerHTML = `
                     <div class="flex items-baseline gap-2 mb-0.5">
                         <span class="font-mono text-sm font-bold text-slate-100">${n.zip_code}</span>
                         <span class="font-mono text-xs font-semibold" style="color:#ef4444;">${deltaStr}</span>
                     </div>
                     <div class="text-xs text-slate-400 truncate mb-1">${n.name || ''}</div>
-                    <div class="text-xs" style="color:rgba(148,163,184,0.55);">${label}</div>
+                    ${moverSig ? `<div class="text-xs" data-signal="${n.dominant_signal || ''}" data-count="${n.raw_count || 0}" style="color:rgba(148,163,184,0.55);">${moverSig}</div>` : ''}
                 `;
                 container.appendChild(card);
             });
@@ -497,7 +536,7 @@
                     card.className = 'zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block relative';
                     card.style.cssText = 'background:rgba(30,41,59,0.7);min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;';
                     card.innerHTML = `
-                        <button class="watch-remove absolute top-2 right-2 text-slate-600 hover:text-slate-300 transition-colors leading-none" data-zip="${zip}" style="font-size:14px;background:none;border:none;cursor:pointer;padding:2px 4px;" aria-label="Remove">&#10005;</button>
+                        <button class="watch-remove absolute top-2 right-2 text-slate-600 hover:text-slate-300 transition-colors leading-none" data-zip="${zip}" style="font-size:14px;background:none;border:none;cursor:pointer;min-height:36px;min-width:36px;" aria-label="Remove">&#10005;</button>
                         <div class="font-mono text-sm font-bold text-slate-100 mb-0.5 pr-4">${zip}</div>
                         <div class="text-xs text-slate-400 truncate mb-1">${name}</div>
                         <div class="font-mono text-sm font-semibold" style="color:${color};">${score != null ? score.toFixed(1) : '\u2014'}</div>
