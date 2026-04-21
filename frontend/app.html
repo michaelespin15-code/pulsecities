@@ -16,14 +16,14 @@
 
     <!-- SEO -->
     <meta name="description" content="NYC displacement risk scores for 178 neighborhoods, updated daily from ACRIS deeds, HPD violations, DOB permits, evictions, and rent stabilization data.">
-    <link rel="canonical" href="https://pulsecities.com/">
+    <link rel="canonical" href="https://pulsecities.com/map">
     <meta name="google-site-verification" content="MKaKepk4Gh2qgqwZKg-1LM2xY2awVz_oolaH9-aCy8s">
     <meta name="msvalidate.01" content="95DE30DECA6461151C9E62CD73DB2358">
 
     <!-- Open Graph -->
     <meta property="og:title" content="PulseCities: NYC Displacement Risk Intelligence">
     <meta property="og:description" content="Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and assessment spikes.">
-    <meta property="og:url" content="https://pulsecities.com/">
+    <meta property="og:url" content="https://pulsecities.com/map">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="PulseCities">
     <meta property="og:image" content="https://pulsecities.com/og-image.png">
@@ -299,10 +299,10 @@
             <!-- Map legend — bottom-left, always visible -->
             <div id="map-legend" class="absolute bottom-9 left-4 z-10 rounded-lg px-3 py-2 flex flex-col gap-1" style="background:rgba(15,23,42,0.88);backdrop-filter:blur(6px);border:1px solid rgba(148,163,184,0.15);font-size:11px;">
                 <div class="text-slate-400 font-mono uppercase tracking-wider mb-0.5" style="font-size:10px;letter-spacing:0.08em;"><span id="legend-header">displacement risk</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#22c55e;display:inline-block;flex-shrink:0;"></span><span id="legend-low" class="text-slate-300">Low (0–33)</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#eab308;display:inline-block;flex-shrink:0;"></span><span id="legend-moderate" class="text-slate-300">Moderate (34–66)</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#f97316;display:inline-block;flex-shrink:0;"></span><span id="legend-high" class="text-slate-300">High (67–84)</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block;flex-shrink:0;"></span><span id="legend-critical" class="text-slate-300">Critical (85+)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#22c55e;display:inline-block;flex-shrink:0;"></span><span id="legend-low" class="text-slate-300">Low (0–34)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#eab308;display:inline-block;flex-shrink:0;"></span><span id="legend-moderate" class="text-slate-300">Moderate (35–54)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#f97316;display:inline-block;flex-shrink:0;"></span><span id="legend-high" class="text-slate-300">High (55–69)</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block;flex-shrink:0;"></span><span id="legend-critical" class="text-slate-300">Critical (70+)</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#94a3b8;display:inline-block;flex-shrink:0;"></span><span id="legend-no-data" class="text-slate-300">No data</span></div>
                 <div id="map-data-updated" class="text-slate-500 mt-1" style="font-size:10px;"></div>
             </div>
@@ -632,6 +632,9 @@
                 </div>
                 <!-- Attribution -->
                 <div id="sidebar-attribution" class="pt-3 border-t border-base-content/10 text-[13px] sm:text-xs text-slate-500 text-center">
+                    <div class="mb-2">
+                        <a href="/methodology" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-slate-300 transition-colors duration-150">About</a>
+                    </div>
                     <span id="sidebar-built-by">Built by</span>
                     <a
                         href="https://www.linkedin.com/in/michaelespin"
@@ -698,6 +701,7 @@
                 </div>
             </div>
             <p class="text-xs text-slate-400 mt-4">Scores are normalized per residential unit using MapPLUTO unit counts to prevent bias toward dense commercial areas. All data is public record.</p>
+            <a href="/methodology" target="_blank" rel="noopener noreferrer" class="block text-center text-xs text-sky-400 hover:text-sky-300 underline mt-4">Full details &rarr;</a>
         </div>
     </div>
 
@@ -1475,8 +1479,9 @@
                         [
                             'interpolate', ['linear'], ['get', 'score'],
                             0,   '#22c55e',
-                            40,  '#eab308',
-                            70,  '#f97316',
+                            30,  '#22c55e',
+                            45,  '#eab308',
+                            60,  '#f97316',
                             100, '#ef4444'
                         ]
                     ],
@@ -1555,23 +1560,23 @@
         function scoreColor(score) {
             if (score === null) return '#94a3b8';
             if (score >= 70) return '#ef4444';
-            if (score >= 40) return '#f97316';
-            if (score >= 15) return '#eab308';
+            if (score >= 55) return '#f97316';
+            if (score >= 35) return '#eab308';
             return '#22c55e';
         }
 
         function signalBarColor(v) {
             if (v >= 70) return '#ef4444';
-            if (v >= 40) return '#f97316';
-            if (v >= 15) return '#eab308';
+            if (v >= 55) return '#f97316';
+            if (v >= 35) return '#eab308';
             return '#22c55e';
         }
 
         function riskLabel(score) {
             if (score === null || score === undefined) return '';
             if (score >= 70) return t('risk_level', 'critical');
-            if (score >= 40) return t('risk_level', 'high');
-            if (score >= 15) return t('risk_level', 'moderate');
+            if (score >= 55) return t('risk_level', 'high');
+            if (score >= 35) return t('risk_level', 'moderate');
             return t('risk_level', 'low');
         }
 

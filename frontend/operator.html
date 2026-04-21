@@ -44,7 +44,10 @@
                 <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span style="font-size: 0.85rem; color: rgba(148,163,184,0.6);">PulseCities</span>
             </a>
-            <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
+            <div style="display:flex;align-items:center;gap:16px;">
+                <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">About</a>
+                <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
+            </div>
         </div>
     </nav>
 
@@ -191,7 +194,7 @@
             llc_in_cluster:      'LLC entities in {name} cluster',
             view_profile:        'View {name} profile \u2192',
             more:                '+{n} more',
-            confidence:          '{pct}% confidence \u00b7 {props} props',
+            confidence:          '{pct}% confidence',
             rel_strong:          'strong affiliation',
             rel_possible:        'possible affiliation',
             chip_window:         '18-month window',
@@ -228,7 +231,7 @@
             llc_in_cluster:      'Entidades LLC en el grupo {name}',
             view_profile:        'Ver perfil de {name} \u2192',
             more:                '+{n} m\u00e1s',
-            confidence:          '{pct}% confianza \u00b7 {props} propiedades',
+            confidence:          '{pct}% confianza',
             rel_strong:          'afiliaci\u00f3n fuerte',
             rel_possible:        'posible afiliaci\u00f3n',
             chip_window:         'ventana de 18 meses',
@@ -342,7 +345,7 @@
                 '<span class="' + (isStrong ? 'tag-strong' : 'tag-possible') + '">' + esc(relTag) + '</span>' +
             '</div>' +
             '<div class="mono" style="font-size:0.72rem;color:rgba(148,163,184,0.4);">' +
-                t('confidence').replace('{pct}', pct).replace('{props}', rel.total_properties) +
+                t('confidence').replace('{pct}', pct) +
             '</div>';
         card.appendChild(header);
 
@@ -351,12 +354,20 @@
         (rel.signals || []).forEach(sig => {
             const chip = document.createElement('span');
             chip.className   = 'signal-chip';
-            chip.title       = sig.detail || '';
             chip.textContent = t('sig_' + sig.signal_type) !== 'sig_' + sig.signal_type
                 ? t('sig_' + sig.signal_type)
                 : sig.signal_type.replace(/_/g, ' ');
             sigRow.appendChild(chip);
-            if (sig.detail) {
+            // shared_bbl: show clean count only — raw BBL list is redundant with Shared Properties below
+            if (sig.signal_type === 'shared_bbl') {
+                const count = (sig.shared_bbls || []).length;
+                if (count > 0) {
+                    const detail = document.createElement('div');
+                    detail.style.cssText = 'width:100%;font-size:0.7rem;color:rgba(148,163,184,0.45);padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
+                    detail.textContent = count + ' shared BBL' + (count !== 1 ? 's' : '') + ' — see shared properties below';
+                    sigRow.appendChild(detail);
+                }
+            } else if (sig.detail) {
                 const detail = document.createElement('div');
                 detail.style.cssText = 'width:100%;font-size:0.7rem;color:rgba(148,163,184,0.45);padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
                 detail.textContent = sig.detail;
@@ -388,6 +399,7 @@
             const entityDiv = document.createElement('div');
             entityDiv.style.cssText = 'border-top:1px solid rgba(148,163,184,0.07);';
             const det  = document.createElement('details');
+            det.open   = true;
             const summ = document.createElement('summary');
             summ.style.cssText = 'padding:10px 16px;display:flex;align-items:center;justify-content:space-between;';
             summ.innerHTML =
@@ -477,5 +489,14 @@
 
     applyTranslations();
     </script>
+    <footer style="text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b;font-family:'Inter',sans-serif;">
+        <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;">
+            <a href="/" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
+            <a href="/map" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Map</a>
+            <a href="/operators" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Operators</a>
+            <a href="/methodology" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
+            <a href="mailto:michaelespin15@gmail.com" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
+        </div>
+    </footer>
 </body>
 </html>
