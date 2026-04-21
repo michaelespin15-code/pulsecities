@@ -247,11 +247,26 @@
             }
             #landlord-copy-btn,
             #landlord-clear-btn {
-                min-height: 40px !important;
+                min-height: 44px !important;
             }
             #hero-zip-cards {
                 gap: 8px;
                 padding: 0 4px;
+            }
+            /* Score card action buttons */
+            #watch-btn,
+            #compare-btn {
+                min-height: 44px !important;
+                padding: 10px 14px !important;
+            }
+            /* Back-to-list nav button */
+            #back-to-list-btn {
+                min-height: 44px !important;
+            }
+            /* details/summary touch targets — pulse and signal breakdown */
+            #pulse-section details > summary,
+            #detail-panel details > summary {
+                min-height: 44px;
             }
             /* Move legend to top-right on mobile — permanently clear of drawer */
             #map-legend {
@@ -404,7 +419,7 @@
                         <div class="text-right">
                             <span id="detail-risk-label" class="text-sm font-semibold block"></span>
                             <span id="detail-percentile" class="hidden">
-                                <span class="inline-flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded mt-1.5 bg-slate-700/60 text-slate-400 tracking-wide">
+                                <span class="inline-flex items-center gap-0.5 text-xs font-mono px-1.5 py-0.5 rounded mt-1.5 bg-slate-700/60 text-slate-400 tracking-wide">
                                     top <span id="detail-percentile-val"></span>% citywide
                                 </span>
                             </span>
