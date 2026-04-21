@@ -283,6 +283,18 @@
             display: inline-block;
             animation: hero-pulse-dot 2.5s ease-in-out infinite;
         }
+        /* Sidebar sections that load async fade in rather than snapping in */
+        @keyframes sidebar-fade-in {
+            from { opacity: 0; transform: translateY(5px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        #pulse-section:not(.hidden),
+        #active-buyers-section:not(.hidden),
+        #history-section:not(.hidden),
+        #recent-activity-section:not(.hidden),
+        #renovation-flip-alert:not(.hidden) {
+            animation: sidebar-fade-in 0.18s ease-out;
+        }
     </style>
 </head>
 <body>
@@ -1007,7 +1019,8 @@
                     acquired_by:      'Acquired by',
                     filed:            'filed',
                     executed:         'Residential eviction',
-                    empty:            'No recent activity in this ZIP.'
+                    empty:            'No recent activity in this ZIP.',
+                    fetch_error:      'Activity data unavailable right now.'
                 },
                 risk_level: {
                     critical: 'CRITICAL RISK',
@@ -1202,7 +1215,8 @@
                     acquired_by:      'Adquirido por',
                     filed:            'presentado',
                     executed:         'Desalojo residencial',
-                    empty:            'Sin actividad reciente en este código postal.'
+                    empty:            'Sin actividad reciente en este código postal.',
+                    fetch_error:      'Datos de actividad no disponibles.'
                 },
                 risk_level: {
                     critical: 'RIESGO CRÍTICO',
@@ -1801,7 +1815,13 @@
                     renderRecentActivity(data);
                     section.classList.remove('hidden');
                 })
-                .catch(() => {}); // best-effort, silently ignore
+                .catch(() => {
+                    if (seq !== _selectionSeq) return;
+                    const emptyEl = document.getElementById('pulse-empty');
+                    emptyEl.textContent = t('pulse', 'fetch_error');
+                    emptyEl.classList.remove('hidden');
+                    section.classList.remove('hidden');
+                });
         }
 
         function renderActiveBuyers(zip, seq) {
