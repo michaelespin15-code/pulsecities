@@ -823,6 +823,7 @@
         let _historyDays  = 90;
         let _historyZip   = null;
         let _historySeq   = 0;  // incremented on each fetch; stale responses are dropped
+        let _selectionSeq = 0;  // incremented on each neighborhood selection; stale renders are dropped
         let _chartJsLoaded = false;
 
         function _loadChartJs() {
@@ -1695,7 +1696,7 @@
                 .replace(/"/g, '&quot;');
         }
 
-        function renderPulse(zip) {
+        function renderPulse(zip, seq) {
             const section = document.getElementById('pulse-section');
             section.classList.add('hidden');  // hide while loading
             // TODO: pass lang=${lang} to summary API when endpoint is added
@@ -1703,6 +1704,7 @@
             fetch(`/api/neighborhoods/${zip}/pulse`, { signal: AbortSignal.timeout(10000) })
                 .then(r => r.ok ? r.json() : null)
                 .then(data => {
+                    if (seq !== _selectionSeq) return;
                     if (!data) return;
                     // Update translatable section headers
                     const sectionTitle = document.getElementById('pulse-section-title');
@@ -1802,10 +1804,11 @@
                 .catch(() => {}); // best-effort, silently ignore
         }
 
-        function renderActiveBuyers(zip) {
+        function renderActiveBuyers(zip, seq) {
             fetch(`/api/neighborhoods/${zip}/active-buyers`, { signal: AbortSignal.timeout(8000) })
                 .then(r => r.ok ? r.json() : [])
                 .then(buyers => {
+                    if (seq !== _selectionSeq) return;
                     const section = document.getElementById('active-buyers-section');
                     const list = document.getElementById('active-buyers-list');
                     if (!buyers || buyers.length === 0) { section.classList.add('hidden'); return; }
@@ -1827,13 +1830,14 @@
                 .catch(() => {});
         }
 
-        function renderRenovationFlip(zip) {
+        function renderRenovationFlip(zip, seq) {
             const alertEl = document.getElementById('renovation-flip-alert');
             alertEl.classList.add('hidden');
 
-            fetch(`/api/neighborhoods/${zip}/renovation-flip`)
+            fetch(`/api/neighborhoods/${zip}/renovation-flip`, { signal: AbortSignal.timeout(8000) })
                 .then(r => r.ok ? r.json() : null)
                 .then(data => {
+                    if (seq !== _selectionSeq) return;
                     if (!data || !data.detected) {
                         alertEl.classList.add('hidden');
                         return;
@@ -2019,7 +2023,7 @@
                     _cachedZipData.borough,
                     _cachedZipData.rawCounts
                 );
-                renderPulse(_cachedZip);
+                renderPulse(_cachedZip, _selectionSeq);
             }
         }
         document.getElementById('lang-toggle').addEventListener('click', () => setLanguage(lang === 'en' ? 'es' : 'en'));
@@ -2842,10 +2846,15 @@
         // ---------------------------------------------------------------------------
 
         async function selectNeighborhood(zip, { suppressMobileSheet = false } = {}) {
+            const seq = ++_selectionSeq;
             _cachedZip = zip;
             _cachedZipData = null;
             history.pushState(null, '', '/neighborhood/' + zip);
             showDetail(zip, null, null);
+            // Dim score to signal loading rather than absence of data
+            const _scoreLoadEl = document.getElementById('detail-score');
+            _scoreLoadEl.style.opacity = '0.2';
+            document.getElementById('no-score-msg').classList.add('hidden');
             if (window.innerWidth < 768 && !suppressMobileSheet) {
                 showMobileSidebar();
                 const backBtn = document.getElementById('back-to-list-btn');
@@ -2853,9 +2862,11 @@
                 _navFromList = false;
             }
             try {
-                const resp = await fetch(`/api/neighborhoods/${zip}/score`);
+                const resp = await fetch(`/api/neighborhoods/${zip}/score`, { signal: AbortSignal.timeout(15000) });
+                if (seq !== _selectionSeq) return;
                 if (resp.ok) {
                     const data = await resp.json();
+                    if (seq !== _selectionSeq) return;
                     _cachedZipData = {
                         score: data.score,
                         breakdown: data.signal_breakdown,
@@ -2866,17 +2877,22 @@
                         borough: data.borough,
                         rawCounts: data.signal_raw_counts || {}
                     };
+                    _scoreLoadEl.style.opacity = '';
                     showDetail(zip, data.score, data.signal_breakdown, data.last_updated, data.signal_last_updated, data.summary_text, data.name, data.borough, data.signal_raw_counts);
-                    renderPulse(zip);
-                    renderRenovationFlip(zip);
-                    renderActiveBuyers(zip);
+                    renderPulse(zip, seq);
+                    renderRenovationFlip(zip, seq);
+                    renderActiveBuyers(zip, seq);
                     renderScoreHistory(zip, _historyDays);
                 } else {
+                    _scoreLoadEl.style.opacity = '';
                     showDetail(zip, null, null);
                     if (resp.status !== 404) console.error('Score fetch returned', resp.status);
                 }
             } catch (err) {
-                console.error('Score fetch failed:', err);
+                if (seq === _selectionSeq) {
+                    _scoreLoadEl.style.opacity = '';
+                    console.error('Score fetch failed:', err);
+                }
             }
         }
 
