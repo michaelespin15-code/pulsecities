@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 PARTIES_DATASET_ID = "636b-3b5g"
 PARTIES_URL = f"{SOCRATA_BASE_URL}/{PARTIES_DATASET_ID}.json"
 GRANTEE_PARTY_TYPE = "2"
-BATCH_SIZE = 400
+BATCH_SIZE = 20
 
 
 def _fetch_addresses(session: requests.Session, doc_ids: list[str]) -> dict[str, dict]:
@@ -42,7 +42,7 @@ def _fetch_addresses(session: requests.Session, doc_ids: list[str]) -> dict[str,
         "$select": "document_id, addr_1, addr_2, city, state, zip",
         "$limit": 10_000,
     }
-    app_token = os.environ.get("SOCRATA_APP_TOKEN")
+    app_token = os.environ.get("NYC_OPEN_DATA_APP_TOKEN")
     headers = {"X-App-Token": app_token} if app_token else {}
     resp = session.get(PARTIES_URL, params=params, headers=headers, timeout=60)
     resp.raise_for_status()
