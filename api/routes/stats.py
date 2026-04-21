@@ -45,6 +45,12 @@ _VALID_NYC_ZIP_CLAUSE = (
 )
 
 
+import time as _time
+
+_STATS_CACHE: dict = {}
+_STATS_TTL = 3600  # 1 hour — counts change nightly, not per request
+
+
 @router.get("")
 @limiter.limit("60/minute")
 def get_citywide_stats(request: Request, response: Response, db: Session = Depends(get_db)):
@@ -52,6 +58,9 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
     Citywide 30-day LLC transfers, eviction filings, and the current top-risk ZIP.
     Consumed by the homepage hero overlay stat chips.
     """
+    cached = _STATS_CACHE.get("data")
+    if cached and _time.monotonic() < cached[1]:
+        return cached[0]
     llc_count = db.execute(text("""
         SELECT COUNT(DISTINCT bbl) FROM ownership_raw
         WHERE party_type = '2'
@@ -129,7 +138,7 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
         WHERE ds.score IS NOT NULL
           AND ({_VALID_NYC_ZIP_CLAUSE})
         ORDER BY ds.score DESC
-        LIMIT 3
+        LIMIT 9
     """)).fetchall()
 
     _RAW = {
@@ -145,20 +154,29 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
 
     top_risk = None
     top_risk_list = []
-    for i, row in enumerate(top_rows):
+    for row in top_rows:
         dominant = _dominant(row.signal_breakdown or {})
         raw_count = int(getattr(row, _RAW.get(dominant, ""), 0) or 0) if dominant else 0
+        if not raw_count:
+            continue
+        signal_counts = {
+            "llc_acquisitions": int(row.raw_llc or 0),
+            "evictions":        int(row.raw_evictions or 0),
+            "permits":          int(row.raw_permits or 0),
+            "complaint_rate":   int(row.raw_complaints or 0),
+        }
         entry = {
-            "rank":             i + 1,
+            "rank":             len(top_risk_list) + 1,
             "zip_code":         row.zip_code,
             "name":             row.name,
             "borough":          row.borough,
             "score":            round(float(row.score), 1),
             "dominant_signal":  dominant,
             "raw_count":        raw_count,
+            "signal_counts":    signal_counts,
         }
         top_risk_list.append(entry)
-        if i == 0:
+        if len(top_risk_list) == 1:
             top_risk = {
                 "zip_code":    row.zip_code,
                 "name":        row.name,
@@ -169,10 +187,14 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
                     if row.cache_generated_at else None
                 ),
             }
+        if len(top_risk_list) >= 3:
+            break
 
-    return {
+    result = {
         "llc_transfers_30d": int(llc_count),
         "evictions_30d":     int(eviction_count),
         "top_risk":          top_risk,
         "top_risk_list":     top_risk_list,
     }
+    _STATS_CACHE["data"] = (result, _time.monotonic() + _STATS_TTL)
+    return result
