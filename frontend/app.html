@@ -934,7 +934,7 @@
 
                     const labels = hist.map(h => {
                         const d = new Date(h.date + 'T00:00:00');
-                        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        return d.toLocaleDateString(_locale(), { month: 'short', day: 'numeric' });
                     });
                     const scores = hist.map(h => h.score);
 
@@ -1156,6 +1156,15 @@
                     see_legend:              'See legend',
                     watch:                   'Watch',
                     watching:                'Watching',
+                    reno_flip_days:          '{n}d later',
+                    landlord_found:          'Found {count} {properties} across {zips} {zip_codes} — {llcs} {llc_names}',
+                    landlord_property:       'property',
+                    landlord_properties:     'properties',
+                    landlord_zip:            'zip code',
+                    landlord_zips:           'zip codes',
+                    landlord_llc:            'LLC name',
+                    landlord_llcs:           'LLC names',
+                    landlord_acq:            '— ~${amount}M in acquisitions',
                 },
                 risk_signal: {
                     permits:          'Surge in renovation permit filings',
@@ -1352,6 +1361,15 @@
                     see_legend:              'Ver leyenda',
                     watch:                   'Seguir',
                     watching:                'Siguiendo',
+                    reno_flip_days:          '{n}d después',
+                    landlord_found:          'Se encontraron {count} {properties} en {zips} {zip_codes} — {llcs} {llc_names}',
+                    landlord_property:       'propiedad',
+                    landlord_properties:     'propiedades',
+                    landlord_zip:            'código postal',
+                    landlord_zips:           'códigos postales',
+                    landlord_llc:            'nombre LLC',
+                    landlord_llcs:           'nombres LLC',
+                    landlord_acq:            '— ~${amount}M en adquisiciones',
                 },
                 risk_signal: {
                     permits:          'Aumento en solicitudes de permisos de renovación',
@@ -1710,6 +1728,16 @@
             return t('signal_desc', key);
         }
 
+        // Returns the BCP 47 locale tag matching the current UI language.
+        function _locale() { return lang === 'es' ? 'es-419' : 'en-US'; }
+
+        // Title-cases a raw ACRIS/DOB string. Preserves known legal abbreviations.
+        const _TC_UPPER = new Set(['LLC', 'LP', 'LLP', 'INC', 'NYC', 'DOB', 'HPD', 'BBL', 'HDFC', 'NYCHA', 'II', 'III', 'IV', 'VI', 'VII']);
+        function titleCase(str) {
+            if (!str) return str;
+            return str.toLowerCase().replace(/\b\w+/g, w => _TC_UPPER.has(w.toUpperCase()) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1));
+        }
+
         function truncate(str, n) {
             return str && str.length > n ? str.slice(0, n) + '\u2026' : (str || '');
         }
@@ -1736,7 +1764,7 @@
             const nowYear = new Date().getUTCFullYear();
             const opts = { month: 'short', day: 'numeric', timeZone: 'UTC' };
             if (d.getUTCFullYear() !== nowYear) opts.year = 'numeric';
-            return d.toLocaleDateString('en-US', opts);
+            return d.toLocaleDateString(_locale(), opts);
         }
 
         function esc(str) {
@@ -1791,13 +1819,13 @@
                         appendWithMore(data.llc_acquisitions, llcList, item => {
                             const el = document.createElement('div');
                             el.className = 'py-2 border-b border-base-content/10 last:border-0';
-                            const dateStr = item.doc_date ? new Date(item.doc_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+                            const dateStr = item.doc_date ? new Date(item.doc_date + 'T00:00:00').toLocaleDateString(_locale(), {month:'short',day:'numeric'}) : '';
                             el.innerHTML = `
                                 <div class="flex justify-between items-baseline gap-2">
-                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${item.address || item.bbl}</span>
+                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${titleCase(item.address) || item.bbl}</span>
                                     ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
                                 </div>
-                                <div class="text-xs text-slate-400 mt-0.5">${t('pulse', 'acquired_by')} ${item.buyer_name || ''}</div>
+                                <div class="text-xs text-slate-400 mt-0.5">${t('pulse', 'acquired_by')} ${titleCase(item.buyer_name) || ''}</div>
                             `;
                             return el;
                         }, 5);
@@ -1810,10 +1838,10 @@
                         appendWithMore(data.recent_permits, permList, item => {
                             const el = document.createElement('div');
                             el.className = 'py-2 border-b border-base-content/10 last:border-0';
-                            const dateStr = item.filing_date ? new Date(item.filing_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+                            const dateStr = item.filing_date ? new Date(item.filing_date + 'T00:00:00').toLocaleDateString(_locale(), {month:'short',day:'numeric'}) : '';
                             el.innerHTML = `
                                 <div class="flex justify-between items-baseline gap-2">
-                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${item.address || item.bbl}</span>
+                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${titleCase(item.address) || item.bbl}</span>
                                     ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
                                 </div>
                                 <div class="text-xs text-slate-400 mt-0.5">${translatePermitLabel(item.permit_type_label || item.permit_type)} ${t('pulse', 'filed')}</div>
@@ -1831,12 +1859,12 @@
                             el.className = 'py-2 border-b border-base-content/10 last:border-0 rounded focus:outline-none focus:ring-2 focus:ring-red-400/50';
                             el.setAttribute('tabindex', '0');
                             el.setAttribute('role', 'listitem');
-                            const dateStr = item.executed_date ? new Date(item.executed_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+                            const dateStr = item.executed_date ? new Date(item.executed_date + 'T00:00:00').toLocaleDateString(_locale(), {month:'short',day:'numeric'}) : '';
                             const typeStr = translateEvictionType(item.eviction_type);
                             el.setAttribute('aria-label', `Eviction at ${item.address || 'unknown address'}${dateStr ? ', ' + dateStr : ''}, ${typeStr}`);
                             el.innerHTML = `
                                 <div class="flex justify-between items-baseline gap-2">
-                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${item.address || t('civic', 'unknown_address')}</span>
+                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${titleCase(item.address) || t('civic', 'unknown_address')}</span>
                                     ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
                                 </div>
                                 <div class="text-xs text-slate-400 mt-0.5">${typeStr}</div>
@@ -1914,8 +1942,8 @@
                         addr.textContent = p.address || p.bbl;
                         const detail = document.createElement('div');
                         detail.className = 'text-xs text-slate-400';
-                        const transferDate = p.transfer_date ? new Date(p.transfer_date + 'T00:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
-                        const days = p.days_between != null ? `${p.days_between}d later` : '';
+                        const transferDate = p.transfer_date ? new Date(p.transfer_date + 'T00:00:00').toLocaleDateString(_locale(), {month:'short',day:'numeric'}) : '';
+                        const days = p.days_between != null ? t('ui', 'reno_flip_days').replace('{n}', p.days_between) : '';
                         detail.textContent = `${p.buyer || ''}` + (transferDate ? ` \u2014 ${transferDate}` : '') + (days ? ` \u2014 ${t('ui', 'reno_flip_permit')} ${days}` : '');
                         el.appendChild(addr);
                         el.appendChild(detail);
@@ -2391,7 +2419,7 @@
                 // Pulse dot tooltip (D-10): "Scores updated Apr 17 · nightly at 2am UTC"
                 const pulseEl = centerEl ? centerEl.querySelector('.pulse-dot') : null;
                 if (pulseEl && topRisk.last_updated) {
-                    const dateStr = new Date(topRisk.last_updated).toLocaleDateString('en-US', {
+                    const dateStr = new Date(topRisk.last_updated).toLocaleDateString(_locale(), {
                         month: 'short', day: 'numeric', timeZone: 'UTC'
                     });
                     pulseEl.title = `${t('hero', 'pulse_tooltip_pre')} ${dateStr} ${t('hero', 'pulse_tooltip_suf')}`;
@@ -3166,13 +3194,19 @@
             const resultsEl = document.getElementById('landlord-results');
 
             // Summary line — dollar amount only when > 0
-            const propLabel = s.total_properties === 1 ? 'property' : 'properties';
-            const zipLabel  = s.unique_zip_codes   === 1 ? 'zip code' : 'zip codes';
-            const llcLabel  = s.total_llc_names    === 1 ? 'LLC name' : 'LLC names';
-            let summary = `Found ${s.total_properties} ${propLabel} across ${s.unique_zip_codes} ${zipLabel} \u2014 ${s.total_llc_names} ${llcLabel}`;
+            const propLabel = t('ui', s.total_properties === 1 ? 'landlord_property' : 'landlord_properties');
+            const zipLabel  = t('ui', s.unique_zip_codes   === 1 ? 'landlord_zip'      : 'landlord_zips');
+            const llcLabel  = t('ui', s.total_llc_names    === 1 ? 'landlord_llc'      : 'landlord_llcs');
+            let summary = t('ui', 'landlord_found')
+                .replace('{count}',      s.total_properties)
+                .replace('{properties}', propLabel)
+                .replace('{zips}',       s.unique_zip_codes)
+                .replace('{zip_codes}',  zipLabel)
+                .replace('{llcs}',       s.total_llc_names)
+                .replace('{llc_names}',  llcLabel);
             if (s.estimated_total_value > 0) {
                 const millions = s.estimated_total_value / 1_000_000;
-                summary += ` \u2014 ~$${millions.toFixed(1)}M in acquisitions`;
+                summary += ' ' + t('ui', 'landlord_acq').replace('{amount}', millions.toFixed(1));
             }
             summaryEl.textContent = summary;
 
@@ -3192,7 +3226,7 @@
                 row.style.minHeight = '44px';
 
                 const dateStr = r.doc_date
-                    ? new Date(r.doc_date + 'T00:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric'})
+                    ? new Date(r.doc_date + 'T00:00:00').toLocaleDateString(_locale(), {month: 'short', day: 'numeric'})
                     : '';
 
                 const top = document.createElement('div');
@@ -3200,7 +3234,7 @@
 
                 const addr = document.createElement('span');
                 addr.className = 'text-sm text-base-content font-medium truncate';
-                addr.textContent = r.address;
+                addr.textContent = titleCase(r.address);
                 top.appendChild(addr);
 
                 if (dateStr) {
@@ -3212,7 +3246,7 @@
 
                 const bottom = document.createElement('div');
                 bottom.className = 'text-xs text-slate-400 mt-0.5 truncate';
-                bottom.textContent = `${r.zip_code || ''} \u2014 ${r.buyer_name || ''}`;
+                bottom.textContent = `${r.zip_code || ''} \u2014 ${titleCase(r.buyer_name) || ''}`;
 
                 row.appendChild(top);
                 row.appendChild(bottom);
@@ -3313,11 +3347,11 @@
             ];
             _landlordData.results.forEach(r => {
                 const dateStr = r.doc_date
-                    ? new Date(r.doc_date + 'T00:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})
+                    ? new Date(r.doc_date + 'T00:00:00').toLocaleDateString(_locale(), {month: 'short', day: 'numeric', year: 'numeric'})
                     : '';
-                let line = `${r.address}, ${r.zip_code} \u2014 ${r.buyer_name} \u2014 ${dateStr}`;
+                let line = `${titleCase(r.address)}, ${r.zip_code} \u2014 ${titleCase(r.buyer_name)} \u2014 ${dateStr}`;
                 if (r.doc_amount != null) {
-                    line += ` \u2014 $${r.doc_amount.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+                    line += ` \u2014 $${r.doc_amount.toLocaleString(_locale(), {maximumFractionDigits: 0})}`;
                 }
                 lines.push(line);
             });
@@ -3350,8 +3384,8 @@
 
             (data.llc_acquisitions || []).forEach(item => {
                 if (!item.doc_date) return;
-                const addr = item.address || item.bbl;
-                const dateStr = new Date(item.doc_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const addr = titleCase(item.address) || item.bbl;
+                const dateStr = new Date(item.doc_date + 'T00:00:00').toLocaleDateString(_locale(), { month: 'short', day: 'numeric' });
                 combined.push({
                     type: 'llc',
                     sortDate: item.doc_date,
@@ -3363,8 +3397,8 @@
 
             (data.recent_permits || []).forEach(item => {
                 if (!item.filing_date) return;
-                const addr = item.address || item.bbl;
-                const dateStr = new Date(item.filing_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const addr = titleCase(item.address) || item.bbl;
+                const dateStr = new Date(item.filing_date + 'T00:00:00').toLocaleDateString(_locale(), { month: 'short', day: 'numeric' });
                 combined.push({
                     type: 'permit',
                     sortDate: item.filing_date,
@@ -3376,8 +3410,8 @@
 
             (data.recent_evictions || []).forEach(item => {
                 if (!item.executed_date) return;
-                const addr = item.address || t('civic', 'unknown_address');
-                const dateStr = new Date(item.executed_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const addr = titleCase(item.address) || t('civic', 'unknown_address');
+                const dateStr = new Date(item.executed_date + 'T00:00:00').toLocaleDateString(_locale(), { month: 'short', day: 'numeric' });
                 combined.push({
                     type: 'eviction',
                     sortDate: item.executed_date,
