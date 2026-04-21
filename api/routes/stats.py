@@ -58,6 +58,7 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
     Citywide 30-day LLC transfers, eviction filings, and the current top-risk ZIP.
     Consumed by the homepage hero overlay stat chips.
     """
+    response.headers["Cache-Control"] = "public, max-age=3600"
     cached = _STATS_CACHE.get("data")
     if cached and _time.monotonic() < cached[1]:
         return cached[0]
