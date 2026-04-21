@@ -389,13 +389,22 @@
                         <span id="detail-score" class="font-mono text-3xl font-semibold shrink-0 ml-2"></span>
                     </div>
                     <div class="flex justify-between items-center text-xs text-slate-400 mt-1">
-                        <span id="detail-risk-label">Displacement Risk</span>
+                        <div class="flex items-center gap-2">
+                            <span id="detail-risk-label">Displacement Risk</span>
+                            <span id="detail-percentile" class="hidden font-mono" style="color:rgba(148,163,184,0.4);">· top <span id="detail-percentile-val"></span>%</span>
+                        </div>
                         <div class="flex items-center gap-3">
                             <button id="watch-btn" onclick="toggleWatch()" class="transition-colors font-medium" style="min-height:32px;color:rgba(56,189,248,0.7);">Watch</button>
                             <button id="compare-btn" onclick="enterCompareMode()" class="text-orange-400/70 hover:text-orange-400 transition-colors font-medium" style="min-height:32px;">Compare</button>
                         </div>
                     </div>
                     <p id="detail-summary" class="hidden text-xs text-base-content/70 mt-3 leading-relaxed"></p>
+                </div>
+
+                <!-- Active buyers — top operator clusters acquiring in this ZIP -->
+                <div id="active-buyers-section" class="hidden bg-base-300 rounded-xl p-4">
+                    <h3 id="active-buyers-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Active Buyers</h3>
+                    <div id="active-buyers-list" class="flex flex-col gap-2"></div>
                 </div>
 
                 <!-- Score History Timeline -->
@@ -1784,6 +1793,31 @@
                 .catch(() => {}); // best-effort, silently ignore
         }
 
+        function renderActiveBuyers(zip) {
+            fetch(`/api/neighborhoods/${zip}/active-buyers`, { signal: AbortSignal.timeout(8000) })
+                .then(r => r.ok ? r.json() : [])
+                .then(buyers => {
+                    const section = document.getElementById('active-buyers-section');
+                    const list = document.getElementById('active-buyers-list');
+                    if (!buyers || buyers.length === 0) { section.classList.add('hidden'); return; }
+                    list.innerHTML = '';
+                    buyers.forEach(b => {
+                        const row = document.createElement('div');
+                        row.className = 'flex items-center justify-between';
+                        row.innerHTML =
+                            '<a href="/operator/' + esc(b.operator_root) + '" target="_blank" rel="noopener noreferrer" ' +
+                            'class="font-mono text-sm text-orange-400 hover:text-orange-300 transition-colors">' +
+                            esc(b.operator_root) + '</a>' +
+                            '<span class="text-xs text-slate-500 font-mono">' +
+                            b.acquisitions_in_zip + ' acquisition' + (b.acquisitions_in_zip !== 1 ? 's' : '') +
+                            '</span>';
+                        list.appendChild(row);
+                    });
+                    section.classList.remove('hidden');
+                })
+                .catch(() => {});
+        }
+
         function renderRenovationFlip(zip) {
             const alertEl = document.getElementById('renovation-flip-alert');
             alertEl.classList.add('hidden');
@@ -1843,6 +1877,7 @@
             document.getElementById('pulse-section').classList.add('hidden');
             document.getElementById('renovation-flip-alert').classList.add('hidden');
             document.getElementById('recent-activity-section').classList.add('hidden');
+            document.getElementById('active-buyers-section').classList.add('hidden');
 
             document.getElementById('detail-zip').textContent = zip;
             _updateWatchBtn(zip);
@@ -1852,6 +1887,8 @@
 
             const scoreEl = document.getElementById('detail-score');
             const riskLabelEl = document.getElementById('detail-risk-label');
+            const pctEl = document.getElementById('detail-percentile');
+            const pctValEl = document.getElementById('detail-percentile-val');
             if (score !== null && score !== undefined) {
                 countUp(scoreEl, score, scoreColor(score), 600);
                 document.getElementById('no-score-msg').classList.add('hidden');
@@ -1861,18 +1898,29 @@
                     riskLabelEl.style.color = scoreColor(score);
                     riskLabelEl.style.opacity = '0.8';
                 }
+                try {
+                    const features = map.querySourceFeatures('neighborhoods');
+                    const allScores = features.map(f => f.properties.score).filter(s => s !== null && s !== undefined);
+                    if (allScores.length > 1) {
+                        const below = allScores.filter(s => s < score).length;
+                        const pct = Math.round((below / allScores.length) * 100);
+                        if (pct >= 50 && pctEl && pctValEl) {
+                            pctValEl.textContent = 100 - pct;
+                            pctEl.classList.remove('hidden');
+                        } else if (pctEl) { pctEl.classList.add('hidden'); }
+                    }
+                } catch (_) { if (pctEl) pctEl.classList.add('hidden'); }
             } else {
                 scoreEl.textContent = '\u2014';
                 scoreEl.style.color = '#94a3b8';
                 document.getElementById('no-score-msg').classList.remove('hidden');
+                if (pctEl) pctEl.classList.add('hidden');
                 if (riskLabelEl) {
                     riskLabelEl.textContent = t('ui', 'displacement_risk');
                     riskLabelEl.style.color = '';
                     riskLabelEl.style.opacity = '';
                 }
             }
-
-
             const summaryEl = document.getElementById('detail-summary');
             if (score !== null && score !== undefined) {
                 summaryEl.textContent = buildSummary(score, breakdown);
@@ -2812,6 +2860,7 @@
                     showDetail(zip, data.score, data.signal_breakdown, data.last_updated, data.signal_last_updated, data.summary_text, data.name, data.borough, data.signal_raw_counts);
                     renderPulse(zip);
                     renderRenovationFlip(zip);
+                    renderActiveBuyers(zip);
                     renderScoreHistory(zip, _historyDays);
                 } else {
                     showDetail(zip, null, null);
