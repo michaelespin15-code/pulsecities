@@ -70,10 +70,11 @@ def _build_html(zip_code: str, name: str, borough: str | None, score: float | No
     html = _template()
 
     url   = f"https://pulsecities.com/neighborhood/{zip_code}"
+    borough_suffix = f", {borough}" if borough else ""
     title = (
-        f"{name} ({zip_code}) \u2014 Displacement Risk {score:.1f} \u00b7 PulseCities"
+        f"{name} ({zip_code}{borough_suffix}) | Displacement Score {score:.1f}/100 | PulseCities"
         if score is not None
-        else f"{name} ({zip_code}) \u2014 NYC Displacement Risk \u00b7 PulseCities"
+        else f"{name} ({zip_code}{borough_suffix}) | NYC Displacement Risk | PulseCities"
     )
     desc  = _description(name, zip_code, borough, score)
 
@@ -212,11 +213,11 @@ def operator_page(root: str):
             parts.append(f"{entity_count} LLC {'entity' if entity_count == 1 else 'entities'}")
         if prop_count:
             parts.append(f"{prop_count} {'property' if prop_count == 1 else 'properties'} in NYC")
-        title = f"{root_upper} LLC Network — NYC Acquisition Cluster · PulseCities"
+        title = f"{root_upper} LLC Network | NYC Acquisition Cluster | PulseCities"
         desc  = (", ".join(parts) + ". Tracked via ACRIS public records on PulseCities.") if parts else \
                 f"NYC property acquisition cluster {root_upper}, tracked via ACRIS public records."
     else:
-        title = f"{root_upper} — NYC Operator Profile · PulseCities"
+        title = f"{root_upper} | NYC Operator Profile | PulseCities"
         desc  = f"NYC property acquisition cluster {root_upper}, tracked via ACRIS public records."
 
     e_title = _html.escape(title, quote=True)
@@ -316,7 +317,7 @@ def operators_directory():
             "url": f"https://pulsecities.com/operator/{root}",
         })
 
-    title = "NYC LLC Acquisition Networks — Operator Directory · PulseCities"
+    title = "NYC LLC Acquisition Networks | Operator Directory | PulseCities"
     desc = (
         f"{len(operators)} tracked LLC acquisition networks in NYC, "
         "sourced from ACRIS public deed records. Each cluster maps shell companies "
