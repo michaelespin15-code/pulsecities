@@ -11,6 +11,7 @@ import html as _html
 import json
 import logging
 import time
+from datetime import date
 from pathlib import Path
 
 from fastapi import APIRouter, Depends
@@ -107,6 +108,14 @@ def _build_html(zip_code: str, name: str, borough: str | None, score: float | No
         'content="https://pulsecities.com/"',
         f'content="{e_url}"',
         1,
+    )
+
+    # Point og:image and twitter:image at the per-neighborhood dynamic image
+    og_image_url = f"https://pulsecities.com/og/{zip_code}.png?d={date.today().strftime('%Y%m%d')}"
+    e_og_image = _html.escape(og_image_url, quote=True)
+    html = html.replace(
+        'content="https://pulsecities.com/og-image.png"',
+        f'content="{e_og_image}"',
     )
 
     # Inject neighborhood Dataset JSON-LD before </head>
