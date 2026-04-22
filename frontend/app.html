@@ -1096,8 +1096,8 @@
                     addr_not_found:      'Address not found. Try including borough (e.g. "123 Main St, Brooklyn").',
                     addr_bbl_fail:       'Could not resolve address to a BBL.',
                     addr_block_fail:     'Could not load block data.',
-                    network_error:       'Network error — please try again.',
-                    server_error:        'Unexpected server response — please try again.',
+                    network_error:       'Network error. Please try again.',
+                    server_error:        'Something went wrong. Please try again.',
                     landing_hint:        'Click any neighborhood on the map to see its displacement risk score, or pick one from the list below.',
                     displacement_risk:   'Displacement Risk',
                     compare:             'Compare',
@@ -2807,7 +2807,7 @@
             });
             actions.push({
                 label:  'Check rent stabilization history',
-                detail: 'Official NYC records — verify if your apartment qualifies',
+                detail: 'Check if your unit is rent-stabilized on the official state registry',
                 url:    'https://apps.hcr.ny.gov/BuildingSearch',
                 color:  'text-sky-400'
             });
@@ -3024,6 +3024,11 @@
                     .then(data => { if (data) showBlockPanel(bbl, data); })
                     .catch(() => {});
                 return;
+            }
+
+            // /methodology — auto-open the methodology modal
+            if (window.location.pathname === '/methodology') {
+                document.getElementById('methodology-modal').classList.remove('hidden');
             }
 
             // ?q= from landing page search
