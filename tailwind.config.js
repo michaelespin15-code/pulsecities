@@ -6,6 +6,13 @@ module.exports = {
     themes: ['dark'],
     logs: false,
   },
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['Space Grotesk', 'sans-serif'],
+      },
+    },
+  },
   safelist: [
     // Applied dynamically via JS — scanner won't find these via static analysis
     'text-amber-400', 'text-orange-400', 'text-red-400',
