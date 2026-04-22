@@ -27,8 +27,9 @@ router = APIRouter(tags=["frontend"])
 _FRONTEND = Path(__file__).parent.parent.parent / "frontend"
 _app_html: str | None = None
 _operator_html: str | None = None
-_page_cache: dict[str, tuple[str, float]] = {}  # zip -> (html, expires_at)
+_page_cache: dict[str, tuple[str, float]] = {}   # zip -> (html, expires_at)
 _op_page_cache: dict[str, tuple[str, float]] = {}  # root -> (html, expires_at)
+_prop_page_cache: dict[str, tuple[str, float]] = {}  # bbl -> (html, expires_at)
 _PAGE_TTL = 3600
 
 
@@ -198,6 +199,87 @@ def neighborhood_page(zip_code: str, db: Session = Depends(get_db)):
     _page_cache[zip_code] = (page_html, time.monotonic() + _PAGE_TTL)
 
     return HTMLResponse(page_html)
+
+
+@router.get("/property/{bbl}", include_in_schema=False)
+def property_page(bbl: str, db: Session = Depends(get_db)):
+    clean = bbl.strip()
+    if not clean.isdigit():
+        return HTMLResponse(_template(), status_code=200)
+
+    cached = _prop_page_cache.get(clean)
+    if cached and time.monotonic() < cached[1]:
+        return HTMLResponse(cached[0])
+
+    row = db.execute(text("""
+        SELECT p.address, p.zip_code,
+               CASE
+                   WHEN CAST(p.zip_code AS INTEGER) BETWEEN 10001 AND 10282 THEN 'Manhattan'
+                   WHEN CAST(p.zip_code AS INTEGER) BETWEEN 10301 AND 10314 THEN 'Staten Island'
+                   WHEN CAST(p.zip_code AS INTEGER) BETWEEN 10451 AND 10475 THEN 'Bronx'
+                   WHEN CAST(p.zip_code AS INTEGER) BETWEEN 11201 AND 11239 THEN 'Brooklyn'
+                   WHEN CAST(p.zip_code AS INTEGER) BETWEEN 11001 AND 11109 THEN 'Queens'
+                   WHEN CAST(p.zip_code AS INTEGER) BETWEEN 11354 AND 11697 THEN 'Queens'
+                   ELSE NULL
+               END AS borough,
+               ds.score
+        FROM parcels p
+        LEFT JOIN displacement_scores ds ON p.zip_code = ds.zip_code
+        WHERE p.bbl = :bbl
+        LIMIT 1
+    """), {"bbl": clean}).fetchone()
+
+    if not row:
+        return HTMLResponse(_template(), status_code=200)
+
+    address  = row.address.title() if row.address else clean
+    zip_code = row.zip_code or ""
+    borough  = row.borough or "NYC"
+    score    = float(row.score) if row.score is not None else None
+
+    url = f"https://pulsecities.com/property/{clean}"
+    score_part = f" | Displacement Score {score:.1f}/100" if score is not None else ""
+    title = f"{address}, {borough}{score_part} | PulseCities"
+
+    if score is not None:
+        desc = (
+            f"{address} in {borough} shows {_risk_tier(score)} with a displacement score of "
+            f"{score:.1f}/100. View eviction filings, construction permits, and ownership "
+            f"transfers from NYC public records."
+        )
+    else:
+        desc = (
+            f"View displacement risk data for {address} in {borough}, NYC. "
+            f"Eviction filings, construction permits, and ownership transfers from public records."
+        )
+
+    e_title = _html.escape(title, quote=True)
+    e_desc  = _html.escape(desc,  quote=True)
+    e_url   = _html.escape(url,   quote=True)
+
+    og_image_url = (
+        f"https://pulsecities.com/og/{zip_code}.png?d={date.today().strftime('%Y%m%d')}"
+        if zip_code else "https://pulsecities.com/og-image.png"
+    )
+    e_og_image = _html.escape(og_image_url, quote=True)
+
+    html = _template()
+    html = html.replace('<title>Explore — PulseCities</title>', f'<title>{title}</title>', 1)
+    html = html.replace('content="PulseCities: NYC Displacement Risk Intelligence"', f'content="{e_title}"')
+    html = html.replace(
+        'content="NYC displacement risk scores for 178 neighborhoods, updated daily from ACRIS deeds, HPD violations, DOB permits, evictions, and rent stabilization data."',
+        f'content="{e_desc}"',
+    )
+    html = html.replace(
+        'content="Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and assessment spikes."',
+        f'content="{e_desc}"',
+    )
+    html = html.replace('<link rel="canonical" href="https://pulsecities.com/map">', f'<link rel="canonical" href="{e_url}">', 1)
+    html = html.replace('content="https://pulsecities.com/map"', f'content="{e_url}"', 1)
+    html = html.replace('content="https://pulsecities.com/og-image.png"', f'content="{e_og_image}"')
+
+    _prop_page_cache[clean] = (html, time.monotonic() + _PAGE_TTL)
+    return HTMLResponse(html)
 
 
 @router.get("/operator/{root}", include_in_schema=False)
