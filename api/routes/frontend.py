@@ -90,7 +90,7 @@ def _build_html(zip_code: str, name: str, borough: str | None, score: float | No
         f'content="{e_desc}"',
     )
     html = html.replace(
-        '<link rel="canonical" href="https://pulsecities.com/">',
+        '<link rel="canonical" href="https://pulsecities.com/map">',
         f'<link rel="canonical" href="{e_url}">',
         1,
     )
@@ -104,8 +104,9 @@ def _build_html(zip_code: str, name: str, borough: str | None, score: float | No
         'content="Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and assessment spikes."',
         f'content="{e_desc}"',
     )
+    # og:url — was pointing to /map, must be the specific neighborhood URL
     html = html.replace(
-        'content="https://pulsecities.com/"',
+        'content="https://pulsecities.com/map"',
         f'content="{e_url}"',
         1,
     )
