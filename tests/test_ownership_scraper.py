@@ -422,12 +422,10 @@ class TestScraperRunAuditLog:
         """BaseScraper.run() writes a ScraperRun row with status='success'."""
         db = MagicMock()
 
-        # Simulate a successful _run() return
-        with patch.object(scraper, "_run", return_value=(42, 0, None)):
-            # ScraperRun is added to db.add twice: once as 'running', once on completion
+        with patch.object(scraper, "_run", return_value=(42, 0, None)), \
+             patch.object(scraper, "_compute_rolling_avg", return_value=None):
             run_result = scraper.run(db)
 
-        # db.add should have been called (at least once for ScraperRun)
         assert db.add.called
         assert db.commit.called
 
@@ -439,14 +437,13 @@ class TestScraperRunAuditLog:
         added_objects = []
         db.add.side_effect = lambda obj: added_objects.append(obj)
 
-        with patch.object(scraper, "_run", return_value=(100, 2, None)):
+        with patch.object(scraper, "_run", return_value=(100, 2, None)), \
+             patch.object(scraper, "_compute_rolling_avg", return_value=None):
             scraper.run(db)
 
-        # Find the ScraperRun object
         from models.scraper import ScraperRun
         scraper_runs = [obj for obj in added_objects if isinstance(obj, ScraperRun)]
         assert len(scraper_runs) >= 1
-        # The final ScraperRun should be success
         final_run = scraper_runs[-1]
         assert final_run.status == "success"
         assert final_run.records_processed == 100
@@ -475,7 +472,8 @@ class TestScraperRunAuditLog:
         added_objects = []
         db.add.side_effect = lambda obj: added_objects.append(obj)
 
-        with patch.object(scraper, "_run", return_value=(10, 0, None)):
+        with patch.object(scraper, "_run", return_value=(10, 0, None)), \
+             patch.object(scraper, "_compute_rolling_avg", return_value=None):
             scraper.run(db)
 
         from models.scraper import ScraperRun
