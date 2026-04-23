@@ -39,13 +39,15 @@ class TestPipelineFailureTracking:
     def test_pipeline_returns_false_if_any_scraper_fails(self):
         """run_nightly_pipeline returns False when at least one scraper fails."""
         with patch("scheduler.pipeline._run_pluto_if_due", return_value=True), \
+             patch("scheduler.pipeline._run_dof_if_due", return_value=True), \
              patch("scheduler.pipeline._run_scraper_with_retry") as mock_retry, \
              patch("scheduler.pipeline._run_scoring"), \
+             patch("scheduler.pipeline._run_mtek_monitor"), \
              patch("scheduler.pipeline.get_scraper_db") as mock_db:
             mock_db.return_value.__enter__ = MagicMock(return_value=MagicMock())
             mock_db.return_value.__exit__ = MagicMock(return_value=False)
-            # Simulate: complaints OK, permits FAIL, evictions OK, acris OK, dcwp OK, dhcr OK
-            mock_retry.side_effect = [True, False, True, True, True, True]
+            # Simulate: complaints OK, permits FAIL, evictions OK, acris OK, dcwp OK, dhcr OK, violations OK
+            mock_retry.side_effect = [True, False, True, True, True, True, True]
 
             from scheduler.pipeline import run_nightly_pipeline
             result = run_nightly_pipeline()
