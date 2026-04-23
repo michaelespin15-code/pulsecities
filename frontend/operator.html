@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operator Profile — PulseCities</title>
+    <title>Operator Profile | PulseCities</title>
     <meta name="description" content="LLC portfolio and affiliated operator network for a NYC acquisition cluster, sourced from ACRIS public records.">
     <link rel="canonical" id="canonical-url" href="https://pulsecities.com/">
 
@@ -448,7 +448,7 @@
         const root  = (parts[2] || '').toUpperCase();
         if (!root) { showError('No operator specified.'); return; }
 
-        document.title = root + ' \u2014 PulseCities Operator Profile';
+        document.title = root + ' | PulseCities Operator Profile';
         document.getElementById('canonical-url').href = 'https://pulsecities.com/operator/' + root;
 
         const _opFetch = fetch('/api/operators/' + encodeURIComponent(root))

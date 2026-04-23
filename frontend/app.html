@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <title>Explore — PulseCities</title>
+    <title>Explore | PulseCities</title>
 
     <!-- SEO -->
     <meta name="description" content="NYC displacement risk scores for 178 neighborhoods, updated daily from ACRIS deeds, HPD violations, DOB permits, evictions, and rent stabilization data.">
@@ -287,6 +287,15 @@
                 padding-top: 10px !important;
                 padding-bottom: 10px !important;
             }
+            /* Sticky header: keeps close button and drag handle pinned while content scrolls */
+            #sidebar-top {
+                position: sticky;
+                top: 0;
+                z-index: 2;
+                background: inherit;
+                margin: -1rem -1rem 0 -1rem;
+                padding: 0.75rem 1rem 0.5rem;
+            }
         }
         /* Pulse dot animation — hero overlay center stat (D-10) */
         @keyframes hero-pulse-dot {
@@ -343,12 +352,14 @@
 
         <!-- Sidebar: full-width on mobile, fixed 288/320px on desktop -->
         <aside id="sidebar" class="w-full md:w-72 lg:w-80 bg-base-200 p-4 md:p-6 overflow-y-auto flex flex-col relative">
-            <!-- Drag handle — mobile only -->
-            <div class="md:hidden flex justify-center mb-3 -mt-1">
-                <div style="width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);"></div>
-            </div>
-            <!-- Header -->
-            <div class="mb-3 md:mb-6">
+            <!-- Sticky top on mobile: drag handle + header always visible regardless of scroll position -->
+            <div id="sidebar-top">
+                <!-- Drag handle — mobile only -->
+                <div class="md:hidden flex justify-center mb-3 -mt-1">
+                    <div style="width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);"></div>
+                </div>
+                <!-- Header -->
+                <div class="mb-3 md:mb-6">
                 <div class="flex items-center justify-between mb-2">
                     <a id="home-link" href="/" class="text-xs text-slate-500 hover:text-slate-300 transition-colors" style="min-height:32px;display:flex;align-items:center;">&#8592; Home</a>
                     <div class="flex items-center gap-1">
@@ -364,6 +375,7 @@
                     <p id="app-subtitle" class="text-sm text-slate-400 mt-1">NYC Displacement Risk</p>
                 </div>
             </div>
+            </div><!-- /sidebar-top -->
 
 
 
@@ -377,6 +389,9 @@
                         placeholder="Search your building address"
                         class="input input-sm input-bordered flex-1 min-w-0 text-sm font-mono"
                         style="min-height: 44px;"
+                        autocomplete="off"
+                        inputmode="search"
+                        enterkeyhint="search"
                     />
                     <button
                         id="address-search-btn"
@@ -396,7 +411,7 @@
 
             <!-- Landing state: shown before any neighborhood is selected -->
             <div id="empty-state" class="flex flex-col">
-                <p id="landing-hint-text" class="text-xs text-slate-400 leading-relaxed px-1">Click any neighborhood on the map to see its displacement risk score, or pick one from the list below.</p>
+                <p id="landing-hint-text" class="text-xs text-slate-400 leading-relaxed px-1">Tap or click any neighborhood on the map to see its displacement risk score, or pick one from the list below.</p>
             </div>
 
             <!-- Neighborhood detail panel (hidden by default) -->
@@ -620,7 +635,7 @@
             </div>
 
             <!-- Landlord portfolio search — power-user feature, below primary address search -->
-            <div class="bg-base-300 rounded-xl p-3 mb-4">
+            <div class="bg-base-300 rounded-xl p-3 mt-4 mb-4">
                 <h3 id="landlord-section-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Search Landlord or LLC Name</h3>
                 <div class="flex gap-2">
                     <input
@@ -629,6 +644,9 @@
                         placeholder="Blackstone"
                         class="input input-sm input-bordered flex-1 text-sm font-mono min-w-0"
                         style="min-height: 36px;"
+                        autocomplete="off"
+                        inputmode="search"
+                        enterkeyhint="search"
                     />
                     <button
                         id="landlord-search-btn"
@@ -683,6 +701,8 @@
                             placeholder="your@email.com"
                             class="input input-sm input-bordered flex-1 min-w-0"
                             style="min-height:36px;font-size:12px;"
+                            autocomplete="email"
+                            enterkeyhint="send"
                         />
                         <button
                             id="subscribe-btn"
@@ -1101,7 +1121,7 @@
                     addr_block_fail:     'Could not load block data.',
                     network_error:       'Network error. Please try again.',
                     server_error:        'Something went wrong. Please try again.',
-                    landing_hint:        'Click any neighborhood on the map to see its displacement risk score, or pick one from the list below.',
+                    landing_hint:        'Tap or click any neighborhood on the map to see its displacement risk score, or pick one from the list below.',
                     displacement_risk:   'Displacement Risk',
                     compare:             'Compare',
                     cancel:              'Cancel',
@@ -1319,7 +1339,7 @@
                     addr_block_fail:     'No se pudieron cargar los datos del edificio.',
                     network_error:       'Error de red. Intente de nuevo.',
                     server_error:        'Respuesta inesperada del servidor. Intente de nuevo.',
-                    landing_hint:        'Haz clic en cualquier vecindario del mapa para ver su puntuación de riesgo de desplazamiento, o elige uno de la lista de abajo.',
+                    landing_hint:        'Toca o haz clic en cualquier vecindario del mapa para ver su puntuación de riesgo de desplazamiento, o elige uno de la lista de abajo.',
                     displacement_risk:   'Riesgo de Desplazamiento',
                     compare:             'Comparar',
                     cancel:              'Cancelar',
@@ -3652,13 +3672,24 @@
             if (e.key === 'Enter') document.getElementById('subscribe-btn').click();
         });
 
+        // On mobile, scroll inputs into view after the keyboard appears
+        if ('ontouchstart' in window) {
+            ['address-input', 'landlord-input', 'subscribe-email'].forEach(function(id) {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('focus', function() {
+                    setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 350);
+                });
+            });
+        }
+
         // Swipe-to-dismiss bottom sheet on mobile
         (function() {
             const sheet = document.getElementById('sidebar');
             let startY = 0;
             sheet.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
             sheet.addEventListener('touchend', e => {
-                if (e.changedTouches[0].clientY - startY > 60) showMobileMap();
+                // Only dismiss when scrolled to top — otherwise the gesture is scrolling back up through content
+                if (sheet.scrollTop === 0 && e.changedTouches[0].clientY - startY > 60) showMobileMap();
             }, { passive: true });
         })();
 
