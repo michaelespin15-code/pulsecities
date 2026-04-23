@@ -776,8 +776,8 @@
                     <p id="meth-desc-eviction" class="text-base-content/70">Residential evictions carried out by NYC marshals (executed evictions, not filings). Filed cases often resolve without execution &mdash; this signal tracks actual removals. OCA data lags executed date by 2&ndash;4 weeks. Source: NYC Open Data (6z8x-wfk4).</p>
                 </div>
                 <div>
-                    <h3 class="font-semibold text-base-content mb-1" data-meth-signal="assessment_spike" data-meth-weight="8">Assessment Spike <span class="text-slate-400 font-normal">(weight: 8%)</span></h3>
-                    <p id="meth-desc-assessment" class="text-base-content/70">Year-over-year increase in NYC Department of Finance property assessment &mdash; a leading indicator of market pressure. Currently dormant &mdash; requires two consecutive years of DOF assessment history. Source: NYC Department of Finance (w7rz-68fs).</p>
+                    <h3 class="font-semibold text-base-content mb-1" data-meth-signal="hpd_violations" data-meth-weight="8">HPD Violations <span class="text-slate-400 font-normal">(weight: 8%)</span></h3>
+                    <p id="meth-desc-assessment" class="text-base-content/70">Class B and C HPD violations filed in the past 90 days on multifamily buildings (3+ units). A spike in serious violations signals landlords letting buildings deteriorate to pressure tenants out. Source: NYC HPD (wvxf-dwi5).</p>
                 </div>
                 <div>
                     <h3 class="font-semibold text-base-content mb-1" data-meth-signal="rs_unit_loss" data-meth-weight="15">RS Unit Loss <span class="text-slate-400 font-normal">(weight: 15%)</span></h3>
@@ -1069,7 +1069,7 @@
                     permits:           'Permit Filings',
                     evictions:         'Evictions',
                     llc_acquisitions:  'LLC Acquisitions',
-                    assessment_spike:  'Assessment Spike',
+                    hpd_violations:    'HPD Violations',
                     complaint_rate:    'Complaints',
                     rs_unit_loss:      'RS Unit Loss'
                 },
@@ -1198,7 +1198,7 @@
                     llc_acquisitions: 'LLC buyouts of rental buildings',
                     complaint_rate:   'High tenant complaint volume',
                     rs_unit_loss:     'Rent-stabilized unit loss',
-                    assessment_spike: 'Tax assessment spike'
+                    hpd_violations:   'HPD violations (serious)'
                 },
                 hero: {
                     title:             'PulseCities',
@@ -1227,7 +1227,7 @@
                     llc_acquisitions: 'LLC property acquisitions',
                     complaint_rate:   'tenant complaints',
                     rs_unit_loss:     'rent-stabilized unit loss',
-                    assessment_spike: 'tax assessment increases',
+                    hpd_violations:   'HPD violations',
                 },
                 signal_short: {
                     permits:            'permit filings',
@@ -1239,7 +1239,8 @@
                     complaint_rate:     'complaints',
                     complaint_rate_s:   'complaint',
                     rs_unit_loss:       'RS unit loss',
-                    assessment_spike:   'tax spike',
+                    hpd_violations:     'HPD violations',
+                    hpd_violations_s:   'HPD violation',
                 },
                 summary: {
                     critical_opening: 'Severe displacement pressure in this ZIP.',
@@ -1266,7 +1267,7 @@
                     llc_acquisitions: 'LLC buyouts reliably predict rapid rent hikes and tenant pressure.',
                     complaint_rate:   'Landlords letting buildings decay to force people out.',
                     rs_unit_loss:     'Rent-stabilized units gone for good. The clearest sign of displacement.',
-                    assessment_spike: 'Tax assessment spikes show speculative money moving into the neighborhood.',
+                    hpd_violations:   'Serious violations filed in the last 90 days. Landlords letting buildings decay to force tenants out.',
                 },
                 methodology: {
                     title:           'How Scores Work',
@@ -1276,7 +1277,7 @@
                     permit_desc:     'DOB building permit applications. Renovation and alteration filings mean landlords are investing to flip or clear out tenants. Source: NYC Department of Buildings (Socrata ipu4-2q9a).',
                     complaint_desc:  '311 housing complaints (heat, hot water, pests, mold) per residential unit. Landlords deliberately let buildings decay to pressure people into leaving. Source: NYC 311 (erm2-nwe9).',
                     eviction_desc:   'Actual evictions by NYC marshals, not just filings. Most filed cases settle without eviction. This tracks who actually got removed. OCA data arrives 2–4 weeks after execution. Source: NYC Open Data (6z8x-wfk4).',
-                    assessment_desc: 'Year-over-year increase in NYC DOF property assessment. Sharp jumps show speculative investment moving in. Currently paused — needs two consecutive years of DOF history to activate. Source: NYC Department of Finance (w7rz-68fs).',
+                    hpd_desc:        'Class B and C HPD violations in the past 90 days on 3+ unit buildings. A cluster of serious violations signals intentional neglect to push tenants out. Source: NYC HPD (wvxf-dwi5).',
                     rs_desc:         'Year-over-year loss in rent-stabilized units from DHCR registration data. The most direct measure of affordable housing erosion. Currently building — needs two annual snapshots to activate. Source: DHCR Building Registrations (kj4p-ruqc).',
                     note:            'Normalized by residential units using MapPLUTO to keep dense commercial areas from skewing scores. All data is public record.',
                     full_link:       'Full details →',
@@ -1287,7 +1288,7 @@
                     permits:           'Solicitudes de Permisos',
                     evictions:         'Desalojos',
                     llc_acquisitions:  'Adquisiciones por LLC',
-                    assessment_spike:  'Aumento de Valuación',
+                    hpd_violations:    'Violaciones HPD',
                     complaint_rate:    'Quejas al 311',
                     rs_unit_loss:      'Pérdida de Estabilización'
                 },
@@ -1416,7 +1417,7 @@
                     llc_acquisitions: 'Compras de edificios por LLC',
                     complaint_rate:   'Alto volumen de quejas de inquilinos',
                     rs_unit_loss:     'Pérdida de unidades de renta estabilizada',
-                    assessment_spike: 'Aumento en valuación fiscal'
+                    hpd_violations:   'Violaciones HPD graves'
                 },
                 hero: {
                     title:             'PulseCities',
@@ -1445,7 +1446,7 @@
                     llc_acquisitions: 'adquisiciones de propiedades por LLC',
                     complaint_rate:   'quejas de inquilinos',
                     rs_unit_loss:     'pérdida de unidades estabilizadas',
-                    assessment_spike: 'aumentos de valuación fiscal',
+                    hpd_violations:   'violaciones HPD',
                 },
                 signal_short: {
                     permits:            'permisos',
@@ -1457,7 +1458,8 @@
                     complaint_rate:     'quejas',
                     complaint_rate_s:   'queja',
                     rs_unit_loss:       'pérdida RS',
-                    assessment_spike:   'valuación fiscal',
+                    hpd_violations:     'violaciones HPD',
+                    hpd_violations_s:   'violación HPD',
                 },
                 summary: {
                     critical_opening: 'Presión de desplazamiento severa en este código postal.',
@@ -1484,7 +1486,7 @@
                     llc_acquisitions: 'Las compras por LLC predicen aumentos rápidos de alquiler y presión a inquilinos.',
                     complaint_rate:   'Propietarios dejando que los edificios se deterioren para forzar la salida de inquilinos.',
                     rs_unit_loss:     'Apartamentos de renta estabilizada desapareciendo para siempre. El indicador más claro.',
-                    assessment_spike: 'Aumentos de valuación muestran inversión especulativa llegando al vecindario.',
+                    hpd_violations:   'Violaciones graves en los últimos 90 días. Propietarios dejando deteriorar edificios para forzar la salida de inquilinos.',
                 },
                 methodology: {
                     title:           'Cómo Funcionan las Puntuaciones',
@@ -1494,7 +1496,7 @@
                     permit_desc:     'Solicitudes de permisos del DOB. Los permisos de renovación y remodelación muestran que el propietario se prepara para cambiar inquilinos. Fuente: Departamento de Edificios de NYC (Socrata ipu4-2q9a).',
                     complaint_desc:  'Quejas al 311 (calefacción, agua caliente, plagas, moho) por unidad residencial. Los propietarios dejan que los edificios se deterioren deliberadamente para forzar la salida. Fuente: NYC 311 (erm2-nwe9).',
                     eviction_desc:   'Desalojos reales por alguaciles de NYC, no solo solicitudes. La mayoría de casos presentados se resuelven sin desalojo. Esta señal rastrea a quienes realmente fueron removidos. Los datos de OCA llegan con 2-4 semanas de retraso. Fuente: NYC Open Data (6z8x-wfk4).',
-                    assessment_desc: 'Aumento interanual en la valuación del DOF. Los aumentos bruscos muestran inversión especulativa llegando al área. Actualmente pausado, necesita dos años consecutivos de historial del DOF. Fuente: Departamento de Finanzas de NYC (w7rz-68fs).',
+                    hpd_desc:        'Violaciones HPD clase B y C en los últimos 90 días en edificios de 3+ unidades. Un clúster de violaciones graves señala negligencia intencional para forzar la salida de inquilinos. Fuente: NYC HPD (wvxf-dwi5).',
                     rs_desc:         'Pérdida interanual de unidades con estabilización de alquiler según DHCR. La medida más directa de erosión de vivienda asequible. En construcción, necesita dos instantáneas anuales para activarse. Fuente: Registros de Edificios DHCR (kj4p-ruqc).',
                     note:            'Normalizado por unidades residenciales usando MapPLUTO para que las áreas comerciales densas no distorsionen las puntuaciones. Todos los datos son de registros públicos.',
                     full_link:       'Detalles completos →',
@@ -1577,7 +1579,7 @@
                 'meth-desc-permit':           t('methodology', 'permit_desc'),
                 'meth-desc-complaint':        t('methodology', 'complaint_desc'),
                 'meth-desc-eviction':         t('methodology', 'eviction_desc'),
-                'meth-desc-assessment':       t('methodology', 'assessment_desc'),
+                'meth-desc-assessment':       t('methodology', 'hpd_desc'),
                 'meth-desc-rs':               t('methodology', 'rs_desc'),
                 'methodology-note':           t('methodology', 'note'),
                 'methodology-full-link':      t('methodology', 'full_link'),
@@ -2104,7 +2106,7 @@
                 permits:           t('signals', 'permits'),
                 evictions:         t('signals', 'evictions'),
                 llc_acquisitions:  t('signals', 'llc_acquisitions'),
-                assessment_spike:  t('signals', 'assessment_spike'),
+                hpd_violations:    t('signals', 'hpd_violations'),
                 complaint_rate:    t('signals', 'complaint_rate'),
                 rs_unit_loss:      t('signals', 'rs_unit_loss')
             };
@@ -2297,7 +2299,7 @@
                 permits:           t('signals', 'permits'),
                 evictions:         t('signals', 'evictions'),
                 llc_acquisitions:  t('signals', 'llc_acquisitions'),
-                assessment_spike:  t('signals', 'assessment_spike'),
+                hpd_violations:    t('signals', 'hpd_violations'),
                 complaint_rate:    t('signals', 'complaint_rate'),
                 rs_unit_loss:      t('signals', 'rs_unit_loss')
             };
