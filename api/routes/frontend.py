@@ -85,7 +85,7 @@ def _build_html(zip_code: str, name: str, borough: str | None, score: float | No
     e_desc  = _html.escape(desc,  quote=True)
     e_url   = _html.escape(url,   quote=True)
 
-    html = html.replace('<title>Explore \u2014 PulseCities</title>', f'<title>{title}</title>', 1)
+    html = html.replace('<title>Explore | PulseCities</title>', f'<title>{title}</title>', 1)
     html = html.replace(
         'content="NYC displacement risk scores for 178 neighborhoods, updated daily from ACRIS deeds, HPD violations, DOB permits, evictions, and rent stabilization data."',
         f'content="{e_desc}"',
@@ -264,7 +264,7 @@ def property_page(bbl: str, db: Session = Depends(get_db)):
     e_og_image = _html.escape(og_image_url, quote=True)
 
     html = _template()
-    html = html.replace('<title>Explore — PulseCities</title>', f'<title>{title}</title>', 1)
+    html = html.replace('<title>Explore | PulseCities</title>', f'<title>{title}</title>', 1)
     html = html.replace('content="PulseCities: NYC Displacement Risk Intelligence"', f'content="{e_title}"')
     html = html.replace(
         'content="NYC displacement risk scores for 178 neighborhoods, updated daily from ACRIS deeds, HPD violations, DOB permits, evictions, and rent stabilization data."',
@@ -317,7 +317,7 @@ def operator_page(root: str):
     e_url   = _html.escape(url,   quote=True)
 
     html = _operator_template()
-    html = html.replace('<title>Operator Profile — PulseCities</title>', f'<title>{title}</title>', 1)
+    html = html.replace('<title>Operator Profile | PulseCities</title>', f'<title>{title}</title>', 1)
     html = html.replace(
         'content="LLC portfolio and affiliated operator network for a NYC acquisition cluster, sourced from ACRIS public records."',
         f'content="{e_desc}"',
@@ -433,14 +433,14 @@ def operators_directory():
 <title>{_html.escape(title)}</title>
 <meta name="description" content="{_html.escape(desc)}">
 <link rel="canonical" href="https://pulsecities.com/operators">
-<meta property="og:title" content="NYC LLC Acquisition Networks — PulseCities">
+<meta property="og:title" content="NYC LLC Acquisition Networks | PulseCities">
 <meta property="og:description" content="{_html.escape(desc)}">
 <meta property="og:url" content="https://pulsecities.com/operators">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
 <meta property="og:image" content="https://pulsecities.com/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="NYC LLC Acquisition Networks — PulseCities">
+<meta name="twitter:title" content="NYC LLC Acquisition Networks | PulseCities">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <script type="application/ld+json">{jsonld}</script>
