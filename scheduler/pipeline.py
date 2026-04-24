@@ -8,10 +8,13 @@ Run order (sequential — no parallel to avoid DB contention):
   3. DOB Permits      — daily
   4. Evictions        — weekly (lags 2-4 weeks by design)
   5. ACRIS Ownership  — daily
+  6. DCWP Licenses    — incremental
+  7. DHCR RS          — annual snapshot
+  8. HPD Violations   — daily (Class B+C, 90-day scoring window)
 
 After all scrapers complete:
-  6. Scoring engine   — recomputes displacement scores per zip code
-  7. MTEK monitor     — flags new violations/permits/evictions on MTEK portfolio
+  9. Scoring engine   — recomputes displacement scores per zip code
+  10. MTEK monitor    — flags new violations/permits/evictions on MTEK portfolio
 
 Each scraper is wrapped with tenacity retries (3 attempts).
 A failing scraper logs the failure to ScraperRun and continues — we do not
@@ -35,7 +38,9 @@ from scrapers.ownership import OwnershipScraper
 from scrapers.dof import DOFScraper
 from scrapers.permits import PermitsScraper
 from scrapers.pluto import PlutoScraper
+from scrapers.violations import ViolationsScraper
 from scripts.mtek_monitor import run_mtek_monitor
+from scoring.compute import snapshot_scores  # re-exported for test imports
 
 logger = logging.getLogger(__name__)
 
@@ -98,6 +103,7 @@ def run_nightly_pipeline() -> bool:
         ("acris_ownership", OwnershipScraper),
         ("dcwp_licenses", DcwpScraper),
         ("dhcr_rs", DhcrRsScraper),
+        ("hpd_violations", ViolationsScraper),
     ]
 
     for scraper_name, ScraperClass in scrapers:

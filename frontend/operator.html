@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operator Profile — PulseCities</title>
+    <title>Operator Profile | PulseCities</title>
     <meta name="description" content="LLC portfolio and affiliated operator network for a NYC acquisition cluster, sourced from ACRIS public records.">
     <link rel="canonical" id="canonical-url" href="https://pulsecities.com/">
 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/tailwind.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #f1f5f9; min-height: 100vh; }
+        body { font-family: 'DM Sans', sans-serif; background: #0f172a; color: #f1f5f9; min-height: 100vh; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .accent { color: #f97316; }
         .panel { background: #1e293b; border: 1px solid rgba(148,163,184,0.1); border-radius: 8px; }
@@ -449,7 +448,7 @@
         const root  = (parts[2] || '').toUpperCase();
         if (!root) { showError('No operator specified.'); return; }
 
-        document.title = root + ' \u2014 PulseCities Operator Profile';
+        document.title = root + ' | PulseCities Operator Profile';
         document.getElementById('canonical-url').href = 'https://pulsecities.com/operator/' + root;
 
         const _opFetch = fetch('/api/operators/' + encodeURIComponent(root))
@@ -489,7 +488,7 @@
 
     applyTranslations();
     </script>
-    <footer style="text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b;font-family:'Inter',sans-serif;">
+    <footer style="text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b;font-family:'DM Sans',sans-serif;">
         <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;">
             <a href="/" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
             <a href="/map" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Map</a>

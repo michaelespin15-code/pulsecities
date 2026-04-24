@@ -1,0 +1,13 @@
+{
+  "name": "pulsecities",
+  "version": "1.0.0",
+  "description": "NYC displacement risk intelligence",
+  "scripts": {
+    "build:css": "tailwindcss -i frontend/tailwind.input.css -o frontend/tailwind.min.css --minify",
+    "watch:css": "tailwindcss -i frontend/tailwind.input.css -o frontend/tailwind.min.css --watch"
+  },
+  "devDependencies": {
+    "daisyui": "^4.12.24",
+    "tailwindcss": "^3.4.19"
+  }
+}

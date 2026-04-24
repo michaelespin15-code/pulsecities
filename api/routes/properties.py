@@ -68,6 +68,7 @@ def get_property(request: Request, response: Response, bbl: str, db: Session = D
             status_code=400,
             detail=f"Invalid BBL format: '{bbl}'. Expected 10-digit string (e.g. 1000010001).",
         )
+    response.headers["Cache-Control"] = "public, max-age=900"
     return _get_property_data(canonical_bbl, db)
 
 
