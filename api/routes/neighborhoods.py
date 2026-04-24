@@ -342,6 +342,7 @@ def get_top_risk_neighborhoods(
                 LEFT JOIN rs_loss_counts rl     ON rl.zip_code = ds.zip_code
                 WHERE ds.score IS NOT NULL
                   AND ({_VALID_NYC_ZIP_CLAUSE})
+                  AND n.name IS NOT NULL
             )
             SELECT * FROM ranked
             {outer_where}
