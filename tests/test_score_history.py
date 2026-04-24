@@ -80,23 +80,18 @@ class TestScoreHistoryModel:
         import glob
 
         migrations_path = "/root/pulsecities/migrations/versions"
-        migration_files = sorted(glob.glob(f"{migrations_path}/*score_history*.py"))
+        migration_files = glob.glob(f"{migrations_path}/*score_history*.py")
         assert len(migration_files) >= 1, (
             f"No migration file found for score_history in {migrations_path}"
         )
 
-        # Check that at least one score_history migration references the unique constraint
-        all_content = ""
-        for path in migration_files:
-            with open(path) as f:
-                all_content += f.read()
-        assert "uq_score_history_zip_date" in all_content, (
-            "A score_history migration must reference uq_score_history_zip_date constraint"
-        )
-        # Original migration down_revision check against the first (earliest) file
+        # Check it references the correct down_revision
         with open(migration_files[0]) as f:
-            first_content = f.read()
-        assert "0e9b19eaba99" in first_content, (
+            content = f.read()
+        assert "uq_score_history_zip_date" in content, (
+            "Migration must reference uq_score_history_zip_date constraint"
+        )
+        assert "0e9b19eaba99" in content, (
             "Migration down_revision must be 0e9b19eaba99 (initial_schema)"
         )
 

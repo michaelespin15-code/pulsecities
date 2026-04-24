@@ -34,10 +34,9 @@ class ScoreHistory(TimestampMixin, Base):
     permit_intensity: Mapped[float | None] = mapped_column(Float, nullable=True)
     eviction_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
     llc_acquisition_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
-    assessment_spike: Mapped[float | None] = mapped_column(Float, nullable=True)  # retained, now NULL going forward
+    assessment_spike: Mapped[float | None] = mapped_column(Float, nullable=True)
     complaint_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
     rs_unit_loss: Mapped[float | None] = mapped_column(Float, nullable=True)
-    hpd_violations: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     __table_args__ = (
         UniqueConstraint(

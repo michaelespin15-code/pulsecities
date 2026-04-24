@@ -96,7 +96,7 @@ class TestNeighborhoodScore:
         body = resp2.json()
         assert "signal_breakdown" in body
         breakdown = body["signal_breakdown"]
-        for key in ("permits", "evictions", "llc_acquisitions", "hpd_violations", "complaint_rate"):
+        for key in ("permits", "evictions", "llc_acquisitions", "assessment_spike", "complaint_rate"):
             assert key in breakdown, f"'{key}' missing from signal_breakdown — got: {list(breakdown.keys())}"
             assert isinstance(breakdown[key], (int, float)), f"signal_breakdown[{key!r}] is not numeric"
 

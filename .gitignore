@@ -10,4 +10,3 @@ node_modules/
 .claude/
 .planning/
 v2_roadmap.md
-package-lock.json

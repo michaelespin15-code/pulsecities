@@ -124,6 +124,44 @@ def _load_audit() -> dict:
     return result
 
 
+@router.get("/")
+@limiter.limit("60/minute")
+def list_operators(request: Request, response: Response, db: Session = Depends(get_db)):
+    """All operator clusters ordered by portfolio size. Served from cached DB columns."""
+    rows = db.execute(
+        text("""
+            SELECT
+                operator_root,
+                slug,
+                display_name,
+                total_properties,
+                total_acquisitions,
+                borough_spread,
+                highest_displacement_score,
+                jsonb_array_length(llc_entities) AS llc_count
+            FROM operators
+            ORDER BY total_properties DESC
+        """)
+    ).fetchall()
+    return [
+        {
+            "operator_root": r.operator_root,
+            "slug": r.slug,
+            "display_name": r.display_name,
+            "portfolio_size": r.total_properties,
+            "total_acquisitions": r.total_acquisitions,
+            "borough_spread": r.borough_spread,
+            "highest_displacement_score": (
+                float(r.highest_displacement_score)
+                if r.highest_displacement_score is not None
+                else None
+            ),
+            "llc_count": r.llc_count,
+        }
+        for r in rows
+    ]
+
+
 @router.get("/top")
 @limiter.limit("60/minute")
 def get_top_operators(request: Request, response: Response, limit: int = 3):

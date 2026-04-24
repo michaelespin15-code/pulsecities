@@ -136,7 +136,6 @@ class TestScoreNormalization:
                  patch("scoring.compute._aggregate_evictions", return_value=[]), \
                  patch("scoring.compute._aggregate_llc_acquisitions", return_value=[]), \
                  patch("scoring.compute._aggregate_complaints", return_value=[]), \
-                 patch("scoring.compute._aggregate_violations", return_value=[]), \
                  patch("scoring.compute._aggregate_assessment_spike", return_value=[]), \
                  patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]), \
                  patch("scoring.compute._compute_borough_medians", return_value={"1": 10.0, "2": 8.0, "3": 15.0, "4": 12.0, "5": 5.0}), \
@@ -158,8 +157,8 @@ class TestScoreNormalization:
             # to 1.0), so composite = 1.0 * 50.0 = 50.0.
             assert 1.0 <= score <= 100.0, f"Score {score} is outside [1, 100]"
             assert breakdown["permits"] == 50.0, f"Expected permits breakdown 50.0, got {breakdown['permits']}"
-            assert breakdown["hpd_violations"] == 0.0, (
-                f"Dormant hpd_violations should be 0.0 when no violations data, got {breakdown['hpd_violations']}"
+            assert breakdown["assessment_spike"] == 0.0, (
+                f"Dormant assessment_spike should be 0.0, got {breakdown['assessment_spike']}"
             )
             assert breakdown["rs_unit_loss"] == 0.0, (
                 f"Dormant rs_unit_loss should be 0.0, got {breakdown['rs_unit_loss']}"
@@ -186,7 +185,6 @@ class TestScoreNormalization:
                  patch("scoring.compute._aggregate_evictions", return_value=[]), \
                  patch("scoring.compute._aggregate_llc_acquisitions", return_value=[]), \
                  patch("scoring.compute._aggregate_complaints", return_value=[]), \
-                 patch("scoring.compute._aggregate_violations", return_value=[]), \
                  patch("scoring.compute._aggregate_assessment_spike", return_value=[]), \
                  patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]), \
                  patch("scoring.compute._compute_borough_medians", return_value={"1": 10.0, "2": 8.0, "3": 15.0, "4": 12.0, "5": 5.0}), \
@@ -296,7 +294,7 @@ class TestScoreNormalization:
             assert row is not None, "No displacement_scores row written"
             breakdown = row[0]
             # All six keys must be present
-            for key in ("permits", "evictions", "llc_acquisitions", "hpd_violations", "complaint_rate", "rs_unit_loss"):
+            for key in ("permits", "evictions", "llc_acquisitions", "assessment_spike", "complaint_rate", "rs_unit_loss"):
                 assert key in breakdown, f"'{key}' key missing from signal_breakdown: {breakdown}"
                 val = breakdown[key]
                 assert isinstance(val, (int, float)), f"{key} is not numeric: {val}"
@@ -408,7 +406,7 @@ class TestScoreNormalization:
             ).fetchone()
             assert row is not None, "No displacement_scores row written"
             breakdown = row[0]
-            for key in ("permits", "evictions", "llc_acquisitions", "hpd_violations", "complaint_rate", "rs_unit_loss"):
+            for key in ("permits", "evictions", "llc_acquisitions", "assessment_spike", "complaint_rate", "rs_unit_loss"):
                 assert key in breakdown, f"'{key}' missing from signal_breakdown"
                 val = breakdown[key]
                 assert isinstance(val, (int, float)), f"{key} is not numeric: {val}"
@@ -565,7 +563,6 @@ class TestScoreValidation:
                  patch("scoring.compute._aggregate_evictions", return_value=[]), \
                  patch("scoring.compute._aggregate_llc_acquisitions", return_value=[]), \
                  patch("scoring.compute._aggregate_complaints", return_value=[]), \
-                 patch("scoring.compute._aggregate_violations", return_value=[]), \
                  patch("scoring.compute._aggregate_assessment_spike", return_value=[]), \
                  patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]):
                 count = compute_scores(db)
@@ -607,7 +604,7 @@ class TestScoreSanityCheck:
         "permits": 45.0,
         "evictions": 30.0,
         "llc_acquisitions": 60.0,
-        "hpd_violations": 0.0,
+        "assessment_spike": 0.0,
         "complaint_rate": 25.0,
         "rs_unit_loss": 15.0,
     }
