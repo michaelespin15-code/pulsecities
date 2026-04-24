@@ -124,6 +124,44 @@ def _load_audit() -> dict:
     return result
 
 
+@router.get("/")
+@limiter.limit("60/minute")
+def list_operators(request: Request, response: Response, db: Session = Depends(get_db)):
+    """All operator clusters ordered by portfolio size. Served from cached DB columns."""
+    rows = db.execute(
+        text("""
+            SELECT
+                operator_root,
+                slug,
+                display_name,
+                total_properties,
+                total_acquisitions,
+                borough_spread,
+                highest_displacement_score,
+                jsonb_array_length(llc_entities) AS llc_count
+            FROM operators
+            ORDER BY total_properties DESC
+        """)
+    ).fetchall()
+    return [
+        {
+            "operator_root": r.operator_root,
+            "slug": r.slug,
+            "display_name": r.display_name,
+            "portfolio_size": r.total_properties,
+            "total_acquisitions": r.total_acquisitions,
+            "borough_spread": r.borough_spread,
+            "highest_displacement_score": (
+                float(r.highest_displacement_score)
+                if r.highest_displacement_score is not None
+                else None
+            ),
+            "llc_count": r.llc_count,
+        }
+        for r in rows
+    ]
+
+
 @router.get("/top")
 @limiter.limit("60/minute")
 def get_top_operators(request: Request, response: Response, limit: int = 3):
@@ -144,27 +182,120 @@ def get_top_operators(request: Request, response: Response, limit: int = 3):
     ]
 
 
-@router.get("/{root}")
+@router.get("/{slug}")
 @limiter.limit("30/minute")
-def get_operator_profile(
+def get_operator_profile_by_slug(
     request: Request,
     response: Response,
-    root: str,
+    slug: str,
     db: Session = Depends(get_db),
 ):
-    root = root.upper().strip()
-    if len(root) < 2:
-        raise HTTPException(status_code=400, detail="Operator root too short")
+    """Full operator profile by slug. Returns LLC entities, portfolio, and four per-BBL signals."""
+    if not re.match(r"^[a-z0-9-]+$", slug):
+        raise HTTPException(status_code=400, detail="Invalid slug format")
 
-    audit = _load_audit()
-    clusters = audit.get("clusters", {})
-    by_operator = audit.get("by_operator", {})
-
-    cluster = clusters.get(root)
-    if cluster is None:
+    # --- Operator row lookup ---
+    op_row = db.execute(
+        text("SELECT * FROM operators WHERE slug = :slug"),
+        {"slug": slug},
+    ).fetchone()
+    if op_row is None:
         raise HTTPException(status_code=404, detail="Operator not found")
 
-    llc_names = cluster["llc_entities"]
+    operator_id = op_row.id
+    operator_root = op_row.operator_root
+    llc_names = op_row.llc_entities or []
+
+    # --- BBL list for this operator ---
+    bbl_rows = db.execute(
+        text("SELECT bbl FROM operator_parcels WHERE operator_id = :operator_id"),
+        {"operator_id": operator_id},
+    ).fetchall()
+    bbl_list = [r.bbl for r in bbl_rows]
+
+    # --- Signal 1: Properties with per-BBL displacement score ---
+    prop_rows = db.execute(
+        text("""
+            SELECT op.bbl, p.zip_code, ds.score AS displacement_score
+            FROM operator_parcels op
+            JOIN parcels p ON p.bbl = op.bbl
+            LEFT JOIN displacement_scores ds ON ds.zip_code = p.zip_code
+            WHERE op.operator_id = :operator_id
+            ORDER BY ds.score DESC NULLS LAST
+        """),
+        {"operator_id": operator_id},
+    ).fetchall()
+    properties = [
+        {
+            "bbl": r.bbl,
+            "zip_code": r.zip_code,
+            "displacement_score": float(r.displacement_score) if r.displacement_score is not None else None,
+        }
+        for r in prop_rows
+    ]
+
+    # --- Signal 2: HPD violations keyed by BBL → violation_class → count ---
+    hpd_violations: dict = {}
+    if bbl_list:
+        viol_rows = db.execute(
+            text("""
+                SELECT bbl, violation_class, COUNT(*) AS count
+                FROM violations_raw
+                WHERE bbl = ANY(:bbl_list) AND violation_class IS NOT NULL
+                GROUP BY bbl, violation_class
+                ORDER BY bbl, violation_class
+            """),
+            {"bbl_list": bbl_list},
+        ).fetchall()
+        for r in viol_rows:
+            hpd_violations.setdefault(r.bbl, {})[r.violation_class] = r.count
+
+    # --- Signal 3: Eviction-then-buy matches ---
+    eviction_then_buy = []
+    if bbl_list and llc_names:
+        etb_rows = db.execute(
+            text("""
+                SELECT DISTINCT ON (e.bbl, e.executed_date)
+                    e.bbl, e.executed_date AS eviction_date, e.eviction_type,
+                    o.doc_date AS acquisition_date, o.party_name_normalized AS acquiring_entity
+                FROM evictions_raw e
+                JOIN ownership_raw o
+                    ON o.bbl = e.bbl
+                    AND o.party_type = '2'
+                    AND o.party_name_normalized = ANY(:llc_names)
+                    AND o.doc_date > e.executed_date
+                    AND o.doc_date <= e.executed_date + INTERVAL '365 days'
+                ORDER BY e.bbl, e.executed_date, o.doc_date
+            """),
+            {"llc_names": llc_names},
+        ).fetchall()
+        eviction_then_buy = [
+            {
+                "bbl": r.bbl,
+                "eviction_date": r.eviction_date.isoformat() if r.eviction_date else None,
+                "eviction_type": r.eviction_type,
+                "acquisition_date": r.acquisition_date.isoformat() if r.acquisition_date else None,
+                "acquiring_entity": r.acquiring_entity,
+            }
+            for r in etb_rows
+        ]
+
+    # --- Signal 4: RS unit counts (most recent year per BBL) ---
+    rs_units = []
+    if bbl_list:
+        rs_rows = db.execute(
+            text("""
+                SELECT DISTINCT ON (bbl) bbl, year, rs_unit_count
+                FROM rs_buildings
+                WHERE bbl = ANY(:bbl_list) AND rs_unit_count IS NOT NULL
+                ORDER BY bbl, year DESC
+            """),
+            {"bbl_list": bbl_list},
+        ).fetchall()
+        rs_units = [
+            {"bbl": r.bbl, "year": r.year, "rs_unit_count": r.rs_unit_count}
+            for r in rs_rows
+        ]
 
     # --- Recent acquisitions ---
     cutoff = (datetime.now(timezone.utc) - timedelta(days=_ANALYSIS_WINDOW_DAYS)).date()
@@ -208,12 +339,26 @@ def get_operator_profile(
         for r in acq_rows
     ]
 
-    # --- Related operators with shared property addresses ---
+    # --- Acquisition timeline grouped by year-month ---
+    from collections import Counter
+    ym_counts: Counter = Counter()
+    for acq in acquisitions:
+        if acq["doc_date"]:
+            ym_counts[acq["doc_date"][:7]] += 1
+    acquisition_timeline = [
+        {"year_month": ym, "count": count}
+        for ym, count in sorted(ym_counts.items())
+    ]
+
+    # --- Related operators (still sourced from _load_audit() JSON) ---
+    audit = _load_audit()
+    clusters = audit.get("clusters", {})
+    by_operator = audit.get("by_operator", {})
+
     related = []
-    for rel in by_operator.get(root, []):
+    for rel in by_operator.get(operator_root, []):
         other_root = rel["related_root"]
 
-        # Resolve shared BBL addresses from parcels
         shared_bbls = []
         for sig in rel.get("signals", []):
             if sig.get("signal_type") == "shared_bbl":
@@ -232,21 +377,33 @@ def get_operator_profile(
             ]
 
         related.append({
-            "operator_root":        other_root,
-            "relationship_type":    rel["relationship_type"],
-            "combined_confidence":  rel["combined_confidence"],
-            "signals":              rel["signals"],
-            "shared_properties":    shared_properties,
-            "llc_entities":         clusters.get(other_root, {}).get("llc_entities", []),
-            "total_properties":     clusters.get(other_root, {}).get("total_properties", 0),
+            "operator_root":       other_root,
+            "relationship_type":   rel["relationship_type"],
+            "combined_confidence": rel["combined_confidence"],
+            "signals":             rel["signals"],
+            "shared_properties":   shared_properties,
+            "llc_entities":        clusters.get(other_root, {}).get("llc_entities", []),
+            "total_properties":    clusters.get(other_root, {}).get("total_properties", 0),
         })
 
     return {
-        "operator_root":      root,
-        "llc_entities":       llc_names,
-        "total_properties":   cluster["total_properties"],
-        "total_acquisitions": cluster["total_acquisitions"],
-        "zip_codes":          cluster.get("zip_codes", []),
-        "recent_acquisitions": acquisitions,
-        "related_operators":  related,
+        "operator_root":        operator_root,
+        "slug":                 op_row.slug,
+        "display_name":         op_row.display_name,
+        "llc_entities":         llc_names,
+        "total_properties":     op_row.total_properties,
+        "total_acquisitions":   op_row.total_acquisitions,
+        "borough_spread":       op_row.borough_spread,
+        "highest_displacement_score": (
+            float(op_row.highest_displacement_score)
+            if op_row.highest_displacement_score is not None
+            else None
+        ),
+        "properties":           properties,
+        "hpd_violations":       hpd_violations,
+        "eviction_then_buy":    eviction_then_buy,
+        "rs_units":             rs_units,
+        "recent_acquisitions":  acquisitions,
+        "acquisition_timeline": acquisition_timeline,
+        "related_operators":    related,
     }

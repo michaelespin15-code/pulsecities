@@ -13,6 +13,7 @@ Test classes:
 """
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import text
 
 from models.database import SessionLocal
@@ -23,6 +24,12 @@ def db():
     session = SessionLocal()
     yield session
     session.close()
+
+
+@pytest.fixture(scope="module")
+def client():
+    from api.main import app
+    return TestClient(app)
 
 
 @pytest.mark.integration
@@ -124,18 +131,113 @@ class TestBackfill:
 
 @pytest.mark.integration
 class TestOperatorList:
-    """OPAPI-02: GET /api/operators returns paginated operator list. (Activated in Plan 02)"""
+    """OPAPI-02: GET /api/operators returns operator list sorted by portfolio size."""
 
-    def test_list_endpoint_returns_array(self, db):
-        pass  # activated in Plan 02
+    def test_list_endpoint_returns_array(self, client):
+        resp = client.get("/api/operators")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert isinstance(data, list), "Expected a JSON array"
+        assert len(data) >= 20, f"Expected >= 20 operators, got {len(data)}"
+
+    def test_list_items_have_required_fields(self, client):
+        resp = client.get("/api/operators")
+        assert resp.status_code == 200
+        for item in resp.json():
+            assert "operator_root" in item
+            assert "slug" in item
+            assert "display_name" in item
+            assert "portfolio_size" in item
+            assert "borough_spread" in item
+            assert "highest_displacement_score" in item
+            assert "llc_count" in item
+
+    def test_list_sorted_by_portfolio_size_desc(self, client):
+        resp = client.get("/api/operators")
+        assert resp.status_code == 200
+        sizes = [item["portfolio_size"] for item in resp.json()]
+        assert sizes == sorted(sizes, reverse=True), "List not sorted by portfolio_size DESC"
+
+    def test_known_operators_in_list(self, client):
+        resp = client.get("/api/operators")
+        assert resp.status_code == 200
+        slugs = {item["slug"] for item in resp.json()}
+        assert "mtek-nyc" in slugs, "MTEK not in operator list"
+        assert "phantom-capital" in slugs, "PHANTOM CAPITAL not in operator list"
+        assert "bredif" in slugs, "BREDIF not in operator list"
+
+    def test_named_operators_have_non_null_aggregates(self, client):
+        resp = client.get("/api/operators")
+        assert resp.status_code == 200
+        by_slug = {item["slug"]: item for item in resp.json()}
+        for slug in ("mtek-nyc", "phantom-capital", "bredif"):
+            op = by_slug.get(slug)
+            assert op is not None, f"{slug} not found"
+            assert op["borough_spread"] is not None, f"{slug} borough_spread is null"
+            assert op["highest_displacement_score"] is not None, f"{slug} highest_displacement_score is null"
 
 
 @pytest.mark.integration
 class TestOperatorDetail:
-    """OPAPI-03: GET /api/operators/{slug} returns operator detail. (Activated in Plan 02)"""
+    """OPAPI-03: GET /api/operators/{slug} returns full operator profile."""
 
-    def test_unknown_slug_404(self, db):
-        pass  # activated in Plan 02
+    def test_unknown_slug_404(self, client):
+        resp = client.get("/api/operators/nobody")
+        assert resp.status_code == 404
+
+    def test_invalid_slug_format_400(self, client):
+        resp = client.get("/api/operators/INVALID_SLUG")
+        assert resp.status_code == 400
+
+    def test_mtek_detail_returns_200(self, client):
+        resp = client.get("/api/operators/mtek-nyc")
+        assert resp.status_code == 200
+
+    def test_mtek_detail_has_required_keys(self, client):
+        resp = client.get("/api/operators/mtek-nyc")
+        assert resp.status_code == 200
+        data = resp.json()
+        for key in (
+            "operator_root", "slug", "display_name", "llc_entities",
+            "total_properties", "total_acquisitions", "borough_spread",
+            "highest_displacement_score", "properties", "hpd_violations",
+            "eviction_then_buy", "rs_units", "recent_acquisitions",
+            "acquisition_timeline", "related_operators",
+        ):
+            assert key in data, f"Missing key: {key}"
+
+    def test_mtek_properties_list_size(self, client):
+        resp = client.get("/api/operators/mtek-nyc")
+        assert resp.status_code == 200
+        props = resp.json()["properties"]
+        assert len(props) >= 37, f"Expected >= 37 properties for MTEK, got {len(props)}"
+
+    def test_mtek_hpd_violations_non_empty(self, client):
+        resp = client.get("/api/operators/mtek-nyc")
+        assert resp.status_code == 200
+        violations = resp.json()["hpd_violations"]
+        assert isinstance(violations, dict), "hpd_violations should be a dict"
+        assert len(violations) > 0, "hpd_violations should not be empty for MTEK"
+
+    def test_mtek_acquisition_timeline_sorted(self, client):
+        resp = client.get("/api/operators/mtek-nyc")
+        assert resp.status_code == 200
+        timeline = resp.json()["acquisition_timeline"]
+        assert isinstance(timeline, list)
+        if len(timeline) > 1:
+            year_months = [entry["year_month"] for entry in timeline]
+            assert year_months == sorted(year_months), "acquisition_timeline not sorted chronologically"
+
+    def test_top_route_unchanged(self, client):
+        """/top still returns the JSON-backed top-by-acquisitions list."""
+        resp = client.get("/api/operators/top")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert isinstance(data, list)
+        for item in data:
+            assert "operator_root" in item
+            assert "total_acquisitions" in item
+            assert "llc_count" in item
 
 
 @pytest.mark.integration
