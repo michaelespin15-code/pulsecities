@@ -52,6 +52,87 @@ router = APIRouter(prefix="/search", tags=["search"])
 limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
 
+@router.get("/")
+@limiter.limit("30/minute")
+def search_grouped(
+    request: Request,
+    response: Response,
+    q: str = "",
+    db: Session = Depends(get_db),
+):
+    """
+    Grouped search returning operators and properties in a single response.
+    Minimum 3 characters. Results ordered by relevance: operators first (by
+    portfolio size), then properties (by most recent deed date).
+    """
+    q = q.strip()
+    if len(q) < 3:
+        raise HTTPException(status_code=400, detail="Query too short")
+
+    pattern = f"%{q}%"
+
+    # Operator matches — served from operators table
+    op_rows = db.execute(
+        text("""
+            SELECT operator_root, slug, display_name, total_properties,
+                   jsonb_array_length(llc_entities) AS llc_count
+            FROM operators
+            WHERE display_name ILIKE :pattern OR operator_root ILIKE :pattern
+            ORDER BY total_properties DESC
+            LIMIT 10
+        """),
+        {"pattern": pattern},
+    ).fetchall()
+
+    operators = [
+        {
+            "operator_root": r.operator_root,
+            "slug": r.slug,
+            "display_name": r.display_name,
+            "portfolio_size": r.total_properties,
+            "llc_count": r.llc_count,
+        }
+        for r in op_rows
+    ]
+
+    # Property matches — ownership_raw, same exclusions as /landlord, capped at 20.
+    # No doc_type filter here: the name ILIKE match is sufficient for a quick grouped
+    # search; doc_type filtering is appropriate for the /landlord portfolio view.
+    prop_rows = db.execute(
+        text("""
+            SELECT o.bbl, p.address, p.zip_code,
+                   o.party_name_normalized AS buyer_name,
+                   o.doc_date, o.doc_amount
+            FROM ownership_raw o
+            JOIN parcels p ON p.bbl = o.bbl
+            WHERE o.party_type = '2'
+              AND o.party_name_normalized ILIKE :pattern
+              AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
+              AND o.party_name_normalized NOT ILIKE '%LOAN SERVICING%'
+              AND o.party_name_normalized NOT ILIKE '%LOAN SERVICE%'
+              AND o.party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
+              AND o.party_name_normalized NOT ILIKE '%CREDIT UNION%'
+            ORDER BY o.doc_date DESC NULLS LAST
+            LIMIT 20
+        """),
+        {"pattern": pattern},
+    ).fetchall()
+
+    properties = [
+        {
+            "bbl": r.bbl,
+            "address": r.address or f"BBL {r.bbl}",
+            "zip_code": r.zip_code,
+            "buyer_name": r.buyer_name,
+            "doc_date": r.doc_date.isoformat() if r.doc_date else None,
+            "doc_amount": float(r.doc_amount) if r.doc_amount else None,
+        }
+        for r in prop_rows
+    ]
+
+    return {"query": q, "results": {"operators": operators, "properties": properties}}
+
+
 @router.get("/landlord")
 @limiter.limit("30/minute")
 def search_landlord(
