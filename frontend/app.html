@@ -19,8 +19,8 @@
     <meta name="msvalidate.01" content="95DE30DECA6461151C9E62CD73DB2358">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="PulseCities: NYC Displacement Risk Intelligence">
-    <meta property="og:description" content="Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and assessment spikes.">
+    <meta property="og:title" content="PulseCities | NYC Displacement Risk Map">
+    <meta property="og:description" content="Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and DHCR rent-stabilized unit loss.">
     <meta property="og:url" content="https://pulsecities.com/map">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="PulseCities">
@@ -31,8 +31,8 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="PulseCities: NYC Displacement Risk Intelligence">
-    <meta name="twitter:description" content="Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and assessment spikes.">
+    <meta name="twitter:title" content="PulseCities | NYC Displacement Risk Map">
+    <meta name="twitter:description" content="Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and DHCR rent-stabilized unit loss.">
     <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
     <meta name="twitter:image:alt" content="PulseCities displacement risk map showing heat scores across all 178 NYC neighborhoods">
 
@@ -42,7 +42,7 @@
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "PulseCities",
-        "description": "Real-time displacement risk intelligence for all 178 NYC neighborhoods, built on six public data signals.",
+        "description": "Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals.",
         "url": "https://pulsecities.com",
         "applicationCategory": "DataVisualization",
         "operatingSystem": "Web",
@@ -81,9 +81,11 @@
         body {
             font-family: 'DM Sans', sans-serif;
             overflow: hidden;
+            overscroll-behavior: none;
         }
         #map {
-            height: 100vh;
+            height: 100dvh;
+            touch-action: none;
         }
         .font-mono {
             font-family: 'JetBrains Mono', monospace;

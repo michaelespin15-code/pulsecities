@@ -138,6 +138,7 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
         LEFT JOIN complaint_counts cc  ON cc.zip_code = ds.zip_code
         WHERE ds.score IS NOT NULL
           AND ({_VALID_NYC_ZIP_CLAUSE})
+          AND n.name IS NOT NULL
         ORDER BY ds.score DESC
         LIMIT 9
     """)).fetchall()
