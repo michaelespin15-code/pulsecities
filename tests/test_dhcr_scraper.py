@@ -121,7 +121,7 @@ class TestComputeWeights:
             WEIGHT_PERMITS,
             WEIGHT_COMPLAINTS,
             WEIGHT_EVICTIONS,
-            WEIGHT_HPD_VIOLATIONS,
+            WEIGHT_ASSESSMENT_SPIKE,
             WEIGHT_RS_UNIT_LOSS,
         )
         total = (
@@ -129,14 +129,14 @@ class TestComputeWeights:
             + WEIGHT_PERMITS
             + WEIGHT_COMPLAINTS
             + WEIGHT_EVICTIONS
-            + WEIGHT_HPD_VIOLATIONS
+            + WEIGHT_ASSESSMENT_SPIKE
             + WEIGHT_RS_UNIT_LOSS
         )
         assert abs(total - 1.0) < 0.001, (
             f"Weights must sum to 1.0, got {total:.4f}. "
             f"Values: LLC={WEIGHT_LLC_ACQUISITIONS}, Permits={WEIGHT_PERMITS}, "
             f"Complaints={WEIGHT_COMPLAINTS}, Evictions={WEIGHT_EVICTIONS}, "
-            f"Assessment={WEIGHT_HPD_VIOLATIONS}, RS={WEIGHT_RS_UNIT_LOSS}"
+            f"Assessment={WEIGHT_ASSESSMENT_SPIKE}, RS={WEIGHT_RS_UNIT_LOSS}"
         )
 
     def test_rs_unit_loss_weight(self):

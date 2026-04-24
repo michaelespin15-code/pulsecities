@@ -19,7 +19,6 @@ from models.subscribers import Subscriber
 from models.dcwp_license import DcwpLicense
 from models.dhcr_rs import RsBuilding
 from models.mtek_alerts import MtekAlert
-from models.operators import Operator, OperatorParcel
 
 __all__ = [
     "Base",
@@ -44,6 +43,4 @@ __all__ = [
     "DcwpLicense",
     "RsBuilding",
     "MtekAlert",
-    "Operator",
-    "OperatorParcel",
 ]

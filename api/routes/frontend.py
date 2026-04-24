@@ -11,7 +11,6 @@ import html as _html
 import json
 import logging
 import time
-from datetime import date
 from pathlib import Path
 
 from fastapi import APIRouter, Depends
@@ -27,9 +26,8 @@ router = APIRouter(tags=["frontend"])
 _FRONTEND = Path(__file__).parent.parent.parent / "frontend"
 _app_html: str | None = None
 _operator_html: str | None = None
-_page_cache: dict[str, tuple[str, float]] = {}   # zip -> (html, expires_at)
+_page_cache: dict[str, tuple[str, float]] = {}  # zip -> (html, expires_at)
 _op_page_cache: dict[str, tuple[str, float]] = {}  # root -> (html, expires_at)
-_prop_page_cache: dict[str, tuple[str, float]] = {}  # bbl -> (html, expires_at)
 _PAGE_TTL = 3600
 
 
@@ -72,11 +70,10 @@ def _build_html(zip_code: str, name: str, borough: str | None, score: float | No
     html = _template()
 
     url   = f"https://pulsecities.com/neighborhood/{zip_code}"
-    borough_suffix = f", {borough}" if borough else ""
     title = (
-        f"{name} ({zip_code}{borough_suffix}) | Displacement Score {score:.1f}/100 | PulseCities"
+        f"{name} ({zip_code}) \u2014 Displacement Risk {score:.1f} \u00b7 PulseCities"
         if score is not None
-        else f"{name} ({zip_code}{borough_suffix}) | NYC Displacement Risk | PulseCities"
+        else f"{name} ({zip_code}) \u2014 NYC Displacement Risk \u00b7 PulseCities"
     )
     desc  = _description(name, zip_code, borough, score)
 
@@ -85,13 +82,13 @@ def _build_html(zip_code: str, name: str, borough: str | None, score: float | No
     e_desc  = _html.escape(desc,  quote=True)
     e_url   = _html.escape(url,   quote=True)
 
-    html = html.replace('<title>Explore | PulseCities</title>', f'<title>{title}</title>', 1)
+    html = html.replace('<title>Explore \u2014 PulseCities</title>', f'<title>{title}</title>', 1)
     html = html.replace(
         'content="NYC displacement risk scores for 178 neighborhoods, updated daily from ACRIS deeds, HPD violations, DOB permits, evictions, and rent stabilization data."',
         f'content="{e_desc}"',
     )
     html = html.replace(
-        '<link rel="canonical" href="https://pulsecities.com/map">',
+        '<link rel="canonical" href="https://pulsecities.com/">',
         f'<link rel="canonical" href="{e_url}">',
         1,
     )
@@ -105,19 +102,10 @@ def _build_html(zip_code: str, name: str, borough: str | None, score: float | No
         'content="Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and assessment spikes."',
         f'content="{e_desc}"',
     )
-    # og:url — was pointing to /map, must be the specific neighborhood URL
     html = html.replace(
-        'content="https://pulsecities.com/map"',
+        'content="https://pulsecities.com/"',
         f'content="{e_url}"',
         1,
-    )
-
-    # Point og:image and twitter:image at the per-neighborhood dynamic image
-    og_image_url = f"https://pulsecities.com/og/{zip_code}.png?d={date.today().strftime('%Y%m%d')}"
-    e_og_image = _html.escape(og_image_url, quote=True)
-    html = html.replace(
-        'content="https://pulsecities.com/og-image.png"',
-        f'content="{e_og_image}"',
     )
 
     # Inject neighborhood Dataset JSON-LD before </head>
@@ -201,87 +189,6 @@ def neighborhood_page(zip_code: str, db: Session = Depends(get_db)):
     return HTMLResponse(page_html)
 
 
-@router.get("/property/{bbl}", include_in_schema=False)
-def property_page(bbl: str, db: Session = Depends(get_db)):
-    clean = bbl.strip()
-    if not clean.isdigit():
-        return HTMLResponse(_template(), status_code=200)
-
-    cached = _prop_page_cache.get(clean)
-    if cached and time.monotonic() < cached[1]:
-        return HTMLResponse(cached[0])
-
-    row = db.execute(text("""
-        SELECT p.address, p.zip_code,
-               CASE
-                   WHEN CAST(p.zip_code AS INTEGER) BETWEEN 10001 AND 10282 THEN 'Manhattan'
-                   WHEN CAST(p.zip_code AS INTEGER) BETWEEN 10301 AND 10314 THEN 'Staten Island'
-                   WHEN CAST(p.zip_code AS INTEGER) BETWEEN 10451 AND 10475 THEN 'Bronx'
-                   WHEN CAST(p.zip_code AS INTEGER) BETWEEN 11201 AND 11239 THEN 'Brooklyn'
-                   WHEN CAST(p.zip_code AS INTEGER) BETWEEN 11001 AND 11109 THEN 'Queens'
-                   WHEN CAST(p.zip_code AS INTEGER) BETWEEN 11354 AND 11697 THEN 'Queens'
-                   ELSE NULL
-               END AS borough,
-               ds.score
-        FROM parcels p
-        LEFT JOIN displacement_scores ds ON p.zip_code = ds.zip_code
-        WHERE p.bbl = :bbl
-        LIMIT 1
-    """), {"bbl": clean}).fetchone()
-
-    if not row:
-        return HTMLResponse(_template(), status_code=200)
-
-    address  = row.address.title() if row.address else clean
-    zip_code = row.zip_code or ""
-    borough  = row.borough or "NYC"
-    score    = float(row.score) if row.score is not None else None
-
-    url = f"https://pulsecities.com/property/{clean}"
-    score_part = f" | Displacement Score {score:.1f}/100" if score is not None else ""
-    title = f"{address}, {borough}{score_part} | PulseCities"
-
-    if score is not None:
-        desc = (
-            f"{address} in {borough} shows {_risk_tier(score)} with a displacement score of "
-            f"{score:.1f}/100. View eviction filings, construction permits, and ownership "
-            f"transfers from NYC public records."
-        )
-    else:
-        desc = (
-            f"View displacement risk data for {address} in {borough}, NYC. "
-            f"Eviction filings, construction permits, and ownership transfers from public records."
-        )
-
-    e_title = _html.escape(title, quote=True)
-    e_desc  = _html.escape(desc,  quote=True)
-    e_url   = _html.escape(url,   quote=True)
-
-    og_image_url = (
-        f"https://pulsecities.com/og/{zip_code}.png?d={date.today().strftime('%Y%m%d')}"
-        if zip_code else "https://pulsecities.com/og-image.png"
-    )
-    e_og_image = _html.escape(og_image_url, quote=True)
-
-    html = _template()
-    html = html.replace('<title>Explore | PulseCities</title>', f'<title>{title}</title>', 1)
-    html = html.replace('content="PulseCities: NYC Displacement Risk Intelligence"', f'content="{e_title}"')
-    html = html.replace(
-        'content="NYC displacement risk scores for 178 neighborhoods, updated daily from ACRIS deeds, HPD violations, DOB permits, evictions, and rent stabilization data."',
-        f'content="{e_desc}"',
-    )
-    html = html.replace(
-        'content="Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and assessment spikes."',
-        f'content="{e_desc}"',
-    )
-    html = html.replace('<link rel="canonical" href="https://pulsecities.com/map">', f'<link rel="canonical" href="{e_url}">', 1)
-    html = html.replace('content="https://pulsecities.com/map"', f'content="{e_url}"', 1)
-    html = html.replace('content="https://pulsecities.com/og-image.png"', f'content="{e_og_image}"')
-
-    _prop_page_cache[clean] = (html, time.monotonic() + _PAGE_TTL)
-    return HTMLResponse(html)
-
-
 @router.get("/operator/{root}", include_in_schema=False)
 def operator_page(root: str):
     root_upper = root.upper().strip()
@@ -305,11 +212,11 @@ def operator_page(root: str):
             parts.append(f"{entity_count} LLC {'entity' if entity_count == 1 else 'entities'}")
         if prop_count:
             parts.append(f"{prop_count} {'property' if prop_count == 1 else 'properties'} in NYC")
-        title = f"{root_upper} LLC Network | NYC Acquisition Cluster | PulseCities"
+        title = f"{root_upper} LLC Network — NYC Acquisition Cluster · PulseCities"
         desc  = (", ".join(parts) + ". Tracked via ACRIS public records on PulseCities.") if parts else \
                 f"NYC property acquisition cluster {root_upper}, tracked via ACRIS public records."
     else:
-        title = f"{root_upper} | NYC Operator Profile | PulseCities"
+        title = f"{root_upper} — NYC Operator Profile · PulseCities"
         desc  = f"NYC property acquisition cluster {root_upper}, tracked via ACRIS public records."
 
     e_title = _html.escape(title, quote=True)
@@ -317,7 +224,7 @@ def operator_page(root: str):
     e_url   = _html.escape(url,   quote=True)
 
     html = _operator_template()
-    html = html.replace('<title>Operator Profile | PulseCities</title>', f'<title>{title}</title>', 1)
+    html = html.replace('<title>Operator Profile — PulseCities</title>', f'<title>{title}</title>', 1)
     html = html.replace(
         'content="LLC portfolio and affiliated operator network for a NYC acquisition cluster, sourced from ACRIS public records."',
         f'content="{e_desc}"',
@@ -409,7 +316,7 @@ def operators_directory():
             "url": f"https://pulsecities.com/operator/{root}",
         })
 
-    title = "NYC LLC Acquisition Networks | Operator Directory | PulseCities"
+    title = "NYC LLC Acquisition Networks — Operator Directory · PulseCities"
     desc = (
         f"{len(operators)} tracked LLC acquisition networks in NYC, "
         "sourced from ACRIS public deed records. Each cluster maps shell companies "
@@ -433,21 +340,21 @@ def operators_directory():
 <title>{_html.escape(title)}</title>
 <meta name="description" content="{_html.escape(desc)}">
 <link rel="canonical" href="https://pulsecities.com/operators">
-<meta property="og:title" content="NYC LLC Acquisition Networks | PulseCities">
+<meta property="og:title" content="NYC LLC Acquisition Networks — PulseCities">
 <meta property="og:description" content="{_html.escape(desc)}">
 <meta property="og:url" content="https://pulsecities.com/operators">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
 <meta property="og:image" content="https://pulsecities.com/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="NYC LLC Acquisition Networks | PulseCities">
+<meta name="twitter:title" content="NYC LLC Acquisition Networks — PulseCities">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <script type="application/ld+json">{jsonld}</script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
-body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}}
+body{{font-family:'Inter',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0}}
 .nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}

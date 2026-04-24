@@ -146,7 +146,6 @@ class DOFScraper(BaseScraper):
             "address": (raw.get("staddr") or "").strip() or None,
             "zip_code": _clean_zip(raw.get("zip")),
             "assessed_total": assessed_total,
-            "raw_data": raw,
         }
 
     def _upsert_batch(self, db, batch: list[dict]) -> int:
