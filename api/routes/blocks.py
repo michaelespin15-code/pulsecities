@@ -134,6 +134,7 @@ def get_block_events(request: Request, response: Response, bbl: str, db: Session
     # Optional: attach PropertyScore if computed
     score_row = db.query(PropertyScore).filter(PropertyScore.bbl == canonical).first()
 
+    response.headers["Cache-Control"] = "public, max-age=900"
     return {
         "bbl": canonical,
         "events": events,
