@@ -234,7 +234,10 @@ class BaseScraper(ABC):
                 logger.warning("%s: anomaly: %s", self.SCRAPER_NAME, msg)
                 scraper_run.warning_message = msg
 
-            scraper_run.status = "success"
+            if records_processed == 0 and rolling_avg is not None and rolling_avg > 100:
+                scraper_run.status = "warning"
+            else:
+                scraper_run.status = "success"
             logger.info(
                 "%s: done: %d processed, %d quarantined",
                 self.SCRAPER_NAME,
