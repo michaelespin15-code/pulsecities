@@ -42,7 +42,7 @@ Field mapping (Socrata → model):
 """
 
 import logging
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy import text
 
@@ -51,37 +51,87 @@ from scrapers.base import BaseScraper
 
 logger = logging.getLogger(__name__)
 
+_BOOTSTRAP_DAYS = 90  # used when no watermark exists, instead of 5-year default
+
 
 class DcwpScraper(BaseScraper):
     SCRAPER_NAME = "dcwp_licenses"
     DATASET_ID = "w7w3-xahh"
     INITIAL_LOOKBACK_DAYS = 365 * 5  # 5 years; DCWP has long-lived licenses
+    PAGE_SIZE = 500  # keeps per-page memory flat on the 1.9GB droplet
 
     def _run(self, db) -> tuple[int, int, datetime | None]:
-        # Filter and order on :updated_at so renewals/status-changes on old
-        # licenses are fetched.  Request :updated_at explicitly via $select
-        # since Socrata system columns are not returned by default.
-        where = self.build_where_since(":updated_at", db)
+        # Bootstrap guard: null watermark means no prior successful run completed.
+        # Use 90 days instead of the 5-year default — the full dataset triggered
+        # OOM kills before the watermark could ever be written.
+        watermark = self.get_watermark(db)
+        if watermark is None:
+            logger.warning(
+                "%s: watermark null, bootstrapping with %d-day lookback instead of 5-year",
+                self.SCRAPER_NAME, _BOOTSTRAP_DAYS,
+            )
+            since = datetime.now(timezone.utc) - timedelta(days=_BOOTSTRAP_DAYS)
+        else:
+            since = watermark - timedelta(minutes=10) - timedelta(days=self.WATERMARK_EXTRA_LOOKBACK_DAYS)
+        where = f":updated_at > '{since.strftime('%Y-%m-%dT%H:%M:%S.000')}'"
 
         records_processed = 0
         records_failed = 0
         new_watermark: datetime | None = None
 
-        for raw in self.paginate(where, select=":updated_at, *", order=":updated_at ASC"):
-            parsed = self._parse(db, raw)
-            if parsed is None:
-                records_failed += 1
-                continue
+        # Grab the current scraper_run id for per-page watermark checkpointing.
+        # If the process is OOM-killed mid-run, the last completed page's watermark
+        # survives in the row so a manual rerun can be started from that point.
+        run_row = db.execute(
+            text("""
+                SELECT id FROM scraper_runs
+                WHERE scraper_name = :name AND status = 'running'
+                ORDER BY started_at DESC LIMIT 1
+            """),
+            {"name": self.SCRAPER_NAME},
+        ).fetchone()
+        current_run_id = run_row.id if run_row else None
 
-            self._upsert(db, parsed, raw)
-            records_processed += 1
+        offset = 0
+        while True:
+            page = self._fetch_page(
+                where,
+                select=":updated_at, *",
+                order=":updated_at ASC",
+                limit=self.PAGE_SIZE,
+                offset=offset,
+            )
+            if not page:
+                break
 
-            # Track watermark from :updated_at (row-level Socrata modification time)
-            updated_at = _parse_dt(raw.get(":updated_at"))
-            if updated_at and (new_watermark is None or updated_at > new_watermark):
-                new_watermark = updated_at
+            for raw in page:
+                parsed = self._parse(db, raw)
+                if parsed is None:
+                    records_failed += 1
+                    continue
+                self._upsert(db, parsed, raw)
+                records_processed += 1
+
+                updated_at = _parse_dt(raw.get(":updated_at"))
+                if updated_at and (new_watermark is None or updated_at > new_watermark):
+                    new_watermark = updated_at
+
+            if current_run_id and new_watermark:
+                self._checkpoint_watermark(db, current_run_id, new_watermark)
+
+            if len(page) < self.PAGE_SIZE:
+                break
+            offset += self.PAGE_SIZE
 
         return records_processed, records_failed, new_watermark
+
+    def _checkpoint_watermark(self, db, run_id: int, watermark: datetime) -> None:
+        db.execute(
+            text("UPDATE scraper_runs SET watermark_timestamp = :wm WHERE id = :id"),
+            {"wm": watermark, "id": run_id},
+        )
+        db.commit()
+        logger.debug("%s: checkpoint watermark=%s", self.SCRAPER_NAME, watermark)
 
     def _parse(self, db, raw: dict) -> dict | None:
         """Parse a raw DCWP record; returns None if license_creation_date is missing."""
