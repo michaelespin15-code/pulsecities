@@ -3,27 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>How PulseCities Works | NYC Displacement Risk Methodology</title>
-    <meta name="description" content="PulseCities maps displacement pressure across all 178 NYC neighborhoods using six signals from public data — ACRIS deed records, HPD violations, DOB permits, evictions, rent stabilization, and assessment data. See the full methodology and scoring algorithm.">
+    <title>PulseCities | Methodology</title>
+    <meta name="description" content="How PulseCities calculates NYC displacement risk scores using public records, including DOB permits, HPD violations, 311 complaints, eviction records, ACRIS ownership transfers, and rent-stabilized housing data.">
     <link rel="canonical" href="https://pulsecities.com/methodology">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
-    <meta property="og:title" content="How PulseCities Works | NYC Displacement Risk Methodology">
-    <meta property="og:description" content="PulseCities maps displacement pressure across all 178 NYC neighborhoods using six signals from public data. Full methodology, scoring algorithm, and data sources.">
+    <meta property="og:title" content="PulseCities | Methodology">
+    <meta property="og:description" content="How PulseCities calculates NYC displacement risk scores from permits, evictions, complaints, ownership transfers, violations, and rent-stabilized housing data.">
     <meta property="og:url" content="https://pulsecities.com/methodology">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="PulseCities">
     <meta property="og:image" content="https://pulsecities.com/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="PulseCities displacement risk map showing heat scores across all 178 NYC neighborhoods">
+    <meta property="og:image:alt" content="PulseCities NYC displacement risk methodology">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="How PulseCities Works | NYC Displacement Risk Methodology">
-    <meta name="twitter:description" content="PulseCities maps displacement pressure across all 178 NYC neighborhoods using six signals from public data. Full methodology, scoring algorithm, and data sources.">
+    <meta name="twitter:title" content="PulseCities | Methodology">
+    <meta name="twitter:description" content="How PulseCities calculates NYC displacement risk scores from permits, evictions, complaints, ownership transfers, violations, and rent-stabilized housing data.">
     <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-    <meta name="twitter:image:alt" content="PulseCities displacement risk map showing heat scores across all 178 NYC neighborhoods">
+    <meta name="twitter:image:alt" content="PulseCities NYC displacement risk methodology">
 
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 
@@ -31,9 +31,10 @@
     {
         "@context": "https://schema.org",
         "@type": "TechArticle",
-        "headline": "How PulseCities Works | NYC Displacement Risk Methodology",
-        "description": "Full methodology for PulseCities displacement risk scoring: data sources, signal weights, known limitations, and update frequency.",
+        "headline": "PulseCities Methodology",
+        "description": "How PulseCities calculates NYC displacement risk scores from public records including DOB permits, HPD violations, 311 complaints, eviction records, ACRIS ownership transfers, and rent-stabilized housing data.",
         "url": "https://pulsecities.com/methodology",
+        "dateModified": "2026-04",
         "author": { "@type": "Person", "name": "Michael Espin" },
         "publisher": { "@type": "Organization", "name": "PulseCities" }
     }
@@ -425,7 +426,7 @@
         </svg>
         PulseCities
     </a>
-    <span class="nav-breadcrumb">/ about</span>
+    <span class="nav-breadcrumb">/ methodology</span>
     <div class="nav-right">
         <a href="/map">Open the map</a>
     </div>
@@ -434,108 +435,123 @@
 <div class="container">
 
     <header class="page-header">
-        <p class="page-label">About & Methodology</p>
-        <h1>How PulseCities Works</h1>
+        <p class="page-label">Methodology</p>
+        <h1>PulseCities methodology</h1>
         <p class="page-intro">
-            PulseCities is a free tool that shows displacement pressure in every NYC neighborhood using public data.
-            The goal is simple: make it easy to see what is actually changing on your block before it is too late.
+            How NYC displacement risk scores are calculated from public records.
         </p>
         <p class="page-intro" style="margin-top: 12px;">
-            Everything below is the honest version of how it works. What data feeds the tool, how the score is calculated, what it can and cannot tell you.
+            PulseCities combines six public-record signals to identify NYC neighborhoods where housing displacement pressure may be increasing. The score is built for public-interest research, journalism, tenant organizing, and civic analysis.
         </p>
     </header>
+
+    <section id="interpretation">
+        <h2>How to read the score</h2>
+        <div class="callout">
+            A score is not a prediction about a specific tenant or building. It shows where multiple displacement-pressure signals appear together at the ZIP code level. A high score means a neighborhood has more public-record indicators associated with housing pressure. A low score does not mean no risk exists.
+        </div>
+    </section>
 
     <section id="what-this-is">
         <h2>What this is</h2>
         <p>
-            A nightly pipeline that pulls public data from New York City, joins it together by Borough Block Lot (BBL),
-            and produces a displacement risk score for every neighborhood in the city.
-            You click a neighborhood, you see the score, the signals driving it, and what has been happening on the ground.
+            A nightly pipeline that pulls public data from New York City, joins it by Borough Block Lot (BBL),
+            and produces a displacement risk score for every ZIP code in the city.
+            Select a neighborhood to see the score, the signals driving it, and what has been recorded on the ground.
         </p>
         <p>
-            You can also search any landlord or LLC name to see their full NYC portfolio, including how many shell companies
-            they use, what buildings they own, and what violations or evictions are connected to them.
+            You can also search any landlord or LLC name to see their full NYC portfolio: how many entities they use,
+            which buildings they own, and what violations or evictions are connected to them.
         </p>
     </section>
 
     <section id="data-sources">
         <h2>What data feeds it</h2>
-        <p>Every dataset is public. Nothing proprietary.</p>
+        <p>Every dataset is public record. Dataset IDs link directly to the source on NYC Open Data.</p>
 
         <div class="source-list">
             <div class="source-card">
                 <div class="source-card-header">
-                    <span class="source-name">311 Complaints</span>
-                    <span class="source-id">NYC Open Data · erm2-nwe9</span>
+                    <a href="https://data.cityofnewyork.us/d/bnx9-e6tj" target="_blank" rel="noopener noreferrer" class="source-name">ACRIS Ownership Records</a>
+                    <span class="source-id">
+                        <a href="https://data.cityofnewyork.us/d/bnx9-e6tj" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">bnx9-e6tj</a>
+                        &middot;
+                        <a href="https://data.cityofnewyork.us/d/636b-3b5g" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">636b-3b5g</a>
+                        &middot;
+                        <a href="https://data.cityofnewyork.us/d/8h5j-fqxa" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">8h5j-fqxa</a>
+                    </span>
                 </div>
-                <p class="source-desc">Housing complaints, heat and hot water, illegal construction. Updated daily.</p>
+                <p class="source-desc">Deed transfers in NYC: document master, buyer/seller parties, and BBL legals. Three joined tables. ACRIS data has a city-side reporting lag of approximately two weeks.</p>
             </div>
 
             <div class="source-card">
                 <div class="source-card-header">
-                    <span class="source-name">DOB Building Permits</span>
-                    <span class="source-id">NYC Open Data · ipu4-2q9a</span>
+                    <a href="https://data.cityofnewyork.us/d/ipu4-2q9a" target="_blank" rel="noopener noreferrer" class="source-name">DOB Building Permits</a>
+                    <span class="source-id">
+                        <a href="https://data.cityofnewyork.us/d/ipu4-2q9a" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">ipu4-2q9a</a>
+                    </span>
                 </div>
-                <p class="source-desc">Filing date, permit type, owner name, contractor name. Alt-1 permits are the biggest displacement signal. Updated daily.</p>
+                <p class="source-desc">Permit filings from the Department of Buildings. The scorer counts alteration permits (type AL) on residential buildings with 3+ units. Updated daily.</p>
             </div>
 
             <div class="source-card">
                 <div class="source-card-header">
-                    <span class="source-name">HPD Housing Violations</span>
-                    <span class="source-id">NYC Open Data · wvxf-dwi5</span>
+                    <a href="https://data.cityofnewyork.us/d/erm2-nwe9" target="_blank" rel="noopener noreferrer" class="source-name">NYC 311 Service Requests</a>
+                    <span class="source-id">
+                        <a href="https://data.cityofnewyork.us/d/erm2-nwe9" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">erm2-nwe9</a>
+                    </span>
                 </div>
-                <p class="source-desc">Class A through C violations, including lead paint, no heat, structural hazards. The pipeline tracks violation density per building and velocity over time. Updated daily.</p>
+                <p class="source-desc">Housing-related complaints including heat, hot water, pests, mold, and maintenance issues. Filtered to displacement-relevant complaint types. Updated daily.</p>
             </div>
 
             <div class="source-card">
                 <div class="source-card-header">
-                    <span class="source-name">ACRIS Ownership Records</span>
-                    <span class="source-id">NYC Open Data · bnx9-e6tj · 636b-3b5g</span>
+                    <a href="https://data.cityofnewyork.us/d/6z8x-wfk4" target="_blank" rel="noopener noreferrer" class="source-name">NYC Eviction Records</a>
+                    <span class="source-id">
+                        <a href="https://data.cityofnewyork.us/d/6z8x-wfk4" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">6z8x-wfk4</a>
+                    </span>
                 </div>
-                <p class="source-desc">Every deed transfer in NYC since 1966. This is how PulseCities traces operators through shell LLCs to find their full portfolio. Updated weekly.</p>
+                <p class="source-desc">Residential evictions executed by NYC marshals. The scorer uses executed evictions only, not filings. OCA data typically lags 2 to 4 weeks. Updated daily.</p>
             </div>
 
             <div class="source-card">
                 <div class="source-card-header">
-                    <span class="source-name">Eviction Filings</span>
-                    <span class="source-id">NYC Open Data · 6z8x-wfk4</span>
+                    <a href="https://data.cityofnewyork.us/d/wvxf-dwi5" target="_blank" rel="noopener noreferrer" class="source-name">HPD Housing Violations</a>
+                    <span class="source-id">
+                        <a href="https://data.cityofnewyork.us/d/wvxf-dwi5" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">wvxf-dwi5</a>
+                    </span>
                 </div>
-                <p class="source-desc">Marshal-executed evictions by address and date. Updated daily.</p>
+                <p class="source-desc">Class B and C violations on 3+ unit residential buildings. The scorer uses a 90-day inspection window. Updated daily.</p>
             </div>
 
             <div class="source-card">
                 <div class="source-card-header">
-                    <span class="source-name">PLUTO Property Data</span>
-                    <span class="source-id">NYC Dept of City Planning</span>
+                    <a href="https://data.cityofnewyork.us/d/kj4p-ruqc" target="_blank" rel="noopener noreferrer" class="source-name">DHCR Building Registrations</a>
+                    <span class="source-id">
+                        <a href="https://data.cityofnewyork.us/d/kj4p-ruqc" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">kj4p-ruqc</a>
+                    </span>
                 </div>
-                <p class="source-desc">80+ attributes per tax lot including zoning, units, year built, building class. Updated annually.</p>
+                <p class="source-desc">Annual rent-stabilized unit counts per building from DHCR. Used to measure year-over-year RS unit loss. Updated annually.</p>
             </div>
 
             <div class="source-card">
                 <div class="source-card-header">
-                    <span class="source-name">DOF Rolling Sales</span>
-                    <span class="source-id">NYC Dept of Finance</span>
+                    <a href="https://data.cityofnewyork.us/d/64uk-42ks" target="_blank" rel="noopener noreferrer" class="source-name">MapPLUTO</a>
+                    <span class="source-id">
+                        <a href="https://data.cityofnewyork.us/d/64uk-42ks" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">64uk-42ks</a>
+                    </span>
                 </div>
-                <p class="source-desc">Every property sale in NYC with price and date. Updated quarterly.</p>
-            </div>
-
-            <div class="source-card">
-                <div class="source-card-header">
-                    <span class="source-name">DHCR Rent Stabilization Counts</span>
-                    <span class="source-id">NYC Rent Guidelines Board via NYCDB</span>
-                </div>
-                <p class="source-desc">Historical stabilized unit counts per building going back to 2007. Updated annually.</p>
+                <p class="source-desc">NYC Dept of City Planning parcel reference data. Used to normalize all signals per residential unit and to join records by BBL. Updated annually.</p>
             </div>
         </div>
     </section>
 
     <section id="scoring">
-        <h2>The displacement score</h2>
+        <h2>Scoring</h2>
         <p>
-            The score runs from 0 to 100. Higher numbers mean higher displacement pressure.
-            Here is exactly how it is calculated.
+            The score runs from 0 to 100. Higher numbers mean more displacement-pressure signals in the public record.
         </p>
-        <p>All displacement signals are measured over the past 365 days, normalized per 1,000 residential units.</p>
+        <p>All displacement signals are measured over the past 365 days (HPD violations use a 90-day window), normalized per residential unit.</p>
 
         <h3>Six signals</h3>
 
@@ -549,41 +565,58 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>LLC acquisitions</td>
+                    <td>
+                        LLC acquisitions<br>
+                        <span style="font-size:12px;color:var(--muted);">Residential deed transfers to LLC buyers. LLC-to-LLC transfers (where both buyer and seller are LLCs) and mortgage servicers are excluded.</span>
+                    </td>
                     <td><span class="weight-badge">26%</span></td>
                     <td><span class="window-badge">365 days</span></td>
                 </tr>
                 <tr>
-                    <td>Building permits<br><span style="font-size:12px;color:var(--muted);">Alt-1 (major renovation) weighted highest</span></td>
+                    <td>
+                        Permit filings<br>
+                        <span style="font-size:12px;color:var(--muted);">Alteration permits (type AL) on 3+ unit residential buildings. Can signal reinvestment, turnover pressure, or building changes.</span>
+                    </td>
                     <td><span class="weight-badge">21%</span></td>
                     <td><span class="window-badge">365 days</span></td>
                 </tr>
                 <tr>
-                    <td>311 complaint velocity<br><span style="font-size:12px;color:var(--muted);">Trend direction of housing complaints</span></td>
+                    <td>
+                        311 complaint rate<br>
+                        <span style="font-size:12px;color:var(--muted);">Housing-related complaints including heat, hot water, pests, mold, and maintenance issues.</span>
+                    </td>
                     <td><span class="weight-badge">17%</span></td>
                     <td><span class="window-badge">365 days</span></td>
                 </tr>
                 <tr>
-                    <td>Eviction rate<br><span style="font-size:12px;color:var(--muted);">Executed evictions per 1,000 renter households</span></td>
+                    <td>
+                        Evictions<br>
+                        <span style="font-size:12px;color:var(--muted);">Executed residential evictions by NYC marshals. Filed cases that resolved without execution are not counted. OCA data typically lags 2 to 4 weeks.</span>
+                    </td>
                     <td><span class="weight-badge">13%</span></td>
                     <td><span class="window-badge">365 days</span></td>
                 </tr>
                 <tr>
-                    <td>HPD violations<br><span style="font-size:12px;color:var(--muted);">Class B and C violations per unit</span></td>
+                    <td>
+                        HPD violations<br>
+                        <span style="font-size:12px;color:var(--muted);">Class B and C violations on 3+ unit buildings. Clusters of serious violations can indicate building distress, neglect, or pressure on tenants.</span>
+                    </td>
                     <td><span class="weight-badge">8%</span></td>
-                    <td><span class="window-badge">365 days</span></td>
+                    <td><span class="window-badge">90 days</span></td>
                 </tr>
                 <tr>
                     <td>
-                        Assessment spike<br>
-                        <span style="font-size:12px;color:var(--muted);">Year-over-year property assessment increases</span>
-                        <div class="dormant-note">Currently dormant — activates with 2 years of DOF history</div>
+                        Rent-stabilized unit loss<br>
+                        <span style="font-size:12px;color:var(--muted);">Year-over-year loss in registered rent-stabilized units per building. A direct signal of rent-stabilized housing loss when annual comparisons are available.</span>
+                        <div class="dormant-note">Dormant until 2027. Requires two consecutive DHCR annual snapshots.</div>
                     </td>
                     <td><span class="weight-badge">15%</span></td>
-                    <td><span class="window-badge">YoY</span></td>
+                    <td><span class="window-badge">Annual</span></td>
                 </tr>
             </tbody>
         </table>
+
+        <p style="font-size:13px;color:var(--muted);margin-top:16px;">When a signal is dormant, its weight is redistributed proportionally to the active signals so the composite always sums to 100%.</p>
 
         <h3>Score ranges</h3>
 
@@ -606,7 +639,7 @@
             <div class="score-range">
                 <div class="color-dot" style="background:#ef4444;box-shadow:0 0 6px rgba(239,68,68,0.5);"></div>
                 <span class="score-range-num">81 – 100</span>
-                <span class="score-range-label">Critical — alert flag shown</span>
+                <span class="score-range-label">Critical (alert flag shown)</span>
             </div>
         </div>
 
@@ -620,62 +653,66 @@
         </ul>
     </section>
 
+    <section id="normalization">
+        <h2>Why scores are normalized</h2>
+        <p>
+            Raw event counts favor dense neighborhoods simply because they have more buildings and residents.
+            PulseCities normalizes all signals per residential unit using MapPLUTO unit counts so the score
+            reflects signal intensity, not neighborhood size.
+        </p>
+        <p>
+            ZIP codes with zero or null unit counts fall back to the borough median residential unit count
+            to prevent division-by-zero artifacts in lower-density areas.
+        </p>
+    </section>
+
     <section id="research-basis">
-        <h2>The methodology is grounded in real research</h2>
+        <h2>Methodology reference</h2>
         <p>
-            The weights are not invented. They are based on methodology from two sources that have validated
-            these signals against actual displacement outcomes.
+            PulseCities is inspired by displacement-risk indicator work from the
+            <a href="https://anhd.org" target="_blank" rel="noopener">Association for Neighborhood and Housing Development (ANHD)</a>,
+            which has been scoring NYC buildings for displacement risk since 2016 using rent-stabilized unit loss,
+            tenant turnover, and sale prices.
         </p>
         <p>
-            The first is the
-            <a href="https://anhd.org" target="_blank" rel="noopener">Association for Neighborhood and Housing Development Displacement Alert Project</a>.
-            ANHD has been scoring NYC buildings for displacement risk since 2016 using rent stabilized unit loss,
-            tenant turnover, and sale prices. Their research shows these building-level signals are the strongest
-            predictors of displacement outcomes.
-        </p>
-        <p>
-            The second is the NYC Equitable Development Data Explorer, built by the Department of City Planning
-            and HPD. Their Displacement Risk Map combines population vulnerability, housing conditions,
-            and market pressure at the neighborhood level.
-        </p>
-        <p>
-            PulseCities builds on both approaches — using building-level signals like ANHD while scoring at
-            the neighborhood level like EDDE, and automating the operator network detection that both tools
-            do manually or partially.
+            PulseCities uses its own scoring model, live data pipeline, and public-record normalization.
+            It is not affiliated with ANHD or the NYC Equitable Development Data Explorer.
         </p>
     </section>
 
-    <section id="what-it-can-tell-you">
-        <h2>What PulseCities can tell you</h2>
-        <ul class="capability-list">
-            <li><span class="cap-icon" style="color:var(--green);">✓</span> Which neighborhoods are under the most displacement pressure right now</li>
-            <li><span class="cap-icon" style="color:var(--green);">✓</span> Who owns buildings in those neighborhoods and whether those owners are operating through shell LLCs</li>
-            <li><span class="cap-icon" style="color:var(--green);">✓</span> Which buildings have unresolved housing violations, active evictions, or recent ownership changes</li>
-            <li><span class="cap-icon" style="color:var(--green);">✓</span> Patterns like operators who buy buildings shortly after tenants are evicted, which require connecting multiple data sources</li>
-        </ul>
-    </section>
-
-    <section id="what-it-cannot-tell-you">
-        <h2>What PulseCities cannot tell you</h2>
+    <section id="limitations">
+        <h2>Limitations</h2>
         <ul class="capability-list">
             <li>
                 <span class="cap-icon" style="color:var(--red);">✕</span>
-                <span>Whether a specific landlord is breaking the law. Displacement pressure is not the same as illegal behavior. Many landlords operating in high-pressure neighborhoods are doing nothing wrong.</span>
+                <span>A score is not evidence that a specific landlord is breaking the law. Displacement pressure is not the same as illegal behavior.</span>
             </li>
             <li>
                 <span class="cap-icon" style="color:var(--red);">✕</span>
-                <span>The future. The score describes current conditions. Whether a neighborhood's pressure translates to actual displacement depends on factors outside the data.</span>
+                <span>The score describes current conditions, not predictions. Whether pressure translates to displacement depends on factors outside the data.</span>
             </li>
             <li>
                 <span class="cap-icon" style="color:var(--red);">✕</span>
-                <span>Every family's situation. A high-score neighborhood does not mean every tenant is at risk. A low-score neighborhood does not mean no one is being displaced.</span>
+                <span>A high-score neighborhood does not mean every tenant is at risk. A low score does not mean no displacement pressure exists.</span>
+            </li>
+            <li>
+                <span class="cap-icon" style="color:var(--red);">✕</span>
+                <span>Public records can lag. ACRIS data typically lags two weeks. Eviction data typically lags two to four weeks.</span>
+            </li>
+            <li>
+                <span class="cap-icon" style="color:var(--red);">✕</span>
+                <span>Source data can contain address or entity inconsistencies that affect matching accuracy.</span>
+            </li>
+            <li>
+                <span class="cap-icon" style="color:var(--red);">✕</span>
+                <span>Operator matching is conservative and based on public records. Some related entities may not be connected.</span>
             </li>
         </ul>
 
         <div class="callout">
-            The rent stabilization data is historical through 2023. More recent deregulation activity is not yet reflected.
-            That gap will close as newer data becomes available. The assessment spike signal is currently dormant because
-            it requires two consecutive years of DOF assessment history. Year one is being collected now.
+            The rent stabilization signal is dormant until 2027, when a second consecutive DHCR annual snapshot becomes available.
+            Its 15% weight is redistributed proportionally to the five active signals in the interim.
+            The rent stabilization dataset used for the operator detail view is historical through 2023.
         </div>
     </section>
 
@@ -735,18 +772,20 @@
         </div>
     </section>
 
+    <p style="font-size:12px;color:var(--faint);margin-top:52px;">Last updated: April 2026</p>
+
 </div>
 
 <footer>
     <p class="footer-byline">
-        Built by <a href="https://linkedin.com/in/michaelespin15" target="_blank" rel="noopener">Michael Espin</a>
+        Built by <a href="https://linkedin.com/in/michaelespin15" target="_blank" rel="noopener noreferrer">Michael Espin</a>
     </p>
     <div class="footer-links">
-        <a href="/">PulseCities</a>
+        <a href="/">Home</a>
         <a href="/map">Map</a>
         <a href="/operators">Operators</a>
-        <a href="/methodology">About</a>
-        <a href="https://github.com/michaelespin15/pulsecities" target="_blank" rel="noopener">GitHub</a>
+        <a href="/methodology">Methodology</a>
+        <a href="https://github.com/michaelespin15/pulsecities" target="_blank" rel="noopener noreferrer">GitHub</a>
         <a href="mailto:michaelespin15@gmail.com">Contact</a>
     </div>
 </footer>
