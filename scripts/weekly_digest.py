@@ -731,6 +731,108 @@ def send_digest_email(subscription: dict, rendered: dict, dry_run: bool = False)
 
 
 # ---------------------------------------------------------------------------
+# Citywide send threshold
+# ---------------------------------------------------------------------------
+
+def is_meaningful_citywide_update(db) -> tuple[bool, list[str]]:
+    """
+    Return (should_send, reasons).
+
+    Conditions — any one is sufficient to trigger a citywide send:
+    A. 3+ ZIPs moved by >= 3 score points this week.
+    B. Any ZIP entered High tier (>= 75) this week from below.
+    C. Top-10 ZIP ranking changed vs. last week.
+    D. Pulse feed has >= 5 notable events (LLC acquisitions + evictions) this week.
+
+    Conditions requiring data that isn't available are silently skipped.
+    """
+    reasons: list[str] = []
+    today    = date.today()
+    week_ago = today - timedelta(days=7)
+
+    # A + B: score movement — one batch query for both conditions
+    try:
+        rows = db.execute(text("""
+            SELECT cur.zip_code,
+                   cur.composite_score  AS score_now,
+                   prev.composite_score AS score_prev
+            FROM score_history cur
+            JOIN score_history prev ON cur.zip_code = prev.zip_code
+            WHERE cur.scored_at  = :today
+              AND prev.scored_at = (
+                  SELECT MAX(scored_at) FROM score_history
+                  WHERE zip_code = cur.zip_code AND scored_at < :today
+              )
+        """), {"today": today}).fetchall()
+
+        movers = sum(1 for r in rows if abs(float(r[1] or 0) - float(r[2] or 0)) >= 3.0)
+        if movers >= 3:
+            reasons.append(f"{movers} ZIP codes moved by 3+ points this week")
+
+        new_high = [r for r in rows if float(r[1] or 0) >= 75 and float(r[2] or 0) < 75]
+        if new_high:
+            names = ", ".join(r[0] for r in new_high[:3])
+            reasons.append(f"{len(new_high)} ZIP(s) entered High tier: {names}")
+    except Exception:
+        logger.warning("Citywide condition A/B query failed — skipping", exc_info=True)
+
+    # C: top-10 ranking changed
+    try:
+        cur_top = db.execute(text("""
+            SELECT zip_code FROM score_history
+            WHERE scored_at = :today
+            ORDER BY composite_score DESC LIMIT 10
+        """), {"today": today}).fetchall()
+
+        prev_top = db.execute(text("""
+            SELECT zip_code FROM score_history
+            WHERE scored_at = (
+                SELECT MAX(scored_at) FROM score_history WHERE scored_at < :today
+            )
+            ORDER BY composite_score DESC LIMIT 10
+        """), {"today": today}).fetchall()
+
+        if cur_top and prev_top:
+            cur_set  = [r[0] for r in cur_top]
+            prev_set = [r[0] for r in prev_top]
+            if cur_set != prev_set:
+                reasons.append("top-risk neighborhood ranking changed since last week")
+    except Exception:
+        logger.warning("Citywide condition C query failed — skipping", exc_info=True)
+
+    # D: notable pulse events this week (LLC acquisitions + residential evictions)
+    try:
+        llc_count = db.execute(text("""
+            SELECT COUNT(DISTINCT o.bbl)
+            FROM ownership_raw o
+            JOIN parcels p ON o.bbl = p.bbl
+            WHERE o.doc_date >= :cutoff
+              AND o.party_type = '2'
+              AND o.doc_type IN ('DEED','DEEDP','ASST')
+              AND o.party_name_normalized LIKE '%LLC%'
+              AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
+              AND o.party_name_normalized NOT ILIKE '%LENDING%'
+              AND o.party_name_normalized NOT ILIKE '%FINANCIAL %'
+        """), {"cutoff": week_ago}).scalar() or 0
+
+        eviction_count = db.execute(text("""
+            SELECT COUNT(*) FROM evictions_raw
+            WHERE executed_date >= :cutoff AND eviction_type ILIKE 'R%'
+        """), {"cutoff": week_ago}).scalar() or 0
+
+        total_events = int(llc_count) + int(eviction_count)
+        if total_events >= 5:
+            reasons.append(
+                f"{total_events} notable public-record events this week "
+                f"({llc_count} LLC acquisitions, {eviction_count} evictions)"
+            )
+    except Exception:
+        logger.warning("Citywide condition D query failed — skipping", exc_info=True)
+
+    return bool(reasons), reasons
+
+
+# ---------------------------------------------------------------------------
 # Citywide digest
 # ---------------------------------------------------------------------------
 
@@ -935,16 +1037,25 @@ def run(dry_run: bool = False, limit: int | None = None, email_filter: str | Non
             citywide_subs = citywide_subs[:remaining]
 
         if citywide_subs:
-            citywide_summary = build_citywide_summary(db)
-            c_sent = c_failed = 0
-            for sub in citywide_subs:
-                rendered = render_citywide_digest(sub, citywide_summary)
-                if send_digest_email(sub, rendered, dry_run=dry_run):
-                    logger.info("SENT citywide -> %s", sub["email"])
-                    c_sent += 1
-                else:
-                    c_failed += 1
-            logger.info("Citywide digest complete. sent=%d failed=%d", c_sent, c_failed)
+            should_send_citywide, citywide_reasons = is_meaningful_citywide_update(db)
+            if not should_send_citywide:
+                logger.info(
+                    "SKIP citywide digest: no threshold met for %d subscriber(s). "
+                    "Conditions checked: score movement, tier change, ranking shift, pulse events.",
+                    len(citywide_subs),
+                )
+            else:
+                logger.info("Citywide threshold met: %s", "; ".join(citywide_reasons))
+                citywide_summary = build_citywide_summary(db)
+                c_sent = c_failed = 0
+                for sub in citywide_subs:
+                    rendered = render_citywide_digest(sub, citywide_summary)
+                    if send_digest_email(sub, rendered, dry_run=dry_run):
+                        logger.info("SENT citywide -> %s", sub["email"])
+                        c_sent += 1
+                    else:
+                        c_failed += 1
+                logger.info("Citywide digest complete. sent=%d failed=%d", c_sent, c_failed)
     finally:
         db.close()
 
