@@ -382,6 +382,12 @@
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block;flex-shrink:0;"></span><span id="legend-critical" class="text-slate-300">Critical (70+)</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#94a3b8;display:inline-block;flex-shrink:0;"></span><span id="legend-no-data" class="text-slate-300">No data</span></div>
                 <div id="map-data-updated" class="text-slate-500 mt-1" style="font-size:10px;"></div>
+                <div style="margin-top:8px;padding-top:7px;border-top:1px solid rgba(148,163,184,0.1);">
+                    <button id="operator-layer-btn" onclick="toggleOperatorLayer()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:0;color:rgba(148,163,184,0.55);font-size:11px;" aria-pressed="false">
+                        <span id="operator-layer-dot" style="width:9px;height:9px;border-radius:50%;background:rgba(249,115,22,0.3);border:1px solid rgba(249,115,22,0.4);flex-shrink:0;display:inline-block;transition:background 0.15s;"></span>
+                        <span id="operator-layer-label">Operator portfolios</span>
+                    </button>
+                </div>
             </div>
             <!-- Comparison mode overlay — floats over map center while user picks a second zip -->
             <div id="compare-hint" class="hidden absolute top-4 left-0 right-0 flex justify-center z-10 pointer-events-none">
@@ -2291,6 +2297,78 @@
             if (window.innerWidth < 768) showMobileMap();
         }
 
+        // ---------------------------------------------------------------------------
+        // Operator layer — toggle colored overlay for known operator portfolios
+        // ---------------------------------------------------------------------------
+        const _OPERATOR_PATTERNS = [
+            { re: /\bMTEK\b/,            slug: 'mtek-nyc' },
+            { re: /\bPHANTOM\s+CAPITAL\b/, slug: 'phantom-capital' },
+            { re: /\bBREDIF\b/,           slug: 'bredif' },
+        ];
+        // Colors in same order as _OPERATOR_PATTERNS
+        const _OP_COLORS = { 'mtek-nyc': '#f97316', 'phantom-capital': '#a78bfa', 'bredif': '#60a5fa' };
+
+        let _operatorLayerOn = false, _operatorPaintColor = null;
+
+        function _operatorSlugForText(text) {
+            if (!text) return null;
+            const u = text.toUpperCase();
+            for (const op of _OPERATOR_PATTERNS) {
+                if (op.re.test(u)) return op.slug;
+            }
+            return null;
+        }
+
+        function _setOperatorLayerUI(on) {
+            const dot = document.getElementById('operator-layer-dot');
+            const lbl = document.getElementById('operator-layer-label');
+            const btn = document.getElementById('operator-layer-btn');
+            if (dot) dot.style.background = on ? 'rgba(249,115,22,0.9)' : 'rgba(249,115,22,0.3)';
+            if (lbl) lbl.style.color = on ? '#f97316' : '';
+            if (btn) btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+
+        async function toggleOperatorLayer() {
+            if (_operatorLayerOn) {
+                if (map.getLayer('operator-overlay')) map.removeLayer('operator-overlay');
+                _operatorLayerOn = false;
+                _setOperatorLayerUI(false);
+                return;
+            }
+            // Re-add layer if paint expression was already computed
+            if (_operatorPaintColor) {
+                if (!map.getLayer('operator-overlay')) {
+                    map.addLayer({ id: 'operator-overlay', type: 'fill', source: 'neighborhoods',
+                        paint: { 'fill-color': _operatorPaintColor, 'fill-opacity': 0.42 } });
+                }
+                _operatorLayerOn = true;
+                _setOperatorLayerUI(true);
+                return;
+            }
+            // First time: fetch all operator portfolios and build the match expression
+            try {
+                const list = await fetch('/api/operators').then(r => r.ok ? r.json() : []);
+                const details = await Promise.all(list.map(op =>
+                    fetch('/api/operators/' + op.slug).then(r => r.ok ? r.json() : null).catch(() => null)
+                ));
+                const matchArgs = [];
+                details.forEach((d, i) => {
+                    if (!d || !list[i]) return;
+                    const color = _OP_COLORS[list[i].slug] || '#94a3b8';
+                    [...new Set((d.properties || []).map(p => p.zip_code).filter(Boolean))]
+                        .forEach(z => matchArgs.push(z, color));
+                });
+                if (!matchArgs.length) return;
+                _operatorPaintColor = ['match', ['get', 'zip_code'], ...matchArgs, 'transparent'];
+                map.addLayer({ id: 'operator-overlay', type: 'fill', source: 'neighborhoods',
+                    paint: { 'fill-color': _operatorPaintColor, 'fill-opacity': 0.42 } });
+                _operatorLayerOn = true;
+                _setOperatorLayerUI(true);
+            } catch (e) {
+                console.warn('[PulseCities] operator layer failed:', e);
+            }
+        }
+
         function exitCompareMode() {
             _comparingMode = false;
             document.getElementById('compare-hint').classList.add('hidden');
@@ -2907,7 +2985,26 @@
 
                     const descEl = document.createElement('span');
                     descEl.className = 'text-sm text-base-content';
-                    descEl.textContent = ev.description || '';
+                    // For ownership transfers, hyperlink any known operator name in the description
+                    if (ev.type === 'ownership_transfer' && ev.description) {
+                        const slug = _operatorSlugForText(ev.description);
+                        const m = slug ? ev.description.match(/^Transfer to (.+?)(?:\s+\([A-Z]+\))?(?:\s*[—\-])/) : null;
+                        const buyer = m ? m[1].trim() : null;
+                        if (buyer && ev.description.indexOf(buyer) >= 0) {
+                            const idx = ev.description.indexOf(buyer);
+                            descEl.appendChild(document.createTextNode(ev.description.slice(0, idx)));
+                            const link = document.createElement('a');
+                            link.href = '/operator/' + slug;
+                            link.textContent = buyer;
+                            link.style.cssText = 'color:#f97316;text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(249,115,22,0.45);';
+                            descEl.appendChild(link);
+                            descEl.appendChild(document.createTextNode(ev.description.slice(idx + buyer.length)));
+                        } else {
+                            descEl.textContent = ev.description;
+                        }
+                    } else {
+                        descEl.textContent = ev.description || '';
+                    }
                     item.appendChild(descEl);
 
                     if (ev.detail) {
