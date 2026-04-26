@@ -11,3 +11,4 @@ node_modules/
 .planning/
 v2_roadmap.md
 package-lock.json
+og_cache/
