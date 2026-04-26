@@ -1,0 +1,11 @@
+# PulseCities nightly data pipeline — runs at 2:00 AM UTC
+# Scrapers run in dependency order: DOF(pluto) -> complaints -> permits -> evictions -> ACRIS -> scoring
+# Exit code 1 if any scraper fails (SCHED-02)
+#
+# Deploy: cp deploy/pulsecities.cron /etc/cron.d/pulsecities
+# When changing the digest schedule, update config/schedule.py to match.
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+0 2 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scheduler.main >> /var/log/pulsecities/scraper.log 2>&1
+0 9 * * 0 root /root/pulsecities/venv/bin/python scripts/weekly_digest.py >> /var/log/pulsecities/digest.log 2>&1
