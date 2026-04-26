@@ -243,12 +243,13 @@ class TestRenderZipDigest:
 
     def test_subject_format(self):
         rendered = self._render()
-        assert rendered["subject"] == "PulseCities Weekly Watch: Harlem update"
+        # area label is "{name} / {zip}" when name differs from zip
+        assert rendered["subject"] == "PulseCities Weekly Watch: Harlem / 10026 update"
 
-    def test_subject_contains_neighborhood_not_zip(self):
+    def test_subject_contains_area_label(self):
         rendered = self._render()
         assert "Harlem" in rendered["subject"]
-        assert "10026" not in rendered["subject"]
+        assert "10026" in rendered["subject"]
 
     def test_html_contains_unsubscribe_link(self):
         rendered = self._render(token="tok-xyz")
