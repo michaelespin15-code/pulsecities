@@ -43,6 +43,10 @@ from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
+
+class ScoringGuardError(RuntimeError):
+    """Raised when a batch of new scores fails the pre-commit sanity guard."""
+
 from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
 
 # ---------------------------------------------------------------------------
@@ -509,10 +513,126 @@ def _per_unit(count: int, zip_code: str,
 
 
 # ---------------------------------------------------------------------------
+# Batch sanity guard
+# ---------------------------------------------------------------------------
+
+def _count_active_signals(signal_norms: dict[str, dict]) -> int:
+    """
+    Count signals where the mean normalized value across all scored ZIPs is > 1.0.
+    A signal with mean <= 1.0 is effectively zero across the whole city — dormant or broken.
+    """
+    active = 0
+    for norm_dict in signal_norms.values():
+        vals = list(norm_dict.values())
+        if vals and (sum(vals) / len(vals)) > 1.0:
+            active += 1
+    return active
+
+
+def _batch_sanity_check(
+    db: Session,
+    computed_scores: dict,
+    signal_norms: dict[str, dict],
+    force: bool = False,
+) -> None:
+    """
+    Compare the new score batch against the current live displacement_scores.
+    Raises ScoringGuardError if any threshold is violated and force is False.
+    Logs details on both pass and block.
+
+    Thresholds (any one triggers block):
+      1. new max score < 50% of previous max
+      2. new average score < 50% of previous average
+      3. > 50% of ZIPs have score <= 5
+      4. active signal count collapses (>= 4 previously, <= 2 now)
+      5. scored ZIP count < 170
+    """
+    if force:
+        logger.warning("scoring guard bypassed — --force flag active. Writing scores unconditionally.")
+        return
+
+    new_scores = list(computed_scores.values())
+    new_count  = len(new_scores)
+    new_max    = max(new_scores) if new_scores else 0.0
+    new_avg    = sum(new_scores) / new_count if new_count else 0.0
+    new_active = _count_active_signals(signal_norms)
+    near_floor = sum(1 for s in new_scores if s <= 5)
+
+    # Read current live baseline
+    prev_rows = db.execute(text(
+        "SELECT score, signal_breakdown FROM displacement_scores WHERE score IS NOT NULL"
+    )).fetchall()
+
+    if prev_rows:
+        prev_scores = [float(r[0]) for r in prev_rows]
+        prev_max    = max(prev_scores)
+        prev_avg    = sum(prev_scores) / len(prev_scores)
+
+        # Count previously active signals from JSONB breakdown (sample all rows)
+        prev_signal_sums: dict[str, float] = {}
+        prev_signal_counts: dict[str, int] = {}
+        for r in prev_rows:
+            breakdown = r[1] if isinstance(r[1], dict) else {}
+            for sig, val in breakdown.items():
+                if isinstance(val, (int, float)):
+                    prev_signal_sums[sig]   = prev_signal_sums.get(sig, 0.0) + float(val)
+                    prev_signal_counts[sig] = prev_signal_counts.get(sig, 0) + 1
+        prev_active = sum(
+            1 for sig in prev_signal_sums
+            if prev_signal_counts[sig] > 0
+            and prev_signal_sums[sig] / prev_signal_counts[sig] > 1.0
+        )
+    else:
+        # No prior data — allow first-ever run without comparison
+        logger.info("scoring guard: no prior displacement_scores — skipping comparison thresholds")
+        prev_max = prev_avg = 0.0
+        prev_active = 0
+
+    def _block(reason: str) -> None:
+        logger.error(
+            "scoring guard blocked live score update: %s | "
+            "prev max=%.1f new max=%.1f | prev avg=%.1f new avg=%.1f | "
+            "prev active signals=%d new active signals=%d | scored ZIPs=%d",
+            reason,
+            prev_max, new_max, prev_avg, new_avg,
+            prev_active, new_active, new_count,
+        )
+        raise ScoringGuardError(reason)
+
+    # Threshold 1: scored ZIP count
+    if new_count < 170:
+        _block(f"ZIP count too low: {new_count} (threshold: 170)")
+
+    # Threshold 2: max score collapse
+    if prev_max > 0 and new_max < prev_max * 0.50:
+        _block(f"max score collapsed: {prev_max:.1f} -> {new_max:.1f} (<50% of previous)")
+
+    # Threshold 3: average score collapse
+    if prev_avg > 0 and new_avg < prev_avg * 0.50:
+        _block(f"avg score collapsed: {prev_avg:.1f} -> {new_avg:.1f} (<50% of previous)")
+
+    # Threshold 4: > 50% of ZIPs near floor
+    if new_count > 0 and near_floor > new_count * 0.50:
+        _block(f"{near_floor}/{new_count} ZIPs have score <= 5 (>50%)")
+
+    # Threshold 5: active signal collapse
+    if prev_active >= 4 and new_active <= 2:
+        _block(
+            f"active signal count collapsed: {prev_active} -> {new_active} "
+            f"(was >=4 active signals, now <=2)"
+        )
+
+    logger.info(
+        "scoring guard passed: max=%.1f avg=%.1f active_signals=%d zips=%d",
+        new_max, new_avg, new_active, new_count,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
 
-def compute_scores(db: Session, as_of_date: date | None = None) -> int:
+def compute_scores(db: Session, as_of_date: date | None = None, force: bool = False) -> int:
     """
     Compute full six-signal composite displacement scores for all zip codes.
     Returns the number of zip codes scored and upserted.
@@ -824,7 +944,27 @@ def compute_scores(db: Session, as_of_date: date | None = None) -> int:
             len(skipped_zips),
             total_attempted,
         )
+        db.rollback()
         return 0
+
+    # --- Batch sanity guard ---
+    # Compares the full new batch against live displacement_scores before committing.
+    # Rolls back and raises ScoringGuardError if any threshold is violated.
+    # Skipped during backfill runs (as_of_date is set) — those never touch live tables.
+    if as_of_date is None:
+        signal_norms = {
+            "permits":        permit_norm,
+            "evictions":      eviction_norm,
+            "llc_acquisitions": llc_norm,
+            "hpd_violations": violation_norm,
+            "complaint_rate": complaint_norm,
+            "rs_unit_loss":   rs_loss_norm,
+        }
+        try:
+            _batch_sanity_check(db, computed_scores, signal_norms, force=force)
+        except ScoringGuardError:
+            db.rollback()
+            raise  # propagate so cron/CLI exits nonzero
 
     db.commit()
 
@@ -943,11 +1083,42 @@ def snapshot_scores(db) -> None:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    import argparse
     import sys
+
+    from config.logging_config import configure_logging
     from models.database import get_scraper_db
 
-    print("Computing displacement scores from six signals (RS unit loss dormant until 2027)...")
-    with get_scraper_db() as db:
-        n = compute_scores(db)
-    print(f"Scored {n} zip codes.")
-    sys.exit(0)
+    configure_logging()
+
+    parser = argparse.ArgumentParser(description="PulseCities displacement scoring engine")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Bypass the batch sanity guard and write scores unconditionally. "
+             "Use only for manual recovery — never in cron.",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Compute scores and run the sanity guard but do not write to any table.",
+    )
+    args = parser.parse_args()
+
+    if args.dry_run:
+        print("DRY RUN — scores will be computed and guard evaluated but nothing written.")
+
+    try:
+        with get_scraper_db() as db:
+            if args.dry_run:
+                # Run computation and guard check, then rollback all writes.
+                n = compute_scores(db, force=args.force)
+                db.rollback()
+                print(f"DRY RUN complete. Would have scored {n} zip codes.")
+            else:
+                n = compute_scores(db, force=args.force)
+                print(f"Scored {n} zip codes.")
+        sys.exit(0)
+    except ScoringGuardError as exc:
+        print(f"ERROR: scoring guard blocked write — {exc}", file=sys.stderr)
+        sys.exit(1)

@@ -193,7 +193,7 @@ class TestSignalBreakdownRsUnitLoss:
                            {"z": zip_code})
                 db.commit()
 
-                count = compute_scores(db)
+                count = compute_scores(db, force=True)  # synthetic test data bypasses production guard
 
                 # Fetch the breakdown
                 row = db.execute(
