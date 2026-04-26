@@ -101,3 +101,54 @@ class TestFastAPIRoutes:
         assert resp.status_code == 200
         # Must serve operator.html shell, not app.html
         assert "maplibre" not in resp.text.lower()
+
+
+@pytest.mark.integration
+class TestNeighborhoodOGInjection:
+    """
+    Verify that /neighborhood/{zip} pages get neighborhood-specific OG tags
+    injected server-side, not the generic app.html defaults.
+    Requires a live database.
+    """
+
+    @pytest.fixture(scope="class")
+    def client(self):
+        from api.main import app
+        with TestClient(app, raise_server_exceptions=False) as c:
+            yield c
+
+    def test_neighborhood_og_title_is_specific(self, client):
+        resp = client.get("/neighborhood/11216")
+        assert resp.status_code == 200
+        # og:title must contain the ZIP or neighborhood name, not the generic app title
+        assert 'property="og:title"' in resp.text
+        og_title_line = next(
+            (l for l in resp.text.splitlines() if 'property="og:title"' in l), ""
+        )
+        assert "11216" in og_title_line or "Bedford" in og_title_line, \
+            f"og:title not neighborhood-specific: {og_title_line}"
+
+    def test_neighborhood_og_title_not_generic(self, client):
+        resp = client.get("/neighborhood/11216")
+        assert "PulseCities | NYC Displacement Risk Map" not in resp.text or \
+               "11216" in next(
+                   (l for l in resp.text.splitlines() if 'property="og:title"' in l), ""
+               ), "og:title still shows generic app default"
+
+    def test_neighborhood_og_description_is_specific(self, client):
+        resp = client.get("/neighborhood/11216")
+        og_desc_line = next(
+            (l for l in resp.text.splitlines() if 'property="og:description"' in l), ""
+        )
+        # Must not be the generic app description
+        assert "178 neighborhoods" not in og_desc_line, \
+            f"og:description still generic: {og_desc_line}"
+
+    def test_neighborhood_og_url_is_correct(self, client):
+        resp = client.get("/neighborhood/11216")
+        assert 'content="https://pulsecities.com/neighborhood/11216"' in resp.text
+
+    def test_neighborhood_title_tag_is_specific(self, client):
+        resp = client.get("/neighborhood/11216")
+        assert "<title>Explore | PulseCities</title>" not in resp.text
+        assert "11216" in resp.text or "Bedford" in resp.text
