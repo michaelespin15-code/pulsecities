@@ -14,6 +14,7 @@ Provides:
 
 import logging
 import os
+import urllib.parse
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta, timezone
 
@@ -90,6 +91,7 @@ class BaseScraper(ABC):
         }
         if select:
             params["$select"] = select
+        logger.debug("%s: GET %s?%s", self.SCRAPER_NAME, self.base_url, urllib.parse.urlencode(params))
         resp = self._http.get(self.base_url, params=params, timeout=self.PAGE_TIMEOUT)
         resp.raise_for_status()
         return resp.json()
@@ -214,6 +216,12 @@ class BaseScraper(ABC):
         try:
             records_processed, records_failed, new_watermark = self._run(db)
 
+            # Re-fetch by pk after long-running _run() — the session may have
+            # committed/rolled back internally, leaving this instance detached.
+            fresh = db.get(ScraperRun, scraper_run.id)
+            if isinstance(fresh, ScraperRun):
+                scraper_run = fresh
+
             warnings: list[str] = []
 
             expected_min = SCRAPER_EXPECTED_MIN_RECORDS.get(self.SCRAPER_NAME)
@@ -231,6 +239,9 @@ class BaseScraper(ABC):
 
             if warnings:
                 msg = "; ".join(warnings)
+                # Low counts can reflect temporary NYC Open Data ingestion lag
+                # (e.g. HPD daily bulk upload not yet available) rather than a
+                # scraper defect — confirm watermark advanced before investigating.
                 logger.warning("%s: anomaly: %s", self.SCRAPER_NAME, msg)
                 scraper_run.warning_message = msg
 
@@ -245,6 +256,10 @@ class BaseScraper(ABC):
                 records_failed,
             )
         except Exception as exc:
+            # Re-fetch by pk — _run() may have left the instance detached.
+            fresh = db.get(ScraperRun, scraper_run.id)
+            if isinstance(fresh, ScraperRun):
+                scraper_run = fresh
             scraper_run.status = "failure"
             scraper_run.error_message = str(exc)
             logger.exception("%s: failed: %s", self.SCRAPER_NAME, exc)
