@@ -806,10 +806,25 @@ def get_active_buyers(request: Request, response: Response, zip_code: str, db: S
         if root:
             cluster_counts[root] = cluster_counts.get(root, 0) + int(row.cnt)
 
+    top_roots = sorted(cluster_counts.items(), key=lambda x: -x[1])[:3]
+
+    # Resolve operator_root → slug from the operators table
+    root_to_slug: dict[str, str] = {}
+    if top_roots:
+        slug_rows = db.execute(
+            text("SELECT operator_root, slug FROM operators WHERE operator_root = ANY(:roots)"),
+            {"roots": [r for r, _ in top_roots]},
+        ).fetchall()
+        root_to_slug = {r.operator_root: r.slug for r in slug_rows}
+
     result = [
-        {"operator_root": root, "acquisitions_in_zip": cnt}
-        for root, cnt in sorted(cluster_counts.items(), key=lambda x: -x[1])
-    ][:3]
+        {
+            "operator_root": root,
+            "slug": root_to_slug.get(root),
+            "acquisitions_in_zip": cnt,
+        }
+        for root, cnt in top_roots
+    ]
 
     _BUYERS_CACHE[zip_code] = (result, _time.monotonic() + _BUYERS_TTL)
     return result
