@@ -3980,6 +3980,7 @@
                     document.getElementById('subscribe-form-wrap').classList.add('hidden');
                     document.getElementById('subscribe-helper').classList.add('hidden');
                     if (resp.ok) plausible('Subscribe', { props: { zip_code: _cachedZip } });
+                    if (resp.ok) plausible('Watch Area Submit');
                     if (resp.status === 409) {
                         msgEl.textContent = t('ui', 'subscribe_duplicate');
                     } else {
@@ -4035,6 +4036,7 @@
                     document.getElementById('subscribe-helper').classList.add('hidden');
                     this.classList.add('hidden');
                     if (resp.ok) plausible('Subscribe', { props: { zip_code: 'citywide' } });
+                    if (resp.ok) plausible('Watch NYC Submit');
                     msgEl.textContent = resp.status === 409
                         ? (lang === 'es' ? 'Ya está observando NYC.' : 'You\'re already watching NYC.')
                         : (lang === 'es'
