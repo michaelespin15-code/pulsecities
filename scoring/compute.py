@@ -1036,6 +1036,25 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
         )
         db.commit()
 
+    # --- Step 9: Remove orphan ZIPs from displacement_scores ---
+    # ZIPs that appear in raw data but have no ZCTA geometry in neighborhoods
+    # accumulate across scoring runs (suburban LI ZIPs, commercial midtown ZIPs,
+    # test ZIPs, occasional out-of-state BBLs). They are invisible to the map API
+    # (which JOINs on neighborhoods) but inflate rowcount and make table stats
+    # misleading. Skipped during backfill — only the live table is affected.
+    if as_of_date is None:
+        result = db.execute(text("""
+            DELETE FROM displacement_scores
+            WHERE zip_code NOT IN (SELECT zip_code FROM neighborhoods)
+        """))
+        db.commit()
+        if result.rowcount:
+            logger.info(
+                "Removed %d orphan ZIP(s) from displacement_scores "
+                "(no matching ZCTA geometry in neighborhoods)",
+                result.rowcount,
+            )
+
     return scored_count
 
 
