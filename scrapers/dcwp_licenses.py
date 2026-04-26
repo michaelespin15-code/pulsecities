@@ -1,7 +1,7 @@
 """
 DCWP Business Licenses scraper.
 Dataset: w7w3-xahh (DCWP Issued Licenses, NYC Open Data)
-Update frequency: incremental, watermark on Socrata :updated_at
+Update frequency: incremental, watermark on license_creation_date
 
 DCWP covers 48 regulated trade categories only (home improvement contractors,
 tow trucks, tobacco dealers, etc.). NOT restaurants, retail, or most businesses.
@@ -10,18 +10,11 @@ Primary purpose: enables future contractor-license correlation in the
 renovation-flip signal (LLC acquisition + renovation permit + contractor license
 on same BBL = high-confidence displacement indicator).
 
-Watermark uses Socrata's :updated_at system column (row-level modification time)
-rather than license_creation_date.  License renewals and status changes update
-existing rows in-place, keeping the original license_creation_date; filtering on
-creation date would silently skip all such updates.  :updated_at captures every
-mutation regardless of when the license was originally issued.
-
-NOTE: after deploying this change, clear the existing DCWP watermark so the
-scraper re-fetches with the 5-year lookback against :updated_at.  Run:
-    python scripts/watermark_drift_reset.py
-and manually delete the dcwp_licenses row from scraper_runs, or just let the
-next run use the old creation-date watermark as a conservative :updated_at floor
-(safe — it will just fetch fewer records on first run, then converge).
+Watermark uses license_creation_date.  Socrata rejects $select=:updated_at,*
+and $where=:updated_at>... with a 400 on this dataset; license_creation_date is
+the only reliable date field available for incremental filtering.  Note that
+license renewals update rows in-place without changing license_creation_date, so
+pure renewals are not recaptured on reruns — acceptable given the trade-off.
 
 Field mapping (Socrata → model):
   license_nbr           → license_nbr (natural upsert key)
@@ -29,7 +22,7 @@ Field mapping (Socrata → model):
   dba_trade_name        → dba_trade_name
   business_category     → business_category
   license_status        → license_status
-  license_creation_date → license_creation_date (Date)
+  license_creation_date → license_creation_date (Date); also used as watermark
   lic_expir_dd          → lic_expir_dd (Date)
   address_building      → address_building
   address_street_name   → address_street_name
@@ -38,7 +31,6 @@ Field mapping (Socrata → model):
   latitude              → latitude (Float)
   longitude             → longitude (Float)
   bbl                   → bbl (nullable, not always geocoded)
-  :updated_at           → watermark only (not stored in model)
 """
 
 import logging
@@ -71,57 +63,26 @@ class DcwpScraper(BaseScraper):
                 self.SCRAPER_NAME, _BOOTSTRAP_DAYS,
             )
             since = datetime.now(timezone.utc) - timedelta(days=_BOOTSTRAP_DAYS)
+            where = f"license_creation_date > '{since.strftime('%Y-%m-%dT%H:%M:%S.000')}'"
         else:
             since = watermark - timedelta(minutes=10) - timedelta(days=self.WATERMARK_EXTRA_LOOKBACK_DAYS)
-        where = f":updated_at > '{since.strftime('%Y-%m-%dT%H:%M:%S.000')}'"
+            where = f"license_creation_date > '{since.strftime('%Y-%m-%dT%H:%M:%S.000')}'"
 
         records_processed = 0
         records_failed = 0
         new_watermark: datetime | None = None
 
-        # Grab the current scraper_run id for per-page watermark checkpointing.
-        # If the process is OOM-killed mid-run, the last completed page's watermark
-        # survives in the row so a manual rerun can be started from that point.
-        run_row = db.execute(
-            text("""
-                SELECT id FROM scraper_runs
-                WHERE scraper_name = :name AND status = 'running'
-                ORDER BY started_at DESC LIMIT 1
-            """),
-            {"name": self.SCRAPER_NAME},
-        ).fetchone()
-        current_run_id = run_row.id if run_row else None
+        for raw in self.paginate(where, order="license_creation_date ASC"):
+            parsed = self._parse(db, raw)
+            if parsed is None:
+                records_failed += 1
+                continue
+            self._upsert(db, parsed, raw)
+            records_processed += 1
 
-        offset = 0
-        while True:
-            page = self._fetch_page(
-                where,
-                select=":updated_at, *",
-                order=":updated_at ASC",
-                limit=self.PAGE_SIZE,
-                offset=offset,
-            )
-            if not page:
-                break
-
-            for raw in page:
-                parsed = self._parse(db, raw)
-                if parsed is None:
-                    records_failed += 1
-                    continue
-                self._upsert(db, parsed, raw)
-                records_processed += 1
-
-                updated_at = _parse_dt(raw.get(":updated_at"))
-                if updated_at and (new_watermark is None or updated_at > new_watermark):
-                    new_watermark = updated_at
-
-            if current_run_id and new_watermark:
-                self._checkpoint_watermark(db, current_run_id, new_watermark)
-
-            if len(page) < self.PAGE_SIZE:
-                break
-            offset += self.PAGE_SIZE
+            wm_candidate = _parse_dt(raw.get("license_creation_date"))
+            if wm_candidate and (new_watermark is None or wm_candidate > new_watermark):
+                new_watermark = wm_candidate
 
         return records_processed, records_failed, new_watermark
 
