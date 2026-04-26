@@ -156,21 +156,35 @@
                 overflow: hidden;
             }
         }
-        /* Mobile: sidebar is a bottom sheet that slides up over the map */
+        /* Mobile: sidebar is a bottom sheet — chrome (fixed) + scroll area (scrollable) */
         @media (max-width: 767px) {
             #sidebar {
                 position: fixed;
                 bottom: 0; left: 0; right: 0;
                 width: 100%;
-                max-height: 75dvh;
+                height: min(82dvh, calc(100dvh - 88px));
                 border-radius: 16px 16px 0 0;
                 transform: translateY(100%);
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 z-index: 50;
-                overflow-y: auto;
-                padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+                overflow: hidden;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
             }
             #sidebar.mobile-visible { transform: translateY(0); }
+            /* Scroll container — the ONLY scrollable element inside the sheet */
+            #sheet-scroll {
+                flex: 1 1 auto;
+                overflow-y: auto;
+                overflow-x: hidden;
+                overscroll-behavior-y: contain;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                padding: 0 16px;
+                padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 140px);
+            }
+            #sheet-scroll::-webkit-scrollbar { display: none; }
             /* at-risk section lives in the drawer on mobile, not the sidebar */
             #at-risk-section { display: none !important; }
             /* Hero leaves 30vh at bottom so map is visible on first load */
@@ -289,15 +303,34 @@
                 padding-top: 10px !important;
                 padding-bottom: 10px !important;
             }
-            /* Sticky header: keeps close button and drag handle pinned while content scrolls */
+            /* Chrome — does not scroll; sits above #sheet-scroll in flex column */
             #sidebar-top {
-                position: sticky;
-                top: 0;
+                flex: 0 0 auto;
+                position: relative;
                 z-index: 2;
                 background: inherit;
-                margin: -1rem -1rem 0 -1rem;
-                padding: 0.75rem 1rem 0.5rem;
+                padding: 8px 16px 4px;
             }
+            /* Close button: top-right of chrome, easy 44px tap target */
+            #close-sheet-btn {
+                position: absolute;
+                top: 8px;
+                right: 12px;
+                font-size: 1.1rem !important;
+            }
+            /* Hide redundant Home link — wordmark links home if needed */
+            #home-link { display: none !important; }
+            /* Nav row (now just lang toggle): minimal bottom margin */
+            #sidebar-header-block > .flex { margin-bottom: 0 !important; }
+            /* Brand row: left-aligned, compact fonts */
+            #sidebar-top .text-center { text-align: left !important; }
+            #sidebar-top h1 { font-size: 0.95rem !important; line-height: 1.2; }
+            #sidebar-top #app-subtitle { font-size: 0.68rem !important; margin-top: 1px !important; }
+            #sidebar-header-block { margin-bottom: 4px !important; }
+            /* Drag handle: reduce bottom margin */
+            #sidebar-top > div:first-child { margin-bottom: 0 !important; }
+            /* Hide subscribe/footer strip inside mobile sheet — investigative view only */
+            #sidebar-footer-strip { display: none !important; }
         }
         /* Pulse dot animation — hero overlay center stat (D-10) */
         @keyframes hero-pulse-dot {
@@ -319,6 +352,13 @@
         #recent-activity-section:not(.hidden),
         #renovation-flip-alert:not(.hidden) {
             animation: sidebar-fade-in 0.18s ease-out;
+        }
+        /* Desktop: sheet-scroll is a transparent flex column passthrough */
+        #sheet-scroll {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
+            min-height: 0;
         }
     </style>
 </head>
@@ -361,7 +401,7 @@
                     <div style="width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);"></div>
                 </div>
                 <!-- Header -->
-                <div class="mb-3 md:mb-6">
+                <div id="sidebar-header-block" class="mb-3 md:mb-6">
                 <div class="flex items-center justify-between mb-2">
                     <a id="home-link" href="/" class="text-xs text-slate-500 hover:text-slate-300 transition-colors" style="min-height:32px;display:flex;align-items:center;">&#8592; Home</a>
                     <div class="flex items-center gap-1">
@@ -379,7 +419,7 @@
             </div>
             </div><!-- /sidebar-top -->
 
-
+            <div id="sheet-scroll">
 
             <!-- Address search — primary entry point, always visible above panels -->
             <div class="bg-base-300 rounded-xl p-4 mb-4">
@@ -543,8 +583,8 @@
                 </div>
 
                 <!-- Signal breakdown — collapsed by default -->
-                <div class="bg-base-300 rounded-xl p-4">
-                    <details>
+                <div id="signal-breakdown-card" class="bg-base-300 rounded-xl p-4">
+                    <details id="signal-breakdown-details">
                         <summary class="text-xs font-semibold text-slate-400 uppercase tracking-wider cursor-pointer select-none flex items-center justify-between">
                             <span id="signal-breakdown-title">Signal Breakdown</span>
                             <svg class="details-chevron text-slate-500" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
@@ -693,7 +733,7 @@
             </div>
 
             <!-- Subscribe strip + attribution — persistent sidebar footer -->
-            <div class="mt-auto flex flex-col">
+            <div id="sidebar-footer-strip" class="mt-auto flex flex-col">
                 <!-- Slim subscribe row — always visible, not tied to neighborhood selection -->
                 <div class="pt-3 pb-2 border-t border-base-content/[0.08]">
                     <div id="subscribe-form-wrap" class="flex gap-2">
@@ -736,58 +776,38 @@
                     </a>
                 </div>
             </div>
+            </div><!-- /sheet-scroll -->
         </aside>
     </div>
 
-    <!-- Methodology modal (scope addition C) — accessible: Escape closes, backdrop click closes -->
+    <!-- Methodology modal — short explainer, links to full methodology page -->
     <div
         id="methodology-modal"
         class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70"
         onclick="if(event.target===this)this.classList.add('hidden')"
     >
-        <div class="bg-base-200 rounded-2xl p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <div class="bg-base-200 rounded-2xl p-6 max-w-md w-full mx-4 overflow-y-auto" style="max-height:min(85vh,520px);padding-bottom:max(1.5rem,env(safe-area-inset-bottom,1.5rem));" onclick="event.stopPropagation()">
             <div class="flex justify-between items-start mb-4">
-                <h2 id="methodology-title" class="text-lg font-semibold" style="color: #38bdf8;">How Scores Work</h2>
+                <h2 id="methodology-title" class="text-base font-semibold" style="color:#38bdf8;">How scores work</h2>
                 <button
                     class="text-slate-400 hover:text-base-content text-xl leading-none"
-                    style="min-height: 44px; min-width: 44px;"
+                    style="min-height:44px;min-width:44px;"
                     aria-label="Close"
                     onclick="document.getElementById('methodology-modal').classList.add('hidden')"
                 >&#10005;</button>
             </div>
-            <p id="methodology-intro" class="text-sm text-base-content/70 mb-4">
-                Each neighborhood receives a displacement risk score from 1&ndash;100, computed nightly from six public data signals. Methodology follows
-                <a href="https://anhd.org" target="_blank" class="text-sky-400 underline">ANHD (Association for Neighborhood and Housing Development)</a>
-                displacement risk indicators.
-            </p>
-            <div class="flex flex-col gap-4 text-sm">
-                <div>
-                    <h3 class="font-semibold text-base-content mb-1" data-meth-signal="llc_acquisitions" data-meth-weight="26">LLC Acquisitions <span class="text-slate-400 font-normal">(weight: 26%)</span></h3>
-                    <p id="meth-desc-llc" class="text-base-content/70">Deed transfers to limited liability companies via ACRIS. LLC ownership is associated with speculative purchasing patterns and rapid rent increases. Financial institution transfers (mortgage servicers, foreclosure deeds) are excluded. Source: NYC ACRIS (bnx9-e6tj, 636b-3b5g, 8h5j-fqxa). The current signal counts all LLC acquisitions in the 365-day window. Refinement to exclude corporate-to-corporate transfers (seller already LLC) is planned for v2. Data transparency over signal precision for launch.</p>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-base-content mb-1" data-meth-signal="permits" data-meth-weight="21">Permit Filings <span class="text-slate-400 font-normal">(weight: 21%)</span></h3>
-                    <p id="meth-desc-permit" class="text-base-content/70">DOB building permit applications &mdash; renovation and alteration permits signal landlord investment that often precedes tenant displacement. Source: NYC Department of Buildings (Socrata ipu4-2q9a).</p>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-base-content mb-1" data-meth-signal="complaint_rate" data-meth-weight="17">Complaint Rate <span class="text-slate-400 font-normal">(weight: 17%)</span></h3>
-                    <p id="meth-desc-complaint" class="text-base-content/70">311 housing complaints (heat, hot water, pests, mold) per residential unit &mdash; a proxy for deteriorating conditions that precede forced moves. Source: NYC 311 (erm2-nwe9).</p>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-base-content mb-1" data-meth-signal="evictions" data-meth-weight="13">Eviction Executions <span class="text-slate-400 font-normal">(weight: 13%)</span></h3>
-                    <p id="meth-desc-eviction" class="text-base-content/70">Residential evictions carried out by NYC marshals (executed evictions, not filings). Filed cases often resolve without execution &mdash; this signal tracks actual removals. OCA data lags executed date by 2&ndash;4 weeks. Source: NYC Open Data (6z8x-wfk4).</p>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-base-content mb-1" data-meth-signal="hpd_violations" data-meth-weight="8">HPD Violations <span class="text-slate-400 font-normal">(weight: 8%)</span></h3>
-                    <p id="meth-desc-assessment" class="text-base-content/70">Class B and C HPD violations filed in the past 90 days on multifamily buildings (3+ units). A spike in serious violations signals landlords letting buildings deteriorate to pressure tenants out. Source: NYC HPD (wvxf-dwi5).</p>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-base-content mb-1" data-meth-signal="rs_unit_loss" data-meth-weight="15">RS Unit Loss <span class="text-slate-400 font-normal">(weight: 15%)</span></h3>
-                    <p id="meth-desc-rs" class="text-base-content/70">Year-over-year loss in rent-stabilized units per building via DHCR registration data. The single most direct signal of affordable housing erosion. Currently in data collection phase &mdash; signal becomes active after two consecutive annual snapshots. Source: DHCR Building Registrations (kj4p-ruqc).</p>
-                </div>
-            </div>
-            <p id="methodology-note" class="text-xs text-slate-400 mt-4">Scores are normalized per residential unit using MapPLUTO unit counts to prevent bias toward dense commercial areas. All data is public record.</p>
-            <a id="methodology-full-link" href="/methodology" target="_blank" rel="noopener noreferrer" class="block text-center text-xs text-sky-400 hover:text-sky-300 underline mt-4">Full details &rarr;</a>
+            <p class="text-sm text-slate-400 mb-4">PulseCities scores each NYC ZIP using six public-record signals, normalized by residential units and refreshed nightly.</p>
+            <ul class="flex flex-col gap-2 mb-4 text-sm" style="list-style:none;padding:0;">
+                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#fbbf24;flex-shrink:0;display:inline-block;"></span>LLC acquisitions</li>
+                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#38bdf8;flex-shrink:0;display:inline-block;"></span>Permit filings</li>
+                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#38bdf8;flex-shrink:0;display:inline-block;"></span>311 complaints</li>
+                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#f87171;flex-shrink:0;display:inline-block;"></span>Evictions</li>
+                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#f87171;flex-shrink:0;display:inline-block;"></span>HPD violations</li>
+                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#4ade80;flex-shrink:0;display:inline-block;"></span>Rent-stabilized unit loss</li>
+            </ul>
+            <p class="text-xs text-slate-500 mb-3">Higher scores mean more displacement-pressure signals. They are not predictions about any individual tenant or building.</p>
+            <p class="text-xs text-slate-500 mb-5">Sources include NYC DOB, HPD, ACRIS, 311, eviction records, DHCR, and MapPLUTO.</p>
+            <a id="methodology-full-link" href="/methodology" class="block text-center text-xs text-sky-400 hover:text-sky-300 underline">Read full methodology &rarr;</a>
         </div>
     </div>
 
@@ -1264,25 +1284,25 @@
                     years_ago:   '{n}y ago',
                 },
                 signal_desc: {
-                    permits:          'Renovation permits mean landlords are gearing up to flip buildings or push out tenants.',
-                    evictions:        'People actually removed from homes. Not just filed cases.',
-                    llc_acquisitions: 'LLC buyouts reliably predict rapid rent hikes and tenant pressure.',
-                    complaint_rate:   'Landlords letting buildings decay to force people out.',
-                    rs_unit_loss:     'Rent-stabilized units gone for good. The clearest sign of displacement.',
-                    hpd_violations:   'Serious violations filed in the last 90 days. Landlords letting buildings decay to force tenants out.',
+                    permits:          'Alteration permits on 3+ unit residential buildings. Can signal reinvestment, turnover pressure, or building changes.',
+                    evictions:        'Executed residential evictions by NYC marshals. Filed cases that resolved without execution are not counted.',
+                    llc_acquisitions: 'Residential deed transfers to LLC buyers. Can indicate speculative ownership changes or portfolio consolidation. LLC-to-LLC transfers excluded.',
+                    complaint_rate:   'Housing-related 311 complaints including heat, hot water, pests, and mold. Clusters of complaints can indicate building distress or neglect.',
+                    rs_unit_loss:     'Year-over-year loss in registered rent-stabilized units. A direct signal of rent-stabilized housing loss.',
+                    hpd_violations:   'Class B and C violations on 3+ unit buildings in the past 90 days. Clusters of serious violations can indicate building distress, neglect, or pressure on tenants.',
                 },
                 methodology: {
-                    title:           'How Scores Work',
+                    title:           'How scores work',
                     weight:          '(weight: {pct}%)',
                     intro:           'Six public data signals scored nightly across all NYC neighborhoods. Methodology follows <a href="https://anhd.org" target="_blank" class="text-sky-400 underline">ANHD (Association for Neighborhood and Housing Development)</a> displacement risk indicators.',
-                    llc_desc:        'Deed transfers to LLCs tracked via ACRIS. LLCs buy speculatively and raise rents fast. Financial institution transfers (mortgage servicers, foreclosure deeds) are excluded. Source: NYC ACRIS (bnx9-e6tj, 636b-3b5g, 8h5j-fqxa). Counts all LLC acquisitions in a 365-day window. A v2 refinement to exclude LLC-to-LLC transfers is planned.',
-                    permit_desc:     'DOB building permit applications. Renovation and alteration filings mean landlords are investing to flip or clear out tenants. Source: NYC Department of Buildings (Socrata ipu4-2q9a).',
-                    complaint_desc:  '311 housing complaints (heat, hot water, pests, mold) per residential unit. Landlords deliberately let buildings decay to pressure people into leaving. Source: NYC 311 (erm2-nwe9).',
-                    eviction_desc:   'Actual evictions by NYC marshals, not just filings. Most filed cases settle without eviction. This tracks who actually got removed. OCA data arrives 2–4 weeks after execution. Source: NYC Open Data (6z8x-wfk4).',
-                    hpd_desc:        'Class B and C HPD violations in the past 90 days on 3+ unit buildings. A cluster of serious violations signals intentional neglect to push tenants out. Source: NYC HPD (wvxf-dwi5).',
-                    rs_desc:         'Year-over-year loss in rent-stabilized units from DHCR registration data. The most direct measure of affordable housing erosion. Currently building — needs two annual snapshots to activate. Source: DHCR Building Registrations (kj4p-ruqc).',
-                    note:            'Normalized by residential units using MapPLUTO to keep dense commercial areas from skewing scores. All data is public record.',
-                    full_link:       'Full details →',
+                    llc_desc:        'Residential deed transfers to LLC buyers via ACRIS. LLC-to-LLC transfers and mortgage servicers excluded. Source: NYC ACRIS (bnx9-e6tj, 636b-3b5g).',
+                    permit_desc:     'Alteration permits (type AL) on 3+ unit residential buildings. Can signal reinvestment, turnover pressure, or building changes. Source: NYC DOB (ipu4-2q9a).',
+                    complaint_desc:  '311 housing complaints (heat, hot water, pests, mold) per residential unit. Source: NYC 311 (erm2-nwe9).',
+                    eviction_desc:   'Executed residential evictions by NYC marshals, not just filings. OCA data lags 2 to 4 weeks. Source: NYC Open Data (6z8x-wfk4).',
+                    hpd_desc:        'Class B and C HPD violations in the past 90 days on 3+ unit buildings. Source: NYC HPD (wvxf-dwi5).',
+                    rs_desc:         'Year-over-year loss in rent-stabilized units from DHCR registration data. A direct signal of rent-stabilized housing loss. Dormant until 2027. Source: DHCR Building Registrations (kj4p-ruqc).',
+                    note:            'Normalized by residential units using MapPLUTO. All data is public record.',
+                    full_link:       'Read full methodology →',
                 },
             },
             es: {
@@ -1483,25 +1503,25 @@
                     years_ago:   'hace {n} años',
                 },
                 signal_desc: {
-                    permits:          'Los permisos de renovación muestran que los propietarios preparan el desplazamiento de inquilinos.',
-                    evictions:        'Personas realmente removidas de sus hogares. No solo casos presentados.',
-                    llc_acquisitions: 'Las compras por LLC predicen aumentos rápidos de alquiler y presión a inquilinos.',
-                    complaint_rate:   'Propietarios dejando que los edificios se deterioren para forzar la salida de inquilinos.',
-                    rs_unit_loss:     'Apartamentos de renta estabilizada desapareciendo para siempre. El indicador más claro.',
-                    hpd_violations:   'Violaciones graves en los últimos 90 días. Propietarios dejando deteriorar edificios para forzar la salida de inquilinos.',
+                    permits:          'Permisos de alteración en edificios residenciales de 3+ unidades. Pueden indicar reinversión, presión de rotación, o cambios en el edificio.',
+                    evictions:        'Desalojos residenciales ejecutados por alguaciles de NYC. No se cuentan casos presentados que se resolvieron sin desalojo.',
+                    llc_acquisitions: 'Transferencias de escrituras a compradores LLC. Pueden indicar cambios especulativos de propiedad o consolidación de cartera. Se excluyen transferencias LLC a LLC.',
+                    complaint_rate:   'Quejas al 311 relacionadas con vivienda. Los grupos de quejas pueden indicar deterioro del edificio o negligencia.',
+                    rs_unit_loss:     'Pérdida interanual de unidades de renta estabilizada registradas. Señal directa de pérdida de vivienda estabilizada.',
+                    hpd_violations:   'Violaciones clase B y C en edificios de 3+ unidades en los últimos 90 días. Pueden indicar deterioro, negligencia, o presión sobre inquilinos.',
                 },
                 methodology: {
-                    title:           'Cómo Funcionan las Puntuaciones',
+                    title:           'Cómo funcionan las puntuaciones',
                     weight:          '(peso: {pct}%)',
                     intro:           'Seis señales de datos públicos puntuadas cada noche en todos los vecindarios de NYC. La metodología sigue los indicadores de riesgo de desplazamiento de <a href="https://anhd.org" target="_blank" class="text-sky-400 underline">ANHD (Association for Neighborhood and Housing Development)</a>.',
-                    llc_desc:        'Transferencias de escrituras a LLC rastreadas en ACRIS. Las LLC compran de forma especulativa y suben rentas rápido. Se excluyen las transferencias de instituciones financieras. Fuente: NYC ACRIS (bnx9-e6tj, 636b-3b5g, 8h5j-fqxa). Contabiliza todas las adquisiciones LLC en una ventana de 365 días. Se planea excluir transferencias entre LLC en v2.',
-                    permit_desc:     'Solicitudes de permisos del DOB. Los permisos de renovación y remodelación muestran que el propietario se prepara para cambiar inquilinos. Fuente: Departamento de Edificios de NYC (Socrata ipu4-2q9a).',
-                    complaint_desc:  'Quejas al 311 (calefacción, agua caliente, plagas, moho) por unidad residencial. Los propietarios dejan que los edificios se deterioren deliberadamente para forzar la salida. Fuente: NYC 311 (erm2-nwe9).',
-                    eviction_desc:   'Desalojos reales por alguaciles de NYC, no solo solicitudes. La mayoría de casos presentados se resuelven sin desalojo. Esta señal rastrea a quienes realmente fueron removidos. Los datos de OCA llegan con 2-4 semanas de retraso. Fuente: NYC Open Data (6z8x-wfk4).',
-                    hpd_desc:        'Violaciones HPD clase B y C en los últimos 90 días en edificios de 3+ unidades. Un clúster de violaciones graves señala negligencia intencional para forzar la salida de inquilinos. Fuente: NYC HPD (wvxf-dwi5).',
-                    rs_desc:         'Pérdida interanual de unidades con estabilización de alquiler según DHCR. La medida más directa de erosión de vivienda asequible. En construcción, necesita dos instantáneas anuales para activarse. Fuente: Registros de Edificios DHCR (kj4p-ruqc).',
-                    note:            'Normalizado por unidades residenciales usando MapPLUTO para que las áreas comerciales densas no distorsionen las puntuaciones. Todos los datos son de registros públicos.',
-                    full_link:       'Detalles completos →',
+                    llc_desc:        'Transferencias de escrituras a compradores LLC via ACRIS. Se excluyen transferencias LLC a LLC e instituciones hipotecarias. Fuente: NYC ACRIS (bnx9-e6tj, 636b-3b5g).',
+                    permit_desc:     'Permisos de alteración (tipo AL) en edificios residenciales de 3+ unidades. Fuente: DOB NYC (ipu4-2q9a).',
+                    complaint_desc:  'Quejas al 311 relacionadas con vivienda por unidad residencial. Fuente: NYC 311 (erm2-nwe9).',
+                    eviction_desc:   'Desalojos residenciales ejecutados por alguaciles de NYC. Los datos de OCA llegan con 2 a 4 semanas de retraso. Fuente: NYC Open Data (6z8x-wfk4).',
+                    hpd_desc:        'Violaciones HPD clase B y C en los últimos 90 días en edificios de 3+ unidades. Fuente: NYC HPD (wvxf-dwi5).',
+                    rs_desc:         'Pérdida interanual de unidades de renta estabilizada según DHCR. Señal directa de pérdida de vivienda estabilizada. Inactiva hasta 2027. Fuente: Registros DHCR (kj4p-ruqc).',
+                    note:            'Normalizado por unidades residenciales usando MapPLUTO. Todos los datos son de registros públicos.',
+                    full_link:       'Leer metodología completa →',
                 },
             }
         };
@@ -1975,8 +1995,9 @@
                     buyers.forEach(b => {
                         const row = document.createElement('div');
                         row.className = 'flex items-center justify-between';
+                        const opHref = '/operator/' + encodeURIComponent(b.slug || b.operator_root);
                         row.innerHTML =
-                            '<a href="/operator/' + esc(b.operator_root) + '" target="_blank" rel="noopener noreferrer" ' +
+                            '<a href="' + opHref + '" target="_blank" rel="noopener noreferrer" ' +
                             'class="font-mono text-sm text-orange-400 hover:text-orange-300 transition-colors">' +
                             esc(b.operator_root) + '</a>' +
                             '<span class="text-xs text-slate-500 font-mono">' +
@@ -2041,6 +2062,8 @@
             setPanel('detail');
             const sidebarEl = document.getElementById('sidebar');
             if (sidebarEl) sidebarEl.scrollTop = 0;
+            const sheetScroll = document.getElementById('sheet-scroll');
+            if (sheetScroll) sheetScroll.scrollTop = 0;
             // Clear stale sparkline on new neighborhood selection
             const staleSparkline = document.querySelector('#detail-score')?.parentElement?.querySelector('svg.sparkline');
             if (staleSparkline) staleSparkline.remove();
@@ -2122,6 +2145,13 @@
 
             const rows = document.getElementById('signal-rows');
             rows.innerHTML = '';
+            // Collapse the breakdown panel when switching to a new neighborhood
+            const bdDetails = document.getElementById('signal-breakdown-details');
+            if (bdDetails) bdDetails.removeAttribute('open');
+            // Hide the card entirely when no breakdown data so it doesn't render as an empty panel
+            const bdCard = document.getElementById('signal-breakdown-card');
+            if (bdCard) bdCard.classList.toggle('hidden', !breakdown);
+
             if (breakdown) {
                 Object.keys(breakdown)
                     .sort((a, b) => (breakdown[b] ?? -1) - (breakdown[a] ?? -1))
@@ -2157,6 +2187,11 @@
                         rows.appendChild(lagNote);
                     }
                 });
+            } else {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.className = 'text-xs text-slate-400 text-center py-2';
+                emptyMsg.textContent = 'No signal data for this ZIP.';
+                rows.appendChild(emptyMsg);
             }
         }
 
@@ -3307,6 +3342,10 @@
             if (drawer) drawer.style.display = 'none';
             document.getElementById('sidebar').classList.add('mobile-visible');
             document.getElementById('map-credit').style.display = 'none';
+            requestAnimationFrame(function() {
+                const scroller = document.getElementById('sheet-scroll');
+                if (scroller) scroller.scrollTop = 0;
+            });
         }
         // ---------------------------------------------------------------------------
         // Landlord portfolio search
@@ -3692,8 +3731,10 @@
             let startY = 0;
             sheet.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
             sheet.addEventListener('touchend', e => {
-                // Only dismiss when scrolled to top — otherwise the gesture is scrolling back up through content
-                if (sheet.scrollTop === 0 && e.changedTouches[0].clientY - startY > 60) showMobileMap();
+                // Only dismiss when the scroll container is at top — otherwise the gesture scrolls content
+                const scroller = document.getElementById('sheet-scroll');
+                const atTop = scroller ? scroller.scrollTop === 0 : sheet.scrollTop === 0;
+                if (atTop && e.changedTouches[0].clientY - startY > 60) showMobileMap();
             }, { passive: true });
         })();
 
