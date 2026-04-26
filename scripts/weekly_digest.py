@@ -82,14 +82,25 @@ def _send_tier(score: float) -> str:
 # ---------------------------------------------------------------------------
 
 def load_active_subscriptions(db) -> list[dict]:
-    """Return confirmed subscribers only, ordered for stable batching."""
+    """Return confirmed ZIP-based subscribers only."""
     rows = db.execute(text("""
         SELECT email, zip_code, unsubscribe_token
         FROM subscribers
-        WHERE confirmed = true
+        WHERE confirmed = true AND is_citywide = false AND zip_code IS NOT NULL
         ORDER BY zip_code, email
     """)).fetchall()
     return [{"email": r[0], "zip_code": r[1], "unsubscribe_token": r[2]} for r in rows]
+
+
+def load_citywide_subscriptions(db) -> list[dict]:
+    """Return confirmed citywide subscribers."""
+    rows = db.execute(text("""
+        SELECT email, unsubscribe_token
+        FROM subscribers
+        WHERE confirmed = true AND is_citywide = true
+        ORDER BY email
+    """)).fetchall()
+    return [{"email": r[0], "unsubscribe_token": r[1]} for r in rows]
 
 
 def build_weekly_zip_summaries(db, zip_codes: set[str]) -> dict[str, dict]:
@@ -720,6 +731,137 @@ def send_digest_email(subscription: dict, rendered: dict, dry_run: bool = False)
 
 
 # ---------------------------------------------------------------------------
+# Citywide digest
+# ---------------------------------------------------------------------------
+
+def build_citywide_summary(db) -> dict:
+    """Top-risk ZIPs and citywide signal snapshot for the citywide digest."""
+    top_rows = db.execute(text("""
+        SELECT ds.zip_code, n.name, ds.score,
+               ds.permit_intensity, ds.eviction_rate,
+               ds.llc_acquisition_rate, ds.complaint_rate
+        FROM displacement_scores ds
+        LEFT JOIN neighborhoods n ON ds.zip_code = n.zip_code
+        WHERE ds.score IS NOT NULL
+        ORDER BY ds.score DESC
+        LIMIT 5
+    """)).fetchall()
+
+    top_zips = [
+        {
+            "zip":   r[0],
+            "name":  (r[1] if r[1] and r[1] != r[0] else r[0]),
+            "score": float(r[2]),
+        }
+        for r in top_rows
+    ]
+
+    avg_row = db.execute(text(
+        "SELECT AVG(score), MAX(score), COUNT(*) FROM displacement_scores WHERE score IS NOT NULL"
+    )).fetchone()
+
+    return {
+        "top_zips":  top_zips,
+        "avg_score": round(float(avg_row[0] or 0), 1),
+        "max_score": round(float(avg_row[1] or 0), 1),
+        "zip_count": int(avg_row[2] or 0),
+    }
+
+
+def render_citywide_digest(subscription: dict, summary: dict) -> dict:
+    """Subject and HTML for a citywide subscriber."""
+    token    = subscription["unsubscribe_token"]
+    top_zips = summary["top_zips"]
+    max_score = summary["max_score"]
+    risk_label, risk_color = _display_risk(max_score)
+
+    rows_html = ""
+    for z in top_zips:
+        color = _score_color(z["score"])
+        label = f"{z['name']} / {z['zip']}" if z["name"] != z["zip"] else z["zip"]
+        rows_html += (
+            f'<tr>'
+            f'<td style="padding:8px 0;font-size:13px;color:#cbd5e1;">{label}</td>'
+            f'<td style="padding:8px 0 8px 16px;font-family:\'JetBrains Mono\',monospace;'
+            f'font-size:13px;color:{color};text-align:right;">{z["score"]:.1f}</td>'
+            f'</tr>'
+        )
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulseCities Weekly Watch: NYC</title>
+</head>
+<body style="margin:0;padding:0;background:#0f172a;font-family:'Inter',system-ui,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:48px 24px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;">
+
+        <tr><td style="padding-bottom:28px;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:#38bdf8;">PulseCities</span>
+          <span style="font-size:12px;color:rgba(148,163,184,0.4);margin-left:10px;">Weekly Watch</span>
+        </td></tr>
+
+        <tr><td style="padding-bottom:20px;">
+          <p style="margin:0;font-size:14px;color:#94a3b8;line-height:1.6;">
+            NYC displacement overview for this week.
+          </p>
+        </td></tr>
+
+        <tr><td>
+          <table width="100%" cellpadding="0" cellspacing="0"
+                 style="background:#1e293b;border-radius:12px;padding:28px;border:1px solid rgba(148,163,184,0.1);">
+
+            <tr><td style="padding-bottom:20px;border-bottom:1px solid rgba(148,163,184,0.08);">
+              <div style="font-size:10px;font-weight:600;color:rgba(148,163,184,0.5);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Highest Risk This Week</div>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                {rows_html}
+              </table>
+            </td></tr>
+
+            <tr><td style="padding-top:24px;">
+              <a href="https://pulsecities.com"
+                 style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:11px 22px;border-radius:6px;text-decoration:none;margin-right:12px;">
+                Explore the map
+              </a>
+              <a href="https://pulsecities.com/methodology.html"
+                 style="display:inline-block;font-size:12px;color:#94a3b8;text-decoration:underline;vertical-align:middle;">
+                Methodology
+              </a>
+            </td></tr>
+
+          </table>
+        </td></tr>
+
+        <tr><td style="padding-top:24px;">
+          <p style="margin:0 0 10px;font-size:11px;color:rgba(148,163,184,0.5);line-height:1.7;border-top:1px solid rgba(148,163,184,0.08);padding-top:16px;">
+            <strong style="color:rgba(148,163,184,0.6);">Why you're getting this:</strong>
+            You're watching NYC-wide displacement activity.
+          </p>
+          <p style="margin:0 0 8px;font-size:11px;color:rgba(148,163,184,0.35);line-height:1.7;">
+            PulseCities uses public records. Scores are risk indicators, not claims of wrongdoing.
+          </p>
+          <p style="margin:0;font-size:11px;color:rgba(148,163,184,0.35);line-height:1.7;">
+            <a href="https://pulsecities.com/api/unsubscribe?token={token}"
+               style="color:rgba(148,163,184,0.5);">Unsubscribe</a>
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+    return {
+        "subject": "PulseCities Weekly Watch: NYC displacement overview",
+        "html":    html,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Orchestration
 # ---------------------------------------------------------------------------
 
@@ -782,7 +924,27 @@ def run(dry_run: bool = False, limit: int | None = None, email_filter: str | Non
             else:
                 failed += 1
 
-        logger.info("Digest complete. sent=%d skipped=%d failed=%d", sent, skipped, failed)
+        logger.info("ZIP digest complete. sent=%d skipped=%d failed=%d", sent, skipped, failed)
+
+        # --- Citywide subscribers ---
+        citywide_subs = load_citywide_subscriptions(db)
+        if email_filter:
+            citywide_subs = [s for s in citywide_subs if s["email"] == email_filter]
+        if limit is not None:
+            remaining = max(0, limit - len(subscriptions))
+            citywide_subs = citywide_subs[:remaining]
+
+        if citywide_subs:
+            citywide_summary = build_citywide_summary(db)
+            c_sent = c_failed = 0
+            for sub in citywide_subs:
+                rendered = render_citywide_digest(sub, citywide_summary)
+                if send_digest_email(sub, rendered, dry_run=dry_run):
+                    logger.info("SENT citywide -> %s", sub["email"])
+                    c_sent += 1
+                else:
+                    c_failed += 1
+            logger.info("Citywide digest complete. sent=%d failed=%d", c_sent, c_failed)
     finally:
         db.close()
 

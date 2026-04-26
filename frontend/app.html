@@ -761,6 +761,11 @@
                     </div>
                     <div id="subscribe-msg" class="hidden text-xs mt-1.5"></div>
                     <div id="subscribe-helper" class="hidden text-xs text-slate-500 mt-1.5">You'll only get updates for this area. Unsubscribe anytime.</div>
+                    <div class="mt-2">
+                        <button id="subscribe-citywide-btn" type="button"
+                            class="text-xs text-slate-500 hover:text-slate-300 transition-colors duration-150 underline underline-offset-2 bg-transparent border-none cursor-pointer p-0"
+                        >Get NYC-wide updates instead</button>
+                    </div>
                 </div>
                 <!-- Attribution -->
                 <div id="sidebar-attribution" class="pt-3 border-t border-base-content/10 text-[13px] sm:text-xs text-slate-500 text-center">
@@ -3902,6 +3907,54 @@
 
         document.getElementById('subscribe-email').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') document.getElementById('subscribe-btn').click();
+        });
+
+        document.getElementById('subscribe-citywide-btn').addEventListener('click', async function() {
+            const emailEl = document.getElementById('subscribe-email');
+            const msgEl   = document.getElementById('subscribe-msg');
+            const email   = emailEl.value.trim();
+
+            msgEl.classList.add('hidden');
+
+            if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+                msgEl.textContent = lang === 'es' ? 'Ingrese un correo electrónico válido.' : 'Enter a valid email address.';
+                msgEl.className   = 'text-xs mt-1.5 text-error';
+                msgEl.classList.remove('hidden');
+                return;
+            }
+
+            this.disabled    = true;
+            this.textContent = '…';
+
+            try {
+                const resp = await fetch('/api/subscribe', {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ email, is_citywide: true }),
+                });
+
+                if (resp.ok || resp.status === 409) {
+                    document.getElementById('subscribe-form-wrap').classList.add('hidden');
+                    document.getElementById('subscribe-helper').classList.add('hidden');
+                    this.classList.add('hidden');
+                    if (resp.ok) plausible('Subscribe', { props: { zip_code: 'citywide' } });
+                    msgEl.textContent = resp.status === 409
+                        ? (lang === 'es' ? 'Ya está observando NYC.' : 'You\'re already watching NYC.')
+                        : (lang === 'es'
+                            ? 'Está observando NYC. Le avisaremos cuando la actividad de desplazamiento aumente en la ciudad.'
+                            : 'You\'re watching NYC. We\'ll email you when displacement activity picks up across the city.');
+                    msgEl.className = 'text-xs mt-1.5 text-green-400';
+                    msgEl.classList.remove('hidden');
+                } else {
+                    throw new Error('server error');
+                }
+            } catch {
+                msgEl.textContent = lang === 'es' ? 'Algo salió mal. Intente de nuevo.' : 'Something went wrong. Try again.';
+                msgEl.className   = 'text-xs mt-1.5 text-error';
+                msgEl.classList.remove('hidden');
+                this.disabled    = false;
+                this.textContent = lang === 'es' ? 'Recibir actualizaciones de toda la ciudad' : 'Get NYC-wide updates instead';
+            }
         });
 
         // On mobile, scroll inputs into view after the keyboard appears
