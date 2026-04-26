@@ -52,6 +52,13 @@ class DcwpScraper(BaseScraper):
     INITIAL_LOOKBACK_DAYS = 365 * 5  # 5 years; DCWP has long-lived licenses
     PAGE_SIZE = 500  # keeps per-page memory flat on the 1.9GB droplet
 
+    # license_creation_date is a creation-only timestamp; renewals and status
+    # changes mutate existing rows without changing it.  Re-fetching the prior
+    # 14 days on every incremental run ensures recently-issued licenses that
+    # were quickly renewed or suspended are recaptured.  The upsert on
+    # license_nbr makes re-processing idempotent.
+    WATERMARK_EXTRA_LOOKBACK_DAYS = 14
+
     def _run(self, db) -> tuple[int, int, datetime | None]:
         # Bootstrap guard: null watermark means no prior successful run completed.
         # Use 90 days instead of the 5-year default — the full dataset triggered
