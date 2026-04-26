@@ -10,6 +10,7 @@ import re
 
 import resend
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, field_validator
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -100,6 +101,52 @@ def _send_confirmation(email: str, zip_code: str) -> None:
         logger.exception("Failed to send confirmation email to %s", email)
 
 
+_UNSUBSCRIBE_HTML = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unsubscribed — PulseCities</title>
+</head>
+<body style="margin:0;padding:0;background:#0f172a;font-family:'Inter',system-ui,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:48px 24px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
+          <tr>
+            <td style="padding-bottom:32px;">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#38bdf8;letter-spacing:-0.01em;">PulseCities</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#1e293b;border-radius:12px;padding:32px;border:1px solid rgba(148,163,184,0.1);">
+              <p style="margin:0 0 8px;font-size:20px;font-weight:600;color:#f1f5f9;">You're unsubscribed.</p>
+              <p style="margin:0 0 24px;font-size:14px;color:#94a3b8;line-height:1.6;">
+                You won't receive any more weekly digests from PulseCities.
+              </p>
+              <a href="https://pulsecities.com"
+                 style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;text-decoration:none;">
+                Back to PulseCities
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top:24px;">
+              <p style="margin:0;font-size:11px;color:rgba(148,163,184,0.4);line-height:1.6;">
+                PulseCities tracks displacement pressure across all NYC neighborhoods using public records.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+""".strip()
+
+
 class SubscribeRequest(BaseModel):
     email: str
     zip_code: str
@@ -155,3 +202,21 @@ def subscribe(
     logger.info('New subscriber zip=%s', body.zip_code)
     _send_confirmation(body.email, body.zip_code)
     return {'status': 'ok'}
+
+
+@router.get('/unsubscribe', response_class=HTMLResponse)
+def unsubscribe(token: str, db: Session = Depends(get_db)):
+    """One-click unsubscribe — linked from every digest email footer."""
+    sub = db.execute(
+        select(Subscriber).where(Subscriber.unsubscribe_token == token)
+    ).scalar_one_or_none()
+
+    if not sub:
+        raise HTTPException(status_code=404, detail='Invalid or expired unsubscribe link.')
+
+    email   = sub.email
+    zip_code = sub.zip_code
+    db.delete(sub)
+    db.commit()
+    logger.info('Unsubscribed: %s (zip=%s)', email, zip_code)
+    return HTMLResponse(content=_UNSUBSCRIBE_HTML, status_code=200)
