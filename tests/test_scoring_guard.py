@@ -273,26 +273,33 @@ class TestOrphanCleanup:
 
         db = SessionLocal()
         try:
+            # Purge any stale test rows left by prior runs (handles both the old
+            # '99999' test ZIP and the current '99998' test ZIP).
+            db.execute(text(
+                "DELETE FROM displacement_scores WHERE zip_code IN ('99998', '99999')"
+            ))
+            db.commit()
+
             db.execute(text("""
                 INSERT INTO displacement_scores
                     (zip_code, score, signal_breakdown, signal_last_updated,
                      cache_generated_at, created_at, updated_at)
-                VALUES ('99999', 50.0, '{}', '{}', NOW(), NOW(), NOW())
+                VALUES ('99998', 50.0, '{}', '{}', NOW(), NOW(), NOW())
                 ON CONFLICT ON CONSTRAINT uq_displacement_scores_zip_code DO NOTHING
             """))
             db.commit()
 
             before = db.execute(text(
-                "SELECT COUNT(*) FROM displacement_scores WHERE zip_code = '99999'"
+                "SELECT COUNT(*) FROM displacement_scores WHERE zip_code = '99998'"
             )).scalar()
             assert before == 1
 
             compute_scores(db, force=True)
 
             after = db.execute(text(
-                "SELECT COUNT(*) FROM displacement_scores WHERE zip_code = '99999'"
+                "SELECT COUNT(*) FROM displacement_scores WHERE zip_code = '99998'"
             )).scalar()
-            assert after == 0, "Step 9 must remove orphan ZIP 99999"
+            assert after == 0, "Step 9 must remove orphan ZIP 99998"
 
             leftover = db.execute(text("""
                 SELECT COUNT(*) FROM displacement_scores ds
@@ -301,4 +308,9 @@ class TestOrphanCleanup:
             """)).scalar()
             assert leftover == 0, f"{leftover} orphan ZIP(s) still present after cleanup"
         finally:
+            # Belt-and-suspenders: remove test ZIPs so subsequent test runs start clean.
+            db.execute(text(
+                "DELETE FROM displacement_scores WHERE zip_code IN ('99998', '99999')"
+            ))
+            db.commit()
             db.close()

@@ -57,7 +57,7 @@ def _insert_test_permits(db, rows):
 
 
 def _cleanup_test_data(db, zip_codes):
-    """Remove test data from permits_raw, displacement_scores, and score_history."""
+    """Remove test data from permits_raw, displacement_scores, score_history, and neighborhoods."""
     for zip_code in zip_codes:
         db.execute(
             text("DELETE FROM permits_raw WHERE zip_code = :zip_code"),
@@ -69,6 +69,30 @@ def _cleanup_test_data(db, zip_codes):
         )
         db.execute(
             text("DELETE FROM score_history WHERE zip_code = :zip_code"),
+            {"zip_code": zip_code},
+        )
+        db.execute(
+            text("DELETE FROM neighborhoods WHERE zip_code = :zip_code"),
+            {"zip_code": zip_code},
+        )
+    db.commit()
+
+
+def _insert_test_neighborhoods(db, zip_codes):
+    """
+    Register test zip codes in neighborhoods so compute_scores step 9 (orphan
+    cleanup) does not delete freshly-scored rows before the test can assert on them.
+    geometry is nullable; name/borough are optional.
+    """
+    for zip_code in zip_codes:
+        db.execute(
+            text(
+                """
+                INSERT INTO neighborhoods (zip_code, created_at, updated_at)
+                VALUES (:zip_code, NOW(), NOW())
+                ON CONFLICT DO NOTHING
+                """
+            ),
             {"zip_code": zip_code},
         )
     db.commit()
@@ -132,6 +156,7 @@ class TestScoreNormalization:
             # Patch all six signals: only permits has data (single zip → 0.0-guard → 50.0 normalized).
             # assessment_spike and rs_unit_loss are patched dormant so the dormancy
             # check fires correctly and their weights are redistributed to permits.
+            _insert_test_neighborhoods(db, [zip_code])
             with patch("scoring.compute._aggregate_permits", return_value=[(zip_code, 25)]), \
                  patch("scoring.compute._aggregate_evictions", return_value=[]), \
                  patch("scoring.compute._aggregate_llc_acquisitions", return_value=[]), \
@@ -142,7 +167,7 @@ class TestScoreNormalization:
                  patch("scoring.compute._compute_borough_medians", return_value={"1": 10.0, "2": 8.0, "3": 15.0, "4": 12.0, "5": 5.0}), \
                  patch("scoring.compute._get_zip_units", return_value={}), \
                  patch("scoring.compute._get_zip_borough", return_value={}):
-                count = compute_scores(db)
+                count = compute_scores(db, force=True)
 
             assert count == 1, f"Expected 1 zip scored, got {count}"
 
@@ -182,6 +207,7 @@ class TestScoreNormalization:
         try:
             _cleanup_test_data(db, zip_codes)
 
+            _insert_test_neighborhoods(db, zip_codes)
             with patch("scoring.compute._aggregate_permits", return_value=zips), \
                  patch("scoring.compute._aggregate_evictions", return_value=[]), \
                  patch("scoring.compute._aggregate_llc_acquisitions", return_value=[]), \
@@ -192,7 +218,7 @@ class TestScoreNormalization:
                  patch("scoring.compute._compute_borough_medians", return_value={"1": 10.0, "2": 8.0, "3": 15.0, "4": 12.0, "5": 5.0}), \
                  patch("scoring.compute._get_zip_units", return_value={}), \
                  patch("scoring.compute._get_zip_borough", return_value={}):
-                count = compute_scores(db)
+                count = compute_scores(db, force=True)
 
             assert count == 3, f"Expected 3 zips scored, got {count}"
 
@@ -277,15 +303,17 @@ class TestScoreNormalization:
             # Patch other signals to isolate; permits normalized to 50.0 (single zip min==max guard).
             # _aggregate_permits is patched directly because its JOIN on parcels requires
             # residential parcel rows that aren't part of this test fixture.
+            _insert_test_neighborhoods(db, [zip_code])
             with patch("scoring.compute._aggregate_permits", return_value=[(zip_code, 12)]), \
                  patch("scoring.compute._aggregate_evictions", return_value=[]), \
                  patch("scoring.compute._aggregate_llc_acquisitions", return_value=[]), \
                  patch("scoring.compute._aggregate_complaints", return_value=[]), \
+                 patch("scoring.compute._aggregate_violations", return_value=[]), \
                  patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]), \
                  patch("scoring.compute._compute_borough_medians", return_value={"1": 10.0, "2": 8.0, "3": 15.0, "4": 12.0, "5": 5.0}), \
                  patch("scoring.compute._get_zip_units", return_value={}), \
                  patch("scoring.compute._get_zip_borough", return_value={}):
-                compute_scores(db)
+                compute_scores(db, force=True)
 
             row = db.execute(
                 text(
@@ -337,20 +365,23 @@ class TestScoreNormalization:
                 _aggregate_evictions=[],
                 _aggregate_llc_acquisitions=[],
                 _aggregate_complaints=[],
+                _aggregate_violations=[],
                 _aggregate_rs_unit_loss=[],
                 _compute_borough_medians={"1": 10.0, "2": 8.0, "3": 15.0, "4": 12.0, "5": 5.0},
                 _get_zip_units={},
                 _get_zip_borough={},
             )
+            _insert_test_neighborhoods(db, [zip_code])
             with patch("scoring.compute._aggregate_permits", return_value=patches["_aggregate_permits"]), \
                  patch("scoring.compute._aggregate_evictions", return_value=patches["_aggregate_evictions"]), \
                  patch("scoring.compute._aggregate_llc_acquisitions", return_value=patches["_aggregate_llc_acquisitions"]), \
                  patch("scoring.compute._aggregate_complaints", return_value=patches["_aggregate_complaints"]), \
+                 patch("scoring.compute._aggregate_violations", return_value=patches["_aggregate_violations"]), \
                  patch("scoring.compute._aggregate_rs_unit_loss", return_value=patches["_aggregate_rs_unit_loss"]), \
                  patch("scoring.compute._compute_borough_medians", return_value=patches["_compute_borough_medians"]), \
                  patch("scoring.compute._get_zip_units", return_value=patches["_get_zip_units"]), \
                  patch("scoring.compute._get_zip_borough", return_value=patches["_get_zip_borough"]):
-                count1 = compute_scores(db)
+                count1 = compute_scores(db, force=True)
                 row1 = db.execute(
                     text(
                         "SELECT score, signal_breakdown FROM displacement_scores WHERE zip_code = :z"
@@ -358,7 +389,7 @@ class TestScoreNormalization:
                     {"z": zip_code},
                 ).fetchone()
 
-                count2 = compute_scores(db)
+                count2 = compute_scores(db, force=True)
                 row2 = db.execute(
                     text(
                         "SELECT score, signal_breakdown FROM displacement_scores WHERE zip_code = :z"
@@ -392,15 +423,17 @@ class TestScoreNormalization:
         try:
             _cleanup_test_data(db, [zip_code])
             # Patch all six aggregations to return known counts for one zip
+            _insert_test_neighborhoods(db, [zip_code])
             with patch("scoring.compute._aggregate_permits", return_value=[(zip_code, 10)]), \
                  patch("scoring.compute._aggregate_evictions", return_value=[(zip_code, 5)]), \
                  patch("scoring.compute._aggregate_llc_acquisitions", return_value=[(zip_code, 3)]), \
                  patch("scoring.compute._aggregate_complaints", return_value=[(zip_code, 7)]), \
+                 patch("scoring.compute._aggregate_violations", return_value=[]), \
                  patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]), \
                  patch("scoring.compute._compute_borough_medians", return_value={"1": 20.0, "2": 15.0, "3": 18.0, "4": 12.0, "5": 8.0}), \
                  patch("scoring.compute._get_zip_units", return_value={}), \
                  patch("scoring.compute._get_zip_borough", return_value={}):
-                count = compute_scores(db)
+                count = compute_scores(db, force=True)
             assert count >= 1
             row = db.execute(
                 text("SELECT signal_breakdown FROM displacement_scores WHERE zip_code = :z"),
@@ -429,6 +462,7 @@ class TestScoreNormalization:
             _cleanup_test_data(db, [zip_code])
             # Provide a parcel with units_res = None to trigger the fallback path.
             # Borough medians dict has an entry for borough 3 (Brooklyn) = 20 units.
+            _insert_test_neighborhoods(db, [zip_code])
             with patch("scoring.compute._aggregate_permits", return_value=[(zip_code, 8)]), \
                  patch("scoring.compute._aggregate_evictions", return_value=[]), \
                  patch("scoring.compute._aggregate_llc_acquisitions", return_value=[]), \
@@ -438,7 +472,7 @@ class TestScoreNormalization:
                  patch("scoring.compute._get_zip_borough", return_value={zip_code: 3}), \
                  patch("scoring.compute._get_zip_units", return_value={zip_code: None}):
                 try:
-                    count = compute_scores(db)
+                    count = compute_scores(db, force=True)
                 except ZeroDivisionError:
                     pytest.fail("ZeroDivisionError raised — borough median fallback not implemented")
             # A score row must exist and score must not be None
@@ -560,6 +594,7 @@ class TestScoreValidation:
                 + [(z, 100) for z, _, _ in commercial_zips]
             )
 
+            _insert_test_neighborhoods(db, all_zip_codes)
             # Patch all signals to known values — permits only, isolated from real DB
             with patch("scoring.compute._aggregate_permits", return_value=permit_patch), \
                  patch("scoring.compute._aggregate_evictions", return_value=[]), \
@@ -568,7 +603,7 @@ class TestScoreValidation:
                  patch("scoring.compute._aggregate_violations", return_value=[]), \
                  patch("scoring.compute._aggregate_assessment_spike", return_value=[]), \
                  patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]):
-                count = compute_scores(db)
+                count = compute_scores(db, force=True)
 
             assert count >= 5, f"Expected at least 5 zip codes scored, got {count}"
 
