@@ -219,6 +219,11 @@
                 </details>
             </div>
 
+            <div style="margin-top: 28px; padding-top: 14px; border-top: 1px solid rgba(148,163,184,0.07);">
+                <p id="last-updated" style="font-size: 0.72rem; color: rgba(148,163,184,0.3); font-family: 'JetBrains Mono', monospace;"></p>
+                <p style="font-size: 0.75rem; color: rgba(148,163,184,0.45); margin-top: 6px;"><a href="/operators" style="color: rgba(148,163,184,0.45);">Explore other NYC operator networks</a></p>
+            </div>
+
         </div><!-- /content -->
     </div>
 
@@ -749,8 +754,23 @@
             .then(r => r.ok ? r.json() : {})
             .catch(() => ({}));
 
-        Promise.all([_opFetch, _namesFetch])
-            .then(([data, zipNames]) => render(data, zipNames))
+        const _healthFetch = fetch('/api/health')
+            .then(r => r.ok ? r.json() : null)
+            .catch(() => null);
+
+        Promise.all([_opFetch, _namesFetch, _healthFetch])
+            .then(([data, zipNames, health]) => {
+                render(data, zipNames);
+                const luEl = document.getElementById('last-updated');
+                if (luEl && health && health.scrapers) {
+                    const dates = Object.values(health.scrapers)
+                        .map(s => s.last_run).filter(Boolean).sort().reverse();
+                    if (dates.length) {
+                        const d = new Date(dates[0]);
+                        luEl.textContent = 'Last updated: ' + d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                    }
+                }
+            })
             .catch(err => showError(err.message));
     })();
 
