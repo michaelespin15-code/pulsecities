@@ -1193,7 +1193,7 @@
                     subscribe_invalid_email: 'Enter a valid email address.',
                     subscribe_no_zip:        'Select a neighborhood on the map first.',
                     subscribe_duplicate:     "You're already subscribed for this ZIP.",
-                    subscribe_success:       "You're on the list. Updates drop every Monday.",
+                    subscribe_success:       "You're on the list. Updates drop every Sunday.",
                     subscribe_error:         'Something went wrong. Try again.',
                     landlord_no_results:     'No properties found for "{query}" in ACRIS records.',
                     copy_success:            'Copied!',
@@ -1412,7 +1412,7 @@
                     subscribe_invalid_email: 'Ingrese un correo electrónico válido.',
                     subscribe_no_zip:        'Seleccione un vecindario en el mapa primero.',
                     subscribe_duplicate:     'Ya está suscrito para este código postal.',
-                    subscribe_success:       'Está en la lista. Actualizaciones cada lunes.',
+                    subscribe_success:       'Está en la lista. Actualizaciones cada domingo.',
                     subscribe_error:         'Algo salió mal. Intente de nuevo.',
                     landlord_no_results:     'Sin propiedades encontradas para "{query}" en registros ACRIS.',
                     copy_success:            '¡Copiado!',
@@ -1544,8 +1544,11 @@
         }
         // ---- end i18n ----
 
-        const _prefetchStats   = fetch('/api/stats').then(r => r.ok ? r.json() : null).catch(() => null);
-        const _prefetchTopRisk = fetch('/api/neighborhoods/top-risk?limit=10').then(r => r.ok ? r.json() : null).catch(() => null);
+        const _prefetchStats    = fetch('/api/stats').then(r => r.ok ? r.json() : null).catch(() => null);
+        const _prefetchTopRisk  = fetch('/api/neighborhoods/top-risk?limit=10').then(r => r.ok ? r.json() : null).catch(() => null);
+        const _prefetchSchedule = fetch('/api/schedule').then(r => r.ok ? r.json() : null).catch(() => null);
+        let _digestSendDay = 'Sunday';  // overwritten when _prefetchSchedule resolves
+        _prefetchSchedule.then(d => { if (d && d.send_day) _digestSendDay = d.send_day; });
 
         let _heroLlcCount = 0;
         let _heroEvictionCount = 0;
@@ -3844,9 +3847,14 @@
                 if (resp.ok || resp.status === 409) {
                     document.getElementById('subscribe-form-wrap').classList.add('hidden');
                     if (resp.ok) plausible('Subscribe', { props: { zip_code: _cachedZip } });
-                    msgEl.textContent = resp.status === 409
-                        ? t('ui', 'subscribe_duplicate')
-                        : t('ui', 'subscribe_success');
+                    if (resp.status === 409) {
+                        msgEl.textContent = t('ui', 'subscribe_duplicate');
+                    } else {
+                        const _dayNames = {Sunday:'domingo',Monday:'lunes',Tuesday:'martes',Wednesday:'miércoles',Thursday:'jueves',Friday:'viernes',Saturday:'sábado'};
+                        msgEl.textContent = lang === 'es'
+                            ? `Está en la lista. Actualizaciones cada ${_dayNames[_digestSendDay] || _digestSendDay}.`
+                            : `You're on the list. Updates drop every ${_digestSendDay}.`;
+                    }
                     msgEl.className = 'text-xs mt-1.5 text-green-400';
                     msgEl.classList.remove('hidden');
                 } else {

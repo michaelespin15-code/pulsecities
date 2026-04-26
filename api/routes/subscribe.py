@@ -17,6 +17,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from config.schedule import DIGEST_SEND_DAY
 from models.database import get_db
 from models.subscribers import Subscriber
 
@@ -55,7 +56,7 @@ _CONFIRMATION_HTML = """
             <td style="background:#1e293b;border-radius:12px;padding:32px;border:1px solid rgba(148,163,184,0.1);">
               <p style="margin:0 0 8px;font-size:20px;font-weight:600;color:#f1f5f9;">You're in for {zip_code}.</p>
               <p style="margin:0 0 24px;font-size:14px;color:#94a3b8;line-height:1.6;">
-                You'll get a weekly digest of displacement activity in <strong style="color:#cbd5e1;">{zip_code}</strong> — score changes, new LLC acquisitions, permit spikes, and eviction trends. First one goes out Sunday.
+                You'll get a weekly digest of displacement activity in <strong style="color:#cbd5e1;">{zip_code}</strong> — score changes, new LLC acquisitions, permit spikes, and eviction trends. First one goes out {send_day}.
               </p>
               <a href="https://pulsecities.com/neighborhood/{zip_code}"
                  style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;text-decoration:none;">
@@ -92,7 +93,7 @@ def _send_confirmation(email: str, zip_code: str) -> None:
             "from": "PulseCities <alerts@pulsecities.com>",
             "to": [email],
             "subject": f"You're subscribed to {zip_code} — PulseCities",
-            "html": _CONFIRMATION_HTML.replace("{zip_code}", zip_code),
+            "html": _CONFIRMATION_HTML.replace("{zip_code}", zip_code).replace("{send_day}", DIGEST_SEND_DAY),
         })
         logger.info("Confirmation email sent to %s for zip %s", email, zip_code)
     except Exception:
