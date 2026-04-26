@@ -253,3 +253,52 @@ class TestSignalCollapseEdgeCases:
         db = _db_with_prev([72.0] * 183, prev_means)
 
         _batch_sanity_check(db, scores, norms, force=False)
+
+
+# ---------------------------------------------------------------------------
+# Orphan ZIP cleanup
+# ---------------------------------------------------------------------------
+
+class TestOrphanCleanup:
+    """
+    Verify compute_scores() deletes displacement_scores rows for ZIPs with no
+    matching ZCTA geometry in the neighborhoods table (Step 9).
+    """
+
+    @pytest.mark.integration
+    def test_orphan_zips_removed_after_scoring(self):
+        from models.database import SessionLocal
+        from sqlalchemy import text
+        from scoring.compute import compute_scores
+
+        db = SessionLocal()
+        try:
+            db.execute(text("""
+                INSERT INTO displacement_scores
+                    (zip_code, score, signal_breakdown, signal_last_updated,
+                     cache_generated_at, created_at, updated_at)
+                VALUES ('99999', 50.0, '{}', '{}', NOW(), NOW(), NOW())
+                ON CONFLICT ON CONSTRAINT uq_displacement_scores_zip_code DO NOTHING
+            """))
+            db.commit()
+
+            before = db.execute(text(
+                "SELECT COUNT(*) FROM displacement_scores WHERE zip_code = '99999'"
+            )).scalar()
+            assert before == 1
+
+            compute_scores(db, force=True)
+
+            after = db.execute(text(
+                "SELECT COUNT(*) FROM displacement_scores WHERE zip_code = '99999'"
+            )).scalar()
+            assert after == 0, "Step 9 must remove orphan ZIP 99999"
+
+            leftover = db.execute(text("""
+                SELECT COUNT(*) FROM displacement_scores ds
+                LEFT JOIN neighborhoods n ON ds.zip_code = n.zip_code
+                WHERE n.zip_code IS NULL
+            """)).scalar()
+            assert leftover == 0, f"{leftover} orphan ZIP(s) still present after cleanup"
+        finally:
+            db.close()
