@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulseCities | About</title>
+    <meta name="description" content="PulseCities is a public NYC housing data tool for tracking displacement pressure, gentrification signals, evictions, permits, complaints, ownership changes, and rent-stabilized housing loss.">
+    <link rel="canonical" href="https://pulsecities.com/about">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+    <meta property="og:title" content="PulseCities | About">
+    <meta property="og:description" content="A public tool for tracking NYC displacement pressure using permits, evictions, complaints, violations, ownership transfers, and rent-stabilized housing data.">
+    <meta property="og:url" content="https://pulsecities.com/about">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="PulseCities">
+    <meta property="og:image" content="https://pulsecities.com/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="PulseCities: NYC displacement pressure tracking">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PulseCities | About">
+    <meta name="twitter:description" content="A public tool for tracking NYC displacement pressure using permits, evictions, complaints, violations, ownership transfers, and rent-stabilized housing data.">
+    <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "About PulseCities",
+        "description": "PulseCities is a public NYC housing data tool that tracks displacement pressure using public records: DOB permits, HPD violations, 311 complaints, eviction records, ACRIS ownership transfers, and rent-stabilized housing data.",
+        "url": "https://pulsecities.com/about",
+        "author": { "@type": "Person", "name": "Michael Espin" },
+        "publisher": { "@type": "Organization", "name": "PulseCities", "url": "https://pulsecities.com" }
+    }
+    </script>
+
+    <script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>
+    <script>
+        window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+        plausible.init()
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:      #0f172a;
+            --surface: #1e293b;
+            --border:  rgba(148, 163, 184, 0.12);
+            --text:    #e2e8f0;
+            --muted:   #94a3b8;
+            --faint:   rgba(148, 163, 184, 0.45);
+            --orange:  #f97316;
+            --sky:     #38bdf8;
+            --green:   #4ade80;
+            --mono:    'JetBrains Mono', monospace;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        a { color: var(--sky); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Nav */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .nav-brand {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--orange);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .nav-brand:hover { text-decoration: none; opacity: 0.85; }
+
+        .nav-breadcrumb {
+            font-size: 12px;
+            color: var(--faint);
+            font-family: var(--mono);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 13px;
+        }
+
+        .nav-right a { color: var(--muted); }
+        .nav-right a:hover { color: var(--text); text-decoration: none; }
+
+        /* Layout */
+        .container {
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 56px 24px 80px;
+        }
+
+        /* Hero */
+        .page-header { margin-bottom: 56px; }
+
+        .page-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--orange);
+            font-family: var(--mono);
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-size: clamp(22px, 4vw, 30px);
+            font-weight: 600;
+            line-height: 1.25;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .page-subhead {
+            font-size: 17px;
+            color: var(--text);
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .page-tagline {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--faint);
+            margin-bottom: 20px;
+        }
+
+        .page-intro {
+            font-size: 15px;
+            color: var(--muted);
+            line-height: 1.65;
+            margin-bottom: 28px;
+        }
+
+        /* Hero CTA row */
+        .cta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-primary {
+            display: inline-block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a;
+            background: var(--orange);
+            border: 1px solid var(--orange);
+            border-radius: 6px;
+            padding: 8px 18px;
+            text-decoration: none;
+            transition: opacity 0.15s;
+        }
+        .btn-primary:hover { opacity: 0.88; text-decoration: none; color: #0f172a; }
+
+        .btn-secondary {
+            display: inline-block;
+            font-size: 13px;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 18px;
+            text-decoration: none;
+            transition: border-color 0.15s, color 0.15s;
+        }
+        .btn-secondary:hover { color: var(--text); border-color: rgba(148,163,184,0.35); text-decoration: none; }
+
+        /* Sections */
+        section { margin-bottom: 52px; }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        p { margin-bottom: 14px; color: var(--text); }
+        p:last-child { margin-bottom: 0; }
+
+        /* Feature rows (What PulseCities does) */
+        .feature-list { display: flex; flex-direction: column; gap: 0; }
+
+        .feature-row {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+            align-items: baseline;
+        }
+        .feature-row:first-child { border-top: 1px solid var(--border); }
+
+        .feature-label {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text);
+            font-weight: 600;
+            padding-top: 1px;
+        }
+
+        .feature-desc {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* Audience cards */
+        .audience-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .audience-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 18px;
+        }
+
+        .audience-type {
+            font-family: var(--mono);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--orange);
+            margin-bottom: 6px;
+        }
+
+        .audience-desc {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .disclaimer-note {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--faint);
+        }
+
+        /* Public records callout */
+        .callout {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--sky);
+            border-radius: 8px;
+            padding: 16px 18px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* Tech chips */
+        .tech-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 16px; }
+
+        .tech-chip {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--sky);
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 6px;
+            padding: 4px 10px;
+        }
+
+        /* Builder links */
+        .builder-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 16px;
+        }
+
+        .builder-link {
+            font-size: 13px;
+            color: var(--sky);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Contact section */
+        .contact-categories {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .contact-category {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 18px;
+        }
+
+        .contact-cat-label {
+            font-family: var(--mono);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .contact-cat-desc {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .contact-cta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 28px 24px;
+            padding-bottom: calc(env(safe-area-inset-bottom) + 96px);
+            text-align: center;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .footer-byline {
+            font-size: 14px;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .footer-byline a { color: var(--sky); font-weight: 500; }
+        .footer-byline a:hover { text-decoration: underline; }
+
+        .footer-links { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .footer-links a { color: var(--muted); font-size: 13px; }
+        .footer-links a:hover { color: var(--text); }
+
+        /* Mobile */
+        @media (max-width: 600px) {
+            .container { padding: 36px 16px 60px; }
+            nav { padding: 0 16px; }
+            .nav-breadcrumb { display: none; }
+            .nav-right { gap: 14px; }
+            .nav-right .nav-hide-mobile { display: none; }
+
+            .feature-row {
+                grid-template-columns: 1fr;
+                gap: 4px;
+            }
+
+            .audience-grid { grid-template-columns: 1fr; }
+
+            .contact-categories { grid-template-columns: 1fr; }
+
+            .cta-row { gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/" class="nav-brand">
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <rect width="32" height="32" rx="6" fill="#1a1a2e"/>
+            <polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        PulseCities
+    </a>
+    <span class="nav-breadcrumb">/ about</span>
+    <div class="nav-right">
+        <a href="/map">Map</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/operators" class="nav-hide-mobile">Operators</a>
+        <a href="#contact" class="nav-hide-mobile">Contact</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- 1. Hero -->
+    <header class="page-header">
+        <p class="page-label">About</p>
+        <h1>About PulseCities</h1>
+        <p class="page-subhead">A public tool for tracking displacement pressure across NYC neighborhoods.</p>
+        <p class="page-tagline">The displacement story NYC doesn't officially tell.</p>
+        <p class="page-intro">
+            PulseCities connects public records that are usually scattered across city systems: permits, evictions, complaints, violations, ownership transfers, and rent-stabilized housing data.
+        </p>
+        <div class="cta-row">
+            <a href="/map" class="btn-primary" onclick="plausible('Map Click from About')">Explore the map</a>
+            <a href="/methodology" class="btn-secondary" onclick="plausible('Methodology Click')">Read the methodology</a>
+            <a href="#contact" class="btn-secondary" onclick="plausible('Contact Click')">Contact</a>
+        </div>
+    </header>
+
+    <!-- 2. What PulseCities does -->
+    <section>
+        <h2>What PulseCities does</h2>
+        <div class="feature-list">
+            <div class="feature-row">
+                <span class="feature-label">Search a place</span>
+                <span class="feature-desc">Look up an address or ZIP and see recent public-record activity nearby.</span>
+            </div>
+            <div class="feature-row">
+                <span class="feature-label">Track signals</span>
+                <span class="feature-desc">Review permits, complaints, evictions, violations, ownership changes, and rent-stabilized unit loss in one place.</span>
+            </div>
+            <div class="feature-row">
+                <span class="feature-label">Follow patterns</span>
+                <span class="feature-desc">Spot neighborhoods, buildings, and operators where multiple displacement-pressure signals appear together. Operator profiles are being expanded through public-record matching.</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Who it is for -->
+    <section>
+        <h2>Who it is for</h2>
+        <div class="audience-grid">
+            <div class="audience-card">
+                <p class="audience-type">Tenants</p>
+                <p class="audience-desc">For people trying to understand what is changing around their building or block.</p>
+            </div>
+            <div class="audience-card">
+                <p class="audience-type">Journalists</p>
+                <p class="audience-desc">For reporters looking for public-record leads, landlord patterns, and neighborhood movement.</p>
+            </div>
+            <div class="audience-card">
+                <p class="audience-type">Legal aid and organizers</p>
+                <p class="audience-desc">For teams that need a faster way to triage places worth reviewing.</p>
+            </div>
+            <div class="audience-card">
+                <p class="audience-type">Researchers</p>
+                <p class="audience-desc">For people studying housing pressure, NYC public records, and urban change.</p>
+            </div>
+        </div>
+        <p class="disclaimer-note">PulseCities is an investigative tool, not legal advice.</p>
+    </section>
+
+    <!-- 4. Built from public records -->
+    <section>
+        <h2>Built from public records</h2>
+        <p>
+            PulseCities combines six public-record signals into a neighborhood-level score: DOB permits, HPD violations, 311 complaints, eviction records, ACRIS ownership transfers, and DHCR rent-stabilized unit data.
+        </p>
+        <div class="callout">
+            Scores are normalized by residential units so raw counts do not overwhelm dense neighborhoods. A score is not a prediction about a specific tenant or building. It shows where multiple displacement-pressure signals appear together.
+        </div>
+        <p>
+            <a href="/methodology" onclick="plausible('Methodology Click')">Read the full methodology, data sources, and scoring weights &rarr;</a>
+        </p>
+    </section>
+
+    <!-- 5. Why it exists -->
+    <section>
+        <h2>Why PulseCities exists</h2>
+        <p>
+            NYC housing records are public, but they are scattered across separate systems. PulseCities brings those records into one place so tenants, reporters, organizers, and researchers can see where pressure is building and trace the signals back to source data.
+        </p>
+    </section>
+
+    <!-- 6. Built by Michael Espin -->
+    <section>
+        <h2>Built by Michael Espin</h2>
+        <p>
+            PulseCities was built by Michael Espin, a computer science and AI systems graduate focused on public data infrastructure, civic tools, and applied data engineering.
+        </p>
+        <p>
+            The project combines Python data pipelines, FastAPI, PostgreSQL/PostGIS, public-record scraping, geospatial scoring, and a fast MapLibre interface.
+        </p>
+        <div class="tech-chips">
+            <span class="tech-chip">Python pipelines</span>
+            <span class="tech-chip">FastAPI</span>
+            <span class="tech-chip">PostgreSQL + PostGIS</span>
+            <span class="tech-chip">MapLibre GL JS</span>
+            <span class="tech-chip">Public-record scraping</span>
+            <span class="tech-chip">Six-signal scoring</span>
+        </div>
+        <div class="builder-links">
+            <a href="https://linkedin.com/in/michaelespin15" target="_blank" rel="noopener noreferrer" class="builder-link" onclick="plausible('LinkedIn Click')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                LinkedIn
+            </a>
+            <a href="https://github.com/michaelespin15/pulsecities" target="_blank" rel="noopener noreferrer" class="builder-link" onclick="plausible('GitHub Click')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                GitHub
+            </a>
+            <a href="mailto:michaelespin15@gmail.com" class="builder-link" onclick="plausible('Contact Click')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                michaelespin15@gmail.com
+            </a>
+        </div>
+    </section>
+
+    <!-- 7. Contact -->
+    <section id="contact">
+        <h2>Contact</h2>
+        <p>For press, corrections, partnerships, or data access, include the ZIP, address, landlord/operator, or record you are reviewing.</p>
+
+        <div class="contact-categories">
+            <div class="contact-category">
+                <p class="contact-cat-label">Journalists</p>
+                <p class="contact-cat-desc">Reach out with the neighborhood, building, or ownership pattern you are investigating.</p>
+            </div>
+            <div class="contact-category">
+                <p class="contact-cat-label">Legal aid and organizers</p>
+                <p class="contact-cat-desc">Send the area or record cluster you want reviewed.</p>
+            </div>
+            <div class="contact-category">
+                <p class="contact-cat-label">Corrections</p>
+                <p class="contact-cat-desc">Include the address, ZIP, source label, and date shown in PulseCities.</p>
+            </div>
+            <div class="contact-category">
+                <p class="contact-cat-label">Partnerships and API access</p>
+                <p class="contact-cat-desc">Share the use case, geography, and data access needs.</p>
+            </div>
+        </div>
+
+        <div class="contact-cta">
+            <a href="mailto:michaelespin15@gmail.com?subject=PulseCities%20inquiry" class="btn-primary" onclick="plausible('Contact Click')">Email Michael</a>
+            <a href="https://github.com/michaelespin15/pulsecities" target="_blank" rel="noopener noreferrer" class="btn-secondary" onclick="plausible('GitHub Click')">GitHub</a>
+        </div>
+    </section>
+
+    <!-- 8. Data corrections -->
+    <section>
+        <h2>Data corrections</h2>
+        <p>
+            PulseCities uses public records that can lag, contain address inconsistencies, or change after publication. If something looks wrong, send the address, ZIP, source label, and record date. NYC public records have city-side reporting lags: ACRIS data typically lags two weeks, eviction data two to four weeks.
+        </p>
+    </section>
+
+    <!-- 9. For reporters -->
+    <section>
+        <h2>For reporters</h2>
+        <p>
+            Reporters can cite PulseCities as a public-record analysis tool. When referencing scores or ownership patterns, please link to the relevant ZIP page, operator profile, or the <a href="/methodology">methodology</a> so readers can review the underlying data and sources.
+        </p>
+    </section>
+
+    <p style="font-size:12px;color:var(--faint);margin-top:52px;">Last updated: April 2026</p>
+
+</div>
+
+<footer>
+    <p class="footer-byline">
+        Built by <a href="https://linkedin.com/in/michaelespin15" target="_blank" rel="noopener noreferrer">Michael Espin</a>
+    </p>
+    <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/map">Map</a>
+        <a href="/operators">Operators</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/about">About</a>
+        <a href="https://github.com/michaelespin15/pulsecities" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="mailto:michaelespin15@gmail.com">Contact</a>
+    </div>
+</footer>
+
+</body>
+</html>
