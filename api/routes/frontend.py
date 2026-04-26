@@ -531,31 +531,49 @@ def operator_page(root: str, db: Session = Depends(get_db)):
         return HTMLResponse(cached[0])
 
     from api.routes.operators import _load_audit
-    cluster = _load_audit()["clusters"].get(root_upper)
+    clusters = _load_audit()["clusters"]
 
-    # Prefer the canonical slug from the operators table so the canonical URL
-    # matches the slug-based route the visitor arrived at (e.g. mtek-nyc, not MTEK-NYC).
-    slug_row = db.execute(
-        text("SELECT slug FROM operators WHERE operator_root = :root LIMIT 1"),
-        {"root": root_upper},
+    # The path param may be a slug (e.g. "mtek-nyc") or an operator_root (e.g. "MTEK").
+    # Look up both directions so title/meta always use the canonical operator_root.
+    op_row = db.execute(
+        text(
+            "SELECT operator_root, slug FROM operators "
+            "WHERE operator_root = :root OR slug = :slug LIMIT 1"
+        ),
+        {"root": root_upper, "slug": root.lower()},
     ).fetchone()
-    canonical_id = slug_row.slug if slug_row else root_upper.lower()
+    if op_row:
+        root_upper   = op_row.operator_root  # canonical root for title/meta
+        canonical_id = op_row.slug
+    else:
+        canonical_id = root_upper.lower()
+
+    cluster = clusters.get(root_upper)
     url = f"https://pulsecities.com/operator/{canonical_id}"
 
     if cluster:
         entity_count = len(cluster.get("llc_entities") or [])
-        prop_count   = cluster.get("total_properties", 0)
-        parts = []
-        if entity_count:
-            parts.append(f"{entity_count} LLC {'entity' if entity_count == 1 else 'entities'}")
-        if prop_count:
-            parts.append(f"{prop_count} {'property' if prop_count == 1 else 'properties'} in NYC")
-        title = f"{root_upper} LLC Network | NYC Acquisition Cluster | PulseCities"
-        desc  = (", ".join(parts) + ". Tracked via ACRIS public records on PulseCities.") if parts else \
-                f"NYC property acquisition cluster {root_upper}, tracked via ACRIS public records."
+        acq_count    = cluster.get("total_acquisitions", 0)
+        title = f"{root_upper} LLC Network | NYC Property Acquisitions | PulseCities"
+        if acq_count and entity_count:
+            desc = (
+                f"{root_upper}: {acq_count} property "
+                f"{'acquisition' if acq_count == 1 else 'acquisitions'} in NYC, "
+                f"tracked across {entity_count} LLC "
+                f"{'entity' if entity_count == 1 else 'entities'}. "
+                "Sourced from ACRIS public deed records."
+            )
+        elif acq_count:
+            desc = (
+                f"{root_upper}: {acq_count} property "
+                f"{'acquisition' if acq_count == 1 else 'acquisitions'} in NYC. "
+                "Sourced from ACRIS public deed records."
+            )
+        else:
+            desc = f"{root_upper} LLC network in NYC. Sourced from ACRIS public deed records."
     else:
         title = f"{root_upper} | NYC Operator Profile | PulseCities"
-        desc  = f"NYC property acquisition cluster {root_upper}, tracked via ACRIS public records."
+        desc  = f"{root_upper} LLC network in NYC. Sourced from ACRIS public deed records."
 
     e_title = _html.escape(title, quote=True)
     e_desc  = _html.escape(desc,  quote=True)
