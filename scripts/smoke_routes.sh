@@ -24,7 +24,9 @@ check() {
         return
     fi
 
-    if echo "$body" | grep -q "$marker"; then
+    # Use bash substring test instead of echo|grep to avoid SIGPIPE/pipefail
+    # false positive when grep -q exits early on large responses (app.html ~208KB).
+    if [[ "$body" == *"$marker"* ]]; then
         echo "OK    $route  — found: $marker"
         PASS=$((PASS + 1))
     else
@@ -40,7 +42,7 @@ check_absent() {
     local body
     body=$(curl -s --max-time 10 "$url")
 
-    if echo "$body" | grep -q "$marker"; then
+    if [[ "$body" == *"$marker"* ]]; then
         echo "FAIL  $route  — unexpected marker present: $marker"
         FAIL=$((FAIL + 1))
     else
