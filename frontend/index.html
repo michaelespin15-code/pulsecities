@@ -8,14 +8,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <title>PulseCities | NYC Displacement Risk Map | Free Data for All 178 Neighborhoods</title>
+    <title>PulseCities | NYC Displacement Risk</title>
 
     <meta name="description" content="Free NYC displacement risk map covering all 178 neighborhoods. Daily scores from ACRIS deed transfers, eviction filings, DOB permits, and rent stabilization data.">
     <link rel="canonical" href="https://pulsecities.com/">
     <meta name="google-site-verification" content="MKaKepk4Gh2qgqwZKg-1LM2xY2awVz_oolaH9-aCy8s">
     <meta name="msvalidate.01" content="95DE30DECA6461151C9E62CD73DB2358">
 
-    <meta property="og:title" content="PulseCities | NYC Displacement Risk Map">
+    <meta property="og:title" content="PulseCities | NYC Displacement Risk">
     <meta property="og:description" content="Free displacement risk scores for all 178 NYC neighborhoods, updated daily from ACRIS deed transfers, eviction filings, DOB permits, and rent stabilization data.">
     <meta property="og:url" content="https://pulsecities.com/">
     <meta property="og:type" content="website">
@@ -24,7 +24,7 @@
     <meta property="og:image:height" content="630">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="PulseCities | NYC Displacement Risk Map">
+    <meta name="twitter:title" content="PulseCities | NYC Displacement Risk">
     <meta name="twitter:description" content="Free displacement risk scores for all 178 NYC neighborhoods, updated daily from NYC public records.">
     <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 
@@ -33,7 +33,7 @@
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "PulseCities",
-        "description": "Real-time displacement risk intelligence for all 178 NYC neighborhoods, built on six public data signals.",
+        "description": "Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals.",
         "url": "https://pulsecities.com",
         "applicationCategory": "DataVisualization",
         "operatingSystem": "Web",
@@ -47,7 +47,7 @@
         "@context": "https://schema.org",
         "@type": "Dataset",
         "name": "NYC Displacement Risk Scores",
-        "description": "Daily displacement risk scores for all 178 NYC neighborhoods, derived from six public data signals: LLC property acquisitions, renovation permits, tenant complaints, eviction filings, rent-stabilized unit loss, and tax assessment spikes.",
+        "description": "Daily displacement risk scores for all 178 NYC neighborhoods, derived from six public data signals: LLC property acquisitions, renovation permits, tenant complaints, eviction filings, HPD violations, and rent-stabilized unit loss.",
         "url": "https://pulsecities.com",
         "license": "https://creativecommons.org/licenses/by/4.0/",
         "creator": { "@type": "Person", "name": "Michael Espin", "url": "https://pulsecities.com" },
@@ -100,9 +100,8 @@
             min-height: 100dvh;
             background-color: #0a0a1a;
             background-image:
-                radial-gradient(ellipse 60% 50% at 35% 65%, rgba(249,115,22,0.13) 0%, transparent 60%),
-                radial-gradient(ellipse 40% 30% at 70% 30%, rgba(239,68,68,0.09) 0%, transparent 55%),
-                radial-gradient(ellipse 35% 25% at 55% 50%, rgba(234,179,8,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 35% 65%, rgba(249,115,22,0.10) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 30% at 70% 30%, rgba(239,68,68,0.07) 0%, transparent 55%),
                 linear-gradient(160deg, #0a0a1a 0%, #0f172a 55%, #1a1a2e 100%);
         }
 
@@ -116,137 +115,205 @@
 
         .zip-card { transition: border-color 0.15s, background 0.15s; }
         .zip-card:hover { border-color: rgba(148,163,184,0.5) !important; }
+
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #64748b;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .section-helper {
+            font-size: 12px;
+            color: #475569;
+            display: block;
+        }
+        .section-head {
+            margin-bottom: 16px;
+        }
+
+        /* Featured top-risk card */
+        .featured-zip {
+            width: 100%;
+        }
+
+        /* Compact card grid */
+        .compact-zip-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* Mover rows */
+        .mover-row {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(51,65,85,0.5);
+            display: block;
+            text-decoration: none;
+            transition: opacity 0.15s;
+        }
+        .mover-row:last-child { border-bottom: none; }
+        .mover-row:hover { opacity: 0.8; }
+
+        /* Trust section */
+        .trust-section {
+            border-top: 1px solid rgba(51,65,85,0.4);
+            padding-top: 28px;
+        }
+
+        /* Search empty message */
+        .search-empty-msg {
+            font-size: 11px;
+            color: #ef4444;
+            margin-top: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Stat chips */
+        #stat-chips {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #475569;
+            opacity: 0;
+            transition: opacity 0.4s ease-out;
+            text-align: center;
+        }
+
+        /* Footer safe area */
+        footer {
+            padding-bottom: calc(env(safe-area-inset-bottom) + 24px);
+        }
     </style>
 </head>
 <body>
 
-    <div class="min-h-dvh flex flex-col items-center justify-center px-4 py-10 relative">
+    <!-- Nav -->
+    <header style="border-bottom:1px solid rgba(51,65,85,0.4);position:sticky;top:0;z-index:20;background:rgba(10,10,26,0.92);backdrop-filter:blur(8px);">
+        <nav style="max-width:680px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">
+            <a href="/" style="font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:600;color:#38bdf8;text-decoration:none;letter-spacing:-0.01em;">PulseCities</a>
+            <div style="display:flex;align-items:center;gap:20px;">
+                <a href="/methodology" style="font-size:12px;color:#64748b;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
+                <button id="lang-toggle"
+                        style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#475569;background:none;border:none;cursor:pointer;min-height:36px;padding:0;"
+                        onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#475569'">
+                    EN / ES
+                </button>
+            </div>
+        </nav>
+    </header>
 
-        <button id="lang-toggle"
-                class="absolute top-4 right-4 font-mono text-xs text-slate-400 hover:text-slate-100 transition-colors"
-                style="min-height:36px;min-width:52px;background:none;border:none;cursor:pointer;">
-            EN / ES
-        </button>
+    <!-- Main content -->
+    <main style="max-width:680px;margin:0 auto;padding:48px 20px 0;">
 
-        <div class="flex flex-col items-center w-full max-w-lg">
-
-            <h1 class="font-mono font-semibold mb-3" style="font-size:2.2rem;color:#38bdf8;letter-spacing:-0.02em;">
-                PulseCities
-            </h1>
-            <p class="text-base font-semibold text-slate-100 mb-2 text-center" style="max-width:34ch;">
-                Eviction filings, permits, and ownership changes. Your block, updated daily.
+        <!-- Hero -->
+        <section style="margin-bottom:48px;">
+            <h1 class="font-mono" style="font-size:2rem;font-weight:600;color:#38bdf8;letter-spacing:-0.02em;margin-bottom:12px;">PulseCities</h1>
+            <p style="font-size:1rem;font-weight:500;color:#e2e8f0;margin-bottom:6px;max-width:38ch;">
+                Search an address or ZIP to see recent displacement signals.
             </p>
-            <p class="text-sm text-slate-400 mb-10 text-center" style="max-width:36ch;" data-i18n="tagline">
+            <p class="font-mono" style="font-size:12px;color:#64748b;margin-bottom:24px;" data-i18n="tagline">
                 The displacement story NYC doesn't officially tell.
             </p>
 
-            <!-- Desktop stats: 3-column editorial layout -->
-            <div class="hidden md:grid md:grid-cols-3 gap-8 mb-6 w-full" id="stats-desktop">
-                <div id="stat-left" class="text-center" style="opacity:0;transform:translateY(8px);">
-                    <div id="llc-count" class="text-4xl font-mono font-bold text-slate-100" style="letter-spacing:-0.02em;">&#8212;</div>
-                    <div class="text-xs text-slate-400 mt-1" data-i18n="llc_label">LLC transfers (30d)</div>
-                </div>
-                <div id="stat-center" class="text-center" style="opacity:0;transform:translateY(8px);">
-                    <div id="zip-code" class="font-mono font-bold text-slate-100" style="font-size:2.8rem;letter-spacing:-0.02em;">&#8212;</div>
-                    <div id="zip-place" class="text-xs text-slate-400 mt-0.5">&#8212;</div>
-                    <div class="flex items-center justify-center gap-1.5 mt-1">
-                        <span id="zip-score" class="font-mono text-sm font-semibold" style="color:#f97316;">&#8212;</span>
-                        <span class="pulse-dot text-xs" style="color:#f97316;">&#9679;</span>
-                    </div>
-                </div>
-                <div id="stat-right" class="text-center" style="opacity:0;transform:translateY(8px);">
-                    <div id="eviction-count" class="text-4xl font-mono font-bold text-slate-100" style="letter-spacing:-0.02em;">&#8212;</div>
-                    <div class="text-xs text-slate-400 mt-1" data-i18n="eviction_label">evictions (30d)</div>
-                </div>
-            </div>
-
-            <!-- Mobile stats: highest-risk ZIP first, LLC + evictions below -->
-            <div class="flex flex-col items-center gap-5 mb-6 w-full md:hidden">
-                <div class="text-center">
-                    <div class="text-xs font-mono uppercase tracking-widest mb-1" style="color:#cbd5e1;letter-spacing:0.1em;" data-i18n="highest_risk">highest risk zip</div>
-                    <div class="font-mono font-bold text-slate-100" style="font-size:2.2rem;letter-spacing:-0.02em;" data-bind="zip-code">&#8212;</div>
-                    <div class="text-xs mt-0.5 text-slate-300" data-bind="zip-place">&#8212;</div>
-                    <div class="flex items-center justify-center gap-1.5 mt-1">
-                        <span class="font-mono text-sm font-semibold" style="color:#f97316;" data-bind="zip-score">&#8212;</span>
-                        <span class="pulse-dot text-xs" style="color:#f97316;">&#9679;</span>
-                    </div>
-                </div>
-                <div class="flex gap-8">
-                    <div class="text-center">
-                        <div class="text-2xl font-mono font-bold text-slate-100" data-bind="llc-count">&#8212;</div>
-                        <div class="text-xs mt-1 text-slate-300" data-i18n="llc_label">LLC transfers (30d)</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-2xl font-mono font-bold text-slate-100" data-bind="eviction-count">&#8212;</div>
-                        <div class="text-xs mt-1 text-slate-300" data-i18n="eviction_label">evictions (30d)</div>
-                    </div>
-                </div>
-            </div>
-
-            <p id="hook-line" class="text-sm text-slate-400 text-center mb-8 px-2"
-               style="max-width:38ch;opacity:0;transform:translateY(8px);transition:opacity 0.2s ease-out,transform 0.2s ease-out;"></p>
-
             <!-- Search -->
-            <div class="flex flex-col w-full gap-2 mb-4">
-                <div class="flex gap-2 w-full">
-                    <input id="search-input"
-                           type="text"
-                           inputmode="search"
-                           placeholder="Search your address or ZIP code"
-                           class="input input-bordered flex-1 text-sm font-mono"
-                           style="background:rgba(30,41,59,0.9);"
-                           autocomplete="off" />
-                    <button id="search-btn"
-                            class="btn shrink-0"
-                            style="background-color:#f59e0b;border-color:#f59e0b;color:#1a1a2e;font-weight:600;"
-                            data-i18n="search_btn">
-                        Search
-                    </button>
-                </div>
-                <a href="/map"
-                   id="cta-explore"
-                   class="btn w-full font-mono text-sm"
-                   style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.35);color:#38bdf8;font-weight:600;letter-spacing:0.01em;"
-                   data-i18n="explore_map">
-                    Browse all 178 neighborhoods &#8594;
-                </a>
-                <div class="flex items-center justify-end px-1">
-                    <a href="https://www.linkedin.com/in/michaelespin"
-                       target="_blank" rel="noopener noreferrer"
-                       class="flex items-center gap-1 text-xs text-slate-500 hover:text-[#0A66C2] transition-colors duration-150"
-                       aria-label="Michael Espin on LinkedIn">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                        Built by Michael Espin
-                    </a>
-                </div>
+            <div style="display:flex;gap:8px;width:100%;margin-bottom:6px;">
+                <input id="search-input"
+                       type="text"
+                       inputmode="search"
+                       placeholder="Address or ZIP"
+                       class="input input-bordered flex-1 text-sm font-mono"
+                       style="background:rgba(30,41,59,0.9);"
+                       autocomplete="off" />
+                <button id="search-btn"
+                        class="btn shrink-0"
+                        style="background-color:#f59e0b;border-color:#f59e0b;color:#1a1a2e;font-weight:600;"
+                        data-i18n="search_btn">
+                    Search
+                </button>
             </div>
+            <div id="empty-search-msg" class="search-empty-msg" style="display:none;">Enter an address or ZIP code.</div>
 
-            <!-- Watchlist (returning users only — hidden when empty) -->
-            <div id="watchlist-section" class="w-full mt-6" style="display:none;">
-                <div class="text-xs font-mono uppercase tracking-widest mb-3 text-center"
-                     style="color:#cbd5e1;letter-spacing:0.1em;" data-i18n="your_watchlist">Your Watchlist</div>
-                <div id="watchlist-cards" class="flex flex-wrap gap-3 justify-center"></div>
+            <!-- Stat chips: appear after data loads -->
+            <p id="stat-chips" style="margin-top:8px;margin-bottom:16px;"></p>
+
+            <!-- Explore map: secondary CTA -->
+            <a href="/map"
+               id="cta-explore"
+               style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;"
+               onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'"
+               data-i18n="explore_map">Explore the map &rarr;</a>
+        </section>
+
+        <!-- Watchlist: returning users only -->
+        <div id="watchlist-section" style="display:none;margin-bottom:40px;">
+            <div class="section-head">
+                <span class="section-label" data-i18n="your_watchlist">Your Watchlist</span>
             </div>
-
-            <!-- Live top-risk ZIP cards -->
-            <div id="zip-cards" class="flex flex-wrap gap-3 justify-center w-full mt-2"></div>
-
-            <!-- Top Movers -->
-            <div id="movers-section" class="w-full mt-8" style="display:none;">
-                <div class="text-xs font-mono uppercase tracking-widest mb-3 text-center"
-                     style="color:#cbd5e1;letter-spacing:0.1em;" data-i18n="moving_this_week">Moving This Week</div>
-                <div id="movers-cards" class="flex flex-wrap gap-3 justify-center"></div>
-            </div>
-
-            <!-- Recent Findings: top operator profiles, dynamically populated -->
-            <div class="w-full mt-8">
-                <div class="text-xs font-mono uppercase tracking-widest mb-3 text-center"
-                     style="color:#cbd5e1;letter-spacing:0.1em;" data-i18n="recent_findings">Recent Findings</div>
-                <div id="operator-cards" class="flex flex-wrap gap-3 justify-center"></div>
-            </div>
-
+            <div id="watchlist-cards" class="compact-zip-grid"></div>
         </div>
-    </div>
+
+        <!-- Top risk right now -->
+        <section style="margin-bottom:40px;">
+            <div class="section-head">
+                <span class="section-label">Top risk right now</span>
+                <span class="section-helper">ZIPs with the highest current displacement pressure.</span>
+            </div>
+            <div id="zip-cards">
+                <div id="zip-loading" class="font-mono" style="font-size:11px;color:#334155;padding:20px 0;text-align:center;">Loading...</div>
+            </div>
+        </section>
+
+        <!-- Changed this week -->
+        <div id="movers-section" style="display:none;margin-bottom:40px;">
+            <div class="section-head">
+                <span class="section-label" data-i18n="changed_this_week">Changed this week</span>
+                <span class="section-helper">Largest score increases detected in the last 7 days.</span>
+            </div>
+            <div id="movers-cards"></div>
+        </div>
+
+        <!-- Recent operator findings -->
+        <div id="operators-outer" style="margin-bottom:40px;">
+            <div class="section-head">
+                <span class="section-label" data-i18n="recent_findings">Recent operator findings</span>
+                <span class="section-helper">Ownership clusters worth reviewing.</span>
+            </div>
+            <div id="operator-cards">
+                <div id="operator-loading" class="font-mono" style="font-size:11px;color:#334155;padding:16px 0;text-align:center;">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Why this matters -->
+        <section class="trust-section" style="margin-bottom:48px;">
+            <div class="section-head">
+                <span class="section-label">Why this matters</span>
+            </div>
+            <p style="font-size:14px;color:#94a3b8;line-height:1.65;margin-bottom:16px;max-width:54ch;">
+                PulseCities connects records that are usually scattered across city systems: permits, evictions, complaints, ownership transfers, violations, and rent-stabilized housing.
+            </p>
+            <a href="/methodology" style="font-size:12px;color:#38bdf8;text-decoration:none;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Read the methodology &rarr;</a>
+            <p class="font-mono" style="font-size:10px;color:#334155;margin-top:12px;">Sources: NYC DOB, HPD, ACRIS, 311, eviction filings, DHCR.</p>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer style="border-top:1px solid rgba(51,65,85,0.3);margin-top:16px;padding-top:20px;text-align:center;font-size:12px;color:#64748b;font-family:'DM Sans',sans-serif;">
+        <div style="max-width:680px;margin:0 auto;padding:0 20px 20px;">
+            <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:12px;">
+                <a href="/" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
+                <a href="/map" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Map</a>
+                <a href="/operators" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Operators</a>
+                <a href="/methodology" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
+                <a href="mailto:michaelespin15@gmail.com" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
+            </div>
+            <div style="font-size:11px;color:#334155;">
+                Built by <a href="https://www.linkedin.com/in/michaelespin" target="_blank" rel="noopener noreferrer" style="color:#334155;text-decoration:none;" onmouseover="this.style.color='#64748b'" onmouseout="this.style.color='#334155'">Michael Espin</a>
+            </div>
+        </div>
+    </footer>
 
     <script>
         let _lang = localStorage.getItem('pc-lang') || 'en';
@@ -254,50 +321,44 @@
 
         const i18n = {
             en: {
-                tagline:            "The displacement story NYC doesn't officially tell.",
-                llc_label:          'LLC Transfers (30d)',
-                eviction_label:     'Evictions (30d)',
-                highest_risk:       'highest risk zip',
-                search_placeholder: 'Enter address, ZIP, or landlord name',
-                search_btn:         'Search',
-                explore_map:        'Explore the Map \u2192',
-                recent_findings:    'Recent Findings',
-                operator_profile:   'Operator profile \u2192',
-                hook_ratio:         '{ratio} LLC transfers for every eviction filed this month.',
-                hook_neutral:       '{llc} LLC transfers and {evictions} eviction filings in the last 30 days',
-                your_watchlist:     'Your Watchlist',
-                moving_this_week:   'Moving This Week',
-                sig_llc:            'LLC acquisitions',
-                sig_llc_s:          'LLC acquisition',
-                sig_evictions:      'evictions',
-                sig_evictions_s:    'eviction',
-                sig_permits:        'permit filings',
-                sig_permits_s:      'permit filing',
-                sig_complaints:     'tenant complaints',
-                sig_complaints_s:   'tenant complaint',
+                tagline:              "The displacement story NYC doesn't officially tell.",
+                llc_label:            'LLC transfers (30d)',
+                eviction_label:       'evictions (30d)',
+                search_placeholder:   'Address or ZIP',
+                search_btn:           'Search',
+                explore_map:          'Explore the map →',
+                recent_findings:      'Recent operator findings',
+                operator_profile:     'View operator profile →',
+                your_watchlist:       'Your Watchlist',
+                changed_this_week:    'Changed this week',
+                sig_llc:              'LLC acquisitions',
+                sig_llc_s:            'LLC acquisition',
+                sig_evictions:        'evictions',
+                sig_evictions_s:      'eviction',
+                sig_permits:          'permit filings',
+                sig_permits_s:        'permit filing',
+                sig_complaints:       'tenant complaints',
+                sig_complaints_s:     'tenant complaint',
             },
             es: {
-                tagline:            'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
-                llc_label:          'transferencias LLC (30d)',
-                eviction_label:     'desalojos (30d)',
-                highest_risk:       'ZIP de mayor riesgo',
-                search_placeholder: 'Ingrese direcci\u00f3n, c\u00f3digo postal o nombre del propietario',
-                search_btn:         'Buscar',
-                explore_map:        'Explorar el Mapa \u2192',
-                recent_findings:    'Hallazgos Recientes',
-                operator_profile:   'Perfil del operador \u2192',
-                hook_ratio:         '{ratio} transferencias LLC por cada desalojo presentado este mes.',
-                hook_neutral:       '{llc} transferencias LLC y {evictions} desalojos registrados este mes',
-                your_watchlist:     'Tu Lista de Seguimiento',
-                moving_this_week:   'Esta Semana',
-                sig_llc:            'adquisiciones LLC',
-                sig_llc_s:          'adquisición LLC',
-                sig_evictions:      'desalojos',
-                sig_evictions_s:    'desalojo',
-                sig_permits:        'permisos de obra',
-                sig_permits_s:      'permiso de obra',
-                sig_complaints:     'quejas de inquilinos',
-                sig_complaints_s:   'queja de inquilinos',
+                tagline:              'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
+                llc_label:            'transferencias LLC (30d)',
+                eviction_label:       'desalojos (30d)',
+                search_placeholder:   'Dirección o código postal',
+                search_btn:           'Buscar',
+                explore_map:          'Explorar el mapa →',
+                recent_findings:      'Hallazgos recientes',
+                operator_profile:     'Ver perfil del operador →',
+                your_watchlist:       'Tu Lista de Seguimiento',
+                changed_this_week:    'Cambios esta semana',
+                sig_llc:              'adquisiciones LLC',
+                sig_llc_s:            'adquisición LLC',
+                sig_evictions:        'desalojos',
+                sig_evictions_s:      'desalojo',
+                sig_permits:          'permisos de obra',
+                sig_permits_s:        'permiso de obra',
+                sig_complaints:       'quejas de inquilinos',
+                sig_complaints_s:     'queja de inquilinos',
             }
         };
 
@@ -314,10 +375,6 @@
             });
             const inp = document.getElementById('search-input');
             if (inp) inp.placeholder = s.search_placeholder;
-            const hookEl = document.getElementById('hook-line');
-            if (hookEl && parseFloat(hookEl.style.opacity) > 0 && (_liveLlc || _liveEvictions)) {
-                hookEl.textContent = buildHookLine(_liveLlc, _liveEvictions);
-            }
         }
 
         function scoreColor(score) {
@@ -329,133 +386,11 @@
         }
 
         function scoreBorder(score) {
-            if (score == null) return 'rgba(51,65,85,1)';
-            if (score >= 70) return 'rgba(239,68,68,0.45)';
-            if (score >= 40) return 'rgba(249,115,22,0.35)';
-            if (score >= 15) return 'rgba(234,179,8,0.25)';
-            return 'rgba(51,65,85,1)';
-        }
-
-        function countUpInt(el, target, duration) {
-            const t0 = performance.now();
-            (function step(now) {
-                const p = Math.min((now - t0) / duration, 1);
-                el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))).toLocaleString();
-                if (p < 1) requestAnimationFrame(step);
-            })(t0);
-        }
-
-        function syncBind(key, value) {
-            document.querySelectorAll(`[data-bind="${key}"]`).forEach(el => el.textContent = value);
-        }
-
-        function fadeIn(el) {
-            if (!el) return;
-            el.style.transition = 'opacity 0.2s ease-out, transform 0.2s ease-out';
-            el.style.opacity = '1';
-            el.style.transform = 'translateY(0)';
-        }
-
-        function buildHookLine(llc, evictions) {
-            const s = i18n[_lang] || i18n.en;
-            if (!llc && !evictions) return '';
-            if (evictions > 0 && llc / evictions > 1.5)
-                return s.hook_ratio.replace('{ratio}', (llc / evictions).toFixed(1));
-            return s.hook_neutral
-                .replace('{llc}', llc.toLocaleString())
-                .replace('{evictions}', evictions.toLocaleString());
-        }
-
-        function populateStats(data) {
-            const llc       = data.llc_transfers_30d || 0;
-            const evictions = data.evictions_30d     || 0;
-            const top       = data.top_risk;
-            _liveLlc        = llc;
-            _liveEvictions  = evictions;
-
-            if (top) {
-                const color = scoreColor(top.score);
-                const zip   = top.zip_code || '\u2014';
-                const place = top.name     || '\u2014';
-                const score = top.score != null ? top.score.toFixed(1) : '\u2014';
-
-                document.getElementById('zip-code').textContent  = zip;
-                document.getElementById('zip-place').textContent = place;
-                const scoreEl = document.getElementById('zip-score');
-                scoreEl.style.color = color;
-                scoreEl.textContent = score;
-
-                syncBind('zip-code',  zip);
-                syncBind('zip-place', place);
-                document.querySelectorAll('[data-bind="zip-score"]').forEach(el => {
-                    el.style.color = color;
-                    el.textContent = score;
-                });
-            }
-
-            // Cascade: center → left → right → hook
-            setTimeout(() => fadeIn(document.getElementById('stat-center')), 0);
-            setTimeout(() => {
-                fadeIn(document.getElementById('stat-left'));
-                countUpInt(document.getElementById('llc-count'), llc, 400);
-                syncBind('llc-count', llc.toLocaleString());
-            }, 350);
-            setTimeout(() => {
-                fadeIn(document.getElementById('stat-right'));
-                countUpInt(document.getElementById('eviction-count'), evictions, 400);
-                syncBind('eviction-count', evictions.toLocaleString());
-            }, 500);
-            setTimeout(() => {
-                const text = buildHookLine(llc, evictions);
-                const el   = document.getElementById('hook-line');
-                if (text && el) { el.textContent = text; fadeIn(el); }
-            }, 680);
-        }
-
-        function renderZipCards(list) {
-            const container = document.getElementById('zip-cards');
-            if (!container || !list) return;
-            const rankColors = ['#f97316', '#94a3b8', '#64748b'];
-            list.forEach(n => {
-                const color     = scoreColor(n.score);
-                const rankColor = rankColors[n.rank - 1] || '#64748b';
-                const isTop     = n.rank === 1;
-                const card      = document.createElement('a');
-                card.href        = `/map?q=${encodeURIComponent(n.zip_code)}`;
-                card.className   = 'zip-card text-left rounded-lg border px-4 py-3 block';
-                card.style.cssText = [
-                    'background:rgba(30,41,59,0.7)',
-                    `border-color:${scoreBorder(n.score)}`,
-                    'min-width:min(160px,calc(50vw - 24px))',
-                    'max-width:200px',
-                    'text-decoration:none',
-                ].join(';');
-                const nameLine = [n.name, n.borough].filter(Boolean).join(' · ');
-                let sigLine = '';
-                if (isTop && n.signal_counts) {
-                    const top2 = Object.entries(n.signal_counts)
-                        .filter(([, v]) => v > 0)
-                        .sort(([, a], [, b]) => b - a)
-                        .slice(0, 2)
-                        .map(([k, v]) => `<span data-signal="${k}" data-count="${v}">${v.toLocaleString()} ${moverSignalLabel(k, v)}</span>`)
-                        .join(' · ');
-                    if (top2) sigLine = `<div class="text-xs mt-0.5" style="color:rgba(148,163,184,0.85);">${top2}</div>`;
-                } else if (n.dominant_signal) {
-                    const lbl = moverSignalLabel(n.dominant_signal, n.raw_count);
-                    const raw = n.raw_count ? `${n.raw_count.toLocaleString()} ${lbl}` : lbl;
-                    if (raw) sigLine = `<div class="text-xs mt-0.5" data-signal="${n.dominant_signal}" data-count="${n.raw_count || 0}" style="color:rgba(148,163,184,0.85);">${raw}</div>`;
-                }
-                card.innerHTML = `
-                    <div class="flex items-baseline gap-2 mb-0.5">
-                        <span class="font-mono text-xs font-semibold" style="color:${rankColor};">#${n.rank}</span>
-                        <span class="font-mono text-sm font-bold text-slate-100">${n.zip_code}</span>
-                    </div>
-                    <div class="text-xs text-slate-400 truncate mb-1">${nameLine}</div>
-                    <div class="font-mono text-sm font-semibold" style="color:${color};">${n.score != null ? n.score.toFixed(1) : '\u2014'}<span style="color:#475569;font-size:10px;font-weight:400;"> / 100</span></div>
-                    ${sigLine}
-                `;
-                container.appendChild(card);
-            });
+            if (score == null) return 'rgba(51,65,85,0.8)';
+            if (score >= 70) return 'rgba(239,68,68,0.4)';
+            if (score >= 40) return 'rgba(249,115,22,0.3)';
+            if (score >= 15) return 'rgba(234,179,8,0.2)';
+            return 'rgba(51,65,85,0.8)';
         }
 
         function moverSignalLabel(dominant, count) {
@@ -465,33 +400,171 @@
             return (count === 1 ? singular[dominant] : plural[dominant]) || plural[dominant] || '';
         }
 
+        function populateStats(data) {
+            const llc       = data.llc_transfers_30d || 0;
+            const evictions = data.evictions_30d     || 0;
+            _liveLlc        = llc;
+            _liveEvictions  = evictions;
+
+            const chips = document.getElementById('stat-chips');
+            if (!chips || (!llc && !evictions)) return;
+
+            const parts = [];
+            if (llc)       parts.push(`${llc.toLocaleString()} LLC transfers`);
+            if (evictions) parts.push(`${evictions.toLocaleString()} evictions`);
+            if (parts.length) {
+                chips.textContent = parts.join(' · ') + ' in the last 30 days';
+                chips.style.opacity = '1';
+            }
+        }
+
+        function renderZipCards(list) {
+            const container = document.getElementById('zip-cards');
+            const loading   = document.getElementById('zip-loading');
+            if (loading) loading.remove();
+            if (!container || !list || !list.length) return;
+
+            const rankColors = ['#f97316', '#94a3b8', '#64748b'];
+            let compactGrid  = null;
+
+            list.forEach(n => {
+                const color     = scoreColor(n.score);
+                const rankColor = rankColors[(n.rank - 1)] || '#64748b';
+                const isTop     = n.rank === 1;
+                const scoreStr  = n.score != null ? n.score.toFixed(1) : '—';
+                const nameLine  = [n.name, n.borough].filter(Boolean).join(', ');
+                const card      = document.createElement('a');
+                card.href       = `/map?q=${encodeURIComponent(n.zip_code)}`;
+                card.style.textDecoration = 'none';
+
+                if (isTop) {
+                    card.className = 'zip-card featured-zip block rounded-lg border';
+                    card.style.cssText = [
+                        'background:rgba(30,41,59,0.7)',
+                        `border-color:${scoreBorder(n.score)}`,
+                        'padding:18px 20px',
+                        'margin-bottom:10px',
+                    ].join(';');
+
+                    let sigLine = '';
+                    if (n.signal_counts) {
+                        const top2 = Object.entries(n.signal_counts)
+                            .filter(([, v]) => v > 0)
+                            .sort(([, a], [, b]) => b - a)
+                            .slice(0, 2)
+                            .map(([k, v]) => `<span data-signal="${k}" data-count="${v}">${v.toLocaleString()} ${moverSignalLabel(k, v)}</span>`)
+                            .join(' · ');
+                        if (top2) sigLine = `<div style="font-size:11px;color:rgba(148,163,184,0.75);margin-top:8px;">${top2}</div>`;
+                    }
+
+                    card.innerHTML = `
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+                            <div>
+                                <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;">
+                                    <span class="font-mono" style="font-size:11px;color:${rankColor};">#${n.rank}</span>
+                                    <span class="font-mono" style="font-size:1.2rem;font-weight:700;color:#f1f5f9;">${n.zip_code}</span>
+                                </div>
+                                <div style="font-size:13px;color:#94a3b8;">${nameLine}</div>
+                                ${sigLine}
+                            </div>
+                            <div style="text-align:right;flex-shrink:0;">
+                                <div class="font-mono" style="font-size:1.5rem;font-weight:700;color:${color};line-height:1;">${scoreStr}</div>
+                                <div class="font-mono" style="font-size:10px;color:#334155;margin-top:2px;">/ 100</div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+
+                    compactGrid = document.createElement('div');
+                    compactGrid.className = 'compact-zip-grid';
+                    container.appendChild(compactGrid);
+                } else {
+                    if (!compactGrid) {
+                        compactGrid = document.createElement('div');
+                        compactGrid.className = 'compact-zip-grid';
+                        container.appendChild(compactGrid);
+                    }
+                    card.className = 'zip-card block rounded-lg border';
+                    card.style.cssText = [
+                        'background:rgba(30,41,59,0.6)',
+                        `border-color:${scoreBorder(n.score)}`,
+                        'padding:14px 16px',
+                    ].join(';');
+                    card.innerHTML = `
+                        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:3px;">
+                            <span class="font-mono" style="font-size:10px;color:${rankColor};">#${n.rank}</span>
+                            <span class="font-mono" style="font-size:14px;font-weight:700;color:#f1f5f9;">${n.zip_code}</span>
+                        </div>
+                        <div style="font-size:11px;color:#64748b;margin-bottom:6px;">${nameLine}</div>
+                        <div class="font-mono" style="font-size:13px;font-weight:600;color:${color};">${scoreStr}<span style="color:#334155;font-size:10px;font-weight:400;"> / 100</span></div>
+                    `;
+                    compactGrid.appendChild(card);
+                }
+            });
+        }
+
         function renderMovers(list) {
             if (!list || !list.length) return;
-            const section = document.getElementById('movers-section');
+            const section   = document.getElementById('movers-section');
             const container = document.getElementById('movers-cards');
             if (!section || !container) return;
-            list.forEach(n => {
-                const card = document.createElement('a');
-                card.href = `/map?q=${encodeURIComponent(n.zip_code)}`;
-                card.className = 'zip-card text-left rounded-lg border px-4 py-3 block';
-                card.style.cssText = `background:rgba(30,41,59,0.7);border-color:${scoreBorder(n.score_now)};min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;`;
-                const deltaStr = `+${n.delta.toFixed(1)} pts`;
-                const label = moverSignalLabel(n.dominant_signal, n.raw_count);
-                const moverSig = n.raw_count && label ? `${n.raw_count.toLocaleString()} ${label}` : label;
-                const moverName = [n.name, n.borough].filter(Boolean).join(' · ');
-                card.innerHTML = `
-                    <div class="flex items-baseline gap-2 mb-0.5">
-                        <span class="font-mono text-sm font-bold text-slate-100">${n.zip_code}</span>
-                        <span class="font-mono text-xs font-semibold" style="color:#ef4444;">${deltaStr}</span>
+
+            list.slice(0, 5).forEach(n => {
+                const row     = document.createElement('a');
+                row.href      = `/map?q=${encodeURIComponent(n.zip_code)}`;
+                row.className = 'mover-row';
+
+                const deltaStr = n.delta > 0 ? `+${n.delta.toFixed(1)} pts` : `${n.delta.toFixed(1)} pts`;
+                const label    = moverSignalLabel(n.dominant_signal, n.raw_count);
+                const driver   = n.raw_count && label ? `${n.raw_count.toLocaleString()} ${label}` : '';
+                const nameStr  = [n.name, n.borough].filter(Boolean).join(', ');
+
+                row.innerHTML = `
+                    <div style="display:flex;align-items:baseline;gap:10px;">
+                        <span class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;">${n.zip_code}</span>
+                        <span class="font-mono" style="font-size:11px;font-weight:600;color:#ef4444;">${deltaStr}</span>
                     </div>
-                    <div class="text-xs text-slate-400 truncate mb-1">${moverName}</div>
-                    ${moverSig ? `<div class="text-xs" data-signal="${n.dominant_signal || ''}" data-count="${n.raw_count || 0}" style="color:rgba(148,163,184,0.85);">${moverSig}</div>` : ''}
+                    <div style="font-size:11px;color:#64748b;margin-top:2px;">${nameStr}</div>
+                    ${driver ? `<div style="font-size:11px;color:rgba(148,163,184,0.65);margin-top:2px;" data-signal="${n.dominant_signal || ''}" data-count="${n.raw_count || 0}">${driver}</div>` : ''}
                 `;
-                container.appendChild(card);
+                container.appendChild(row);
             });
+
             section.style.display = '';
         }
 
+        function renderOperators(ops) {
+            const loading   = document.getElementById('operator-loading');
+            const outer     = document.getElementById('operators-outer');
+            const container = document.getElementById('operator-cards');
+            if (loading) loading.remove();
+            if (!ops || !ops.length) {
+                if (outer) outer.style.display = 'none';
+                return;
+            }
+            if (!container) return;
+
+            const profileLabel = i18n[_lang]?.operator_profile || 'View operator profile →';
+
+            ops.forEach(op => {
+                const card = document.createElement('a');
+                card.href  = `/operator/${encodeURIComponent(op.operator_root)}`;
+                card.className = 'zip-card block rounded-lg border border-slate-700';
+                card.style.cssText = [
+                    'background:rgba(30,41,59,0.65)',
+                    'padding:14px 16px',
+                    'text-decoration:none',
+                    'margin-bottom:8px',
+                ].join(';');
+                card.innerHTML =
+                    `<div class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:3px;">${op.operator_root}</div>` +
+                    `<div style="font-size:11px;color:#475569;margin-bottom:6px;">${op.llc_count} LLC${op.llc_count !== 1 ? 's' : ''} · ${op.total_acquisitions} acquisitions</div>` +
+                    `<div style="font-size:11px;color:#38bdf8;">${profileLabel}</div>`;
+                container.appendChild(card);
+            });
+        }
+
+        // Fetch citywide stats
         fetch('/api/stats')
             .then(r => r.ok ? r.json() : null)
             .then(data => {
@@ -499,34 +572,27 @@
                 populateStats(data);
                 renderZipCards(data.top_risk_list || []);
             })
-            .catch(() => {});
+            .catch(() => {
+                const loading = document.getElementById('zip-loading');
+                if (loading) loading.remove();
+            });
 
+        // Fetch top movers
         fetch('/api/neighborhoods/top-movers?limit=8')
             .then(r => r.ok ? r.json() : null)
             .then(data => { if (data) renderMovers(data.neighborhoods || []); })
             .catch(() => {});
 
+        // Fetch top operators
         fetch('/api/operators/top?limit=3')
             .then(r => r.ok ? r.json() : null)
-            .then(ops => {
-                if (!ops || !ops.length) return;
-                const container = document.getElementById('operator-cards');
-                if (!container) return;
-                const profileLabel = i18n[_lang]?.operator_profile || 'Operator profile →';
-                ops.forEach(op => {
-                    const card = document.createElement('a');
-                    card.href = `/operator/${encodeURIComponent(op.operator_root)}`;
-                    card.className = 'zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block';
-                    card.style.cssText = 'background:rgba(30,41,59,0.7);min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;';
-                    card.innerHTML =
-                        `<div class="font-mono text-sm font-bold text-slate-100 mb-0.5">${op.operator_root}</div>` +
-                        `<div class="text-xs text-slate-500 mb-0.5">${op.llc_count} LLC${op.llc_count !== 1 ? 's' : ''} &middot; ${op.total_acquisitions} acq.</div>` +
-                        `<div class="text-xs text-slate-400">${profileLabel}</div>`;
-                    container.appendChild(card);
-                });
-            })
-            .catch(() => {});
+            .then(ops => renderOperators(ops))
+            .catch(() => {
+                const outer = document.getElementById('operators-outer');
+                if (outer) outer.style.display = 'none';
+            });
 
+        // Watchlist (returning users)
         (function loadWatchlist() {
             let zips;
             try { zips = JSON.parse(localStorage.getItem('pc-watchlist') || '[]'); } catch { zips = []; }
@@ -534,24 +600,26 @@
             Promise.all(zips.map(zip =>
                 fetch(`/api/neighborhoods/${zip}/score`).then(r => r.ok ? r.json() : null).catch(() => null)
             )).then(results => {
-                const section = document.getElementById('watchlist-section');
+                const section   = document.getElementById('watchlist-section');
                 const container = document.getElementById('watchlist-cards');
                 if (!section || !container) return;
                 let rendered = 0;
                 results.forEach((data, i) => {
-                    const zip = zips[i];
+                    const zip   = zips[i];
                     const score = data ? data.score : null;
-                    const name = data ? (data.name || zip) : zip;
+                    const name  = data ? (data.name || zip) : zip;
                     const color = scoreColor(score);
-                    const card = document.createElement('a');
-                    card.href = `/map?q=${encodeURIComponent(zip)}`;
-                    card.className = 'zip-card text-left rounded-lg border border-slate-700 px-4 py-3 block relative';
-                    card.style.cssText = 'background:rgba(30,41,59,0.7);min-width:min(160px,calc(50vw - 24px));max-width:200px;text-decoration:none;';
+                    const card  = document.createElement('a');
+                    card.href   = `/map?q=${encodeURIComponent(zip)}`;
+                    card.className = 'zip-card block rounded-lg border border-slate-700 relative';
+                    card.style.cssText = 'background:rgba(30,41,59,0.7);padding:14px 16px;text-decoration:none;';
                     card.innerHTML = `
-                        <button class="watch-remove absolute top-2 right-2 text-slate-600 hover:text-slate-300 transition-colors leading-none" data-zip="${zip}" style="font-size:14px;background:none;border:none;cursor:pointer;min-height:36px;min-width:36px;" aria-label="Remove">&#10005;</button>
-                        <div class="font-mono text-sm font-bold text-slate-100 mb-0.5 pr-4">${zip}</div>
-                        <div class="text-xs text-slate-400 truncate mb-1">${name}</div>
-                        <div class="font-mono text-sm font-semibold" style="color:${color};">${score != null ? score.toFixed(1) : '\u2014'}</div>
+                        <button class="watch-remove" data-zip="${zip}"
+                                style="position:absolute;top:8px;right:8px;font-size:12px;color:#334155;background:none;border:none;cursor:pointer;min-height:36px;min-width:36px;line-height:1;"
+                                aria-label="Remove">&#10005;</button>
+                        <div class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:2px;padding-right:24px;">${zip}</div>
+                        <div style="font-size:11px;color:#64748b;margin-bottom:6px;">${name}</div>
+                        <div class="font-mono" style="font-size:13px;font-weight:600;color:${color};">${score != null ? score.toFixed(1) : '—'}</div>
                     `;
                     card.querySelector('.watch-remove').addEventListener('click', e => {
                         e.preventDefault();
@@ -570,9 +638,20 @@
             });
         })();
 
+        // Search
         function handleSearch() {
-            const q = document.getElementById('search-input').value.trim();
-            if (!q) return;
+            const input = document.getElementById('search-input');
+            const q     = input.value.trim();
+            const msg   = document.getElementById('empty-search-msg');
+            if (!q) {
+                if (msg) {
+                    msg.style.display = 'block';
+                    setTimeout(() => { if (msg) msg.style.display = 'none'; }, 3000);
+                }
+                input.focus();
+                return;
+            }
+            if (msg) msg.style.display = 'none';
             plausible('Search', { props: { source: 'landing' } });
             window.location.href = `/map?q=${encodeURIComponent(q)}`;
         }
@@ -583,6 +662,7 @@
         });
         document.getElementById('cta-explore').addEventListener('click', () => plausible('Explore Map'));
 
+        // Language toggle
         const langToggle = document.getElementById('lang-toggle');
         langToggle.textContent = _lang === 'es' ? 'ES / EN' : 'EN / ES';
         langToggle.addEventListener('click', () => {
@@ -595,13 +675,5 @@
         applyTranslations(_lang);
     </script>
 
-    <footer style="text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,184,0.1);margin-top:32px;font-size:12px;color:#64748b;font-family:'DM Sans',sans-serif;">
-        <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;">
-            <a href="/map" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Map</a>
-            <a href="/operators" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Operators</a>
-            <a href="/methodology" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
-            <a href="mailto:michaelespin15@gmail.com" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
-        </div>
-    </footer>
 </body>
 </html>
