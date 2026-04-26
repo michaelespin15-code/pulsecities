@@ -157,8 +157,8 @@
                     <span style="font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8);" data-i18n="portfolio_header">Portfolio</span>
                     <span id="portfolio-count" style="font-size: 0.72rem; color: rgba(148,163,184,0.35); font-family: 'JetBrains Mono', monospace;"></span>
                 </div>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.78rem;">
+                <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    <table style="width: 100%; min-width: 500px; border-collapse: collapse; font-size: 0.78rem;">
                         <thead>
                             <tr style="color: rgba(148,163,184,0.4); font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.06em;">
                                 <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_address">Address</th>
@@ -380,8 +380,8 @@
                 row.style.cssText = 'font-size:0.8rem;color:rgba(241,245,249,0.8);line-height:1.5;';
                 row.innerHTML =
                     '<span class="mono" style="color:rgba(239,68,68,0.8);">' + esc(addr) + '</span>' +
-                    ' &mdash; evicted <span class="mono">' + esc(e.eviction_date || '') + '</span>' +
-                    ', acquired <span class="mono">' + esc(e.acquisition_date || '') + '</span>' +
+                    ': evicted <span class="mono">' + esc(e.eviction_date || '') + '</span>' +
+                    ', then acquired <span class="mono">' + esc(e.acquisition_date || '') + '</span>' +
                     ' by <span class="mono" style="color:rgba(148,163,184,0.65);">' + esc(e.acquiring_entity || '') + '</span>';
                 evContainer.appendChild(row);
             });
