@@ -434,6 +434,10 @@ def is_meaningful_zip_update(summary: dict) -> tuple[bool, list[str]]:
 # Rendering
 # ---------------------------------------------------------------------------
 
+def _area_label(zip_code: str, name: str) -> str:
+    return f"{name} / {zip_code}" if (name and name != zip_code) else zip_code
+
+
 def _driver_sentence(reasons: list[str], name: str) -> str:
     if not reasons:
         return ""
@@ -583,8 +587,9 @@ def render_zip_digest(
     delta_text      = _delta_text(delta)
     delta_color_val = _delta_color(delta)
     driver          = _driver_sentence(reasons, name)
+    area            = _area_label(zip_code, name)
 
-    subject = f"PulseCities Weekly Watch: {name} update"
+    subject = f"PulseCities Weekly Watch: {area} update"
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -670,11 +675,14 @@ def render_zip_digest(
 
         <!-- Footer -->
         <tr><td style="padding-top:24px;">
+          <p style="margin:0 0 10px;font-size:11px;color:rgba(148,163,184,0.5);line-height:1.7;border-top:1px solid rgba(148,163,184,0.08);padding-top:16px;">
+            <strong style="color:rgba(148,163,184,0.6);">Why you're getting this:</strong>
+            You're watching {area}. Public records changed enough this week to trigger an update.
+          </p>
           <p style="margin:0 0 8px;font-size:11px;color:rgba(148,163,184,0.35);line-height:1.7;">
             PulseCities uses public records. Scores are risk indicators, not claims of wrongdoing.
           </p>
           <p style="margin:0;font-size:11px;color:rgba(148,163,184,0.35);line-height:1.7;">
-            You subscribed to {zip_code} at pulsecities.com.
             <a href="https://pulsecities.com/api/unsubscribe?token={token}"
                style="color:rgba(148,163,184,0.5);">Unsubscribe</a>
           </p>
