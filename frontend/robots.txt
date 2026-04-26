@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /ops
+Disallow: /api/
 
 Sitemap: https://pulsecities.com/sitemap.xml
