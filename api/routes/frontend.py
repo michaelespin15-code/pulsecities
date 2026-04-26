@@ -594,7 +594,7 @@ def operator_page(root: str, db: Session = Depends(get_db)):
 
 
 _SCRIPTS = Path(__file__).parent.parent.parent / "scripts"
-_operators_cache: tuple[str, float] | None = None
+_operators_cache: tuple[str, float] | None = None  # cleared on restart
 
 
 @router.get("/operators", include_in_schema=False)
@@ -627,31 +627,37 @@ def operators_directory(db: Session = Depends(get_db)):
         if (11001 <= n <= 11109) or (11354 <= n <= 11697): return "Queens"
         return None
 
+    # Exclude clusters with no identified LLC entities — no reliable footprint
+    operators = [op for op in operators if len(op.get("llc_entities") or []) > 0]
+
     rows_html = ""
     list_items = []
     for i, op in enumerate(operators, 1):
         root = op["root"]
         entities = len(op.get("llc_entities") or [])
-        props = op.get("total_properties", 0)
         acqs = op.get("total_acquisitions", 0)
         zips = op.get("zip_codes") or []
         boroughs = list(dict.fromkeys(b for z in zips if (b := _zip_to_borough(z))))
-        borough_str = ", ".join(boroughs[:3]) + ("…" if len(boroughs) > 3 else "")
-        detail = f"{entities} LLC{'s' if entities != 1 else ''}"
-        if acqs:
-            detail += f" &middot; {acqs} acquisition{'s' if acqs != 1 else ''}"
-        if borough_str:
-            detail += f" &middot; {borough_str}"
+        # Show first 2 boroughs; collapse the rest to "+N"
+        extra = len(boroughs) - 2
+        borough_str = ", ".join(boroughs[:2]) + (f" +{extra}" if extra > 0 else "")
         slug = root_to_slug.get(root)
         op_link = f"/operator/{_html.escape(slug)}" if slug else f"/operator/{_html.escape(root)}"
+        acq_label = f"{acqs} acquisition{'s' if acqs != 1 else ''}" if acqs else ""
+        llc_label = f"{entities} LLC{'s' if entities != 1 else ''}"
+        meta_line = " &middot; ".join(filter(None, [acq_label, llc_label]))
+        geo_html = f'<div class="op-geo">{_html.escape(borough_str)}</div>' if borough_str else ""
         rows_html += (
-            f'<tr>'
-            f'<td style="padding:10px 12px;font-family:\'JetBrains Mono\',monospace;font-size:0.8rem;">'
-            f'<a href="{op_link}" '
-            f'style="color:#f97316;text-decoration:none;font-weight:500;">'
-            f'{_html.escape(root)}</a></td>'
-            f'<td style="padding:10px 12px;font-size:0.78rem;color:rgba(148,163,184,0.8);">{detail}</td>'
-            f'</tr>\n'
+            f'<li class="op-row" onclick="location.href=\'{op_link}\'">'
+            f'<a href="{op_link}">'
+            f'<div class="op-rank">#{i}</div>'
+            f'<div class="op-body">'
+            f'<div class="op-name">{_html.escape(root)}</div>'
+            f'<div class="op-meta">{meta_line}</div>'
+            f'{geo_html}'
+            f'</div>'
+            f'</a>'
+            f'</li>\n'
         )
         list_items.append({
             "@type": "ListItem",
@@ -702,12 +708,19 @@ body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-heig
 nav{{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0}}
 .nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
-table{{width:100%;border-collapse:collapse}}
-tr{{border-bottom:1px solid rgba(148,163,184,0.07)}}
-tr:hover{{background:rgba(148,163,184,0.04)}}
 a{{color:inherit;text-decoration:none}}
 footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b}}
 .footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
+.op-list{{list-style:none;padding:0;margin:0}}
+.op-row{{border-bottom:1px solid rgba(148,163,184,0.07);cursor:pointer;}}
+.op-row:hover{{background:rgba(148,163,184,0.04)}}
+.op-row a{{display:flex;align-items:flex-start;gap:12px;padding:14px 0;text-decoration:none;color:inherit;}}
+.op-rank{{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:rgba(148,163,184,0.28);min-width:24px;padding-top:3px;flex-shrink:0;}}
+.op-body{{display:flex;flex-direction:column;gap:3px;}}
+.op-name{{font-family:'JetBrains Mono',monospace;font-size:0.88rem;color:#e2e8f0;letter-spacing:0.04em;font-weight:500;}}
+.op-row:hover .op-name{{color:#f97316;}}
+.op-meta{{font-size:0.78rem;color:rgba(148,163,184,0.6);}}
+.op-geo{{font-size:0.73rem;color:rgba(148,163,184,0.38);}}
 </style>
 </head>
 <body>
@@ -727,22 +740,14 @@ footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,18
   <div style="margin-bottom:8px;">
     <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Home</a>
   </div>
-  <h1 style="font-size:1.4rem;font-weight:600;margin-bottom:8px;">NYC LLC Acquisition Networks</h1>
-  <p style="font-size:0.85rem;color:rgba(148,163,184,0.65);margin-bottom:24px;line-height:1.6;">
-    {len(operators)} operator clusters identified in ACRIS deed records. Each cluster groups LLC entities
-    operating under a common name pattern with a measurable acquisition footprint in NYC.
-    Sourced from public records — no proprietary data.
+  <h1 style="font-size:1.4rem;font-weight:600;margin-bottom:6px;">NYC LLC Acquisition Networks</h1>
+  <p style="font-size:0.82rem;color:rgba(148,163,184,0.55);margin-bottom:28px;line-height:1.6;">
+    {len(operators)} clusters identified in ACRIS deed records. Each groups LLC entities
+    linked by naming patterns with a measurable acquisition footprint in NYC.
+    Sourced from public records only.
   </p>
-  <table>
-    <thead>
-      <tr style="border-bottom:1px solid rgba(148,163,184,0.15);">
-        <th style="padding:8px 12px;text-align:left;font-size:0.7rem;color:rgba(148,163,184,0.5);font-weight:500;text-transform:uppercase;letter-spacing:0.06em;">Operator</th>
-        <th style="padding:8px 12px;text-align:left;font-size:0.7rem;color:rgba(148,163,184,0.5);font-weight:500;text-transform:uppercase;letter-spacing:0.06em;">Portfolio</th>
-      </tr>
-    </thead>
-    <tbody>
-{rows_html}    </tbody>
-  </table>
+  <ul class="op-list">
+{rows_html}  </ul>
 </div>
 <footer>
   <div class="footer-links">
