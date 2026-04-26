@@ -21,7 +21,8 @@ class Subscriber(TimestampMixin, Base):
     __tablename__ = "subscribers"
 
     email: Mapped[str] = mapped_column(String(254), nullable=False)
-    zip_code: Mapped[str] = mapped_column(String(5), nullable=False)
+    zip_code: Mapped[str | None] = mapped_column(String(5), nullable=True)
+    is_citywide: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, server_default="false")
 
     # False until user clicks confirmation link
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
@@ -37,10 +38,12 @@ class Subscriber(TimestampMixin, Base):
 
     __table_args__ = (
         UniqueConstraint("email", "zip_code", name="uq_subscribers_email_zip"),
+        # Partial unique index for citywide — enforced in migration 6aa0c3e6ef29.
+        # Not declared here because SQLAlchemy can't express partial indexes inline.
         Index("idx_subscribers_email", "email"),
         Index("idx_subscribers_zip_code", "zip_code"),
         Index("idx_subscribers_confirmed", "confirmed"),
     )
 
     def __repr__(self) -> str:
-        return f"<Subscriber email={self.email} zip={self.zip_code} confirmed={self.confirmed}>"
+        return f"<Subscriber email={self.email} zip={self.zip_code} citywide={self.is_citywide} confirmed={self.confirmed}>"
