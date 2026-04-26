@@ -12,6 +12,12 @@
     <link rel="stylesheet" href="/tailwind.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 
+    <script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>
+    <script>
+        window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+        plausible.init()
+    </script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'DM Sans', sans-serif; background: #0f172a; color: #f1f5f9; min-height: 100vh; }
@@ -400,6 +406,7 @@
 
         document.getElementById('loading-state').style.display = 'none';
         document.getElementById('content').style.display       = 'block';
+        plausible('Operator Profile View');
         document.getElementById('op-root').textContent         = data.operator_root;
         const _whyEl = document.getElementById('why-matters');
         if (_whyEl) _whyEl.textContent = _buildWhyMatters(data);
@@ -681,6 +688,7 @@
         footer.style.cssText = 'border-top:1px solid rgba(148,163,184,0.07);padding:10px 16px;text-align:right;';
         footer.innerHTML = '<a href="/operator/' + esc(rel.operator_root) + '" style="font-size:0.75rem;color:rgba(249,115,22,0.7);">' +
             t('view_profile').replace('{name}', esc(rel.operator_root)) + '</a>';
+        footer.querySelector('a').addEventListener('click', () => plausible('Operator Network Click'));
         card.appendChild(footer);
 
         container.appendChild(card);
@@ -775,6 +783,7 @@
     if (_copyBtn) {
         _copyBtn.addEventListener('click', function() {
             navigator.clipboard.writeText(window.location.href).then(() => {
+                plausible('Operator Copy Link');
                 _copyBtn.textContent = 'Link copied';
                 setTimeout(() => { _copyBtn.textContent = 'Copy link'; }, 2000);
             }).catch(() => {});
