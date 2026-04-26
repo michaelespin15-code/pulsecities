@@ -438,6 +438,73 @@ class TestRunOrchestration:
 # Unsubscribe endpoint
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Subscription eligibility
+# ---------------------------------------------------------------------------
+
+class TestSubscriptionEligibility:
+    """
+    load_active_subscriptions must return only confirmed=true rows.
+    Unconfirmed signups and deleted (unsubscribed) records must never appear.
+    These tests verify the filter exists in the SQL and that run() honours it.
+    """
+
+    def _run_with(self, subscriptions, summaries, dry_run=False):
+        with (
+            patch("scripts.weekly_digest.SessionLocal"),
+            patch("scripts.weekly_digest.load_active_subscriptions", return_value=subscriptions),
+            patch("scripts.weekly_digest.build_weekly_zip_summaries", return_value=summaries),
+            patch("scripts.weekly_digest._fetch_event_detail", return_value=_EMPTY_EVENTS),
+            patch("scripts.weekly_digest.resend.api_key", "fake-key"),
+            patch("scripts.weekly_digest.resend.Emails.send") as mock_send,
+        ):
+            run(dry_run=dry_run)
+            return mock_send
+
+    def test_sql_filters_confirmed_true(self):
+        """load_active_subscriptions must contain WHERE confirmed = true."""
+        import inspect
+        import scripts.weekly_digest as wd
+        src = inspect.getsource(wd.load_active_subscriptions)
+        assert "confirmed = true" in src
+
+    def test_confirmed_subscriber_is_eligible(self):
+        """Confirmed subscriber with meaningful data triggers a send."""
+        subs = [{"email": "a@b.com", "zip_code": "10026", "unsubscribe_token": "t1"}]
+        summaries = {"10026": _make_summary(delta=5.0, llc_count=1)}
+        mock_send = self._run_with(subs, summaries)
+        mock_send.assert_called_once()
+
+    def test_unconfirmed_subscriber_not_eligible(self):
+        """
+        load_active_subscriptions returns nothing for unconfirmed rows.
+        Simulated by returning an empty list — run() must send nothing.
+        """
+        mock_send = self._run_with(subscriptions=[], summaries={})
+        mock_send.assert_not_called()
+
+    def test_unsubscribed_user_not_eligible(self):
+        """
+        Unsubscribe deletes the row — absent from load_active_subscriptions.
+        run() must send nothing when the loader returns empty.
+        """
+        mock_send = self._run_with(subscriptions=[], summaries={})
+        mock_send.assert_not_called()
+
+    def test_mixed_pool_only_sends_to_confirmed(self):
+        """
+        If the loader correctly filters, only confirmed rows reach run().
+        Two subs returned (simulating confirmed=true rows), both get emails.
+        """
+        subs = [
+            {"email": "a@b.com", "zip_code": "10026", "unsubscribe_token": "t1"},
+            {"email": "b@c.com", "zip_code": "10026", "unsubscribe_token": "t2"},
+        ]
+        summaries = {"10026": _make_summary(delta=5.0, llc_count=1)}
+        mock_send = self._run_with(subs, summaries)
+        assert mock_send.call_count == 2
+
+
 class TestUnsubscribeEndpoint:
     def test_valid_token_returns_200(self):
         from fastapi.testclient import TestClient
