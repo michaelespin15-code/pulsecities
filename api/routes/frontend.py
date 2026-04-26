@@ -10,6 +10,7 @@ GET /operators                — server-side rendered directory of all tracked 
 import html as _html
 import json
 import logging
+import re
 import time
 from datetime import date
 from pathlib import Path
@@ -45,6 +46,21 @@ def _operator_template() -> str:
     if _operator_html is None:
         _operator_html = (_FRONTEND / "operator.html").read_text()
     return _operator_html
+
+
+def _set_meta(html: str, attr: str, attr_val: str, new_content: str) -> str:
+    """Replace content="..." on the meta tag identified by attr=attr_val.
+
+    Matches by attribute name and value rather than by the current content
+    string, so the replacement survives changes to the default meta values
+    in app.html without needing to be updated here.
+    """
+    pattern = rf'<meta\b[^>]*\b{re.escape(attr)}="{re.escape(attr_val)}"[^>]*>'
+
+    def _swap(m: re.Match) -> str:
+        return re.sub(r'content="[^"]*"', f'content="{new_content}"', m.group(0), count=1)
+
+    return re.sub(pattern, _swap, html)
 
 
 def _risk_tier(score: float) -> str:
@@ -87,38 +103,22 @@ def _build_html(zip_code: str, name: str, borough: str | None, score: float | No
 
     html = html.replace('<title>Explore | PulseCities</title>', f'<title>{title}</title>', 1)
     html = html.replace(
-        'content="NYC displacement risk scores for 178 neighborhoods, updated daily from ACRIS deeds, HPD violations, DOB permits, evictions, and rent stabilization data."',
-        f'content="{e_desc}"',
-    )
-    html = html.replace(
         '<link rel="canonical" href="https://pulsecities.com/map">',
         f'<link rel="canonical" href="{e_url}">',
         1,
     )
-    # og:title and twitter:title share the same content string — replace both
-    html = html.replace(
-        'content="PulseCities: NYC Displacement Risk Intelligence"',
-        f'content="{e_title}"',
-    )
-    # og:description and twitter:description share the same content string — replace both
-    html = html.replace(
-        'content="Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and assessment spikes."',
-        f'content="{e_desc}"',
-    )
-    # og:url — was pointing to /map, must be the specific neighborhood URL
-    html = html.replace(
-        'content="https://pulsecities.com/map"',
-        f'content="{e_url}"',
-        1,
-    )
 
-    # Point og:image and twitter:image at the per-neighborhood dynamic image
     og_image_url = f"https://pulsecities.com/og/{zip_code}.png?d={date.today().strftime('%Y%m%d')}"
     e_og_image = _html.escape(og_image_url, quote=True)
-    html = html.replace(
-        'content="https://pulsecities.com/og-image.png"',
-        f'content="{e_og_image}"',
-    )
+
+    html = _set_meta(html, "name",     "description",          e_desc)
+    html = _set_meta(html, "property", "og:title",             e_title)
+    html = _set_meta(html, "property", "og:description",       e_desc)
+    html = _set_meta(html, "property", "og:url",               e_url)
+    html = _set_meta(html, "property", "og:image",             e_og_image)
+    html = _set_meta(html, "name",     "twitter:title",        e_title)
+    html = _set_meta(html, "name",     "twitter:description",  e_desc)
+    html = _set_meta(html, "name",     "twitter:image",        e_og_image)
 
     # Inject neighborhood Dataset JSON-LD before </head>
     jsonld = {
@@ -280,25 +280,22 @@ def property_page(bbl: str, db: Session = Depends(get_db)):
 
     html = _template()
     html = html.replace('<title>Explore | PulseCities</title>', f'<title>{title}</title>', 1)
-    html = html.replace('content="PulseCities: NYC Displacement Risk Intelligence"', f'content="{e_title}"')
-    html = html.replace(
-        'content="NYC displacement risk scores for 178 neighborhoods, updated daily from ACRIS deeds, HPD violations, DOB permits, evictions, and rent stabilization data."',
-        f'content="{e_desc}"',
-    )
-    html = html.replace(
-        'content="Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and assessment spikes."',
-        f'content="{e_desc}"',
-    )
     html = html.replace('<link rel="canonical" href="https://pulsecities.com/map">', f'<link rel="canonical" href="{e_url}">', 1)
-    html = html.replace('content="https://pulsecities.com/map"', f'content="{e_url}"', 1)
-    html = html.replace('content="https://pulsecities.com/og-image.png"', f'content="{e_og_image}"')
+    html = _set_meta(html, "name",     "description",          e_desc)
+    html = _set_meta(html, "property", "og:title",             e_title)
+    html = _set_meta(html, "property", "og:description",       e_desc)
+    html = _set_meta(html, "property", "og:url",               e_url)
+    html = _set_meta(html, "property", "og:image",             e_og_image)
+    html = _set_meta(html, "name",     "twitter:title",        e_title)
+    html = _set_meta(html, "name",     "twitter:description",  e_desc)
+    html = _set_meta(html, "name",     "twitter:image",        e_og_image)
 
     _prop_page_cache[clean] = (html, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(html)
 
 
 @router.get("/operator/{root}", include_in_schema=False)
-def operator_page(root: str):
+def operator_page(root: str, db: Session = Depends(get_db)):
     root_upper = root.upper().strip()
     if len(root_upper) < 2:
         return HTMLResponse(_operator_template())
@@ -310,7 +307,14 @@ def operator_page(root: str):
     from api.routes.operators import _load_audit
     cluster = _load_audit()["clusters"].get(root_upper)
 
-    url = f"https://pulsecities.com/operator/{root_upper}"
+    # Prefer the canonical slug from the operators table so the canonical URL
+    # matches the slug-based route the visitor arrived at (e.g. mtek-nyc, not MTEK-NYC).
+    slug_row = db.execute(
+        text("SELECT slug FROM operators WHERE operator_root = :root LIMIT 1"),
+        {"root": root_upper},
+    ).fetchone()
+    canonical_id = slug_row.slug if slug_row else root_upper.lower()
+    url = f"https://pulsecities.com/operator/{canonical_id}"
 
     if cluster:
         entity_count = len(cluster.get("llc_entities") or [])
