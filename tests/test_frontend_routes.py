@@ -102,12 +102,21 @@ class TestFastAPIRoutes:
         # Must serve operator.html shell, not app.html
         assert "maplibre" not in resp.text.lower()
 
+    def test_operator_head_returns_200(self, client):
+        for slug in ("mtek-nyc", "phantom-capital", "bredif"):
+            resp = client.head(f"/operator/{slug}")
+            assert resp.status_code == 200, f"HEAD /operator/{slug} returned {resp.status_code}"
+
+    def test_operator_head_has_no_body(self, client):
+        resp = client.head("/operator/mtek-nyc")
+        assert resp.content == b""
+
 
 @pytest.mark.integration
 class TestNeighborhoodOGInjection:
     """
-    Verify that /neighborhood/{zip} pages get neighborhood-specific OG tags
-    injected server-side, not the generic app.html defaults.
+    Verify /neighborhood/{zip} pages are full SSR civic intelligence cards:
+    unique OG/Twitter meta, visible body content, FAQ, copy-link, map CTA.
     Requires a live database.
     """
 
@@ -117,38 +126,119 @@ class TestNeighborhoodOGInjection:
         with TestClient(app, raise_server_exceptions=False) as c:
             yield c
 
-    def test_neighborhood_og_title_is_specific(self, client):
-        resp = client.get("/neighborhood/11216")
-        assert resp.status_code == 200
-        # og:title must contain the ZIP or neighborhood name, not the generic app title
-        assert 'property="og:title"' in resp.text
-        og_title_line = next(
-            (l for l in resp.text.splitlines() if 'property="og:title"' in l), ""
-        )
-        assert "11216" in og_title_line or "Bedford" in og_title_line, \
-            f"og:title not neighborhood-specific: {og_title_line}"
+    # --- meta / OG ---
 
-    def test_neighborhood_og_title_not_generic(self, client):
-        resp = client.get("/neighborhood/11216")
-        assert "PulseCities | NYC Displacement Risk Map" not in resp.text or \
-               "11216" in next(
-                   (l for l in resp.text.splitlines() if 'property="og:title"' in l), ""
-               ), "og:title still shows generic app default"
+    def test_neighborhood_returns_200(self, client):
+        assert client.get("/neighborhood/11221").status_code == 200
 
-    def test_neighborhood_og_description_is_specific(self, client):
-        resp = client.get("/neighborhood/11216")
-        og_desc_line = next(
-            (l for l in resp.text.splitlines() if 'property="og:description"' in l), ""
-        )
-        # Must not be the generic app description
-        assert "178 neighborhoods" not in og_desc_line, \
-            f"og:description still generic: {og_desc_line}"
+    def test_neighborhood_is_not_app_shell(self, client):
+        resp = client.get("/neighborhood/11221")
+        assert "maplibre" not in resp.text.lower(), "page returned app.html shell"
 
-    def test_neighborhood_og_url_is_correct(self, client):
+    def test_og_title_is_specific(self, client):
+        resp = client.get("/neighborhood/11216")
+        line = next((l for l in resp.text.splitlines() if 'property="og:title"' in l), "")
+        assert "11216" in line or "Bedford" in line, f"og:title not specific: {line}"
+
+    def test_og_description_is_specific(self, client):
+        resp = client.get("/neighborhood/11216")
+        line = next((l for l in resp.text.splitlines() if 'property="og:description"' in l), "")
+        assert "178 neighborhoods" not in line, f"og:description still generic: {line}"
+
+    def test_og_url_is_correct(self, client):
         resp = client.get("/neighborhood/11216")
         assert 'content="https://pulsecities.com/neighborhood/11216"' in resp.text
 
-    def test_neighborhood_title_tag_is_specific(self, client):
+    def test_og_image_present(self, client):
+        resp = client.get("/neighborhood/11221")
+        assert 'og:image' in resp.text
+        assert "/og/11221.png" in resp.text
+
+    def test_twitter_card_present(self, client):
+        resp = client.get("/neighborhood/11221")
+        assert 'twitter:card' in resp.text
+        assert 'summary_large_image' in resp.text
+
+    def test_canonical_is_correct(self, client):
+        resp = client.get("/neighborhood/11221")
+        assert 'href="https://pulsecities.com/neighborhood/11221"' in resp.text
+
+    def test_title_tag_is_specific(self, client):
         resp = client.get("/neighborhood/11216")
         assert "<title>Explore | PulseCities</title>" not in resp.text
-        assert "11216" in resp.text or "Bedford" in resp.text
+        assert "Bedford" in resp.text or "11216" in resp.text
+
+    # --- visible body content ---
+
+    def test_h1_contains_displacement_signals(self, client):
+        resp = client.get("/neighborhood/11221")
+        assert "Displacement Signals" in resp.text
+
+    def test_page_contains_neighborhood_name(self, client):
+        resp = client.get("/neighborhood/11221")
+        assert "Bushwick" in resp.text
+
+    def test_page_contains_zip_code(self, client):
+        resp = client.get("/neighborhood/11221")
+        assert "11221" in resp.text
+
+    def test_page_contains_score(self, client):
+        resp = client.get("/neighborhood/11221")
+        # Score block or "not yet available" fallback
+        assert "DISPLACEMENT PRESSURE" in resp.text or "Score data not yet available" in resp.text
+
+    def test_page_contains_signal_label(self, client):
+        resp = client.get("/neighborhood/11221")
+        assert "LLC property acquisitions" in resp.text
+
+    def test_page_contains_methodology_link(self, client):
+        resp = client.get("/neighborhood/11221")
+        assert "methodology" in resp.text.lower()
+
+    def test_page_contains_copy_link(self, client):
+        resp = client.get("/neighborhood/11221")
+        assert "Copy link" in resp.text
+
+    def test_page_contains_map_cta(self, client):
+        resp = client.get("/neighborhood/11221")
+        assert "/map?q=11221" in resp.text
+
+    # --- FAQ + JSON-LD ---
+
+    def test_faq_question_present(self, client):
+        resp = client.get("/neighborhood/11221")
+        assert "What does this displacement score mean" in resp.text
+
+    def test_faqpage_jsonld_present(self, client):
+        resp = client.get("/neighborhood/11221")
+        assert "FAQPage" in resp.text
+
+    def test_dataset_jsonld_present(self, client):
+        resp = client.get("/neighborhood/11221")
+        assert '"Dataset"' in resp.text
+
+    # --- other pilot ZIPs ---
+
+    def test_bedford_stuyvesant_page(self, client):
+        resp = client.get("/neighborhood/11216")
+        assert resp.status_code == 200
+        assert "Bedford" in resp.text
+        assert "/map?q=11216" in resp.text
+
+    def test_two_bridges_page(self, client):
+        resp = client.get("/neighborhood/10038")
+        assert resp.status_code == 200
+        assert "Two Bridges" in resp.text
+        assert "/map?q=10038" in resp.text
+
+    def test_norwood_page(self, client):
+        resp = client.get("/neighborhood/10467")
+        assert resp.status_code == 200
+        assert "Norwood" in resp.text
+        assert "/map?q=10467" in resp.text
+
+    def test_chelsea_page(self, client):
+        resp = client.get("/neighborhood/10001")
+        assert resp.status_code == 200
+        assert "Chelsea" in resp.text
+        assert "/map?q=10001" in resp.text
