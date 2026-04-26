@@ -195,7 +195,12 @@
         <nav style="max-width:680px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">
             <div style="display:flex;align-items:baseline;gap:10px;">
                 <a href="/" style="font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:600;color:#38bdf8;text-decoration:none;letter-spacing:-0.01em;">PulseCities</a>
-                <a href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:#334155;text-decoration:none;" onmouseover="this.style.color='#64748b'" onmouseout="this.style.color='#334155'">by Michael Espin</a>
+                <a href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer"
+                   style="font-size:11px;color:#334155;text-decoration:none;display:inline-flex;align-items:center;gap:4px;"
+                   onmouseover="this.style.color='#64748b'" onmouseout="this.style.color='#334155'">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    by Michael Espin
+                </a>
             </div>
             <div style="display:flex;align-items:center;gap:20px;">
                 <a href="/methodology" style="font-size:12px;color:#64748b;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
@@ -214,7 +219,7 @@
         <!-- Hero -->
         <section style="margin-bottom:48px;">
             <h1 class="font-mono" style="font-size:2rem;font-weight:600;color:#38bdf8;letter-spacing:-0.02em;margin-bottom:12px;">PulseCities</h1>
-            <p style="font-size:1rem;font-weight:500;color:#e2e8f0;margin-bottom:6px;max-width:38ch;">
+            <p style="font-size:1rem;font-weight:500;color:#e2e8f0;margin-bottom:6px;max-width:38ch;" data-i18n="hero_subhead">
                 Search an address or ZIP to see recent displacement signals.
             </p>
             <p class="font-mono" style="font-size:12px;color:#64748b;margin-bottom:24px;" data-i18n="tagline">
@@ -237,7 +242,7 @@
                     Search
                 </button>
             </div>
-            <div id="empty-search-msg" class="search-empty-msg" style="display:none;">Enter an address, ZIP, or landlord name.</div>
+            <div id="empty-search-msg" class="search-empty-msg" data-i18n="search_empty_msg" style="display:none;">Enter an address, ZIP, or landlord name.</div>
 
             <!-- Stat chips: appear after data loads -->
             <p id="stat-chips" style="margin-top:8px;margin-bottom:16px;"></p>
@@ -327,6 +332,8 @@
         const i18n = {
             en: {
                 tagline:              "The displacement story NYC doesn't officially tell.",
+                hero_subhead:         'Search an address or ZIP to see recent displacement signals.',
+                search_empty_msg:     'Enter an address, ZIP, or landlord name.',
                 llc_label:            'LLC transfers (30d)',
                 eviction_label:       'evictions (30d)',
                 search_placeholder:   'Address, ZIP, or landlord',
@@ -347,9 +354,11 @@
             },
             es: {
                 tagline:              'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
+                hero_subhead:         'Busca una dirección o código postal para ver señales de desplazamiento.',
+                search_empty_msg:     'Ingresa una dirección, código postal o nombre del propietario.',
                 llc_label:            'transferencias LLC (30d)',
                 eviction_label:       'desalojos (30d)',
-                search_placeholder:   'Dirección o código postal',
+                search_placeholder:   'Dirección, código postal o propietario',
                 search_btn:           'Buscar',
                 explore_map:          'Explorar el mapa →',
                 recent_findings:      'Hallazgos recientes',
