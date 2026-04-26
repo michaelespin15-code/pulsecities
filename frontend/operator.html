@@ -44,6 +44,7 @@
                 <span style="font-size: 0.85rem; color: rgba(148,163,184,0.6);">PulseCities</span>
             </a>
             <div style="display:flex;align-items:center;gap:16px;">
+                <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Map</a>
                 <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Methodology</a>
                 <a href="/about" style="font-size:0.78rem;color:rgba(148,163,184,0.5);text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">About</a>
                 <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
@@ -73,7 +74,8 @@
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                     <div>
                         <h1 id="op-root" class="mono accent" style="font-size: 1.8rem; font-weight: 400; letter-spacing: 0.04em;"></h1>
-                        <div style="font-size: 0.78rem; color: rgba(148,163,184,0.45); margin-top: 4px; margin-bottom: 6px;" data-i18n="op_descriptor">LLC network identified through NYC deed records</div>
+                        <div style="font-size: 0.78rem; color: rgba(148,163,184,0.45); margin-top: 4px;" data-i18n="op_descriptor">LLC network identified through NYC deed records</div>
+                        <div id="why-matters" style="font-size: 0.8rem; color: rgba(148,163,184,0.6); margin-top: 3px; margin-bottom: 4px; line-height: 1.5;"></div>
                         <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
                             <span class="signal-chip" data-i18n="chip_window">18-month window</span>
                             <span class="signal-chip" data-i18n="chip_public_records">public records</span>
@@ -226,6 +228,37 @@
         });
     }
 
+    function _zipToBorough(z) {
+        const n = parseInt(z, 10);
+        if (!n) return null;
+        if (n >= 10001 && n <= 10282) return 'Manhattan';
+        if (n >= 10301 && n <= 10314) return 'Staten Island';
+        if (n >= 10451 && n <= 10475) return 'the Bronx';
+        if (n >= 11201 && n <= 11239) return 'Brooklyn';
+        if ((n >= 11001 && n <= 11109) || (n >= 11354 && n <= 11697)) return 'Queens';
+        return null;
+    }
+
+    function _buildWhyMatters(data) {
+        const acqs = data.total_acquisitions || 0;
+        if (!acqs) return '';
+        const seen = new Set();
+        const boroughs = [];
+        for (const p of (data.properties || [])) {
+            const b = _zipToBorough(p.zip_code);
+            if (b && !seen.has(b)) { seen.add(b); boroughs.push(b); }
+        }
+        if (!boroughs.length) return '';
+        const bStr = boroughs.length >= 2
+            ? boroughs.slice(0, 2).join(' and ')
+            : boroughs[0];
+        const score = data.highest_displacement_score || 0;
+        const zone = score >= 65 ? 'in high-displacement zones'
+            : score >= 45 ? 'near elevated-risk areas'
+            : 'across multiple ZIP codes';
+        return `${acqs} acquisition${acqs !== 1 ? 's' : ''} concentrated in ${bStr}, ${zone}.`;
+    }
+
     function _scoreColor(score) {
         if (score >= 65) return { bg: 'rgba(239,68,68,0.14)', text: '#ef4444' };
         if (score >= 45) return { bg: 'rgba(249,115,22,0.14)', text: '#f97316' };
@@ -364,6 +397,8 @@
         document.getElementById('loading-state').style.display = 'none';
         document.getElementById('content').style.display       = 'block';
         document.getElementById('op-root').textContent         = data.operator_root;
+        const _whyEl = document.getElementById('why-matters');
+        if (_whyEl) _whyEl.textContent = _buildWhyMatters(data);
 
         const note = PATTERN_NOTES[data.operator_root];
         if (note) {
