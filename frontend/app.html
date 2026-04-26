@@ -444,6 +444,11 @@
                 <div id="address-error" class="hidden text-xs text-error mt-2"></div>
             </div>
 
+            <!-- Grouped search results — neighborhoods, operators, properties -->
+            <div id="grouped-results" class="hidden bg-base-300 rounded-xl p-4 mb-4">
+                <div id="grouped-results-inner"></div>
+            </div>
+
             <!-- Skeleton loading state — shown during BBL resolution -->
             <div id="block-skeleton" class="hidden bg-base-300 rounded-xl p-4 flex flex-col gap-3 mb-4">
                 <div class="h-4 bg-base-content/10 rounded animate-pulse w-3/4"></div>
@@ -2674,32 +2679,53 @@
         })();
         // --- End hero search ---
 
-        // Resolves ?q= param from landing page and opens the matching neighborhood.
+        // Resolves ?q= param from landing page. Tries address resolution first,
+        // then falls back to grouped search for operator and neighborhood name queries.
         async function autoSearchOnLoad(q) {
             if (/^\d{5}$/.test(q)) {
                 selectNeighborhood(q);
                 return;
             }
-            // Pre-fill address input with what the user typed on the landing page
+
             const addrInput = document.getElementById('address-input');
             if (addrInput) addrInput.value = q;
 
-            // Resolve address directly to building panel
             const skeleton = document.getElementById('block-skeleton');
             if (skeleton) skeleton.classList.remove('hidden');
-            try {
-                const searchResp = await fetch(`/api/properties/search?address=${encodeURIComponent(q)}`);
-                if (!searchResp.ok) { if (skeleton) skeleton.classList.add('hidden'); return; }
-                const searchData = await searchResp.json();
-                const bbl = searchData.bbl;
-                if (!bbl) { if (skeleton) skeleton.classList.add('hidden'); return; }
 
-                const blockResp = await fetch(`/api/blocks/${bbl}`);
+            try {
+                // Step 1: Try address -> BBL resolution
+                const searchResp = await fetch(`/api/properties/search?address=${encodeURIComponent(q)}`);
+                if (searchResp.ok) {
+                    const searchData = await searchResp.json();
+                    const bbl = searchData && searchData.bbl;
+                    if (bbl) {
+                        const blockResp = await fetch(`/api/blocks/${bbl}`);
+                        if (skeleton) skeleton.classList.add('hidden');
+                        if (blockResp.ok) {
+                            showBlockPanel(bbl, await blockResp.json());
+                            return;
+                        }
+                    }
+                }
+
+                // Step 2: Grouped search fallback — operators, neighborhood names, addresses
                 if (skeleton) skeleton.classList.add('hidden');
-                if (!blockResp.ok) return;
-                const blockData = await blockResp.json();
-                showBlockPanel(bbl, blockData);
-            } catch { if (skeleton) skeleton.classList.add('hidden'); }
+                if (q.length >= 3) {
+                    const grpResp = await fetch(`/api/search/?q=${encodeURIComponent(q)}`);
+                    if (grpResp.ok) {
+                        const grpData = await grpResp.json();
+                        const g = grpData.groups || {};
+                        if ((g.neighborhoods || []).length || (g.properties || []).length || (g.operators || []).length) {
+                            _renderGroupedResults(grpData);
+                            if (window.innerWidth < 768) showMobileSidebar();
+                            return;
+                        }
+                    }
+                }
+
+            } catch { /* network failure — silent */ }
+            if (skeleton) skeleton.classList.add('hidden');
         }
 
         // D-03: Each ZIP card calls selectNeighborhood(zip) on click, fading hero first.
@@ -2941,61 +2967,61 @@
 
         document.getElementById('cmp-new-btn').addEventListener('click', showEmptyState);
 
-        // Address search handler
+        // Address search handler — tries address resolution first, falls back to
+        // grouped search for operator names and neighborhood name queries.
         document.getElementById('address-search-btn').addEventListener('click', async function() {
-            const input = document.getElementById('address-input');
-            const errEl = document.getElementById('address-error');
+            const input   = document.getElementById('address-input');
+            const errEl   = document.getElementById('address-error');
             const skeleton = document.getElementById('block-skeleton');
-            const address = input.value.trim();
+            const query   = input.value.trim();
 
-            if (!address) return;
+            if (!query) return;
 
-            // Show skeleton immediately — panel must never be blank (scope addition A)
             errEl.classList.add('hidden');
+            _clearGroupedResults();
+
+            // Fast path: 5-digit ZIP — select neighborhood directly
+            if (/^\d{5}$/.test(query)) {
+                selectNeighborhood(query);
+                input.value = '';
+                return;
+            }
+
             skeleton.classList.remove('hidden');
             this.disabled = true;
             this.textContent = t('ui', 'looking_up');
 
             try {
-                // Step 1: Resolve address -> BBL via GeoSearch-backed endpoint
-                const searchResp = await fetch(`/api/properties/search?address=${encodeURIComponent(address)}`);
-                if (!searchResp.ok) {
-                    skeleton.classList.add('hidden');
-                    errEl.textContent = t('ui', 'addr_not_found');
-                    errEl.classList.remove('hidden');
-                    return;
-                }
-                let searchData;
-                try {
-                    searchData = await searchResp.json();
-                } catch {
-                    skeleton.classList.add('hidden');
-                    errEl.textContent = t('ui', 'server_error');
-                    errEl.classList.remove('hidden');
-                    return;
-                }
-                const bbl = searchData.bbl;
-
-                if (!bbl) {
-                    skeleton.classList.add('hidden');
-                    errEl.textContent = t('ui', 'addr_bbl_fail');
-                    errEl.classList.remove('hidden');
-                    return;
+                // Step 1: Try address resolution -> BBL
+                const searchResp = await fetch(`/api/properties/search?address=${encodeURIComponent(query)}`);
+                if (searchResp.ok) {
+                    let searchData;
+                    try { searchData = await searchResp.json(); } catch { searchData = null; }
+                    const bbl = searchData && searchData.bbl;
+                    if (bbl) {
+                        const blockResp = await fetch(`/api/blocks/${bbl}`);
+                        skeleton.classList.add('hidden');
+                        if (blockResp.ok) {
+                            showBlockPanel(bbl, await blockResp.json());
+                            return;
+                        }
+                    }
                 }
 
-                // Step 2: Fetch block events
-                const blockResp = await fetch(`/api/blocks/${bbl}`);
+                // Step 2: Grouped search fallback — operators, neighborhoods, addresses
                 skeleton.classList.add('hidden');
-
-                if (!blockResp.ok) {
-                    errEl.textContent = t('ui', 'addr_block_fail');
-                    errEl.classList.remove('hidden');
-                    return;
+                const grpResp = await fetch(`/api/search/?q=${encodeURIComponent(query)}`);
+                if (grpResp.ok) {
+                    const grpData = await grpResp.json();
+                    const g = grpData.groups || {};
+                    if ((g.neighborhoods || []).length || (g.properties || []).length || (g.operators || []).length) {
+                        _renderGroupedResults(grpData);
+                        return;
+                    }
                 }
-                const blockData = await blockResp.json();
 
-                // Show block panel (empty state if no events — scope addition B)
-                showBlockPanel(bbl, blockData);
+                errEl.textContent = t('ui', 'addr_not_found');
+                errEl.classList.remove('hidden');
 
             } catch (err) {
                 skeleton.classList.add('hidden');
@@ -3478,6 +3504,134 @@
                 map.getSource('landlord-results').setData({ type: 'FeatureCollection', features: [] });
             }
             map.flyTo({ center: [-74.0060, 40.7128], zoom: 11, duration: 800 });
+        }
+
+        function _clearGroupedResults() {
+            const panel = document.getElementById('grouped-results');
+            if (panel) {
+                panel.classList.add('hidden');
+                document.getElementById('grouped-results-inner').innerHTML = '';
+            }
+        }
+
+        function _renderGroupedResults(data) {
+            const panel = document.getElementById('grouped-results');
+            const inner = document.getElementById('grouped-results-inner');
+            if (!panel || !inner) return;
+            inner.innerHTML = '';
+
+            const g = data.groups || {};
+            const nbhds = g.neighborhoods || [];
+            const props  = g.properties  || [];
+            const ops    = g.operators   || [];
+
+            if (!nbhds.length && !props.length && !ops.length) {
+                const msg = document.createElement('p');
+                msg.className = 'text-xs text-slate-400 text-center py-2';
+                msg.textContent = `No results for "${data.query}".`;
+                inner.appendChild(msg);
+                panel.classList.remove('hidden');
+                return;
+            }
+
+            function makeGroupLabel(text) {
+                const h = document.createElement('p');
+                h.className = 'text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5';
+                h.style.marginTop = inner.children.length ? '12px' : '0';
+                h.textContent = text;
+                return h;
+            }
+
+            function makeRow(onclick) {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left py-2 px-1.5 rounded-md hover:bg-base-content/5 transition-colors border-b border-base-content/[0.06] last:border-0';
+                btn.style.minHeight = '44px';
+                btn.addEventListener('click', onclick);
+                return btn;
+            }
+
+            if (nbhds.length) {
+                inner.appendChild(makeGroupLabel('Neighborhoods'));
+                nbhds.forEach(n => {
+                    const row = makeRow(() => {
+                        _clearGroupedResults();
+                        document.getElementById('address-input').value = '';
+                        selectNeighborhood(n.zip);
+                    });
+                    const top = document.createElement('div');
+                    top.className = 'flex justify-between items-baseline gap-2';
+
+                    const name = document.createElement('span');
+                    name.className = 'text-sm text-base-content font-medium';
+                    name.textContent = `${n.name} (${n.zip})`;
+                    top.appendChild(name);
+
+                    if (n.score !== null && n.score !== undefined) {
+                        const score = document.createElement('span');
+                        score.className = 'font-mono text-xs shrink-0';
+                        const c = n.score >= 70 ? '#ef4444' : n.score >= 40 ? '#f97316' : n.score >= 15 ? '#eab308' : '#22c55e';
+                        score.style.color = c;
+                        score.textContent = n.score.toFixed(1);
+                        top.appendChild(score);
+                    }
+                    row.appendChild(top);
+                    inner.appendChild(row);
+                });
+            }
+
+            if (ops.length) {
+                inner.appendChild(makeGroupLabel('Operators'));
+                ops.forEach(op => {
+                    const row = makeRow(() => { window.location.href = op.href; });
+                    const top = document.createElement('div');
+                    top.className = 'flex justify-between items-baseline gap-2';
+
+                    const name = document.createElement('span');
+                    name.className = 'text-sm text-base-content font-medium';
+                    name.textContent = op.name;
+                    top.appendChild(name);
+
+                    if (op.portfolio_size) {
+                        const meta = document.createElement('span');
+                        meta.className = 'text-xs text-slate-400 shrink-0';
+                        meta.textContent = `${op.portfolio_size} properties in portfolio`;
+                        top.appendChild(meta);
+                    }
+                    row.appendChild(top);
+                    inner.appendChild(row);
+                });
+            }
+
+            if (props.length) {
+                inner.appendChild(makeGroupLabel('Buildings'));
+                props.forEach(p => {
+                    const row = makeRow(() => {
+                        _clearGroupedResults();
+                        fetch(`/api/blocks/${p.bbl}`)
+                            .then(r => r.ok ? r.json() : null)
+                            .then(d => { if (d) showBlockPanel(p.bbl, d); })
+                            .catch(() => {});
+                    });
+                    const top = document.createElement('div');
+                    top.className = 'flex justify-between items-baseline gap-2';
+
+                    const addr = document.createElement('span');
+                    addr.className = 'text-sm text-base-content font-medium truncate';
+                    addr.textContent = p.address;
+                    top.appendChild(addr);
+
+                    if (p.zip) {
+                        const zip = document.createElement('span');
+                        zip.className = 'font-mono text-xs text-slate-400 shrink-0';
+                        zip.textContent = p.zip;
+                        top.appendChild(zip);
+                    }
+                    row.appendChild(top);
+                    inner.appendChild(row);
+                });
+            }
+
+            panel.classList.remove('hidden');
         }
 
         document.getElementById('landlord-search-btn').addEventListener('click', async function() {
