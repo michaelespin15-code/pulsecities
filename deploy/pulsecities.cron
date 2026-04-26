@@ -8,4 +8,4 @@ SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 0 2 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scheduler.main >> /var/log/pulsecities/scraper.log 2>&1
-0 9 * * 0 root /root/pulsecities/venv/bin/python scripts/weekly_digest.py >> /var/log/pulsecities/digest.log 2>&1
+0 9 * * 0 root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.weekly_digest >> /var/log/pulsecities/digest.log 2>&1
