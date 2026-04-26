@@ -1,5 +1,10 @@
 """
-Landlord portfolio search endpoint.
+Search endpoints.
+
+GET /api/search/?q={query}
+  Grouped search: neighborhoods by ZIP/name, buildings by address, operators by name.
+  Returns three groups in a stable shape; each result carries a type and href.
+  Minimum 3 characters. Rate-limited to 30/minute.
 
 GET /api/search/landlord?q={query}
   Full-portfolio view of all deed records matching a landlord or LLC name substring.
@@ -61,24 +66,95 @@ def search_grouped(
     db: Session = Depends(get_db),
 ):
     """
-    Grouped search returning operators and properties in a single response.
-    Minimum 3 characters. Results ordered by relevance: operators first (by
-    portfolio size), then properties (by most recent deed date).
+    Grouped search across three buckets:
+      - neighborhoods: exact ZIP match or neighborhood name ILIKE
+      - properties:    parcel address ILIKE (not ownership/LLC names)
+      - operators:     operator display_name or root ILIKE
+
+    Minimum 3 characters. Each result carries a `type` and `href` the
+    frontend can use directly. Returns HTTP 400 for queries shorter than 3
+    characters; returns empty groups (HTTP 200) when nothing matches.
     """
     q = q.strip()
     if len(q) < 3:
         raise HTTPException(status_code=400, detail="Query too short")
 
     pattern = f"%{q}%"
+    is_zip = q.isdigit() and len(q) == 5
 
-    # Operator matches — served from operators table
+    # ── Neighborhoods ──────────────────────────────────────────────────────────
+    if is_zip:
+        nbhd_rows = db.execute(
+            text("""
+                SELECT n.zip_code, n.name, n.borough, ds.score
+                FROM neighborhoods n
+                LEFT JOIN displacement_scores ds ON ds.zip_code = n.zip_code
+                WHERE n.zip_code = :zip
+                LIMIT 5
+            """),
+            {"zip": q},
+        ).fetchall()
+    else:
+        nbhd_rows = db.execute(
+            text("""
+                SELECT n.zip_code, n.name, n.borough, ds.score
+                FROM neighborhoods n
+                LEFT JOIN displacement_scores ds ON ds.zip_code = n.zip_code
+                WHERE n.name ILIKE :pattern
+                ORDER BY ds.score DESC NULLS LAST
+                LIMIT 5
+            """),
+            {"pattern": pattern},
+        ).fetchall()
+
+    neighborhoods = [
+        {
+            "type": "neighborhood",
+            "zip": r.zip_code,
+            "name": r.name,
+            "borough": r.borough or None,
+            "score": round(float(r.score), 1) if r.score is not None else None,
+            "href": f"/neighborhood/{r.zip_code}",
+        }
+        for r in nbhd_rows
+    ]
+
+    # ── Properties (parcel address search) ────────────────────────────────────
+    # Skipped for exact ZIP queries — the neighborhood result is the right match.
+    # Operator/LLC name searches go to /api/search/landlord, not here.
+    if is_zip:
+        properties = []
+    else:
+        prop_rows = db.execute(
+            text("""
+                SELECT bbl, address, zip_code
+                FROM parcels
+                WHERE address ILIKE :pattern
+                  AND address IS NOT NULL
+                ORDER BY zip_code, address
+                LIMIT 10
+            """),
+            {"pattern": pattern},
+        ).fetchall()
+        properties = [
+            {
+                "type": "property",
+                "bbl": r.bbl,
+                "address": r.address.title() if r.address else f"BBL {r.bbl}",
+                "zip": r.zip_code,
+                "href": f"/property/{r.bbl}",
+            }
+            for r in prop_rows
+        ]
+
+    # ── Operators ───────────────────────────────────────────────────────────────
     op_rows = db.execute(
         text("""
-            SELECT operator_root, slug, display_name, total_properties,
-                   jsonb_array_length(llc_entities) AS llc_count
+            SELECT operator_root, slug, display_name, total_properties
             FROM operators
-            WHERE display_name ILIKE :pattern OR operator_root ILIKE :pattern
-            ORDER BY total_properties DESC
+            WHERE display_name ILIKE :pattern
+               OR operator_root ILIKE :pattern
+            ORDER BY total_properties DESC NULLS LAST
             LIMIT 10
         """),
         {"pattern": pattern},
@@ -86,51 +162,23 @@ def search_grouped(
 
     operators = [
         {
-            "operator_root": r.operator_root,
+            "type": "operator",
+            "name": r.display_name,
             "slug": r.slug,
-            "display_name": r.display_name,
             "portfolio_size": r.total_properties,
-            "llc_count": r.llc_count,
+            "href": f"/operator/{r.slug}",
         }
         for r in op_rows
     ]
 
-    # Property matches — ownership_raw, same exclusions as /landlord, capped at 20.
-    # No doc_type filter here: the name ILIKE match is sufficient for a quick grouped
-    # search; doc_type filtering is appropriate for the /landlord portfolio view.
-    prop_rows = db.execute(
-        text("""
-            SELECT o.bbl, p.address, p.zip_code,
-                   o.party_name_normalized AS buyer_name,
-                   o.doc_date, o.doc_amount
-            FROM ownership_raw o
-            JOIN parcels p ON p.bbl = o.bbl
-            WHERE o.party_type = '2'
-              AND o.party_name_normalized ILIKE :pattern
-              AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
-              AND o.party_name_normalized NOT ILIKE '%LOAN SERVICING%'
-              AND o.party_name_normalized NOT ILIKE '%LOAN SERVICE%'
-              AND o.party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
-              AND o.party_name_normalized NOT ILIKE '%CREDIT UNION%'
-            ORDER BY o.doc_date DESC NULLS LAST
-            LIMIT 20
-        """),
-        {"pattern": pattern},
-    ).fetchall()
-
-    properties = [
-        {
-            "bbl": r.bbl,
-            "address": r.address or f"BBL {r.bbl}",
-            "zip_code": r.zip_code,
-            "buyer_name": r.buyer_name,
-            "doc_date": r.doc_date.isoformat() if r.doc_date else None,
-            "doc_amount": float(r.doc_amount) if r.doc_amount else None,
-        }
-        for r in prop_rows
-    ]
-
-    return {"query": q, "results": {"operators": operators, "properties": properties}}
+    return {
+        "query": q,
+        "groups": {
+            "neighborhoods": neighborhoods,
+            "properties": properties,
+            "operators": operators,
+        },
+    }
 
 
 @router.get("/landlord")
