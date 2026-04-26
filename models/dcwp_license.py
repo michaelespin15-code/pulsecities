@@ -11,7 +11,7 @@ tow trucks, tobacco dealers, etc.) — NOT restaurants, retail, or most business
 
 from datetime import date, datetime
 
-from sqlalchemy import Date, Float, Index, Integer, String, UniqueConstraint
+from sqlalchemy import Date, DateTime, Float, Index, Integer, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -37,9 +37,19 @@ class DcwpLicense(TimestampMixin, Base):
     bbl: Mapped[str | None] = mapped_column(String(10), nullable=True)
     raw_data: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
 
+    # Staleness tracking — populated by the hybrid refresh strategy.
+    # source_last_seen_at: updated on every successful upsert (incremental or historical).
+    # source_last_refreshed_at: updated only during deliberate historical chunk refreshes,
+    #   so you can query "not refreshed in N days" to find stale rows.
+    # source_hash: SHA-256 of mutable source fields; changes on status/expiry/address/name change.
+    source_last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    source_last_refreshed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    source_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+
     __table_args__ = (
         UniqueConstraint("license_nbr", name="uq_dcwp_license_nbr"),
         Index("idx_dcwp_licenses_zip", "address_zip"),
         Index("idx_dcwp_licenses_category", "business_category"),
         Index("idx_dcwp_licenses_creation_date", "license_creation_date"),
+        Index("idx_dcwp_licenses_last_refreshed", "source_last_refreshed_at"),
     )
