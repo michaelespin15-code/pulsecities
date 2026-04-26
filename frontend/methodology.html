@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PulseCities | Methodology</title>
-    <meta name="description" content="How PulseCities scores NYC displacement risk using DOB permits, HPD violations, eviction records, ACRIS transfers, and rent-stabilized housing data.">
+    <title>NYC Displacement Risk Methodology | PulseCities</title>
+    <meta name="description" content="How PulseCities calculates NYC displacement risk using public records like evictions, complaints, and ownership data.">
     <link rel="canonical" href="https://pulsecities.com/methodology">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
-    <meta property="og:title" content="PulseCities | Methodology">
-    <meta property="og:description" content="How PulseCities calculates NYC displacement risk scores from permits, evictions, complaints, ownership transfers, violations, and rent-stabilized housing data.">
+    <meta property="og:title" content="NYC Displacement Risk Methodology | PulseCities">
+    <meta property="og:description" content="How PulseCities calculates NYC displacement risk using public records like evictions, complaints, and ownership data.">
     <meta property="og:url" content="https://pulsecities.com/methodology">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="PulseCities">
@@ -20,8 +20,8 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="PulseCities | Methodology">
-    <meta name="twitter:description" content="How PulseCities calculates NYC displacement risk scores from permits, evictions, complaints, ownership transfers, violations, and rent-stabilized housing data.">
+    <meta name="twitter:title" content="NYC Displacement Risk Methodology | PulseCities">
+    <meta name="twitter:description" content="How PulseCities calculates NYC displacement risk using public records like evictions, complaints, and ownership data.">
     <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
     <meta name="twitter:image:alt" content="PulseCities NYC displacement risk methodology">
 
@@ -30,13 +30,55 @@
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
-        "@type": "TechArticle",
-        "headline": "PulseCities Methodology",
-        "description": "How PulseCities calculates NYC displacement risk scores from public records including DOB permits, HPD violations, 311 complaints, eviction records, ACRIS ownership transfers, and rent-stabilized housing data.",
-        "url": "https://pulsecities.com/methodology",
-        "dateModified": "2026-04",
-        "author": { "@type": "Person", "name": "Michael Espin" },
-        "publisher": { "@type": "Organization", "name": "PulseCities" }
+        "@graph": [
+            {
+                "@type": "WebPage",
+                "name": "NYC Displacement Risk Methodology",
+                "alternateName": "Pulse Cities",
+                "description": "How PulseCities calculates NYC displacement risk using public records like evictions, complaints, and ownership data.",
+                "url": "https://pulsecities.com/methodology",
+                "dateModified": "2026-04",
+                "author": { "@type": "Person", "name": "Michael Espin" },
+                "publisher": { "@type": "Organization", "name": "PulseCities", "alternateName": "Pulse Cities" }
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": "What does the score mean?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "The score shows how many displacement-pressure signals appear in public records for a ZIP code. A higher number means more indicators are present. It does not predict what will happen to any specific tenant or building."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Does this predict eviction?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "No. PulseCities shows where public-record pressure is building, not where evictions will occur. The score reflects activity in the record, not outcomes."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Where does the data come from?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "All data is from NYC Open Data: ACRIS deed records, DOB permits, HPD violations, 311 complaints, eviction records, and DHCR rent-stabilized building registrations. Every dataset is public record."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "How often is it updated?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "Scrapers run nightly at 2am UTC. Most datasets refresh daily. ACRIS data lags approximately two weeks; eviction data lags two to four weeks."
+                        }
+                    }
+                ]
+            }
+        ]
     }
     </script>
 
@@ -432,16 +474,28 @@
     </div>
 </nav>
 
+<main>
 <div class="container">
 
     <header class="page-header">
         <p class="page-label">Methodology</p>
         <h1>PulseCities methodology</h1>
         <p class="page-intro">
-            How NYC displacement risk scores are calculated from public records.
+            PulseCities tracks where displacement pressure is increasing across NYC.
+            Each neighborhood score reflects changes in public records: evictions, building complaints, permits, and ownership patterns.
+            It does not predict outcomes. It shows where pressure is building.
         </p>
-        <p class="page-intro" style="margin-top: 12px;">
-            PulseCities combines six public-record signals to identify NYC neighborhoods where housing displacement pressure may be increasing. The score is built for public-interest research, journalism, tenant organizing, and civic analysis.
+        <div class="callout" style="margin-top: 20px;">
+            <strong style="font-size: 13px; color: var(--text); display: block; margin-bottom: 8px;">What PulseCities measures</strong>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted);">
+                <li>Displacement pressure by neighborhood</li>
+                <li>Based on public record activity</li>
+                <li>Updated nightly</li>
+                <li>Not predictive</li>
+            </ul>
+        </div>
+        <p style="font-size: 13px; color: var(--muted); margin-top: 14px;">
+            Explore the <a href="/map">map</a> or browse <a href="/operators">operator profiles</a>.
         </p>
     </header>
 
@@ -452,8 +506,8 @@
         </div>
     </section>
 
-    <section id="what-this-is">
-        <h2>What this is</h2>
+    <section id="what-this-shows">
+        <h2>What this shows</h2>
         <p>
             A nightly pipeline that pulls public data from New York City, joins it by Borough Block Lot (BBL),
             and produces a displacement risk score for every ZIP code in the city.
@@ -466,7 +520,7 @@
     </section>
 
     <section id="data-sources">
-        <h2>What data feeds it</h2>
+        <h2>Data sources</h2>
         <p>Every dataset is public record. Dataset IDs link directly to the source on NYC Open Data.</p>
 
         <div class="source-list">
@@ -547,7 +601,7 @@
     </section>
 
     <section id="scoring">
-        <h2>Scoring</h2>
+        <h2>How scoring works</h2>
         <p>
             The score runs from 0 to 100. Higher numbers mean more displacement-pressure signals in the public record.
         </p>
@@ -717,7 +771,7 @@
     </section>
 
     <section id="update-frequency">
-        <h2>How often data updates</h2>
+        <h2>How data updates</h2>
         <p>
             Scrapers run every night at 2am UTC. Most datasets refresh daily.
             ACRIS data has a 2-week reporting lag from the city.
@@ -727,7 +781,7 @@
     </section>
 
     <section id="how-its-built">
-        <h2>How it is built</h2>
+        <h2>Stack</h2>
 
         <div class="tech-chips">
             <span class="tech-chip">FastAPI</span>
@@ -738,6 +792,22 @@
             <span class="tech-chip">Pydantic</span>
         </div>
 
+    </section>
+
+    <section id="faq">
+        <h2>Frequently asked questions</h2>
+
+        <h3>What does the score mean?</h3>
+        <p>The score shows how many displacement-pressure signals appear in public records for a ZIP code. A higher number means more indicators are present. It does not predict what will happen to any specific tenant or building.</p>
+
+        <h3>Does this predict eviction?</h3>
+        <p>No. PulseCities shows where public-record pressure is building, not where evictions will occur. The score reflects activity in the record, not outcomes.</p>
+
+        <h3>Where does the data come from?</h3>
+        <p>All data is from NYC Open Data: ACRIS deed records, DOB permits, HPD violations, 311 complaints, eviction records, and DHCR rent-stabilized building registrations. Every dataset is public record.</p>
+
+        <h3>How often is it updated?</h3>
+        <p>Scrapers run nightly at 2am UTC. Most datasets refresh daily. ACRIS data lags approximately two weeks; eviction data lags two to four weeks.</p>
     </section>
 
     <section id="contact">
@@ -762,6 +832,7 @@
     <p style="font-size:12px;color:var(--faint);margin-top:52px;">Last updated: April 2026</p>
 
 </div>
+</main>
 
 <footer>
     <p class="footer-byline">
