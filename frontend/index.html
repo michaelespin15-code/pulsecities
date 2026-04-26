@@ -266,8 +266,8 @@
         <!-- Top risk right now -->
         <section style="margin-bottom:40px;">
             <div class="section-head">
-                <span class="section-label">Top risk right now</span>
-                <span class="section-helper">ZIPs with the highest current displacement pressure.</span>
+                <span class="section-label" data-i18n="top_risk_label">Top risk right now</span>
+                <span class="section-helper" data-i18n="top_risk_helper">ZIPs with the highest current displacement pressure.</span>
             </div>
             <div id="zip-cards">
                 <div id="zip-loading" class="font-mono" style="font-size:11px;color:#334155;padding:20px 0;text-align:center;">Loading...</div>
@@ -278,7 +278,7 @@
         <div id="movers-section" style="display:none;margin-bottom:40px;">
             <div class="section-head">
                 <span class="section-label" data-i18n="changed_this_week">Changed this week</span>
-                <span class="section-helper">Largest score increases detected in the last 7 days.</span>
+                <span class="section-helper" data-i18n="movers_helper">Largest score increases detected in the last 7 days.</span>
             </div>
             <div id="movers-cards"></div>
         </div>
@@ -287,7 +287,7 @@
         <div id="operators-outer" style="margin-bottom:40px;">
             <div class="section-head">
                 <span class="section-label" data-i18n="recent_findings">Recent operator findings</span>
-                <span class="section-helper">Ownership clusters worth reviewing.</span>
+                <span class="section-helper" data-i18n="operators_helper">Ownership clusters worth reviewing.</span>
             </div>
             <div id="operator-cards">
                 <div id="operator-loading" class="font-mono" style="font-size:11px;color:#334155;padding:16px 0;text-align:center;">Loading...</div>
@@ -297,13 +297,13 @@
         <!-- Why this matters -->
         <section class="trust-section" style="margin-bottom:48px;">
             <div class="section-head">
-                <span class="section-label">Why this matters</span>
+                <span class="section-label" data-i18n="trust_label">Why this matters</span>
             </div>
-            <p style="font-size:14px;color:#94a3b8;line-height:1.65;margin-bottom:16px;max-width:54ch;">
+            <p style="font-size:14px;color:#94a3b8;line-height:1.65;margin-bottom:16px;max-width:54ch;" data-i18n="trust_body">
                 PulseCities connects records that are usually scattered across city systems: permits, evictions, complaints, ownership transfers, violations, and rent-stabilized housing.
             </p>
-            <a href="/methodology" style="font-size:12px;color:#38bdf8;text-decoration:none;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Read the methodology &rarr;</a>
-            <p class="font-mono" style="font-size:10px;color:#334155;margin-top:12px;">Sources: NYC DOB, HPD, ACRIS, 311, eviction filings, DHCR.</p>
+            <a href="/methodology" style="font-size:12px;color:#38bdf8;text-decoration:none;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'" data-i18n="read_methodology">Read the methodology →</a>
+            <p class="font-mono" style="font-size:10px;color:#334155;margin-top:12px;" data-i18n="sources_line">Sources: NYC DOB, HPD, ACRIS, 311, eviction filings, DHCR.</p>
         </section>
 
     </main>
@@ -351,6 +351,14 @@
                 sig_permits_s:        'permit filing',
                 sig_complaints:       'tenant complaints',
                 sig_complaints_s:     'tenant complaint',
+                top_risk_label:       'Top risk right now',
+                top_risk_helper:      'ZIPs with the highest current displacement pressure.',
+                movers_helper:        'Largest score increases detected in the last 7 days.',
+                operators_helper:     'Ownership clusters worth reviewing.',
+                trust_label:          'Why this matters',
+                trust_body:           'PulseCities connects records that are usually scattered across city systems: permits, evictions, complaints, ownership transfers, violations, and rent-stabilized housing.',
+                read_methodology:     'Read the methodology →',
+                sources_line:         'Sources: NYC DOB, HPD, ACRIS, 311, eviction filings, DHCR.',
             },
             es: {
                 tagline:              'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
@@ -373,6 +381,14 @@
                 sig_permits_s:        'permiso de obra',
                 sig_complaints:       'quejas de inquilinos',
                 sig_complaints_s:     'queja de inquilinos',
+                top_risk_label:       'Mayor riesgo ahora',
+                top_risk_helper:      'Códigos postales con mayor presión de desplazamiento actual.',
+                movers_helper:        'Mayores aumentos de puntuación en los últimos 7 días.',
+                operators_helper:     'Grupos de propietarios que vale la pena revisar.',
+                trust_label:          'Por qué esto importa',
+                trust_body:           'PulseCities conecta registros que suelen estar dispersos en distintos sistemas: permisos, desalojos, quejas, transferencias de propiedad, violaciones y viviendas con renta estabilizada.',
+                read_methodology:     'Leer la metodología →',
+                sources_line:         'Fuentes: NYC DOB, HPD, ACRIS, 311, registros de desalojo, DHCR.',
             }
         };
 
