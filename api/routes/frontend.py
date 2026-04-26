@@ -15,7 +15,7 @@ from datetime import date
 from pathlib import Path
 
 from fastapi import APIRouter, Depends
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -160,6 +160,21 @@ def _build_html(zip_code: str, name: str, borough: str | None, score: float | No
     html = html.replace('</head>', f'{script}\n</head>', 1)
 
     return html
+
+
+@router.get("/map", include_in_schema=False)
+def map_page():
+    return FileResponse(_FRONTEND / "app.html")
+
+
+@router.get("/methodology", include_in_schema=False)
+def methodology_page():
+    return FileResponse(_FRONTEND / "methodology.html")
+
+
+@router.get("/about", include_in_schema=False)
+def about_page():
+    return FileResponse(_FRONTEND / "about.html")
 
 
 @router.get("/neighborhood/{zip_code}", include_in_schema=False)
@@ -353,7 +368,7 @@ _operators_cache: tuple[str, float] | None = None
 
 
 @router.get("/operators", include_in_schema=False)
-def operators_directory():
+def operators_directory(db: Session = Depends(get_db)):
     global _operators_cache
     if _operators_cache and time.monotonic() < _operators_cache[1]:
         return HTMLResponse(_operators_cache[0])
@@ -365,6 +380,10 @@ def operators_directory():
         key=lambda x: x.get("total_acquisitions", 0),
         reverse=True,
     )
+
+    # Build root → slug map from the operators table so links use canonical slugs
+    slug_rows = db.execute(text("SELECT operator_root, slug FROM operators")).fetchall()
+    root_to_slug: dict[str, str] = {r.operator_root: r.slug for r in slug_rows}
 
     def _zip_to_borough(z: str) -> str | None:
         try:
@@ -393,10 +412,12 @@ def operators_directory():
             detail += f" &middot; {acqs} acquisition{'s' if acqs != 1 else ''}"
         if borough_str:
             detail += f" &middot; {borough_str}"
+        slug = root_to_slug.get(root)
+        op_link = f"/operator/{_html.escape(slug)}" if slug else f"/operator/{_html.escape(root)}"
         rows_html += (
             f'<tr>'
             f'<td style="padding:10px 12px;font-family:\'JetBrains Mono\',monospace;font-size:0.8rem;">'
-            f'<a href="/operator/{_html.escape(root)}" '
+            f'<a href="{op_link}" '
             f'style="color:#f97316;text-decoration:none;font-weight:500;">'
             f'{_html.escape(root)}</a></td>'
             f'<td style="padding:10px 12px;font-size:0.78rem;color:rgba(148,163,184,0.8);">{detail}</td>'
@@ -406,7 +427,7 @@ def operators_directory():
             "@type": "ListItem",
             "position": i,
             "name": f"{root} LLC Network",
-            "url": f"https://pulsecities.com/operator/{root}",
+            "url": f"https://pulsecities.com/operator/{slug or root}",
         })
 
     title = "NYC LLC Acquisition Networks | Operator Directory | PulseCities"

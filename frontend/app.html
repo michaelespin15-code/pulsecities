@@ -759,7 +759,8 @@
                     <div class="mb-2 flex justify-center gap-4 flex-wrap">
                         <a href="/" class="text-slate-500 hover:text-slate-300 transition-colors duration-150">Home</a>
                         <a href="/operators" class="text-slate-500 hover:text-slate-300 transition-colors duration-150">Operators</a>
-                        <a href="/methodology" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-slate-300 transition-colors duration-150">About</a>
+                        <a href="/methodology" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-slate-300 transition-colors duration-150">Methodology</a>
+                        <a href="/about" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-slate-300 transition-colors duration-150">About</a>
                     </div>
                     <span id="sidebar-built-by">Built by</span>
                     <a
@@ -3098,11 +3099,6 @@
                     .then(data => { if (data) showBlockPanel(bbl, data); })
                     .catch(() => {});
                 return;
-            }
-
-            // /methodology — auto-open the methodology modal
-            if (window.location.pathname === '/methodology') {
-                document.getElementById('methodology-modal').classList.remove('hidden');
             }
 
             // ?q= from landing page search

@@ -44,7 +44,8 @@
                 <span style="font-size: 0.85rem; color: rgba(148,163,184,0.6);">PulseCities</span>
             </a>
             <div style="display:flex;align-items:center;gap:16px;">
-                <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">About</a>
+                <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Methodology</a>
+                <a href="/about" style="font-size:0.78rem;color:rgba(148,163,184,0.5);text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">About</a>
                 <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
             </div>
         </div>
@@ -60,11 +61,9 @@
 
         <!-- Error -->
         <div id="error-state" style="padding: 60px 0; text-align: center;">
-            <div style="font-size: 2rem; margin-bottom: 12px;">404</div>
-            <div style="color: rgba(148,163,184,0.6); font-size: 0.9rem;" id="error-msg">Operator not found.</div>
-            <div style="margin-top: 16px;">
-                <a href="/" style="font-size: 0.8rem; color: rgba(249,115,22,0.8);">← Back to home</a>
-            </div>
+            <div style="font-size: 1.4rem; font-weight: 600; color: rgba(241,245,249,0.75); margin-bottom: 8px;">Operator not found</div>
+            <div style="color: rgba(148,163,184,0.5); font-size: 0.85rem; margin-bottom: 24px;" id="error-msg">This operator profile is not available yet.</div>
+            <a href="/operators" style="font-size: 0.8rem; color: rgba(249,115,22,0.8); border: 1px solid rgba(249,115,22,0.25); padding: 8px 18px; border-radius: 6px;">Back to operators</a>
         </div>
 
         <!-- Content -->
@@ -439,30 +438,54 @@
     function showError(msg) {
         document.getElementById('loading-state').style.display = 'none';
         document.getElementById('error-state').style.display   = 'block';
-        document.getElementById('error-msg').textContent       = msg;
+        document.getElementById('error-msg').textContent = msg || 'This operator profile is not available yet.';
     }
 
     // Operator data loading
     (function () {
         const parts = location.pathname.replace(/\/$/, '').split('/');
-        const root  = (parts[2] || '').toUpperCase();
-        if (!root) { showError('No operator specified.'); return; }
+        const rawParam = decodeURIComponent(parts[2] || '');
+        if (!rawParam) { showError('No operator specified.'); return; }
 
-        document.title = root + ' | PulseCities Operator Profile';
-        document.getElementById('canonical-url').href = 'https://pulsecities.com/operator/' + root;
+        // Slug format is lowercase letters, digits, and dashes only.
+        // Anything else (e.g. "MTEK", "PHANTOM CAPITAL") is treated as an operator_root.
+        const isSlugFormat = /^[a-z0-9-]+$/.test(rawParam);
 
-        const _opFetch = fetch('/api/operators/')
-            .then(r => r.ok ? r.json() : Promise.reject(new Error('API error ' + r.status)))
-            .then(list => {
-                const match = list.find(o => o.operator_root === root);
-                if (!match) throw new Error('Operator not found in the 18-month ACRIS window.');
-                return fetch('/api/operators/' + encodeURIComponent(match.slug));
-            })
-            .then(r => {
-                if (r.status === 404) throw new Error('Operator not found in the 18-month ACRIS window.');
-                if (!r.ok) throw new Error('API error ' + r.status);
-                return r.json();
-            });
+        document.title = rawParam.toUpperCase() + ' | PulseCities Operator Profile';
+        document.getElementById('canonical-url').href = 'https://pulsecities.com/operator/' + encodeURIComponent(rawParam);
+
+        let _opFetch;
+        if (isSlugFormat) {
+            // URL param is already a valid slug — fetch the profile directly
+            _opFetch = fetch('/api/operators/' + encodeURIComponent(rawParam))
+                .then(r => {
+                    if (r.status === 404 || r.status === 400) {
+                        console.warn('[PulseCities] operator slug not found:', rawParam, r.status);
+                        throw new Error('Operator not found.');
+                    }
+                    if (!r.ok) throw new Error('API error ' + r.status);
+                    return r.json();
+                });
+        } else {
+            // URL param is an operator_root (e.g. "MTEK") — resolve to slug via the list
+            const root = rawParam.toUpperCase();
+            _opFetch = fetch('/api/operators/')
+                .then(r => r.ok ? r.json() : Promise.reject(new Error('API error ' + r.status)))
+                .then(list => {
+                    const match = list.find(o => o.operator_root === root);
+                    if (!match) {
+                        console.warn('[PulseCities] operator root not found in list:', root);
+                        throw new Error('Operator not found.');
+                    }
+                    return fetch('/api/operators/' + encodeURIComponent(match.slug));
+                })
+                .then(r => {
+                    if (r.status === 404 || r.status === 400) throw new Error('Operator not found.');
+                    if (!r.ok) throw new Error('API error ' + r.status);
+                    return r.json();
+                });
+        }
+
         const _namesFetch = fetch('/api/neighborhoods/names')
             .then(r => r.ok ? r.json() : {})
             .catch(() => ({}));
@@ -499,7 +522,8 @@
             <a href="/" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
             <a href="/map" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Map</a>
             <a href="/operators" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Operators</a>
-            <a href="/methodology" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
+            <a href="/methodology" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
+            <a href="/about" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
             <a href="mailto:michaelespin15@gmail.com" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
         </div>
     </footer>
