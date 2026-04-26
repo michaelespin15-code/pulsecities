@@ -80,6 +80,9 @@
                             <span class="signal-chip" data-i18n="chip_window">18-month window</span>
                             <span class="signal-chip" data-i18n="chip_public_records">public records</span>
                         </div>
+                        <div style="margin-top: 10px;">
+                            <button id="copy-link-btn" style="font-size:0.72rem;color:rgba(148,163,184,0.55);background:rgba(148,163,184,0.06);border:1px solid rgba(148,163,184,0.15);border-radius:5px;padding:4px 10px;cursor:pointer;min-height:28px;font-family:'DM Sans',sans-serif;">Copy link</button>
+                        </div>
                     </div>
                     <div style="font-size: 0.72rem; color: rgba(148,163,184,0.35); font-family: 'JetBrains Mono', monospace; padding-top: 6px;" data-i18n="source_acris">
                         Source: NYC ACRIS
@@ -108,7 +111,8 @@
             </div>
 
             <!-- What this shows -->
-            <p style="font-size:0.82rem;color:rgba(148,163,184,0.48);margin-bottom:20px;line-height:1.65;" data-i18n="what_this_shows">Properties grouped by LLC naming patterns in public deed records. Scores reflect neighborhood displacement risk, not a claim of wrongdoing by any individual actor.</p>
+            <p style="font-size:0.82rem;color:rgba(148,163,184,0.48);margin-bottom:6px;line-height:1.65;" data-i18n="what_this_shows">Properties grouped by LLC naming patterns in public deed records. Scores reflect neighborhood displacement risk, not a claim of wrongdoing by any individual actor.</p>
+            <p style="font-size:0.78rem;color:rgba(148,163,184,0.35);margin-bottom:20px;line-height:1.55;">Derived from public deed records; indicates ownership structure, not legal conclusions.</p>
 
             <!-- Pattern note (operator-specific, shown only when note exists) -->
             <div id="pattern-note" style="display:none; margin-bottom:16px; padding:12px 16px; background:rgba(249,115,22,0.05); border:1px solid rgba(249,115,22,0.12); border-radius:8px;">
@@ -765,6 +769,17 @@
             render(_cachedData, _cachedZipNames);
         }
     });
+
+    // Copy link button
+    const _copyBtn = document.getElementById('copy-link-btn');
+    if (_copyBtn) {
+        _copyBtn.addEventListener('click', function() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                _copyBtn.textContent = 'Link copied';
+                setTimeout(() => { _copyBtn.textContent = 'Copy link'; }, 2000);
+            }).catch(() => {});
+        });
+    }
 
     applyTranslations();
     </script>
