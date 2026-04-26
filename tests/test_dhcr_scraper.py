@@ -108,6 +108,40 @@ class TestDhcrRsScraperRun:
             f"Expected quarantine reason 'missing_required_field:bbl_components', got '{reason}'"
         )
 
+    def test_db_error_in_upsert_writes_failure_status(self, dhcr_scraper):
+        """
+        Regression: if _upsert() raises a DataError mid-run, run() must write
+        status='failure'.  The old code called db.get() before db.rollback(), which
+        raised InFailedSqlTransaction on the aborted connection and left the row
+        stuck at status='running'.
+        """
+        from sqlalchemy.exc import DataError
+        from models.scraper import ScraperRun
+
+        fresh_run = ScraperRun(scraper_name="dhcr_rs", status="running")
+
+        db = MagicMock()
+        db.get.return_value = fresh_run
+        # Simulate DataError on the first _upsert() call
+        db.execute.side_effect = DataError("stmt", {}, Exception("value too long"))
+
+        mock_record = {
+            "boroid": "1",
+            "block": "1",
+            "lot": "1",
+            "legalclassa": "23",
+        }
+
+        with patch.object(dhcr_scraper, "paginate", return_value=iter([mock_record])):
+            with patch("scrapers.base.SCRAPER_EXPECTED_MIN_RECORDS", {}):
+                with pytest.raises(DataError):
+                    dhcr_scraper.run(db)
+
+        assert fresh_run.status == "failure", (
+            "DHCR run() must write status='failure' when _upsert() raises DataError"
+        )
+        assert fresh_run.error_message is not None
+
 
 # ---------------------------------------------------------------------------
 # Scoring weight tests

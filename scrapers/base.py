@@ -208,6 +208,7 @@ class BaseScraper(ABC):
         )
         db.add(scraper_run)
         db.commit()
+        run_id = scraper_run.id  # capture before _run() commits can expire the instance
 
         records_processed = 0
         records_failed = 0
@@ -218,7 +219,7 @@ class BaseScraper(ABC):
 
             # Re-fetch by pk after long-running _run() — the session may have
             # committed/rolled back internally, leaving this instance detached.
-            fresh = db.get(ScraperRun, scraper_run.id)
+            fresh = db.get(ScraperRun, run_id)
             if isinstance(fresh, ScraperRun):
                 scraper_run = fresh
 
@@ -256,20 +257,26 @@ class BaseScraper(ABC):
                 records_failed,
             )
         except Exception as exc:
-            # Re-fetch by pk — _run() may have left the instance detached.
-            fresh = db.get(ScraperRun, scraper_run.id)
-            if isinstance(fresh, ScraperRun):
-                scraper_run = fresh
-            scraper_run.status = "failure"
-            scraper_run.error_message = str(exc)
-            logger.exception("%s: failed: %s", self.SCRAPER_NAME, exc)
-            # A mid-scraper DB error (e.g. DataError) leaves PostgreSQL in an
-            # aborted transaction state.  Roll back now so the finally block
-            # can open a fresh transaction to persist the failure metadata.
+            # Rollback FIRST: a DB error in _run() leaves the connection in an
+            # aborted transaction state.  Calling db.get() before rollback raises
+            # InFailedSqlTransaction and replaces the original exception, leaving
+            # the ScraperRun row stuck at status='running'.
             try:
                 db.rollback()
             except Exception:
                 pass
+            # Re-fetch after rollback — the instance may have been expired or
+            # detached by commits inside _run().
+            fresh = db.get(ScraperRun, run_id)
+            if isinstance(fresh, ScraperRun):
+                scraper_run = fresh
+            # Set status and error AFTER rollback.  SQLAlchemy clears dirty
+            # tracking on rollback, so anything set before rollback is silently
+            # dropped from the next flush.  Setting them here ensures the
+            # finally commit writes them.
+            scraper_run.status = "failure"
+            scraper_run.error_message = str(exc)
+            logger.exception("%s: failed: %s", self.SCRAPER_NAME, exc)
             raise
         finally:
             scraper_run.records_processed = records_processed
