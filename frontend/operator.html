@@ -73,7 +73,8 @@
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                     <div>
                         <h1 id="op-root" class="mono accent" style="font-size: 1.8rem; font-weight: 400; letter-spacing: 0.04em;"></h1>
-                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                        <div style="font-size: 0.78rem; color: rgba(148,163,184,0.45); margin-top: 4px; margin-bottom: 6px;" data-i18n="op_descriptor">LLC network identified through NYC deed records</div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
                             <span class="signal-chip" data-i18n="chip_window">18-month window</span>
                             <span class="signal-chip" data-i18n="chip_public_records">public records</span>
                         </div>
@@ -104,26 +105,13 @@
                 </div>
             </div>
 
-            <!-- Acquisition pace chart -->
-            <div class="panel" id="timeline-wrap" style="display:none; margin-bottom: 16px; padding: 14px 16px;">
-                <div style="font-size: 0.7rem; font-weight: 600; color: rgba(148,163,184,0.5); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;" data-i18n="acq_pace">Acquisition Pace</div>
-                <div style="position: relative; height: 72px;">
-                    <canvas id="timeline-chart"></canvas>
-                </div>
-            </div>
+            <!-- What this shows -->
+            <p style="font-size:0.82rem;color:rgba(148,163,184,0.48);margin-bottom:20px;line-height:1.65;" data-i18n="what_this_shows">Properties grouped by LLC naming patterns in public deed records. Scores reflect neighborhood displacement risk, not a claim of wrongdoing by any individual actor.</p>
 
-            <!-- LLC entities -->
-            <div class="panel" style="margin-bottom: 16px;">
-                <details>
-                    <summary style="padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;">
-                        <span style="font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8);" data-i18n="llc_entities_header">LLC Entities</span>
-                        <span style="display: flex; align-items: center; gap: 8px;">
-                            <span id="llc-count-badge" class="mono" style="font-size: 0.72rem; color: rgba(148,163,184,0.4);"></span>
-                            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.4)" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
-                        </span>
-                    </summary>
-                    <div id="llc-list" style="padding: 0 16px 16px; display: flex; flex-wrap: wrap; gap: 6px;"></div>
-                </details>
+            <!-- Pattern note (operator-specific, shown only when note exists) -->
+            <div id="pattern-note" style="display:none; margin-bottom:16px; padding:12px 16px; background:rgba(249,115,22,0.05); border:1px solid rgba(249,115,22,0.12); border-radius:8px;">
+                <div style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; color:rgba(249,115,22,0.5); margin-bottom:6px; font-family:'JetBrains Mono',monospace;" data-i18n="pattern_note_header">Pattern note</div>
+                <div id="pattern-note-text" style="font-size:0.8rem; color:rgba(148,163,184,0.7); line-height:1.55;"></div>
             </div>
 
             <!-- Related Operators -->
@@ -137,12 +125,6 @@
                 <div id="related-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
             </div>
 
-            <!-- Pattern note (operator-specific, shown only when note exists) -->
-            <div id="pattern-note" style="display:none; margin-bottom:16px; padding:12px 16px; background:rgba(249,115,22,0.05); border:1px solid rgba(249,115,22,0.12); border-radius:8px;">
-                <div style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; color:rgba(249,115,22,0.5); margin-bottom:6px; font-family:'JetBrains Mono',monospace;" data-i18n="pattern_note_header">Pattern note</div>
-                <div id="pattern-note-text" style="font-size:0.8rem; color:rgba(148,163,184,0.7); line-height:1.55;"></div>
-            </div>
-
             <!-- Eviction-then-buy callout -->
             <div id="eviction-wrap" style="display:none; margin-bottom: 16px;">
                 <div style="padding: 12px 16px; background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px;">
@@ -154,7 +136,7 @@
             <!-- Portfolio table -->
             <div class="panel" style="margin-bottom: 16px;">
                 <div style="padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(148,163,184,0.07);">
-                    <span style="font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8);" data-i18n="portfolio_header">Portfolio</span>
+                    <span style="font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8);" data-i18n="portfolio_header">High-risk properties in this portfolio</span>
                     <span id="portfolio-count" style="font-size: 0.72rem; color: rgba(148,163,184,0.35); font-family: 'JetBrains Mono', monospace;"></span>
                 </div>
                 <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
@@ -170,6 +152,12 @@
                         </thead>
                         <tbody id="portfolio-rows"></tbody>
                     </table>
+                </div>
+                <div id="portfolio-toggle-wrap" style="display:none; padding:10px 16px; border-top:1px solid rgba(148,163,184,0.06);">
+                    <button id="portfolio-toggle-btn" type="button" onclick="togglePortfolio()"
+                        style="font-size:0.75rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 0;min-height:32px;">
+                        Show all properties
+                    </button>
                 </div>
             </div>
 
@@ -195,6 +183,28 @@
                 <div id="acq-empty" style="display: none; padding: 24px 16px; font-size: 0.8rem; color: rgba(148,163,184,0.35); text-align: center;" data-i18n="acq_empty">
                     No acquisitions found in the 18-month window.
                 </div>
+            </div>
+
+            <!-- Acquisition pace chart (below deal log) -->
+            <div class="panel" id="timeline-wrap" style="display:none; margin-top: 16px; padding: 14px 16px;">
+                <div style="font-size: 0.7rem; font-weight: 600; color: rgba(148,163,184,0.5); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;" data-i18n="acq_pace">Acquisition Pace</div>
+                <div style="position: relative; height: 72px;">
+                    <canvas id="timeline-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- LLC entities (lowest priority — collapsible) -->
+            <div class="panel" style="margin-top: 16px;">
+                <details>
+                    <summary style="padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8);" data-i18n="llc_entities_header">LLC Entities</span>
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                            <span id="llc-count-badge" class="mono" style="font-size: 0.72rem; color: rgba(148,163,184,0.4);"></span>
+                            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.4)" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
+                        </span>
+                    </summary>
+                    <div id="llc-list" style="padding: 0 16px 16px; display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                </details>
             </div>
 
         </div><!-- /content -->
@@ -245,7 +255,11 @@
             th_amount:           'Amount',
             acq_empty:           'No acquisitions found in the 18-month window.',
             acq_pace:            'Acquisition Pace',
-            portfolio_header:    'Portfolio',
+            op_descriptor:       'LLC network identified through NYC deed records',
+            what_this_shows:     'Properties grouped by LLC naming patterns in public deed records. Scores reflect neighborhood displacement risk, not a claim of wrongdoing by any individual actor.',
+            portfolio_header:    'High-risk properties in this portfolio',
+            show_all_props:      'Show all {n} properties',
+            show_top_props:      'Show top 15 properties',
             portfolio_score:     'Score',
             portfolio_hpd:       'B/C Viol.',
             portfolio_rs:        'RS Units',
@@ -288,7 +302,11 @@
             th_amount:           'Monto',
             acq_empty:           'No se encontraron adquisiciones en la ventana de 18 meses.',
             acq_pace:            'Ritmo de Adquisición',
-            portfolio_header:    'Portafolio',
+            op_descriptor:       'Red de LLC identificada en registros de escrituras de NYC',
+            what_this_shows:     'Propiedades agrupadas por patrones de nombres de LLC en registros públicos. Las puntuaciones reflejan el riesgo de desplazamiento vecinal, no una acusación contra ningún actor individual.',
+            portfolio_header:    'Propiedades de alto riesgo en este portafolio',
+            show_all_props:      'Ver las {n} propiedades',
+            show_top_props:      'Ver las 15 principales',
             portfolio_score:     'Puntuación',
             portfolio_hpd:       'Viol. B/C',
             portfolio_rs:        'Uds. Estab.',
@@ -387,10 +405,19 @@
             });
         }
 
-        // Portfolio table (sorted by displacement score descending)
+        // Portfolio table (sorted by displacement score descending, top 15 visible by default)
         const portfolio = [...(data.properties || [])].sort((a, b) => b.displacement_score - a.displacement_score);
+        _portfolioTotal = portfolio.length;
         document.getElementById('portfolio-count').textContent = portfolio.length + (portfolio.length === 1 ? ' property' : ' properties');
         const portfolioTbody = document.getElementById('portfolio-rows');
+        if (portfolio.length > 15) {
+            const wrap = document.getElementById('portfolio-toggle-wrap');
+            if (wrap) {
+                wrap.style.display = '';
+                const btn = document.getElementById('portfolio-toggle-btn');
+                if (btn) btn.textContent = t('show_all_props').replace('{n}', portfolio.length);
+            }
+        }
         portfolio.forEach((p, i) => {
             const acq = acqByBbl[p.bbl] || {};
             const rs  = rsByBbl[p.bbl];
@@ -398,6 +425,7 @@
             const bcCount = (viol.B || 0) + (viol.C || 0);
             const sc = _scoreColor(p.displacement_score);
             const tr = document.createElement('tr');
+            if (i >= 15) { tr.className = 'portfolio-extra'; tr.style.display = 'none'; }
             tr.style.borderTop = '1px solid rgba(148,163,184,0.05)';
             if (i % 2 === 0) tr.style.background = 'rgba(15,23,42,0.18)';
             tr.innerHTML =
@@ -452,6 +480,18 @@
                 tbody.appendChild(tr);
             });
         }
+    }
+
+    let _portfolioTotal = 0;
+
+    function togglePortfolio() {
+        const extras = document.querySelectorAll('#portfolio-rows tr.portfolio-extra');
+        const btn = document.getElementById('portfolio-toggle-btn');
+        const showing = extras.length > 0 && extras[0].style.display !== 'none';
+        extras.forEach(r => { r.style.display = showing ? 'none' : ''; });
+        btn.textContent = showing
+            ? t('show_all_props').replace('{n}', _portfolioTotal)
+            : t('show_top_props');
     }
 
     function _renderTimeline(data) {
@@ -680,11 +720,13 @@
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = '';
             });
-            document.getElementById('related-section').style.display = 'none';
-            document.getElementById('acq-table').style.display       = '';
-            document.getElementById('acq-empty').style.display       = 'none';
-            document.getElementById('eviction-wrap').style.display   = 'none';
-            document.getElementById('timeline-wrap').style.display   = 'none';
+            document.getElementById('related-section').style.display    = 'none';
+            document.getElementById('acq-table').style.display          = '';
+            document.getElementById('acq-empty').style.display          = 'none';
+            document.getElementById('eviction-wrap').style.display      = 'none';
+            document.getElementById('timeline-wrap').style.display      = 'none';
+            const ptWrap = document.getElementById('portfolio-toggle-wrap');
+            if (ptWrap) ptWrap.style.display = 'none';
             render(_cachedData, _cachedZipNames);
         }
     });
