@@ -101,7 +101,63 @@ class OwnershipScraper(BaseScraper):
         self._parties_url = f"{SOCRATA_BASE_URL}/{PARTIES_DATASET_ID}.json"
         self._legals_url = f"{SOCRATA_BASE_URL}/{LEGALS_DATASET_ID}.json"
 
+    def _check_source_freshness(self, db) -> int | None:
+        """
+        Query the ACRIS master endpoint for its current maximum recorded_datetime.
+
+        Returns the number of days the source has been stale (i.e. its max date
+        has not advanced past the current watermark), or None when freshness
+        cannot be determined (first run, network failure, empty response).
+
+        This is called before the main query so the scraper can emit a clear
+        "source frozen N days" warning instead of a cryptic "0 records processed"
+        anomaly that looks identical to a scraper defect.
+        """
+        watermark = self.get_watermark(db)
+        if watermark is None:
+            return None  # first run — no prior watermark to compare against
+
+        try:
+            resp = self._http.get(
+                self.base_url,
+                params={"$select": "MAX(recorded_datetime) AS max_dt", "$limit": 1},
+                timeout=30,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            if not data or not data[0].get("max_dt"):
+                return None
+
+            max_dt_str = data[0]["max_dt"]
+            source_max = datetime(
+                int(max_dt_str[:4]),
+                int(max_dt_str[5:7]),
+                int(max_dt_str[8:10]),
+                tzinfo=timezone.utc,
+            )
+            # Source is stale when its ceiling recorded_datetime is at or before
+            # the watermark — any query for newer records will return zero rows.
+            if source_max <= watermark:
+                return (datetime.now(timezone.utc) - source_max).days
+            return None
+        except Exception as exc:
+            logger.warning("ACRIS source freshness check failed (continuing): %s", exc)
+            return None
+
     def _run(self, db) -> tuple[int, int, datetime | None]:
+        stale_days = self._check_source_freshness(db)
+        if stale_days is not None:
+            logger.warning(
+                "ACRIS source has not updated in %d days — max recorded_datetime "
+                "in dataset %s has not advanced past the current watermark. "
+                "No new deed transfers are available in NYC Open Data. "
+                "This is a source-side issue; check https://data.cityofnewyork.us/d/%s",
+                stale_days,
+                MASTER_DATASET_ID,
+                MASTER_DATASET_ID,
+            )
+            return 0, 0, None
+
         where = self._build_master_where(db)
         logger.info("ACRIS master query: %s", where)
 

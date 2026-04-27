@@ -151,8 +151,13 @@ class PermitsScraper(BaseScraper):
         # reduces the download from 3.9M records to ~12k per run and makes
         # the nightly scraper viable. on_conflict_do_nothing ensures idempotency.
         current_year = datetime.now(timezone.utc).year
+        # Three-year lookback: include current_year - 2 so permits added to the
+        # Socrata dataset after the calendar-year boundary are not silently dropped.
+        # When current_year rolls over (e.g. 2026 → 2027) the 2-year window
+        # stops fetching the prior year, leaving a gap for late-arriving records.
+        # on_conflict_do_nothing ensures already-ingested rows are deduplicated.
         year_conditions = " OR ".join(
-            f"filing_date LIKE '%/{y}'" for y in [current_year, current_year - 1]
+            f"filing_date LIKE '%/{y}'" for y in [current_year, current_year - 1, current_year - 2]
         )
         where = f"permit_type IS NOT NULL AND ({year_conditions})"
         if RELEVANT_PERMIT_TYPES:

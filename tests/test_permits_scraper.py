@@ -161,3 +161,74 @@ class TestCleanZip:
         """Non-numeric or wrong-length zip should return None."""
         assert _clean_zip("ABCDE") is None
         assert _clean_zip("1234") is None
+
+
+# ---------------------------------------------------------------------------
+# TestPermitsYearFilter
+# ---------------------------------------------------------------------------
+
+class TestPermitsYearFilter:
+    """
+    Verify the filing_date year filter in PermitsScraper._run() covers three
+    calendar years so late-arriving Socrata records are not silently dropped
+    when the calendar year rolls over.
+    """
+
+    def _make_scraper(self):
+        with patch.dict("os.environ", {"NYC_OPEN_DATA_APP_TOKEN": "test"}):
+            return PermitsScraper()
+
+    def test_where_clause_contains_three_years(self):
+        """_run() must pass a WHERE clause that covers 3 years to paginate."""
+        import datetime as dt
+        current_year = dt.datetime.now(dt.timezone.utc).year
+
+        scraper = self._make_scraper()
+        captured = []
+
+        def fake_paginate(where, **kwargs):
+            captured.append(where)
+            return iter([])
+
+        db = MagicMock()
+        with patch.object(scraper, "paginate", side_effect=fake_paginate):
+            scraper._run(db)
+
+        assert captured, "paginate was never called"
+        where = captured[0]
+        assert f"'%/{current_year}'" in where,     f"current year {current_year} missing"
+        assert f"'%/{current_year - 1}'" in where, f"prior year {current_year - 1} missing"
+        assert f"'%/{current_year - 2}'" in where, f"two years ago {current_year - 2} missing"
+
+    def test_where_clause_not_only_two_years(self):
+        """Regression: old 2-year filter dropped prior-prior year late records."""
+        import datetime as dt
+        current_year = dt.datetime.now(dt.timezone.utc).year
+
+        scraper = self._make_scraper()
+        captured = []
+
+        def fake_paginate(where, **kwargs):
+            captured.append(where)
+            return iter([])
+
+        db = MagicMock()
+        with patch.object(scraper, "paginate", side_effect=fake_paginate):
+            scraper._run(db)
+
+        where = captured[0]
+        two_years_ago = current_year - 2
+        # Must contain the third year — this would have been missing before the fix
+        assert f"'%/{two_years_ago}'" in where, (
+            f"Year {two_years_ago} not in filter — old 2-year bug regressed"
+        )
+
+    def test_expected_min_records_is_not_500(self):
+        """dob_permits expected minimum must reflect steady-state incremental rate."""
+        from config.nyc import SCRAPER_EXPECTED_MIN_RECORDS
+        min_rec = SCRAPER_EXPECTED_MIN_RECORDS.get("dob_permits", 0)
+        assert min_rec < 500, (
+            f"dob_permits minimum {min_rec} is still set for bulk-ingest mode "
+            f"(was 500); should be ~50 for daily-incremental steady state"
+        )
+        assert min_rec > 0, "dob_permits minimum must be > 0 to catch total failures"
