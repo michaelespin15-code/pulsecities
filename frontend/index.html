@@ -341,6 +341,7 @@
                 explore_map:          'Explore the map →',
                 recent_findings:      'Recent operator findings',
                 operator_profile:     'View operator profile →',
+                op_acquisitions:      'acquisitions',
                 your_watchlist:       'Your Watchlist',
                 changed_this_week:    'Changed this week',
                 sig_llc:              'LLC acquisitions',
@@ -371,6 +372,7 @@
                 explore_map:          'Explorar el mapa →',
                 recent_findings:      'Hallazgos recientes',
                 operator_profile:     'Ver perfil del operador →',
+                op_acquisitions:      'adquisiciones',
                 your_watchlist:       'Tu Lista de Seguimiento',
                 changed_this_week:    'Cambios esta semana',
                 sig_llc:              'adquisiciones LLC',
@@ -574,7 +576,9 @@
             }
             if (!container) return;
 
-            const profileLabel = i18n[_lang]?.operator_profile || 'View operator profile →';
+            const s            = i18n[_lang] || i18n.en;
+            const profileLabel = s.operator_profile || 'View operator profile →';
+            const acqLabel     = s.op_acquisitions  || 'acquisitions';
 
             ops.forEach(op => {
                 const card = document.createElement('a');
@@ -586,9 +590,12 @@
                     'text-decoration:none',
                     'margin-bottom:8px',
                 ].join(';');
+                const llcStr = `${op.llc_count} LLC${op.llc_count !== 1 ? 's' : ''}`;
+                const acqStr = `${op.total_acquisitions} ${acqLabel}`;
                 card.innerHTML =
                     `<div class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:3px;">${op.operator_root}</div>` +
-                    `<div style="font-size:11px;color:#475569;margin-bottom:6px;">${op.llc_count} LLC${op.llc_count !== 1 ? 's' : ''} · ${op.total_acquisitions} acquisitions</div>` +
+                    `<div style="font-size:11px;color:#475569;margin-bottom:2px;">${acqStr}</div>` +
+                    `<div style="font-size:11px;color:#475569;margin-bottom:6px;">${llcStr}</div>` +
                     `<div style="font-size:11px;color:#38bdf8;">${profileLabel}</div>`;
                 container.appendChild(card);
             });

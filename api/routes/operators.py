@@ -36,6 +36,15 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/operators", tags=["operators"])
 limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
+# Operator roots excluded from the homepage "Recent findings" widget.
+# All confirmed finance/lender entities: their "acquisitions" are ASST
+# (mortgage note assignments), not DEED transfers — they are not property
+# operators in the displacement sense and mislead journalists.
+_HOMEPAGE_NOISE_ROOTS: frozenset[str] = frozenset({
+    "ICECAP", "ICE", "BROAD", "BROADVIEW",
+    "ARBOR", "STANDARD", "SYMETRA", "COMMUNITY", "OCEANVIEW",
+})
+
 _SCRIPTS_DIR = Path(__file__).parent.parent.parent / "scripts"
 _AUDIT_PATH = _SCRIPTS_DIR / "entity_resolution_audit.json"
 _ANALYSIS_PATH = _SCRIPTS_DIR / "operator_network_analysis.json"
@@ -164,11 +173,34 @@ def list_operators(request: Request, response: Response, db: Session = Depends(g
 
 @router.get("/top")
 @limiter.limit("60/minute")
-def get_top_operators(request: Request, response: Response, limit: int = 3):
-    """Top operators by total acquisition count. Used by the landing page."""
+def get_top_operators(
+    request: Request,
+    response: Response,
+    limit: int = 3,
+    db: Session = Depends(get_db),
+):
+    """Top operators by total acquisition count, filtered to confirmed operators.
+
+    Excludes finance/lender noise clusters (_HOMEPAGE_NOISE_ROOTS) and any
+    cluster without a valid DB row — so every returned entry resolves to a
+    working /operator/{slug} profile page.
+    """
     clusters = _load_audit()["clusters"]
+
+    # Only surface operators that have a DB entry (valid profile page).
+    db_roots: set[str] = {
+        r.operator_root
+        for r in db.execute(text("SELECT operator_root FROM operators")).fetchall()
+    }
+
     top = sorted(
-        [{"operator_root": r, **c} for r, c in clusters.items()],
+        [
+            {"operator_root": r, **c}
+            for r, c in clusters.items()
+            if r not in _HOMEPAGE_NOISE_ROOTS
+            and r in db_roots
+            and len(c.get("llc_entities") or []) > 0
+        ],
         key=lambda x: x.get("total_acquisitions", 0),
         reverse=True,
     )[:max(1, min(limit, 10))]
