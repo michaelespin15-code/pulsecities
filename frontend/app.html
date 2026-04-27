@@ -1224,14 +1224,14 @@
                     watch:                   'Watch',
                     watching:                'Watching',
                     reno_flip_days:          '{n}d later',
-                    landlord_found:          'Found {count} {properties} across {zips} {zip_codes} — {llcs} {llc_names}',
+                    landlord_found:          'Found {count} {properties} across {zips} {zip_codes} with {llcs} {llc_names}',
                     landlord_property:       'property',
                     landlord_properties:     'properties',
                     landlord_zip:            'zip code',
                     landlord_zips:           'zip codes',
                     landlord_llc:            'LLC name',
                     landlord_llcs:           'LLC names',
-                    landlord_acq:            '— ~${amount}M in acquisitions',
+                    landlord_acq:            '. ~${amount}M in acquisitions',
                 },
                 risk_signal: {
                     permits:          'Surge in renovation permit filings',
@@ -1255,7 +1255,7 @@
                     llc_tooltip:       'LLC property acquisitions tracked in NYC deed records in the last 30 days.',
                     eviction_tooltip:  'Eviction cases filed in NYC Housing Court in the last 30 days.',
                     pulse_tooltip_pre: 'Scores updated',
-                    pulse_tooltip_suf: '· nightly at 2am UTC',
+                    pulse_tooltip_suf: '. Updates nightly at 2am UTC',
                     hook_shifting:     'Ownership is shifting.',
                     hook_ratio_tpl:    'LLC transfers outpace eviction filings {ratio}× this month.',
                     hook_neutral_a:    '{llc} buildings changed LLC hands.',
@@ -1442,14 +1442,14 @@
                     watch:                   'Seguir',
                     watching:                'Siguiendo',
                     reno_flip_days:          '{n}d después',
-                    landlord_found:          'Se encontraron {count} {properties} en {zips} {zip_codes} — {llcs} {llc_names}',
+                    landlord_found:          'Se encontraron {count} {properties} en {zips} {zip_codes} con {llcs} {llc_names}',
                     landlord_property:       'propiedad',
                     landlord_properties:     'propiedades',
                     landlord_zip:            'código postal',
                     landlord_zips:           'códigos postales',
                     landlord_llc:            'nombre LLC',
                     landlord_llcs:           'nombres LLC',
-                    landlord_acq:            '— ~${amount}M en adquisiciones',
+                    landlord_acq:            '. ~${amount}M en adquisiciones',
                 },
                 risk_signal: {
                     permits:          'Aumento en solicitudes de permisos de renovación',
@@ -1473,7 +1473,7 @@
                     llc_tooltip:       'Adquisiciones de propiedades LLC registradas en escrituras de NYC en los últimos 30 días.',
                     eviction_tooltip:  'Casos de desalojo presentados en el Tribunal de Vivienda de NYC en los últimos 30 días.',
                     pulse_tooltip_pre: 'Puntajes actualizados',
-                    pulse_tooltip_suf: '· cada noche a las 2am UTC',
+                    pulse_tooltip_suf: '. Se actualiza cada noche a las 2am UTC',
                     hook_shifting:     'La propiedad está cambiando de manos.',
                     hook_ratio_tpl:    'Las transferencias LLC superan los desalojos {ratio}× este mes.',
                     hook_neutral_a:    '{llc} propiedades adquiridas por LLC este mes.',
@@ -2879,7 +2879,7 @@
             if (sigPairs.length) {
                 const sigEl = document.createElement('div');
                 sigEl.className = 'mt-1.5 font-mono text-xs';
-                sigEl.textContent = sigPairs.map(([k, v]) => `${v.toLocaleString()} ${tPlural('signal_short', k, v)}`).join(' · ');
+                sigEl.textContent = sigPairs.map(([k, v]) => `${v.toLocaleString()} ${tPlural('signal_short', k, v)}`).join(', ');
                 sigEl.style.color = 'rgba(148,163,184,0.7)';
                 card.append(topRow, placeEl, scoreEl, sigEl);
             } else {
