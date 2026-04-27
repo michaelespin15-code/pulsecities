@@ -328,6 +328,13 @@
     <script>
         let _lang = localStorage.getItem('pc-lang') || 'en';
         let _liveLlc = 0, _liveEvictions = 0;
+        let _cachedStats = null, _cachedMovers = null, _cachedOperators = null;
+
+        function getCurrentLanguage() {
+            return localStorage.getItem('pc-lang') || 'en';
+        }
+
+        const ALLOWED_OPERATOR_ROOTS = new Set(['MTEK', 'PHANTOM', 'RIDGEWOOD', 'CROSS', 'VALLEY', 'BREDIF']);
 
         const i18n = {
             en: {
@@ -434,7 +441,7 @@
         }
 
         function moverSignalLabel(dominant, count) {
-            const s = i18n[_lang] || i18n.en;
+            const s = i18n[getCurrentLanguage()] || i18n.en;
             const plural   = { llc_acquisitions: s.sig_llc,   evictions: s.sig_evictions,   permits: s.sig_permits,   complaint_rate: s.sig_complaints   };
             const singular = { llc_acquisitions: s.sig_llc_s, evictions: s.sig_evictions_s, permits: s.sig_permits_s, complaint_rate: s.sig_complaints_s };
             return (count === 1 ? singular[dominant] : plural[dominant]) || plural[dominant] || '';
@@ -449,7 +456,7 @@
             const chips = document.getElementById('stat-chips');
             if (!chips || (!llc && !evictions)) return;
 
-            const s = i18n[_lang] || i18n.en;
+            const s = i18n[getCurrentLanguage()] || i18n.en;
             const parts = [];
             if (llc)       parts.push(`${llc.toLocaleString()} ${s.stats_llc_unit}`);
             if (evictions) parts.push(`${evictions.toLocaleString()} ${s.stats_eviction_unit}`);
@@ -585,10 +592,13 @@
             }
             if (!container) return;
 
-            const s            = i18n[_lang] || i18n.en;
+            const s            = i18n[getCurrentLanguage()] || i18n.en;
             const profileLabel = s.operator_profile || 'View operator profile →';
             const acqLabel     = s.op_acquisitions  || 'acquisitions';
 
+            ops = (ops || []).filter(op => ALLOWED_OPERATOR_ROOTS.has(op.operator_root));
+            if (!ops.length) { if (outer) outer.style.display = 'none'; return; }
+            container.innerHTML = '';
             ops.forEach(op => {
                 const card = document.createElement('a');
                 card.href  = `/operator/${encodeURIComponent(op.operator_root)}`;
@@ -615,6 +625,7 @@
             .then(r => r.ok ? r.json() : null)
             .then(data => {
                 if (!data) return;
+                _cachedStats = data;
                 populateStats(data);
                 renderZipCards(data.top_risk_list || []);
             })
@@ -626,13 +637,13 @@
         // Fetch top movers
         fetch('/api/neighborhoods/top-movers?limit=8')
             .then(r => r.ok ? r.json() : null)
-            .then(data => { if (data) renderMovers(data.neighborhoods || []); })
+            .then(data => { if (data) { _cachedMovers = data.neighborhoods || []; renderMovers(_cachedMovers); } })
             .catch(() => {});
 
         // Fetch top operators
         fetch('/api/operators/top?limit=3')
             .then(r => r.ok ? r.json() : null)
-            .then(ops => renderOperators(ops))
+            .then(ops => { _cachedOperators = ops; renderOperators(ops); })
             .catch(() => {
                 const outer = document.getElementById('operators-outer');
                 if (outer) outer.style.display = 'none';
@@ -716,6 +727,8 @@
             localStorage.setItem('pc-lang', _lang);
             langToggle.textContent = _lang === 'es' ? 'ES / EN' : 'EN / ES';
             applyTranslations(_lang);
+            if (_cachedStats) populateStats(_cachedStats);
+            if (_cachedOperators) renderOperators(_cachedOperators);
         });
 
         applyTranslations(_lang);
