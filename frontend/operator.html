@@ -117,19 +117,19 @@
             <!-- Stats row -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 24px;">
                 <div class="panel stat-card">
-                    <div class="stat-val" id="stat-properties">—</div>
+                    <div class="stat-val" id="stat-properties"></div>
                     <div class="stat-label" data-i18n="stat_properties">Properties</div>
                 </div>
                 <div class="panel stat-card">
-                    <div class="stat-val" id="stat-acquisitions">—</div>
+                    <div class="stat-val" id="stat-acquisitions"></div>
                     <div class="stat-label" data-i18n="stat_acquisitions">Acquisitions</div>
                 </div>
                 <div class="panel stat-card">
-                    <div class="stat-val" id="stat-llcs">—</div>
+                    <div class="stat-val" id="stat-llcs"></div>
                     <div class="stat-label" data-i18n="stat_llcs">LLC Entities</div>
                 </div>
                 <div class="panel stat-card">
-                    <div class="stat-val" id="stat-zips">—</div>
+                    <div class="stat-val" id="stat-zips"></div>
                     <div class="stat-label" data-i18n="stat_zips">Zip Codes</div>
                 </div>
             </div>
@@ -216,6 +216,11 @@
                     No acquisitions found in the 18-month window.
                 </div>
                 <div id="acq-mobile-list" class="mobile-card-list"></div>
+                <div id="acq-toggle-wrap" style="display:none; padding:10px 16px; border-top:1px solid rgba(148,163,184,0.06);">
+                    <button id="acq-toggle-btn" type="button" onclick="toggleAcquisitions()"
+                        style="font-size:0.75rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 0;min-height:32px;">
+                    </button>
+                </div>
             </div>
 
             <!-- Acquisition pace chart (below deal log) -->
@@ -310,7 +315,7 @@
 
     function fmtCurrency(v) {
         const n = Number(v);
-        return (Number.isFinite(n) && n > 0) ? '$' + Math.round(n).toLocaleString() : '—';
+        return (Number.isFinite(n) && n > 0) ? '$' + Math.round(n).toLocaleString() : t('na');
     }
 
     const i18n = {
@@ -513,7 +518,7 @@
 
         const addrDiv = document.createElement('div');
         addrDiv.className = 'mob-addr';
-        addrDiv.textContent = r.address || r.bbl || '—';
+        addrDiv.textContent = r.address || r.bbl || t('na');
         div.appendChild(addrDiv);
 
         const zipName = r.zip_code && zipNames[r.zip_code] ? zipNames[r.zip_code] : null;
@@ -543,6 +548,11 @@
             }
             div.appendChild(dateDiv);
         }
+
+        const amtDiv = document.createElement('div');
+        amtDiv.className = 'mob-meta';
+        amtDiv.textContent = fmtCurrency(r.doc_amount);
+        div.appendChild(amtDiv);
 
         return div;
     }
@@ -666,7 +676,18 @@
             data.related_operators.forEach(rel => renderRelated(relList, rel));
         }
 
-        const rows = data.recent_acquisitions || [];
+        // Dedup by display key before rendering — API can return duplicate rows for
+        // the same deed recorded under multiple instrument types.
+        const _acqSeen = new Set();
+        const rows = (data.recent_acquisitions || []).filter(r => {
+            const key = [r.address, r.zip_code, r.buyer_name, r.doc_date, String(r.doc_amount)].join('\x00');
+            if (_acqSeen.has(key)) return false;
+            _acqSeen.add(key);
+            return true;
+        });
+        _acqTotal = rows.length;
+
+        const ACQ_CAP = 20;
         if (rows.length === 0) {
             document.getElementById('acq-table').style.display = 'none';
             document.getElementById('acq-empty').style.display = 'block';
@@ -677,20 +698,45 @@
                 const tr = document.createElement('tr');
                 tr.style.borderTop = '1px solid rgba(148,163,184,0.06)';
                 if (i % 2 === 0) tr.style.background = 'rgba(15,23,42,0.2)';
+                if (i >= ACQ_CAP) { tr.classList.add('acq-extra'); tr.style.display = 'none'; }
                 tr.innerHTML =
-                    '<td style="padding:8px 16px;color:rgba(241,245,249,0.85);">' + esc(r.address) + '</td>' +
+                    '<td style="padding:8px 16px;color:rgba(241,245,249,0.85);">' + esc(r.address || r.bbl || t('na')) + '</td>' +
                     '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.6);font-size:0.72rem;line-height:1.3;">' + esc(r.zip_code || '') + (r.zip_code && zipNames[r.zip_code] ? '<br><span style="font-size:0.65rem;color:rgba(148,163,184,0.35);font-family:inherit;">' + esc(zipNames[r.zip_code]) + '</span>' : '') + '</td>' +
                     '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.55);font-size:0.7rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(r.buyer_name || '') + '</td>' +
                     '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.5);font-size:0.72rem;white-space:nowrap;">' + esc(r.doc_date || '') + '</td>' +
                     '<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:rgba(148,163,184,0.6);font-size:0.72rem;white-space:nowrap;">' + fmtCurrency(r.doc_amount) + '</td>';
                 tbody.appendChild(tr);
 
-                acqMobileList.appendChild(formatMobileAcquisitionRow(r, zipNames));
+                const mRow = formatMobileAcquisitionRow(r, zipNames);
+                if (i >= ACQ_CAP) { mRow.classList.add('acq-mobile-extra'); mRow.style.display = 'none'; }
+                acqMobileList.appendChild(mRow);
             });
+
+            if (rows.length > ACQ_CAP) {
+                const wrap = document.getElementById('acq-toggle-wrap');
+                const btn  = document.getElementById('acq-toggle-btn');
+                if (wrap && btn) {
+                    btn.textContent = 'Show all ' + rows.length + ' acquisitions';
+                    wrap.style.display = '';
+                }
+            }
         }
     }
 
     let _portfolioTotal = 0;
+    let _acqTotal = 0;
+
+    function toggleAcquisitions() {
+        const extras       = document.querySelectorAll('#acq-rows tr.acq-extra');
+        const mobileExtras = document.querySelectorAll('#acq-mobile-list .acq-mobile-extra');
+        const btn          = document.getElementById('acq-toggle-btn');
+        const showing      = extras.length > 0 && extras[0].style.display !== 'none';
+        extras.forEach(r       => { r.style.display = showing ? 'none' : ''; });
+        mobileExtras.forEach(r => { r.style.display = showing ? 'none' : ''; });
+        if (btn) btn.textContent = showing
+            ? 'Show all ' + _acqTotal + ' acquisitions'
+            : 'Show fewer acquisitions';
+    }
 
     function togglePortfolio() {
         const extras = document.querySelectorAll('#portfolio-rows tr.portfolio-extra');
@@ -970,6 +1016,8 @@
             if (ptWrapEl2) ptWrapEl2.style.display = '';
             const ptWrap = document.getElementById('portfolio-toggle-wrap');
             if (ptWrap) ptWrap.style.display = 'none';
+            const atWrap = document.getElementById('acq-toggle-wrap');
+            if (atWrap) atWrap.style.display = 'none';
             render(_cachedData, _cachedZipNames);
         }
     });
