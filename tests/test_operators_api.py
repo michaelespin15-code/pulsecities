@@ -274,3 +274,52 @@ class TestGroupedSearch:
         ).fetchall()
         # Verify the operators table query works and returns at least one row
         assert len(op_rows) >= 1
+
+
+@pytest.mark.integration
+class TestOperatorDirectoryLinkIntegrity:
+    """
+    Every href link on /operators must resolve via the detail API.
+    Regression for: clusters from JSON files appearing on /operators without
+    a corresponding operators DB row, causing the detail page JS to receive a
+    404 from /api/operators/{slug} and display "Operator not found."
+    """
+
+    def test_all_linked_operators_resolvable(self, client):
+        import re as _re
+        resp = client.get("/operators")
+        assert resp.status_code == 200
+        # Extract slugs from href="/operator/{slug}" links only
+        linked_slugs = _re.findall(r'href="/operator/([a-z0-9-]+)"', resp.text)
+        linked_slugs = list(dict.fromkeys(linked_slugs))  # dedupe, preserve order
+        assert len(linked_slugs) > 0, "No operator hrefs found in /operators"
+        for slug in linked_slugs:
+            detail = client.get(f"/api/operators/{slug}")
+            assert detail.status_code == 200, (
+                f"/operator/{slug} is linked on /operators but "
+                f"/api/operators/{slug} returned {detail.status_code}"
+            )
+
+    def test_melo_not_linked_or_resolvable(self, client):
+        import re as _re
+        resp = client.get("/operators")
+        assert resp.status_code == 200
+        linked_slugs = _re.findall(r'href="/operator/([a-z0-9-]+)"', resp.text)
+        if "melo" in linked_slugs:
+            detail = client.get("/api/operators/melo")
+            assert detail.status_code == 200, (
+                "MELO is linked on /operators but /api/operators/melo returns 404"
+            )
+        # MELO not linked is the expected outcome after the fix — also acceptable
+
+    def test_no_dead_onclick_links(self, client):
+        import re as _re
+        resp = client.get("/operators")
+        assert resp.status_code == 200
+        # Every slug in onclick handlers must also resolve
+        onclick_slugs = _re.findall(r"onclick=\"location\.href='/operator/([a-z0-9-]+)'\"", resp.text)
+        for slug in onclick_slugs:
+            detail = client.get(f"/api/operators/{slug}")
+            assert detail.status_code == 200, (
+                f"onclick for /operator/{slug} found but API returns {detail.status_code}"
+            )
