@@ -360,6 +360,10 @@
                 trust_body:           'PulseCities connects records that are usually scattered across city systems: permits, evictions, complaints, ownership transfers, violations, and rent-stabilized housing.',
                 read_methodology:     'Read the methodology →',
                 sources_line:         'Sources: NYC DOB, HPD, ACRIS, 311, eviction filings, DHCR.',
+                stats_llc_unit:       'LLC transfers',
+                stats_eviction_unit:  'evictions',
+                stats_connector:      'and',
+                stats_suffix:         'in the last 30 days',
             },
             es: {
                 tagline:              'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
@@ -391,6 +395,10 @@
                 trust_body:           'PulseCities conecta registros que suelen estar dispersos en distintos sistemas: permisos, desalojos, quejas, transferencias de propiedad, violaciones y viviendas con renta estabilizada.',
                 read_methodology:     'Leer la metodología →',
                 sources_line:         'Fuentes: NYC DOB, HPD, ACRIS, 311, registros de desalojo, DHCR.',
+                stats_llc_unit:       'transferencias LLC',
+                stats_eviction_unit:  'desalojos',
+                stats_connector:      'y',
+                stats_suffix:         'en los últimos 30 días',
             }
         };
 
@@ -441,11 +449,12 @@
             const chips = document.getElementById('stat-chips');
             if (!chips || (!llc && !evictions)) return;
 
+            const s = i18n[_lang] || i18n.en;
             const parts = [];
-            if (llc)       parts.push(`${llc.toLocaleString()} LLC transfers`);
-            if (evictions) parts.push(`${evictions.toLocaleString()} evictions`);
+            if (llc)       parts.push(`${llc.toLocaleString()} ${s.stats_llc_unit}`);
+            if (evictions) parts.push(`${evictions.toLocaleString()} ${s.stats_eviction_unit}`);
             if (parts.length) {
-                chips.textContent = parts.join(' · ') + ' in the last 30 days';
+                chips.textContent = parts.join(` ${s.stats_connector} `) + ` ${s.stats_suffix}`;
                 chips.style.opacity = '1';
             }
         }
@@ -485,7 +494,7 @@
                             .sort(([, a], [, b]) => b - a)
                             .slice(0, 2)
                             .map(([k, v]) => `<span data-signal="${k}" data-count="${v}">${v.toLocaleString()} ${moverSignalLabel(k, v)}</span>`)
-                            .join(' · ');
+                            .join(', ');
                         if (top2) sigLine = `<div style="font-size:11px;color:rgba(148,163,184,0.75);margin-top:8px;">${top2}</div>`;
                     }
 
