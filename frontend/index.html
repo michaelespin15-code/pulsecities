@@ -480,7 +480,7 @@
                 const color     = scoreColor(n.score);
                 const rankColor = rankColors[(n.rank - 1)] || '#64748b';
                 const isTop     = n.rank === 1;
-                const scoreStr  = n.score != null ? n.score.toFixed(1) : '—';
+                const scoreStr  = n.score != null ? n.score.toFixed(1) : 'N/A';
                 const nameLine  = [n.name, n.borough].filter(Boolean).join(', ');
                 const card      = document.createElement('a');
                 card.href       = `/map?q=${encodeURIComponent(n.zip_code)}`;
@@ -677,7 +677,7 @@
                                 aria-label="Remove">&#10005;</button>
                         <div class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:2px;padding-right:24px;">${zip}</div>
                         <div style="font-size:11px;color:#64748b;margin-bottom:6px;">${name}</div>
-                        <div class="font-mono" style="font-size:13px;font-weight:600;color:${color};">${score != null ? score.toFixed(1) : '—'}</div>
+                        <div class="font-mono" style="font-size:13px;font-weight:600;color:${color};">${score != null ? score.toFixed(1) : 'N/A'}</div>
                     `;
                     card.querySelector('.watch-remove').addEventListener('click', e => {
                         e.preventDefault();
