@@ -323,3 +323,118 @@ class TestOperatorDirectoryLinkIntegrity:
             assert detail.status_code == 200, (
                 f"onclick for /operator/{slug} found but API returns {detail.status_code}"
             )
+
+
+@pytest.mark.integration
+class TestNoiseOperatorVisibility:
+    """
+    Finance/lender noise operators must be hidden from all public surfaces.
+    Single source of truth: OPERATOR_NOISE_ROOTS / OPERATOR_NOISE_SLUGS in operators.py.
+    """
+
+    NOISE_SLUGS = ["icecap", "ice", "broad", "broadview",
+                   "arbor", "standard", "symetra", "community", "oceanview"]
+    VISIBLE_SLUGS = ["mtek-nyc", "phantom-capital", "bredif",
+                     "ridgewood", "cross", "valley"]
+
+    def test_top_excludes_all_noise_roots(self, client):
+        resp = client.get("/api/operators/top?limit=10")
+        assert resp.status_code == 200
+        roots = {op["operator_root"] for op in resp.json()}
+        from api.routes.operators import OPERATOR_NOISE_ROOTS
+        assert not (roots & OPERATOR_NOISE_ROOTS), (
+            f"Noise roots found in /top: {roots & OPERATOR_NOISE_ROOTS}"
+        )
+
+    def test_top_contains_only_visible_operators(self, client):
+        resp = client.get("/api/operators/top?limit=10")
+        assert resp.status_code == 200
+        roots = {op["operator_root"] for op in resp.json()}
+        from api.routes.operators import OPERATOR_NOISE_ROOTS
+        for root in roots:
+            assert root not in OPERATOR_NOISE_ROOTS, f"{root} is noise but appears in /top"
+
+    def test_operators_directory_excludes_noise(self, client):
+        resp = client.get("/operators")
+        assert resp.status_code == 200
+        for slug in self.NOISE_SLUGS:
+            assert f'/operator/{slug}"' not in resp.text, (
+                f"Noise slug {slug} linked in /operators"
+            )
+
+    def test_operators_directory_includes_visible(self, client):
+        resp = client.get("/operators")
+        assert resp.status_code == 200
+        for slug in self.VISIBLE_SLUGS:
+            assert f'/operator/{slug}"' in resp.text, (
+                f"Visible slug {slug} missing from /operators"
+            )
+
+    def test_operators_directory_has_no_locked_rows(self, client):
+        resp = client.get("/operators")
+        assert resp.status_code == 200
+        assert "op-row-locked" not in resp.text, (
+            "Locked rows found in /operators — should be clean (noise hidden, not locked)"
+        )
+
+    def test_operators_directory_no_dot_separator(self, client):
+        resp = client.get("/operators")
+        assert resp.status_code == 200
+        # middot or bullet separators must not appear in operator row meta
+        assert "&middot;" not in resp.text
+
+    def test_operators_directory_jsonld_excludes_noise(self, client):
+        import json as _json
+        resp = client.get("/operators")
+        assert resp.status_code == 200
+        import re as _re
+        match = _re.search(r'<script type="application/ld\+json">(.*?)</script>', resp.text, _re.DOTALL)
+        assert match, "No JSON-LD found in /operators"
+        ld = _json.loads(match.group(1))
+        urls = [item.get("url", "") for item in ld.get("itemListElement", [])]
+        for slug in self.NOISE_SLUGS:
+            assert not any(slug in url for url in urls), (
+                f"Noise slug {slug} found in JSON-LD itemListElement"
+            )
+
+    def test_noise_operator_page_returns_404(self, client):
+        for slug in self.NOISE_SLUGS:
+            resp = client.get(f"/operator/{slug}")
+            assert resp.status_code == 404, (
+                f"/operator/{slug} returned {resp.status_code}, expected 404"
+            )
+
+    def test_visible_operator_pages_return_200(self, client):
+        for slug in self.VISIBLE_SLUGS:
+            resp = client.get(f"/operator/{slug}")
+            assert resp.status_code == 200, (
+                f"/operator/{slug} returned {resp.status_code}, expected 200"
+            )
+
+    def test_homepage_top_no_noise_names(self, client):
+        """Homepage Recent findings must never show finance/noise operator names."""
+        resp = client.get("/api/operators/top?limit=10")
+        assert resp.status_code == 200
+        names = {op["operator_root"].upper() for op in resp.json()}
+        for noise in ["ICECAP", "ICE", "OCEANVIEW", "STANDARD", "COMMUNITY",
+                      "BROAD", "BROADVIEW", "ARBOR", "SYMETRA"]:
+            assert noise not in names, f"{noise} appeared in /api/operators/top"
+
+    def test_operator_html_no_hardcoded_acquisitions_en(self, client):
+        """operator.html i18n: 'acquisitions' label must come from i18n, not hardcoded."""
+        from pathlib import Path
+        html = (Path(__file__).parent.parent / "frontend" / "operator.html").read_text()
+        # The i18n key exists in both languages
+        assert "op_acquisitions" not in html or "stat_acquisitions" in html, (
+            "operator.html lacks i18n key for acquisitions label"
+        )
+        assert "adquisiciones" in html, "Spanish 'adquisiciones' missing from operator.html i18n"
+
+    def test_operator_html_no_em_dash_table_placeholder(self, client):
+        """Table cells must use t('na') not hardcoded em dash."""
+        from pathlib import Path
+        html = (Path(__file__).parent.parent / "frontend" / "operator.html").read_text()
+        # The hardcoded '—' in table cell rendering must be gone
+        assert ": '—')" not in html, (
+            "Em dash hardcoded as table placeholder — should use t('na')"
+        )

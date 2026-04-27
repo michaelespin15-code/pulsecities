@@ -36,13 +36,20 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/operators", tags=["operators"])
 limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
-# Operator roots excluded from the homepage "Recent findings" widget.
-# All confirmed finance/lender entities: their "acquisitions" are ASST
-# (mortgage note assignments), not DEED transfers — they are not property
-# operators in the displacement sense and mislead journalists.
-_HOMEPAGE_NOISE_ROOTS: frozenset[str] = frozenset({
+# Finance/lender operator roots hidden from all public surfaces.
+# These clusters transact exclusively via ASST (mortgage note assignments),
+# not DEED transfers — they are not property operators in the displacement
+# sense. Appearing in "Recent findings" or the directory misleads journalists.
+# Imported by api/routes/frontend.py to enforce the same list everywhere.
+OPERATOR_NOISE_ROOTS: frozenset[str] = frozenset({
     "ICECAP", "ICE", "BROAD", "BROADVIEW",
     "ARBOR", "STANDARD", "SYMETRA", "COMMUNITY", "OCEANVIEW",
+})
+
+# Slug equivalents (lowercase), used to block direct /operator/{slug} URLs.
+OPERATOR_NOISE_SLUGS: frozenset[str] = frozenset({
+    "icecap", "ice", "broad", "broadview",
+    "arbor", "standard", "symetra", "community", "oceanview",
 })
 
 _SCRIPTS_DIR = Path(__file__).parent.parent.parent / "scripts"
@@ -181,7 +188,7 @@ def get_top_operators(
 ):
     """Top operators by total acquisition count, filtered to confirmed operators.
 
-    Excludes finance/lender noise clusters (_HOMEPAGE_NOISE_ROOTS) and any
+    Excludes finance/lender noise clusters (OPERATOR_NOISE_ROOTS) and any
     cluster without a valid DB row — so every returned entry resolves to a
     working /operator/{slug} profile page.
     """
@@ -197,7 +204,7 @@ def get_top_operators(
         [
             {"operator_root": r, **c}
             for r, c in clusters.items()
-            if r not in _HOMEPAGE_NOISE_ROOTS
+            if r not in OPERATOR_NOISE_ROOTS
             and r in db_roots
             and len(c.get("llc_entities") or []) > 0
         ],

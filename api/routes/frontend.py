@@ -530,7 +530,13 @@ def operator_page(root: str, db: Session = Depends(get_db)):
     if cached and time.monotonic() < cached[1]:
         return HTMLResponse(cached[0])
 
-    from api.routes.operators import _load_audit
+    from api.routes.operators import OPERATOR_NOISE_ROOTS, OPERATOR_NOISE_SLUGS, _load_audit
+
+    # Block finance/lender noise operators — they have DB entries but should not
+    # render public profiles.  Return 404 so search engines don't index them.
+    if root.lower() in OPERATOR_NOISE_SLUGS or root_upper in OPERATOR_NOISE_ROOTS:
+        return Response(status_code=404)
+
     clusters = _load_audit()["clusters"]
 
     # The path param may be a slug (e.g. "mtek-nyc") or an operator_root (e.g. "MTEK").
@@ -621,13 +627,8 @@ def operators_directory(db: Session = Depends(get_db)):
     if _operators_cache and time.monotonic() < _operators_cache[1]:
         return HTMLResponse(_operators_cache[0])
 
-    from api.routes.operators import _load_audit
+    from api.routes.operators import OPERATOR_NOISE_ROOTS, _load_audit
     clusters = _load_audit()["clusters"]
-    operators = sorted(
-        [{"root": r, **c} for r, c in clusters.items()],
-        key=lambda x: x.get("total_acquisitions", 0),
-        reverse=True,
-    )
 
     # Build root → slug map from the operators table so links use canonical slugs
     slug_rows = db.execute(text("SELECT operator_root, slug FROM operators")).fetchall()
@@ -645,8 +646,21 @@ def operators_directory(db: Session = Depends(get_db)):
         if (11001 <= n <= 11109) or (11354 <= n <= 11697): return "Queens"
         return None
 
-    # Exclude clusters with no identified LLC entities — no reliable footprint
-    operators = [op for op in operators if len(op.get("llc_entities") or []) > 0]
+    # Only include operators that:
+    #   1. have LLC entities (measurable footprint)
+    #   2. have a DB entry (valid profile page — no dead links)
+    #   3. are not finance/lender noise (ASST-only activity, not DEED transfers)
+    operators = sorted(
+        [
+            {"root": r, **c}
+            for r, c in clusters.items()
+            if len(c.get("llc_entities") or []) > 0
+            and r in root_to_slug
+            and r not in OPERATOR_NOISE_ROOTS
+        ],
+        key=lambda x: x.get("total_acquisitions", 0),
+        reverse=True,
+    )
 
     rows_html = ""
     list_items = []
@@ -656,61 +670,47 @@ def operators_directory(db: Session = Depends(get_db)):
         acqs = op.get("total_acquisitions", 0)
         zips = op.get("zip_codes") or []
         boroughs = list(dict.fromkeys(b for z in zips if (b := _zip_to_borough(z))))
-        # Show first 2 boroughs; collapse the rest to "+N"
         extra = len(boroughs) - 2
         borough_str = ", ".join(boroughs[:2]) + (f" +{extra}" if extra > 0 else "")
-        slug = root_to_slug.get(root)
-        acq_label = f"{acqs} acquisition{'s' if acqs != 1 else ''}" if acqs else ""
-        llc_label = f"{entities} LLC{'s' if entities != 1 else ''}"
-        meta_line = " &middot; ".join(filter(None, [acq_label, llc_label]))
+        slug = root_to_slug[root]
+        op_link = f"/operator/{_html.escape(slug)}"
+        # Stacked meta lines — no dot separator
+        acq_line = f'<div class="op-meta" data-count="{acqs}" data-i18n-label="acq">{acqs} <span class="op-label-acq">acquisitions</span></div>' if acqs else ""
+        llc_line = f'<div class="op-meta">{entities} LLCs</div>'
         geo_html = f'<div class="op-geo">{_html.escape(borough_str)}</div>' if borough_str else ""
-        if slug:
-            op_link = f"/operator/{_html.escape(slug)}"
-            rows_html += (
-                f'<li class="op-row" onclick="location.href=\'{op_link}\'">'
-                f'<a href="{op_link}">'
-                f'<div class="op-rank">#{i}</div>'
-                f'<div class="op-body">'
-                f'<div class="op-name">{_html.escape(root)}</div>'
-                f'<div class="op-meta">{meta_line}</div>'
-                f'{geo_html}'
-                f'</div>'
-                f'</a>'
-                f'</li>\n'
-            )
-            list_items.append({
-                "@type": "ListItem",
-                "position": i,
-                "name": f"{root} LLC Network",
-                "url": f"https://pulsecities.com/operator/{slug}",
-            })
-        else:
-            rows_html += (
-                f'<li class="op-row op-row-locked">'
-                f'<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 0;">'
-                f'<div class="op-rank">#{i}</div>'
-                f'<div class="op-body">'
-                f'<div class="op-name">{_html.escape(root)}</div>'
-                f'<div class="op-meta">{meta_line}</div>'
-                f'{geo_html}'
-                f'</div>'
-                f'</div>'
-                f'</li>\n'
-            )
+        rows_html += (
+            f'<li class="op-row" onclick="location.href=\'{op_link}\'">'
+            f'<a href="{op_link}">'
+            f'<div class="op-rank">#{i}</div>'
+            f'<div class="op-body">'
+            f'<div class="op-name">{_html.escape(root)}</div>'
+            f'{acq_line}'
+            f'{llc_line}'
+            f'{geo_html}'
+            f'</div>'
+            f'</a>'
+            f'</li>\n'
+        )
+        list_items.append({
+            "@type": "ListItem",
+            "position": i,
+            "name": f"{root} LLC Network",
+            "url": f"https://pulsecities.com/operator/{slug}",
+        })
 
-    title = "NYC LLC Acquisition Networks | Operator Directory | PulseCities"
+    n_visible = len(operators)
+    title = "NYC Operator Networks | PulseCities"
     desc = (
-        f"{len(operators)} tracked LLC acquisition networks in NYC, "
-        "sourced from ACRIS public deed records. Each cluster maps shell companies "
-        "to a common operator and shows acquisition counts, active ZIP codes, and related networks."
+        f"{n_visible} public-record operator clusters with measurable NYC acquisition activity, "
+        "sourced from ACRIS deed records."
     )
     jsonld = json.dumps({
         "@context": "https://schema.org",
         "@type": "ItemList",
-        "name": "NYC LLC Property Acquisition Networks",
+        "name": "NYC Operator Networks",
         "description": desc,
         "url": "https://pulsecities.com/operators",
-        "numberOfItems": len(operators),
+        "numberOfItems": n_visible,
         "itemListElement": list_items,
     }, indent=2)
 
@@ -722,14 +722,14 @@ def operators_directory(db: Session = Depends(get_db)):
 <title>{_html.escape(title)}</title>
 <meta name="description" content="{_html.escape(desc)}">
 <link rel="canonical" href="https://pulsecities.com/operators">
-<meta property="og:title" content="NYC LLC Acquisition Networks | PulseCities">
+<meta property="og:title" content="NYC Operator Networks | PulseCities">
 <meta property="og:description" content="{_html.escape(desc)}">
 <meta property="og:url" content="https://pulsecities.com/operators">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
 <meta property="og:image" content="https://pulsecities.com/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="NYC LLC Acquisition Networks | PulseCities">
+<meta name="twitter:title" content="NYC Operator Networks | PulseCities">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <script type="application/ld+json">{jsonld}</script>
@@ -753,12 +753,6 @@ footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,18
 .op-row:hover .op-name{{color:#f97316;}}
 .op-meta{{font-size:0.78rem;color:rgba(148,163,184,0.6);}}
 .op-geo{{font-size:0.73rem;color:rgba(148,163,184,0.38);}}
-.op-row-locked{{cursor:default;}}
-.op-row-locked:hover{{background:transparent;}}
-.op-row-locked .op-name{{color:rgba(226,232,240,0.3);}}
-.op-row-locked:hover .op-name{{color:rgba(226,232,240,0.3);}}
-.op-row-locked .op-meta{{color:rgba(148,163,184,0.3);}}
-.op-row-locked .op-geo{{color:rgba(148,163,184,0.2);}}
 </style>
 </head>
 <body>
@@ -771,6 +765,7 @@ footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,18
     <div style="display:flex;align-items:center;gap:16px;">
       <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Map</a>
       <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">About</a>
+      <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
     </div>
   </div>
 </nav>
@@ -778,11 +773,9 @@ footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,18
   <div style="margin-bottom:8px;">
     <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Home</a>
   </div>
-  <h1 style="font-size:1.4rem;font-weight:600;margin-bottom:6px;">NYC LLC Acquisition Networks</h1>
-  <p style="font-size:0.82rem;color:rgba(148,163,184,0.55);margin-bottom:28px;line-height:1.6;">
-    {len(operators)} clusters identified in ACRIS deed records. Each groups LLC entities
-    linked by naming patterns with a measurable acquisition footprint in NYC.
-    Sourced from public records only.
+  <h1 id="dir-heading" style="font-size:1.4rem;font-weight:600;margin-bottom:6px;">NYC Operator Networks</h1>
+  <p id="dir-desc" style="font-size:0.82rem;color:rgba(148,163,184,0.55);margin-bottom:28px;line-height:1.6;">
+    Public-record clusters with measurable NYC acquisition activity.
   </p>
   <ul class="op-list">
 {rows_html}  </ul>
@@ -795,6 +788,44 @@ footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,18
     <a href="mailto:michaelespin15@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
   </div>
 </footer>
+<script>
+(function() {{
+  var lang = localStorage.getItem('pc-lang') || 'en';
+  var i18n = {{
+    en: {{
+      heading: 'NYC Operator Networks',
+      desc: 'Public-record clusters with measurable NYC acquisition activity.',
+      acq: 'acquisitions',
+      toggle: 'EN / ES'
+    }},
+    es: {{
+      heading: 'Redes de operadores de NYC',
+      desc: 'Grupos en registros públicos con actividad medible de adquisición en NYC.',
+      acq: 'adquisiciones',
+      toggle: 'ES / EN'
+    }}
+  }};
+  function applyLang(l) {{
+    var s = i18n[l] || i18n.en;
+    var h = document.getElementById('dir-heading');
+    if (h) h.textContent = s.heading;
+    var d = document.getElementById('dir-desc');
+    if (d) d.textContent = s.desc;
+    document.querySelectorAll('.op-label-acq').forEach(function(el) {{
+      el.textContent = s.acq;
+    }});
+    var btn = document.getElementById('lang-toggle');
+    if (btn) btn.textContent = s.toggle;
+  }}
+  applyLang(lang);
+  var btn = document.getElementById('lang-toggle');
+  if (btn) btn.addEventListener('click', function() {{
+    lang = lang === 'en' ? 'es' : 'en';
+    localStorage.setItem('pc-lang', lang);
+    applyLang(lang);
+  }});
+}})();
+</script>
 </body>
 </html>"""
 
