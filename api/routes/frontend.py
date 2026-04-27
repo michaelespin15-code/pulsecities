@@ -660,29 +660,43 @@ def operators_directory(db: Session = Depends(get_db)):
         extra = len(boroughs) - 2
         borough_str = ", ".join(boroughs[:2]) + (f" +{extra}" if extra > 0 else "")
         slug = root_to_slug.get(root)
-        op_link = f"/operator/{_html.escape(slug)}" if slug else f"/operator/{_html.escape(root)}"
         acq_label = f"{acqs} acquisition{'s' if acqs != 1 else ''}" if acqs else ""
         llc_label = f"{entities} LLC{'s' if entities != 1 else ''}"
         meta_line = " &middot; ".join(filter(None, [acq_label, llc_label]))
         geo_html = f'<div class="op-geo">{_html.escape(borough_str)}</div>' if borough_str else ""
-        rows_html += (
-            f'<li class="op-row" onclick="location.href=\'{op_link}\'">'
-            f'<a href="{op_link}">'
-            f'<div class="op-rank">#{i}</div>'
-            f'<div class="op-body">'
-            f'<div class="op-name">{_html.escape(root)}</div>'
-            f'<div class="op-meta">{meta_line}</div>'
-            f'{geo_html}'
-            f'</div>'
-            f'</a>'
-            f'</li>\n'
-        )
-        list_items.append({
-            "@type": "ListItem",
-            "position": i,
-            "name": f"{root} LLC Network",
-            "url": f"https://pulsecities.com/operator/{slug or root}",
-        })
+        if slug:
+            op_link = f"/operator/{_html.escape(slug)}"
+            rows_html += (
+                f'<li class="op-row" onclick="location.href=\'{op_link}\'">'
+                f'<a href="{op_link}">'
+                f'<div class="op-rank">#{i}</div>'
+                f'<div class="op-body">'
+                f'<div class="op-name">{_html.escape(root)}</div>'
+                f'<div class="op-meta">{meta_line}</div>'
+                f'{geo_html}'
+                f'</div>'
+                f'</a>'
+                f'</li>\n'
+            )
+            list_items.append({
+                "@type": "ListItem",
+                "position": i,
+                "name": f"{root} LLC Network",
+                "url": f"https://pulsecities.com/operator/{slug}",
+            })
+        else:
+            rows_html += (
+                f'<li class="op-row op-row-locked">'
+                f'<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 0;">'
+                f'<div class="op-rank">#{i}</div>'
+                f'<div class="op-body">'
+                f'<div class="op-name">{_html.escape(root)}</div>'
+                f'<div class="op-meta">{meta_line}</div>'
+                f'{geo_html}'
+                f'</div>'
+                f'</div>'
+                f'</li>\n'
+            )
 
     title = "NYC LLC Acquisition Networks | Operator Directory | PulseCities"
     desc = (
@@ -739,6 +753,12 @@ footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,18
 .op-row:hover .op-name{{color:#f97316;}}
 .op-meta{{font-size:0.78rem;color:rgba(148,163,184,0.6);}}
 .op-geo{{font-size:0.73rem;color:rgba(148,163,184,0.38);}}
+.op-row-locked{{cursor:default;}}
+.op-row-locked:hover{{background:transparent;}}
+.op-row-locked .op-name{{color:rgba(226,232,240,0.3);}}
+.op-row-locked:hover .op-name{{color:rgba(226,232,240,0.3);}}
+.op-row-locked .op-meta{{color:rgba(148,163,184,0.3);}}
+.op-row-locked .op-geo{{color:rgba(148,163,184,0.2);}}
 </style>
 </head>
 <body>
