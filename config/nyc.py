@@ -87,7 +87,7 @@ DISPLACEMENT_COMPLAINT_TYPES = (
 # Scraper row count minimums — flag WARNING if actual < 50% of these
 SCRAPER_EXPECTED_MIN_RECORDS = {
     "311_complaints": 5000,
-    "dob_permits":    500,
+    "dob_permits":    50,          # steady-state incremental: 3-year LIKE scan, ~2-36 new rows/day after bulk load
     "hpd_violations": 1000,
     "evictions":      100,
     # Phase 3 scrapers

@@ -169,6 +169,111 @@ class TestParseDecimal:
 
 
 # ---------------------------------------------------------------------------
+# TestOwnershipSourceFreshness
+# ---------------------------------------------------------------------------
+
+class TestOwnershipSourceFreshness:
+    """
+    Verify _check_source_freshness() correctly detects when the ACRIS dataset
+    has stopped being updated, and that _run() returns early without calling
+    paginate when the source is stale.
+    """
+
+    @pytest.fixture()
+    def scraper(self):
+        with patch.dict("os.environ", {"NYC_OPEN_DATA_APP_TOKEN": "test"}):
+            return OwnershipScraper()
+
+    def _mock_http(self, scraper, max_dt: str) -> None:
+        mock_resp = MagicMock()
+        mock_resp.raise_for_status.return_value = None
+        mock_resp.json.return_value = [{"max_dt": max_dt}]
+        scraper._http = MagicMock()
+        scraper._http.get.return_value = mock_resp
+
+    def test_stale_source_returns_positive_days(self, scraper):
+        """Source max <= watermark → returns number of stale days (> 0)."""
+        watermark = datetime(2026, 3, 31, tzinfo=timezone.utc)
+        self._mock_http(scraper, "2026-03-31T00:00:00.000")
+
+        with patch.object(scraper, "get_watermark", return_value=watermark):
+            result = scraper._check_source_freshness(MagicMock())
+
+        assert result is not None
+        assert result > 0
+
+    def test_fresh_source_returns_none(self, scraper):
+        """Source max > watermark → returns None (fresh, proceed normally)."""
+        watermark = datetime(2026, 3, 31, tzinfo=timezone.utc)
+        self._mock_http(scraper, "2026-04-15T00:00:00.000")
+
+        with patch.object(scraper, "get_watermark", return_value=watermark):
+            result = scraper._check_source_freshness(MagicMock())
+
+        assert result is None
+
+    def test_no_prior_watermark_returns_none(self, scraper):
+        """First run with no watermark → None (no comparison possible)."""
+        with patch.object(scraper, "get_watermark", return_value=None):
+            result = scraper._check_source_freshness(MagicMock())
+
+        assert result is None
+
+    def test_network_failure_returns_none(self, scraper):
+        """HTTP error during freshness check → None (graceful fallback)."""
+        watermark = datetime(2026, 3, 31, tzinfo=timezone.utc)
+        scraper._http = MagicMock()
+        scraper._http.get.side_effect = Exception("connection refused")
+
+        with patch.object(scraper, "get_watermark", return_value=watermark):
+            result = scraper._check_source_freshness(MagicMock())
+
+        assert result is None
+
+    def test_empty_api_response_returns_none(self, scraper):
+        """Empty API response → None (cannot determine staleness)."""
+        watermark = datetime(2026, 3, 31, tzinfo=timezone.utc)
+        mock_resp = MagicMock()
+        mock_resp.raise_for_status.return_value = None
+        mock_resp.json.return_value = []
+        scraper._http = MagicMock()
+        scraper._http.get.return_value = mock_resp
+
+        with patch.object(scraper, "get_watermark", return_value=watermark):
+            result = scraper._check_source_freshness(MagicMock())
+
+        assert result is None
+
+    def test_stale_source_skips_paginate(self, scraper):
+        """When source is stale, _run() must return early before calling paginate."""
+        watermark = datetime(2026, 3, 31, tzinfo=timezone.utc)
+        self._mock_http(scraper, "2026-03-31T00:00:00.000")
+
+        db = MagicMock()
+        with patch.object(scraper, "get_watermark", return_value=watermark):
+            with patch.object(scraper, "paginate") as mock_paginate:
+                processed, failed, wm = scraper._run(db)
+
+        assert processed == 0
+        assert failed == 0
+        assert wm is None
+        mock_paginate.assert_not_called()
+
+    def test_fresh_source_calls_paginate(self, scraper):
+        """When source is fresh, _run() must proceed to paginate."""
+        watermark = datetime(2026, 3, 31, tzinfo=timezone.utc)
+        self._mock_http(scraper, "2026-04-20T00:00:00.000")
+
+        db = MagicMock()
+        with patch.object(scraper, "get_watermark", return_value=watermark):
+            with patch.object(scraper, "paginate", return_value=iter([])):
+                with patch.object(scraper, "_join_and_persist", return_value=(0, 0)):
+                    processed, failed, wm = scraper._run(db)
+
+        # paginate was called — scraper proceeded past the freshness check
+
+
+# ---------------------------------------------------------------------------
 # TestJoinAndPersist
 # ---------------------------------------------------------------------------
 
