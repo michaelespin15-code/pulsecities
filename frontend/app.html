@@ -487,9 +487,7 @@
                         <div class="text-right">
                             <span id="detail-risk-label" class="text-sm font-semibold block"></span>
                             <span id="detail-percentile" class="hidden">
-                                <span class="inline-flex items-center gap-0.5 text-xs font-mono px-1.5 py-0.5 rounded mt-1.5 bg-slate-700/60 text-slate-400 tracking-wide">
-                                    top <span id="detail-percentile-val"></span>% citywide
-                                </span>
+                                <span id="detail-percentile-badge" class="inline-flex items-center gap-0.5 text-xs font-mono px-1.5 py-0.5 rounded mt-1.5 bg-slate-700/60 text-slate-400 tracking-wide"></span>
                             </span>
                         </div>
                     </div>
@@ -2107,7 +2105,7 @@
             const scoreEl = document.getElementById('detail-score');
             const riskLabelEl = document.getElementById('detail-risk-label');
             const pctEl = document.getElementById('detail-percentile');
-            const pctValEl = document.getElementById('detail-percentile-val');
+            const pctBadgeEl = document.getElementById('detail-percentile-badge');
             if (score !== null && score !== undefined) {
                 countUp(scoreEl, score, scoreColor(score), 600);
                 document.getElementById('no-score-msg').classList.add('hidden');
@@ -2123,8 +2121,9 @@
                     if (allScores.length > 1) {
                         const below = allScores.filter(s => s < score).length;
                         const pct = Math.round((below / allScores.length) * 100);
-                        if (pct >= 50 && pctEl && pctValEl) {
-                            pctValEl.textContent = 100 - pct;
+                        if (pct >= 50 && pctEl && pctBadgeEl) {
+                            const topPct = 100 - pct;
+                            pctBadgeEl.textContent = topPct === 0 ? 'highest citywide' : `top ${topPct}% citywide`;
                             pctEl.classList.remove('hidden');
                         } else if (pctEl) { pctEl.classList.add('hidden'); }
                     }

@@ -260,7 +260,7 @@ def _build_neighborhood_page(
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 :root{{--bg:#0f172a;--border:rgba(148,163,184,.1);--text:#f1f5f9;--muted:rgba(148,163,184,.65);--faint:rgba(148,163,184,.35);--accent:#f97316}}
-body{{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}}
+body{{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}}
 a{{color:inherit;text-decoration:none}}
 nav{{border-bottom:1px solid var(--border);padding:12px 0}}
 .nav-inner{{max-width:720px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}}
@@ -300,7 +300,7 @@ td{{padding:12px 0;border-bottom:1px solid rgba(148,163,184,.06);vertical-align:
 .btn-map:hover{{opacity:.88}}
 .btn-copy{{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:6px;font-size:.85rem;cursor:pointer;font-family:inherit;transition:color .15s,border-color .15s}}
 .btn-copy:hover{{color:var(--text);border-color:rgba(148,163,184,.3)}}
-footer{{border-top:1px solid var(--border);padding:24px 20px;text-align:center}}
+footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-inset-bottom) + 24px);text-align:center}}
 .footer-links{{max-width:720px;margin:0 auto;display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
 .footer-links a{{font-size:.75rem;color:var(--faint)}}
 .footer-links a:hover{{color:var(--muted)}}
@@ -775,7 +775,7 @@ footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,18
   </div>
   <h1 id="dir-heading" style="font-size:1.4rem;font-weight:600;margin-bottom:6px;">NYC Operator Networks</h1>
   <p id="dir-desc" style="font-size:0.82rem;color:rgba(148,163,184,0.55);margin-bottom:28px;line-height:1.6;">
-    Public-record clusters with measurable NYC acquisition activity.
+    Ownership clusters identified in NYC deed records. Each groups LLCs by naming patterns and acquisition activity. Public records only.
   </p>
   <ul class="op-list">
 {rows_html}  </ul>
@@ -794,13 +794,13 @@ footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,18
   var i18n = {{
     en: {{
       heading: 'NYC Operator Networks',
-      desc: 'Public-record clusters with measurable NYC acquisition activity.',
+      desc: 'Ownership clusters identified in NYC deed records. Each groups LLCs by naming patterns and acquisition activity. Public records only.',
       acq: 'acquisitions',
       toggle: 'EN / ES'
     }},
     es: {{
       heading: 'Redes de operadores de NYC',
-      desc: 'Grupos en registros públicos con actividad medible de adquisición en NYC.',
+      desc: 'Grupos de propiedad identificados en registros de escrituras de NYC. Cada uno agrupa LLC por patrones de nombres y actividad de adquisición. Solo registros públicos.',
       acq: 'adquisiciones',
       toggle: 'ES / EN'
     }}

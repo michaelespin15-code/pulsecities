@@ -20,7 +20,7 @@
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'DM Sans', sans-serif; background: #0f172a; color: #f1f5f9; min-height: 100vh; }
+        body { font-family: 'DM Sans', sans-serif; background: #0f172a; color: #f1f5f9; min-height: 100vh; overflow-x: hidden; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .accent { color: #f97316; }
         .panel { background: #1e293b; border: 1px solid rgba(148,163,184,0.1); border-radius: 8px; }
@@ -80,7 +80,7 @@
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                     <div>
                         <h1 id="op-root" class="mono accent" style="font-size: 1.8rem; font-weight: 400; letter-spacing: 0.04em;"></h1>
-                        <div style="font-size: 0.78rem; color: rgba(148,163,184,0.45); margin-top: 4px;" data-i18n="op_descriptor">LLC network identified through NYC deed records</div>
+                        <div style="font-size: 0.78rem; color: rgba(148,163,184,0.45); margin-top: 4px;" data-i18n="op_descriptor">Acquisitions linked by LLC naming patterns in NYC deed records.</div>
                         <div id="why-matters" style="font-size: 0.8rem; color: rgba(148,163,184,0.6); margin-top: 3px; margin-bottom: 4px; line-height: 1.5;"></div>
                         <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
                             <span class="signal-chip" data-i18n="chip_window">18-month window</span>
@@ -304,7 +304,7 @@
             th_amount:           'Amount',
             acq_empty:           'No acquisitions found in the 18-month window.',
             acq_pace:            'Acquisition Pace',
-            op_descriptor:       'LLC network identified through NYC deed records',
+            op_descriptor:       'Acquisitions linked by LLC naming patterns in NYC deed records.',
             what_this_shows:     'Properties grouped by LLC naming patterns in public deed records. Scores reflect neighborhood displacement risk, not a claim of wrongdoing by any individual actor.',
             portfolio_header:    'High-risk properties in this portfolio',
             show_all_props:      'Show all {n} properties',
@@ -357,7 +357,7 @@
             th_amount:           'Monto',
             acq_empty:           'No se encontraron adquisiciones en la ventana de 18 meses.',
             acq_pace:            'Ritmo de Adquisición',
-            op_descriptor:       'Red de LLC identificada en registros de escrituras de NYC',
+            op_descriptor:       'Adquisiciones vinculadas por patrones de nombres LLC en registros de escrituras de NYC.',
             what_this_shows:     'Propiedades agrupadas por patrones de nombres de LLC en registros públicos. Las puntuaciones reflejan el riesgo de desplazamiento vecinal, no una acusación contra ningún actor individual.',
             portfolio_header:    'Propiedades de alto riesgo en este portafolio',
             show_all_props:      'Ver las {n} propiedades',
