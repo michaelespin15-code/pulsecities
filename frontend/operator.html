@@ -87,7 +87,7 @@
                             <span class="signal-chip" data-i18n="chip_public_records">public records</span>
                         </div>
                         <div style="margin-top: 10px;">
-                            <button id="copy-link-btn" style="font-size:0.72rem;color:rgba(148,163,184,0.55);background:rgba(148,163,184,0.06);border:1px solid rgba(148,163,184,0.15);border-radius:5px;padding:4px 10px;cursor:pointer;min-height:28px;font-family:'DM Sans',sans-serif;">Copy link</button>
+                            <button id="copy-link-btn" data-i18n="copy_link" style="font-size:0.72rem;color:rgba(148,163,184,0.55);background:rgba(148,163,184,0.06);border:1px solid rgba(148,163,184,0.15);border-radius:5px;padding:4px 10px;cursor:pointer;min-height:28px;font-family:'DM Sans',sans-serif;">Copy link</button>
                         </div>
                     </div>
                     <div style="font-size: 0.72rem; color: rgba(148,163,184,0.35); font-family: 'JetBrains Mono', monospace; padding-top: 6px;" data-i18n="source_acris">
@@ -221,7 +221,7 @@
 
             <div style="margin-top: 28px; padding-top: 14px; border-top: 1px solid rgba(148,163,184,0.07);">
                 <p id="last-updated" style="font-size: 0.72rem; color: rgba(148,163,184,0.3); font-family: 'JetBrains Mono', monospace;"></p>
-                <p style="font-size: 0.75rem; color: rgba(148,163,184,0.45); margin-top: 6px;"><a href="/operators" style="color: rgba(148,163,184,0.45);">Explore other NYC operator networks</a></p>
+                <p style="font-size: 0.75rem; color: rgba(148,163,184,0.45); margin-top: 6px;"><a id="explore-ops-link" href="/operators" style="color: rgba(148,163,184,0.45);" data-i18n="explore_ops">Explore other NYC operator networks</a></p>
             </div>
 
         </div><!-- /content -->
@@ -264,14 +264,14 @@
             if (b && !seen.has(b)) { seen.add(b); boroughs.push(b); }
         }
         if (!boroughs.length) return '';
+        const s = i18n[_lang] || i18n.en;
+        const acqWord = s.stat_acquisitions ? s.stat_acquisitions.toLowerCase() : 'acquisitions';
         const bStr = boroughs.length >= 2
-            ? boroughs.slice(0, 2).join(' and ')
+            ? boroughs.slice(0, 2).join(', ')
             : boroughs[0];
         const score = data.highest_displacement_score || 0;
-        const zone = score >= 65 ? 'in high-displacement zones'
-            : score >= 45 ? 'near elevated-risk areas'
-            : 'across multiple ZIP codes';
-        return `${acqs} acquisition${acqs !== 1 ? 's' : ''} concentrated in ${bStr}, ${zone}.`;
+        const base = `${acqs} ${acqWord} — ${bStr}.`;
+        return score >= 45 ? base + ' ' + (s.why_high || '') : base;
     }
 
     function _scoreColor(score) {
@@ -328,6 +328,12 @@
             sig_shared_address:  'shared address',
             sig_geo_overlap:     'geographic overlap',
             sig_name_similarity: 'name similarity',
+            copy_link:           'Copy link',
+            link_copied:         'Link copied',
+            last_updated_label:  'Last updated',
+            explore_ops:         'Explore other NYC operator networks',
+            na:                  'N/A',
+            why_high:            'Many are in higher displacement-risk areas.',
         },
         es: {
             back_map:            '\u2190 Inicio',
@@ -375,6 +381,12 @@
             sig_shared_address:  'direcci\u00f3n compartida',
             sig_geo_overlap:     'superposici\u00f3n geogr\u00e1fica',
             sig_name_similarity: 'similitud de nombre',
+            copy_link:           'Copiar enlace',
+            link_copied:         'Enlace copiado',
+            last_updated_label:  'Última actualización',
+            explore_ops:         'Explorar otras redes de operadores de NYC',
+            na:                  'N/D',
+            why_high:            'Muchas están en áreas con mayor riesgo de desplazamiento.',
         }
     };
 
@@ -488,8 +500,8 @@
                 '<td style="padding:7px 16px;text-align:center;">' +
                     '<span class="mono" style="font-size:0.73rem;background:' + sc.bg + ';color:' + sc.text + ';padding:2px 7px;border-radius:4px;">' + p.displacement_score.toFixed(1) + '</span>' +
                 '</td>' +
-                '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (bcCount > 0 ? '#f97316' : 'rgba(148,163,184,0.25)') + ';">' + (bcCount > 0 ? bcCount : '—') + '</td>' +
-                '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (rs ? 'rgba(148,163,184,0.7)' : 'rgba(148,163,184,0.22)') + ';">' + (rs ? rs.rs_unit_count : '—') + '</td>';
+                '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (bcCount > 0 ? '#f97316' : 'rgba(148,163,184,0.25)') + ';">' + (bcCount > 0 ? bcCount : t('na')) + '</td>' +
+                '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (rs ? 'rgba(148,163,184,0.7)' : 'rgba(148,163,184,0.22)') + ';">' + (rs ? rs.rs_unit_count : t('na')) + '</td>';
             portfolioTbody.appendChild(tr);
         });
 
@@ -767,7 +779,7 @@
                         .map(s => s.last_run).filter(Boolean).sort().reverse();
                     if (dates.length) {
                         const d = new Date(dates[0]);
-                        luEl.textContent = 'Last updated: ' + d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                        luEl.textContent = t('last_updated_label') + ': ' + d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
                     }
                 }
             })
@@ -804,8 +816,8 @@
         _copyBtn.addEventListener('click', function() {
             navigator.clipboard.writeText(window.location.href).then(() => {
                 plausible('Operator Copy Link');
-                _copyBtn.textContent = 'Link copied';
-                setTimeout(() => { _copyBtn.textContent = 'Copy link'; }, 2000);
+                _copyBtn.textContent = t('link_copied');
+                setTimeout(() => { _copyBtn.textContent = t('copy_link'); }, 2000);
             }).catch(() => {});
         });
     }
