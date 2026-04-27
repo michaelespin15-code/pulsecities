@@ -228,8 +228,9 @@
     </div>
 
     <script>
-    let _lang       = localStorage.getItem('pc-lang') || 'en';
-    let _cachedData = null, _cachedZipNames = null;
+    let _lang            = localStorage.getItem('pc-lang') || 'en';
+    let _cachedData      = null, _cachedZipNames = null;
+    let _lastUpdatedDate = null;
     let _chartJsLoaded = false, _timelineChart = null;
 
     function _loadChartJs() {
@@ -270,7 +271,7 @@
             ? boroughs.slice(0, 2).join(', ')
             : boroughs[0];
         const score = data.highest_displacement_score || 0;
-        const base = `${acqs} ${acqWord} — ${bStr}.`;
+        const base = `${acqs} ${acqWord}, ${bStr}.`;
         return score >= 45 ? base + ' ' + (s.why_high || '') : base;
     }
 
@@ -400,6 +401,13 @@
             const val = t(el.dataset.i18n);
             if (val) el.textContent = val;
         });
+    }
+
+    function _renderLastUpdated() {
+        const luEl = document.getElementById('last-updated');
+        if (!luEl || !_lastUpdatedDate) return;
+        const locale = _lang === 'es' ? 'es' : 'en-US';
+        luEl.textContent = t('last_updated_label') + ': ' + _lastUpdatedDate.toLocaleDateString(locale, { month: 'long', day: 'numeric', year: 'numeric' });
     }
 
     function esc(str) {
@@ -779,7 +787,8 @@
                         .map(s => s.last_run).filter(Boolean).sort().reverse();
                     if (dates.length) {
                         const d = new Date(dates[0]);
-                        luEl.textContent = t('last_updated_label') + ': ' + d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                        _lastUpdatedDate = d;
+                        _renderLastUpdated();
                     }
                 }
             })
@@ -794,6 +803,7 @@
         localStorage.setItem('pc-lang', _lang);
         langToggle.textContent = _lang === 'es' ? 'ES / EN' : 'EN / ES';
         applyTranslations();
+        _renderLastUpdated();
         if (_cachedData) {
             ['llc-list', 'related-list', 'acq-rows', 'portfolio-rows', 'eviction-rows'].forEach(id => {
                 const el = document.getElementById(id);

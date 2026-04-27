@@ -318,7 +318,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px;text-align:center}}
 <main><div class="container">
   <p class="breadcrumb"><a href="/map">&#8592; Back to map</a></p>
   <h1>Displacement Signals | {e(name)} ({zip_code})</h1>
-  <p class="subline">{e(borough_disp)} &middot; Updated {e(updated_disp)}</p>
+  <p class="subline">{e(borough_disp)}. Updated {e(updated_disp)}.</p>
   {score_block}
   {summary_html}
   <section style="margin-bottom:32px;">
