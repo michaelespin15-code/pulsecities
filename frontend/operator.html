@@ -39,6 +39,24 @@
         #error-state { display: none; }
         #loading-state { display: flex; }
         #content { display: none; }
+        .stat-card { padding: 14px 16px; }
+        .page-wrap { max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; }
+        .desktop-table-wrap { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .mobile-card-list { display: none; }
+        .mob-row { padding: 12px 16px; border-top: 1px solid rgba(148,163,184,0.06); }
+        .mob-row:first-child { border-top: none; }
+        .mob-addr { font-size: 0.85rem; color: rgba(241,245,249,0.88); line-height: 1.4; word-break: break-word; }
+        .mob-meta { font-size: 0.75rem; color: rgba(148,163,184,0.55); margin-top: 3px; line-height: 1.45; font-family: 'JetBrains Mono', monospace; }
+        .mob-buyer { font-size: 0.78rem; color: rgba(148,163,184,0.7); margin-top: 3px; line-height: 1.4; word-break: break-word; font-family: 'JetBrains Mono', monospace; }
+        .mob-score { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; }
+        @media (max-width: 640px) {
+            .stat-card { padding: 10px 14px; }
+            .stat-val { font-size: 1.3rem; }
+            .page-wrap { padding: 20px 16px calc(140px + env(safe-area-inset-bottom)); }
+            .op-header { margin-bottom: 18px !important; }
+            .desktop-table-wrap { display: none !important; }
+            .mobile-card-list { display: block; }
+        }
     </style>
 </head>
 <body>
@@ -58,7 +76,7 @@
         </div>
     </nav>
 
-    <div style="max-width: 860px; margin: 0 auto; padding: 32px 20px 80px;">
+    <div class="page-wrap">
         <a href="/" style="font-size: 0.75rem; color: rgba(148,163,184,0.7); display: inline-block; margin-bottom: 20px;" data-i18n="back_map">← Home</a>
 
         <!-- Loading -->
@@ -76,7 +94,7 @@
         <!-- Content -->
         <div id="content">
             <!-- Header -->
-            <div style="margin-bottom: 28px;">
+            <div style="margin-bottom: 28px;" class="op-header">
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                     <div>
                         <h1 id="op-root" class="mono accent" style="font-size: 1.8rem; font-weight: 400; letter-spacing: 0.04em;"></h1>
@@ -98,19 +116,19 @@
 
             <!-- Stats row -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 24px;">
-                <div class="panel" style="padding: 14px 16px;">
+                <div class="panel stat-card">
                     <div class="stat-val" id="stat-properties">—</div>
                     <div class="stat-label" data-i18n="stat_properties">Properties</div>
                 </div>
-                <div class="panel" style="padding: 14px 16px;">
+                <div class="panel stat-card">
                     <div class="stat-val" id="stat-acquisitions">—</div>
                     <div class="stat-label" data-i18n="stat_acquisitions">Acquisitions</div>
                 </div>
-                <div class="panel" style="padding: 14px 16px;">
+                <div class="panel stat-card">
                     <div class="stat-val" id="stat-llcs">—</div>
                     <div class="stat-label" data-i18n="stat_llcs">LLC Entities</div>
                 </div>
-                <div class="panel" style="padding: 14px 16px;">
+                <div class="panel stat-card">
                     <div class="stat-val" id="stat-zips">—</div>
                     <div class="stat-label" data-i18n="stat_zips">Zip Codes</div>
                 </div>
@@ -151,7 +169,7 @@
                     <span style="font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8);" data-i18n="portfolio_header">High-risk properties in this portfolio</span>
                     <span id="portfolio-count" style="font-size: 0.72rem; color: rgba(148,163,184,0.35); font-family: 'JetBrains Mono', monospace;"></span>
                 </div>
-                <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                <div class="desktop-table-wrap" id="portfolio-table-wrap">
                     <table style="width: 100%; min-width: 500px; border-collapse: collapse; font-size: 0.78rem;">
                         <thead>
                             <tr style="color: rgba(148,163,184,0.4); font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.06em;">
@@ -165,6 +183,8 @@
                         <tbody id="portfolio-rows"></tbody>
                     </table>
                 </div>
+                <div id="portfolio-mobile-list" class="mobile-card-list"></div>
+                <div id="portfolio-empty" style="display:none; padding:24px 16px; font-size:0.8rem; color:rgba(148,163,184,0.35); text-align:center;" data-i18n="portfolio_empty">No high-risk properties found.</div>
                 <div id="portfolio-toggle-wrap" style="display:none; padding:10px 16px; border-top:1px solid rgba(148,163,184,0.06);">
                     <button id="portfolio-toggle-btn" type="button" onclick="togglePortfolio()"
                         style="font-size:0.75rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 0;min-height:32px;">
@@ -178,7 +198,7 @@
                 <div style="padding: 14px 16px 10px; font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8); border-bottom: 1px solid rgba(148,163,184,0.07);">
                     <span data-i18n="recent_acq_header">Recent Acquisitions</span> <span style="font-size: 0.72rem; font-weight: 400; color: rgba(148,163,184,0.35);" data-i18n="recent_acq_window">(last 18 months, up to 50)</span>
                 </div>
-                <div id="acq-table" style="overflow-x: auto;">
+                <div id="acq-table" class="desktop-table-wrap">
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.78rem;">
                         <thead>
                             <tr style="color: rgba(148,163,184,0.4); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em;">
@@ -195,6 +215,7 @@
                 <div id="acq-empty" style="display: none; padding: 24px 16px; font-size: 0.8rem; color: rgba(148,163,184,0.35); text-align: center;" data-i18n="acq_empty">
                     No acquisitions found in the 18-month window.
                 </div>
+                <div id="acq-mobile-list" class="mobile-card-list"></div>
             </div>
 
             <!-- Acquisition pace chart (below deal log) -->
@@ -335,6 +356,8 @@
             explore_ops:         'Explore other NYC operator networks',
             na:                  'N/A',
             why_high:            'Many are in higher displacement-risk areas.',
+            portfolio_empty:     'No high-risk properties found.',
+            buyer_label:         'Buyer',
         },
         es: {
             back_map:            '\u2190 Inicio',
@@ -388,6 +411,8 @@
             explore_ops:         'Explorar otras redes de operadores de NYC',
             na:                  'N/D',
             why_high:            'Muchas están en áreas con mayor riesgo de desplazamiento.',
+            portfolio_empty:     'No se encontraron propiedades de alto riesgo.',
+            buyer_label:         'Comprador',
         }
     };
 
@@ -423,6 +448,94 @@
         'MTEK':    '37 properties at an average of $1M each, concentrated in Brooklyn displacement corridors from Bushwick to East Flatbush. Each LLC is tied to a specific street or neighborhood (MTEK FORT GREENE, MTEK FULTON, MTEK UNION), grouping nearby acquisitions under a single shell and fragmenting the full portfolio across public entity searches.',
         'PHANTOM': '64 direct-purchase acquisitions averaging $827K each across South Bronx and East Brooklyn, using 32 LLC shells spun up in numbered sequences (PHANTOM CAPITAL 10, 11, 12...). The fragmentation is deliberate: no single entity name in public records reveals more than a fraction of the portfolio\'s true scale.',
     };
+
+    function createMetaLine(parts) {
+        return parts.filter(p => p != null && p !== '').join(' · ');
+    }
+
+    function formatMobilePropertyRow(p, acq, rs, viol, zipNames) {
+        const sc = _scoreColor(p.displacement_score);
+        const addr = (acq && acq.address) ? acq.address : p.bbl;
+        const bcCount = (viol.B || 0) + (viol.C || 0);
+        const zipName = p.zip_code && zipNames[p.zip_code] ? zipNames[p.zip_code] : null;
+
+        const div = document.createElement('div');
+        div.className = 'mob-row';
+
+        const addrDiv = document.createElement('div');
+        addrDiv.className = 'mob-addr';
+        addrDiv.textContent = addr;
+        div.appendChild(addrDiv);
+
+        if (p.zip_code || zipName) {
+            const locDiv = document.createElement('div');
+            locDiv.className = 'mob-meta';
+            locDiv.textContent = createMetaLine([p.zip_code, zipName]);
+            div.appendChild(locDiv);
+        }
+
+        const statsRow = document.createElement('div');
+        statsRow.style.cssText = 'display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:5px;';
+
+        const scorePill = document.createElement('span');
+        scorePill.className = 'mob-score';
+        scorePill.style.background = sc.bg;
+        scorePill.style.color = sc.text;
+        scorePill.textContent = 'Score ' + (p.displacement_score != null ? p.displacement_score.toFixed(1) : t('na'));
+        statsRow.appendChild(scorePill);
+
+        const statParts = [];
+        if (rs) statParts.push('RS units ' + rs.rs_unit_count);
+        statParts.push('B/C viol. ' + (bcCount > 0 ? bcCount : '0'));
+        const statSpan = document.createElement('span');
+        statSpan.className = 'mob-meta';
+        statSpan.style.marginTop = '0';
+        statSpan.textContent = statParts.join(' · ');
+        statsRow.appendChild(statSpan);
+
+        div.appendChild(statsRow);
+        return div;
+    }
+
+    function formatMobileAcquisitionRow(r, zipNames) {
+        const div = document.createElement('div');
+        div.className = 'mob-row';
+
+        const addrDiv = document.createElement('div');
+        addrDiv.className = 'mob-addr';
+        addrDiv.textContent = r.address || r.bbl || '—';
+        div.appendChild(addrDiv);
+
+        const zipName = r.zip_code && zipNames[r.zip_code] ? zipNames[r.zip_code] : null;
+        if (r.zip_code || zipName) {
+            const locDiv = document.createElement('div');
+            locDiv.className = 'mob-meta';
+            locDiv.textContent = createMetaLine([zipName, r.zip_code]);
+            div.appendChild(locDiv);
+        }
+
+        if (r.buyer_name) {
+            const buyerDiv = document.createElement('div');
+            buyerDiv.className = 'mob-buyer';
+            buyerDiv.textContent = t('buyer_label') + ': ' + r.buyer_name;
+            div.appendChild(buyerDiv);
+        }
+
+        if (r.doc_date) {
+            const dateDiv = document.createElement('div');
+            dateDiv.className = 'mob-meta';
+            try {
+                const d = new Date(r.doc_date + 'T12:00:00');
+                const locale = _lang === 'es' ? 'es' : 'en-US';
+                dateDiv.textContent = d.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
+            } catch(e) {
+                dateDiv.textContent = r.doc_date;
+            }
+            div.appendChild(dateDiv);
+        }
+
+        return div;
+    }
 
     function render(data, zipNames) {
         _cachedData     = data;
@@ -481,6 +594,13 @@
         _portfolioTotal = portfolio.length;
         document.getElementById('portfolio-count').textContent = portfolio.length + (portfolio.length === 1 ? ' property' : ' properties');
         const portfolioTbody = document.getElementById('portfolio-rows');
+        const portfolioMobileList = document.getElementById('portfolio-mobile-list');
+        if (portfolio.length === 0) {
+            const emEl = document.getElementById('portfolio-empty');
+            if (emEl) emEl.style.display = 'block';
+            const ptWrapEl = document.getElementById('portfolio-table-wrap');
+            if (ptWrapEl) ptWrapEl.style.display = 'none';
+        }
         if (portfolio.length > 15) {
             const wrap = document.getElementById('portfolio-toggle-wrap');
             if (wrap) {
@@ -511,6 +631,10 @@
                 '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (bcCount > 0 ? '#f97316' : 'rgba(148,163,184,0.25)') + ';">' + (bcCount > 0 ? bcCount : t('na')) + '</td>' +
                 '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (rs ? 'rgba(148,163,184,0.7)' : 'rgba(148,163,184,0.22)') + ';">' + (rs ? rs.rs_unit_count : t('na')) + '</td>';
             portfolioTbody.appendChild(tr);
+
+            const mRow = formatMobilePropertyRow(p, acq, rs, viol, zipNames);
+            if (i >= 15) { mRow.classList.add('portfolio-mobile-extra'); mRow.style.display = 'none'; }
+            portfolioMobileList.appendChild(mRow);
         });
 
         // Acquisition timeline chart
@@ -538,6 +662,7 @@
             document.getElementById('acq-empty').style.display = 'block';
         } else {
             const tbody = document.getElementById('acq-rows');
+            const acqMobileList = document.getElementById('acq-mobile-list');
             rows.forEach((r, i) => {
                 const tr = document.createElement('tr');
                 tr.style.borderTop = '1px solid rgba(148,163,184,0.06)';
@@ -549,6 +674,8 @@
                     '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.5);font-size:0.72rem;white-space:nowrap;">' + esc(r.doc_date || '') + '</td>' +
                     '<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:rgba(148,163,184,0.6);font-size:0.72rem;white-space:nowrap;">' + (r.doc_amount ? '$' + Math.round(r.doc_amount).toLocaleString() : '\u2014') + '</td>';
                 tbody.appendChild(tr);
+
+                acqMobileList.appendChild(formatMobileAcquisitionRow(r, zipNames));
             });
         }
     }
@@ -557,9 +684,11 @@
 
     function togglePortfolio() {
         const extras = document.querySelectorAll('#portfolio-rows tr.portfolio-extra');
+        const mobileExtras = document.querySelectorAll('#portfolio-mobile-list .portfolio-mobile-extra');
         const btn = document.getElementById('portfolio-toggle-btn');
         const showing = extras.length > 0 && extras[0].style.display !== 'none';
         extras.forEach(r => { r.style.display = showing ? 'none' : ''; });
+        mobileExtras.forEach(r => { r.style.display = showing ? 'none' : ''; });
         btn.textContent = showing
             ? t('show_all_props').replace('{n}', _portfolioTotal)
             : t('show_top_props');
@@ -805,7 +934,7 @@
         applyTranslations();
         _renderLastUpdated();
         if (_cachedData) {
-            ['llc-list', 'related-list', 'acq-rows', 'portfolio-rows', 'eviction-rows'].forEach(id => {
+            ['llc-list', 'related-list', 'acq-rows', 'portfolio-rows', 'eviction-rows', 'acq-mobile-list', 'portfolio-mobile-list'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = '';
             });
@@ -814,6 +943,10 @@
             document.getElementById('acq-empty').style.display          = 'none';
             document.getElementById('eviction-wrap').style.display      = 'none';
             document.getElementById('timeline-wrap').style.display      = 'none';
+            const peEl = document.getElementById('portfolio-empty');
+            if (peEl) peEl.style.display = 'none';
+            const ptWrapEl2 = document.getElementById('portfolio-table-wrap');
+            if (ptWrapEl2) ptWrapEl2.style.display = '';
             const ptWrap = document.getElementById('portfolio-toggle-wrap');
             if (ptWrap) ptWrap.style.display = 'none';
             render(_cachedData, _cachedZipNames);
