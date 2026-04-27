@@ -529,14 +529,61 @@ def _count_active_signals(signal_norms: dict[str, dict]) -> int:
     return active
 
 
+def _fetch_prior_baseline(db: Session) -> dict | None:
+    """
+    Snapshot the currently committed displacement_scores for use as the guard baseline.
+
+    MUST be called BEFORE any writes to displacement_scores within a scoring run.
+    If called after the new scores are written (even within the same transaction),
+    PostgreSQL's read-committed isolation returns the session's own uncommitted writes,
+    making the guard compare new scores against themselves — always a trivial pass.
+
+    Returns None when the table is empty (first-ever run — no comparison possible).
+    """
+    rows = db.execute(
+        text("SELECT score, signal_breakdown FROM displacement_scores WHERE score IS NOT NULL")
+    ).fetchall()
+    if not rows:
+        return None
+
+    scores = [float(r[0]) for r in rows]
+
+    signal_sums: dict[str, float] = {}
+    signal_counts: dict[str, int] = {}
+    for r in rows:
+        breakdown = r[1] if isinstance(r[1], dict) else {}
+        for sig, val in breakdown.items():
+            if isinstance(val, (int, float)):
+                signal_sums[sig]   = signal_sums.get(sig, 0.0) + float(val)
+                signal_counts[sig] = signal_counts.get(sig, 0) + 1
+    active_signals = sum(
+        1 for sig in signal_sums
+        if signal_counts[sig] > 0
+        and signal_sums[sig] / signal_counts[sig] > 1.0
+    )
+
+    return {
+        "max":            max(scores),
+        "avg":            sum(scores) / len(scores),
+        "count":          len(scores),
+        "active_signals": active_signals,
+    }
+
+
 def _batch_sanity_check(
-    db: Session,
+    prior: dict | None,
     computed_scores: dict,
     signal_norms: dict[str, dict],
     force: bool = False,
 ) -> None:
     """
-    Compare the new score batch against the current live displacement_scores.
+    Compare the proposed new score batch against the pre-fetched prior baseline.
+
+    ``prior`` must be the return value of ``_fetch_prior_baseline()`` called
+    BEFORE any writes to displacement_scores in this scoring run.  Passing the
+    live DB session here (the old interface) would let the guard read the
+    session's own uncommitted writes, defeating the check entirely.
+
     Raises ScoringGuardError if any threshold is violated and force is False.
     Logs details on both pass and block.
 
@@ -558,32 +605,12 @@ def _batch_sanity_check(
     new_active = _count_active_signals(signal_norms)
     near_floor = sum(1 for s in new_scores if s <= 5)
 
-    # Read current live baseline
-    prev_rows = db.execute(text(
-        "SELECT score, signal_breakdown FROM displacement_scores WHERE score IS NOT NULL"
-    )).fetchall()
-
-    if prev_rows:
-        prev_scores = [float(r[0]) for r in prev_rows]
-        prev_max    = max(prev_scores)
-        prev_avg    = sum(prev_scores) / len(prev_scores)
-
-        # Count previously active signals from JSONB breakdown (sample all rows)
-        prev_signal_sums: dict[str, float] = {}
-        prev_signal_counts: dict[str, int] = {}
-        for r in prev_rows:
-            breakdown = r[1] if isinstance(r[1], dict) else {}
-            for sig, val in breakdown.items():
-                if isinstance(val, (int, float)):
-                    prev_signal_sums[sig]   = prev_signal_sums.get(sig, 0.0) + float(val)
-                    prev_signal_counts[sig] = prev_signal_counts.get(sig, 0) + 1
-        prev_active = sum(
-            1 for sig in prev_signal_sums
-            if prev_signal_counts[sig] > 0
-            and prev_signal_sums[sig] / prev_signal_counts[sig] > 1.0
-        )
+    if prior is not None:
+        prev_max    = prior["max"]
+        prev_avg    = prior["avg"]
+        prev_active = prior["active_signals"]
     else:
-        # No prior data — allow first-ever run without comparison
+        # No prior data — allow first-ever run without comparison thresholds.
         logger.info("scoring guard: no prior displacement_scores — skipping comparison thresholds")
         prev_max = prev_avg = 0.0
         prev_active = 0
@@ -830,7 +857,18 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
             len(_active_signals),
         )
 
-    # --- Step 6: Upsert to displacement_scores ---
+    # --- Step 6: Compute composites then upsert to displacement_scores ---
+    #
+    # Split into two phases so the batch sanity guard can compare the proposed
+    # new scores against the PRIOR committed state — not the values this run
+    # is about to write.  Reading displacement_scores after Step 6A writes
+    # (even within the same transaction) returns the session's own uncommitted
+    # rows in PostgreSQL's read-committed mode, making the guard a no-op.
+    #
+    # Phase A: compute all scores in memory.  No DB writes.
+    # Guard:   compare in-memory batch against pre-fetched prior baseline.
+    # Phase B: write validated scores to displacement_scores.
+
     now = datetime.now(timezone.utc)
     sig_updated = {
         "permits": now.isoformat(),
@@ -841,19 +879,22 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
         "rs_unit_loss": now.isoformat(),
     }
 
-    # Track validation failures to detect systemic scoring issues
+    # Snapshot committed state BEFORE any writes (guard baseline).
+    # Backfill runs never touch live tables, so no baseline needed.
+    prior_baseline = _fetch_prior_baseline(db) if as_of_date is None else None
+
+    # --- Phase A: compute composites in memory (no DB writes) ---
     skipped_zips: list = []
-    # Cache computed scores so Step 7 (score_history) reuses them instead of
-    # re-deriving the composite — prevents silent divergence if weights change.
     computed_scores: Dict[str, float] = {}
+    computed_breakdowns: Dict[str, dict] = {}
 
     for zip_code in sorted(all_zips):
-        p_norm = permit_norm.get(zip_code, 0.0)
-        e_norm = eviction_norm.get(zip_code, 0.0)
-        l_norm = llc_norm.get(zip_code, 0.0)
-        c_norm = complaint_norm.get(zip_code, 0.0)
-        v_norm = violation_norm.get(zip_code, 0.0)
-        a_norm = assessment_spike_norm.get(zip_code, 0.0)
+        p_norm  = permit_norm.get(zip_code, 0.0)
+        e_norm  = eviction_norm.get(zip_code, 0.0)
+        l_norm  = llc_norm.get(zip_code, 0.0)
+        c_norm  = complaint_norm.get(zip_code, 0.0)
+        v_norm  = violation_norm.get(zip_code, 0.0)
+        a_norm  = assessment_spike_norm.get(zip_code, 0.0)
         rs_norm = rs_loss_norm.get(zip_code, 0.0)
 
         composite = (
@@ -864,34 +905,67 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
             + effective_weights["hpd_violations"] * v_norm
             + effective_weights["rs_unit_loss"] * rs_norm
         )
-        # Clamp to [1, 100] — minimum 1 so no zip ever shows "0 risk"
         score = max(1.0, min(100.0, round(composite, 1)))
-        computed_scores[zip_code] = score
 
         breakdown = {
-            "permits": p_norm,
-            "evictions": e_norm,
+            "permits":          p_norm,
+            "evictions":        e_norm,
             "llc_acquisitions": l_norm,
-            "hpd_violations": v_norm,
-            "complaint_rate": c_norm,
-            "rs_unit_loss": rs_norm,
+            "hpd_violations":   v_norm,
+            "complaint_rate":   c_norm,
+            "rs_unit_loss":     rs_norm,
         }
 
-        # --- Pre-commit sanity check ---
         try:
             _assert_score_valid(zip_code, score, breakdown)
         except ValueError as val_err:
             logger.warning(
                 "Score sanity check failed for %s — skipping upsert: %s",
-                zip_code,
-                val_err,
+                zip_code, val_err,
             )
             skipped_zips.append(zip_code)
-            continue  # skip this zip, do not write to DB
+            continue
 
-        # Backfill runs skip the current-score tables — writing historical scores
-        # to displacement_scores would overwrite live data.
-        if as_of_date is None:
+        computed_scores[zip_code] = score
+        computed_breakdowns[zip_code] = breakdown
+
+    # Systemic failure detection: if >50% of zips failed per-zip validation,
+    # abort before any DB write — no rollback needed since nothing was written.
+    total_attempted = len(all_zips)
+    if skipped_zips and len(skipped_zips) > total_attempted * 0.5:
+        logger.error(
+            "Scoring aborted: %d/%d zips failed sanity check (>50%%). "
+            "Possible normalization or signal aggregation bug. "
+            "No scores written to displacement_scores.",
+            len(skipped_zips), total_attempted,
+        )
+        return 0
+
+    # --- Batch sanity guard (before any writes) ---
+    # Uses the pre-fetched prior_baseline, not a live DB read, so it cannot
+    # accidentally compare the new batch against itself.
+    if as_of_date is None:
+        _guard_signal_norms = {
+            "permits":          permit_norm,
+            "evictions":        eviction_norm,
+            "llc_acquisitions": llc_norm,
+            "hpd_violations":   violation_norm,
+            "complaint_rate":   complaint_norm,
+            "rs_unit_loss":     rs_loss_norm,
+        }
+        _batch_sanity_check(prior_baseline, computed_scores, _guard_signal_norms, force=force)
+        # ScoringGuardError propagates to caller — no writes have occurred yet.
+
+    # --- Phase B: write validated scores to displacement_scores ---
+    if as_of_date is None:
+        for zip_code, score in computed_scores.items():
+            breakdown = computed_breakdowns[zip_code]
+            p_norm  = permit_norm.get(zip_code, 0.0)
+            e_norm  = eviction_norm.get(zip_code, 0.0)
+            l_norm  = llc_norm.get(zip_code, 0.0)
+            c_norm  = complaint_norm.get(zip_code, 0.0)
+            v_norm  = violation_norm.get(zip_code, 0.0)
+            a_norm  = assessment_spike_norm.get(zip_code, 0.0)
             db.execute(
                 text(
                     """
@@ -920,51 +994,18 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
                     """
                 ),
                 {
-                    "zip_code": zip_code,
-                    "score": score,
-                    "breakdown": json.dumps(breakdown),
-                    "permit_intensity": p_norm,
-                    "eviction_rate": e_norm,
+                    "zip_code":            zip_code,
+                    "score":               score,
+                    "breakdown":           json.dumps(breakdown),
+                    "permit_intensity":    p_norm,
+                    "eviction_rate":       e_norm,
                     "llc_acquisition_rate": l_norm,
-                    "assessment_spike": a_norm,
-                    "complaint_rate": c_norm,
-                    "now": now,
-                    "sig_updated": json.dumps(sig_updated),
+                    "assessment_spike":    a_norm,
+                    "complaint_rate":      c_norm,
+                    "now":                 now,
+                    "sig_updated":         json.dumps(sig_updated),
                 },
             )
-
-    # Systemic failure detection: if >50% of zips failed validation,
-    # something is wrong with normalization — abort and return 0.
-    total_attempted = len(all_zips)
-    if skipped_zips and len(skipped_zips) > total_attempted * 0.5:
-        logger.error(
-            "Scoring aborted: %d/%d zips failed sanity check (>50%%). "
-            "Possible normalization or signal aggregation bug. "
-            "No scores written to displacement_scores.",
-            len(skipped_zips),
-            total_attempted,
-        )
-        db.rollback()
-        return 0
-
-    # --- Batch sanity guard ---
-    # Compares the full new batch against live displacement_scores before committing.
-    # Rolls back and raises ScoringGuardError if any threshold is violated.
-    # Skipped during backfill runs (as_of_date is set) — those never touch live tables.
-    if as_of_date is None:
-        signal_norms = {
-            "permits":        permit_norm,
-            "evictions":      eviction_norm,
-            "llc_acquisitions": llc_norm,
-            "hpd_violations": violation_norm,
-            "complaint_rate": complaint_norm,
-            "rs_unit_loss":   rs_loss_norm,
-        }
-        try:
-            _batch_sanity_check(db, computed_scores, signal_norms, force=force)
-        except ScoringGuardError:
-            db.rollback()
-            raise  # propagate so cron/CLI exits nonzero
 
     db.commit()
 

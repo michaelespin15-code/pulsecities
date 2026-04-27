@@ -1,55 +1,55 @@
 """
 Tests for the batch sanity guard in scoring/compute.py.
 
-All unit tests — no live DB required. DB reads inside _batch_sanity_check
-are mocked to return controlled baseline data.
+All unit tests — no live DB required.  The refactored _batch_sanity_check
+accepts a pre-fetched ``prior`` dict instead of a live DB session, eliminating
+the bug where the guard would read the session's own uncommitted writes and
+compare the new batch against itself.
+
+Integration tests (marked @pytest.mark.integration) verify end-to-end
+behaviour: guard blocks before displacement_scores or score_history are written.
 """
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-from scoring.compute import ScoringGuardError, _batch_sanity_check, _count_active_signals
+from scoring.compute import (
+    ScoringGuardError,
+    _batch_sanity_check,
+    _count_active_signals,
+    _fetch_prior_baseline,
+)
 
 
 # ---------------------------------------------------------------------------
-# Fixtures
+# Helpers
 # ---------------------------------------------------------------------------
 
-def _db_with_prev(prev_scores: list[float], signal_means: dict | None = None) -> MagicMock:
-    """
-    Return a mock DB whose displacement_scores query returns the given prev scores.
-    signal_means: per-signal mean value written into each row's signal_breakdown.
-    """
-    if signal_means is None:
-        # Default: all 5 active signals well above 1.0
-        signal_means = {
-            "permits": 45.0, "evictions": 38.0, "llc_acquisitions": 52.0,
-            "hpd_violations": 30.0, "complaint_rate": 40.0, "rs_unit_loss": 0.0,
-        }
-
-    rows = [
-        MagicMock(
-            __getitem__=lambda self, i: (score if i == 0 else signal_means)[i],
-        )
-        for score in prev_scores
-    ]
-    # Use tuples so r[0] and r[1] work directly
-    rows = [(score, signal_means) for score in prev_scores]
-
-    db = MagicMock()
-    db.execute.return_value.fetchall.return_value = rows
-    return db
+def _make_prior(
+    max_score: float = 72.0,
+    avg_score: float = 35.0,
+    count: int = 183,
+    active_signals: int = 5,
+) -> dict:
+    """Build a prior baseline dict as returned by _fetch_prior_baseline()."""
+    return {
+        "max":            max_score,
+        "avg":            avg_score,
+        "count":          count,
+        "active_signals": active_signals,
+    }
 
 
 def _signal_norms(n_zips: int = 183, active_signals: list[str] | None = None) -> dict:
-    """
-    Build a signal_norms dict where active_signals have mean > 1.0 and others are 0.
-    Default: 5 active signals.
-    """
-    all_signals = ["permits", "evictions", "llc_acquisitions", "hpd_violations", "complaint_rate", "rs_unit_loss"]
+    all_signals = [
+        "permits", "evictions", "llc_acquisitions",
+        "hpd_violations", "complaint_rate", "rs_unit_loss",
+    ]
     if active_signals is None:
-        active_signals = ["permits", "evictions", "llc_acquisitions", "hpd_violations", "complaint_rate"]
-
+        active_signals = [
+            "permits", "evictions", "llc_acquisitions",
+            "hpd_violations", "complaint_rate",
+        ]
     norms = {}
     for sig in all_signals:
         val = 45.0 if sig in active_signals else 0.0
@@ -58,13 +58,12 @@ def _signal_norms(n_zips: int = 183, active_signals: list[str] | None = None) ->
 
 
 def _healthy_scores(n: int = 183, max_score: float = 72.0) -> dict:
-    """Return a healthy computed_scores dict."""
     import random
     random.seed(42)
-    scores = {}
-    for i in range(n):
-        scores[str(10000 + i)] = max(1.0, min(100.0, random.uniform(5.0, max_score)))
-    return scores
+    return {
+        str(10000 + i): max(1.0, min(100.0, random.uniform(5.0, max_score)))
+        for i in range(n)
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -92,7 +91,6 @@ class TestCountActiveSignals:
         assert _count_active_signals({}) == 0
 
     def test_mean_at_boundary(self):
-        # mean exactly 1.0 is NOT active (must be > 1.0)
         norms = {"permits": {"z1": 1.0, "z2": 1.0}}
         assert _count_active_signals(norms) == 0
 
@@ -101,35 +99,89 @@ class TestCountActiveSignals:
 
 
 # ---------------------------------------------------------------------------
+# _fetch_prior_baseline — unit tests via mock DB
+# ---------------------------------------------------------------------------
+
+class TestFetchPriorBaseline:
+    def _db_with_rows(self, scores: list[float], breakdown: dict | None = None) -> MagicMock:
+        if breakdown is None:
+            breakdown = {"permits": 45.0, "evictions": 38.0, "llc_acquisitions": 52.0,
+                         "hpd_violations": 30.0, "complaint_rate": 40.0, "rs_unit_loss": 0.0}
+        rows = [(s, breakdown) for s in scores]
+        db = MagicMock()
+        db.execute.return_value.fetchall.return_value = rows
+        return db
+
+    def test_empty_table_returns_none(self):
+        db = MagicMock()
+        db.execute.return_value.fetchall.return_value = []
+        assert _fetch_prior_baseline(db) is None
+
+    def test_returns_correct_max_avg_count(self):
+        scores = [10.0, 20.0, 30.0, 40.0, 50.0]
+        db = self._db_with_rows(scores)
+        prior = _fetch_prior_baseline(db)
+        assert prior is not None
+        assert prior["max"] == 50.0
+        assert prior["avg"] == pytest.approx(30.0)
+        assert prior["count"] == 5
+
+    def test_counts_active_signals(self):
+        # breakdown has 5 signals with mean > 1.0 and rs_unit_loss = 0
+        breakdown = {"permits": 45.0, "evictions": 38.0, "llc_acquisitions": 52.0,
+                     "hpd_violations": 30.0, "complaint_rate": 40.0, "rs_unit_loss": 0.0}
+        db = self._db_with_rows([50.0, 60.0], breakdown)
+        prior = _fetch_prior_baseline(db)
+        assert prior["active_signals"] == 5
+
+    def test_zero_signal_not_counted_active(self):
+        # All signals are zero → active_signals = 0
+        breakdown = {"permits": 0.0, "evictions": 0.0}
+        db = self._db_with_rows([30.0, 40.0], breakdown)
+        prior = _fetch_prior_baseline(db)
+        assert prior["active_signals"] == 0
+
+    def test_returns_dict_with_required_keys(self):
+        db = self._db_with_rows([35.0])
+        prior = _fetch_prior_baseline(db)
+        assert prior is not None
+        for key in ("max", "avg", "count", "active_signals"):
+            assert key in prior
+
+
+# ---------------------------------------------------------------------------
 # _batch_sanity_check — guard passes
 # ---------------------------------------------------------------------------
 
 class TestGuardPasses:
     def test_healthy_batch_passes(self):
+        prior  = _make_prior(max_score=72.0, avg_score=35.0)
         scores = _healthy_scores(183, max_score=72.0)
-        norms  = _signal_norms(183, active_signals=["permits", "evictions", "llc_acquisitions", "hpd_violations", "complaint_rate"])
-        db = _db_with_prev([72.0, 60.0, 55.0, 50.0, 45.0] * 36 + [72.0, 60.0, 55.0])
-
-        # Should not raise
-        _batch_sanity_check(db, scores, norms, force=False)
+        norms  = _signal_norms(183)
+        _batch_sanity_check(prior, scores, norms, force=False)  # must not raise
 
     def test_no_prior_data_always_passes(self):
         """First-ever run with empty displacement_scores must not be blocked."""
         scores = _healthy_scores(183)
         norms  = _signal_norms(183)
-        db = MagicMock()
-        db.execute.return_value.fetchall.return_value = []
-
-        _batch_sanity_check(db, scores, norms, force=False)
+        _batch_sanity_check(None, scores, norms, force=False)
 
     def test_force_bypasses_all_checks(self):
         """--force skips guard even with catastrophically bad scores."""
+        prior  = _make_prior(max_score=72.0, avg_score=35.0)
         scores = {str(i): 1.0 for i in range(50)}  # only 50 ZIPs, all at floor
         norms  = _signal_norms(50, active_signals=[])
-        db = _db_with_prev([72.0] * 183)
+        _batch_sanity_check(prior, scores, norms, force=True)  # must not raise
 
-        # Should not raise despite failing every threshold
-        _batch_sanity_check(db, scores, norms, force=True)
+    def test_prior_dict_not_db_session(self):
+        """Guard must accept a dict, not a DB session — passing a dict proves
+        the refactor is complete and the guard no longer reads from the DB."""
+        prior  = _make_prior()
+        scores = _healthy_scores(183)
+        norms  = _signal_norms(183)
+        # If _batch_sanity_check still accepted a Session it would fail here
+        # because _make_prior() returns a plain dict.
+        _batch_sanity_check(prior, scores, norms, force=False)
 
 
 # ---------------------------------------------------------------------------
@@ -137,95 +189,97 @@ class TestGuardPasses:
 # ---------------------------------------------------------------------------
 
 class TestGuardBlocks:
-    def _prev_db(self, prev_max: float = 72.0, n: int = 183, active: int = 5) -> MagicMock:
-        active_sigs = list(_signal_norms().keys())[:active]
-        signal_means = {s: (45.0 if s in active_sigs else 0.0) for s in _signal_norms().keys()}
-        scores = [prev_max] + [prev_max * 0.8] * (n - 1)
-        return _db_with_prev(scores, signal_means)
-
     def test_max_score_collapse_blocks(self):
         """New max < 50% of previous max triggers guard."""
-        prev_max = 72.0
-        scores = {str(i): 30.0 for i in range(183)}  # new max = 30 < 72*0.5 = 36
+        prior  = _make_prior(max_score=72.0, avg_score=35.0)
+        scores = {str(i): 30.0 for i in range(183)}  # new max=30 < 72*0.5=36
         norms  = _signal_norms(183)
-        db = self._prev_db(prev_max=prev_max)
-
         with pytest.raises(ScoringGuardError, match="max score collapsed"):
-            _batch_sanity_check(db, scores, norms, force=False)
+            _batch_sanity_check(prior, scores, norms, force=False)
 
     def test_avg_score_collapse_blocks(self):
-        """New average < 50% of previous average triggers guard, max left intact."""
-        # prev avg = 35.0, threshold = 17.5
-        # new: one high score keeps max healthy (35.0 >= 17.5), rest very low → avg ~4.2 < 17.5
-        prev_scores = [35.0] * 183
-        new_scores  = {str(0): 35.0, **{str(i): 4.0 for i in range(1, 183)}}
-        norms = _signal_norms(183)
-        db = _db_with_prev(prev_scores)
-
+        """New average < 50% of previous average triggers guard."""
+        prior      = _make_prior(avg_score=35.0, max_score=35.0)
+        new_scores = {str(0): 35.0, **{str(i): 4.0 for i in range(1, 183)}}
+        norms      = _signal_norms(183)
         with pytest.raises(ScoringGuardError, match="avg score collapsed"):
-            _batch_sanity_check(db, new_scores, norms, force=False)
+            _batch_sanity_check(prior, new_scores, norms, force=False)
 
     def test_too_few_zips_blocks(self):
         """ZIP count < 170 triggers guard."""
-        scores = _healthy_scores(n=100)  # only 100 ZIPs
+        prior  = _make_prior()
+        scores = _healthy_scores(n=100)
         norms  = _signal_norms(100)
-        db = self._prev_db()
-
         with pytest.raises(ScoringGuardError, match="ZIP count too low"):
-            _batch_sanity_check(db, scores, norms, force=False)
+            _batch_sanity_check(prior, scores, norms, force=False)
 
     def test_floor_majority_blocks(self):
-        """> 50% of ZIPs at score <= 5 triggers guard, max/avg kept healthy."""
-        # prev avg = 30.0 → threshold = 15.0
-        # new: 100 ZIPs at 2.0 (floor, 54.6%), 83 ZIPs at 50.0
-        # new max = 50.0 >= 15.0 ✓, new avg = (200+4150)/183 ≈ 23.8 >= 15.0 ✓
-        # floor count = 100 > 183*0.5 = 91.5 → triggers floor check
+        """> 50% of ZIPs at score <= 5 triggers guard."""
+        prior  = _make_prior(avg_score=30.0, max_score=50.0)
         scores = {str(i): (2.0 if i < 100 else 50.0) for i in range(183)}
         norms  = _signal_norms(183)
-        db = _db_with_prev([30.0] * 183)
-
         with pytest.raises(ScoringGuardError, match="score <= 5"):
-            _batch_sanity_check(db, scores, norms, force=False)
+            _batch_sanity_check(prior, scores, norms, force=False)
 
     def test_signal_collapse_blocks(self):
         """Previous >= 4 active signals, new <= 2 active signals triggers guard."""
+        prior  = _make_prior(active_signals=5)
         scores = _healthy_scores(183, max_score=72.0)
-        # Only 1 active signal in new batch
-        norms  = _signal_norms(183, active_signals=["hpd_violations"])
-        # Previous had 5 active signals
-        db = self._prev_db(active=5)
-
+        norms  = _signal_norms(183, active_signals=["hpd_violations"])  # only 1 active
         with pytest.raises(ScoringGuardError, match="active signal count collapsed"):
-            _batch_sanity_check(db, scores, norms, force=False)
+            _batch_sanity_check(prior, scores, norms, force=False)
 
     def test_blocked_run_does_not_commit(self):
-        """On ScoringGuardError the caller must rollback — guard itself does not commit."""
-        scores = {str(i): 1.0 for i in range(50)}  # only 50 ZIPs
+        """_batch_sanity_check never calls db.commit — commit is the caller's job."""
+        # The refactored guard no longer accepts a db argument, so there is no
+        # DB object to inadvertently commit.  This test verifies the function
+        # raises without touching any external state.
+        prior  = _make_prior()
+        scores = {str(i): 1.0 for i in range(50)}  # triggers ZIP count < 170
         norms  = _signal_norms(50)
-        db = self._prev_db()
-
         with pytest.raises(ScoringGuardError):
-            _batch_sanity_check(db, scores, norms, force=False)
-
-        # Guard never calls commit
-        db.execute.return_value.fetchall.return_value  # already consumed
-        # commit was not called by _batch_sanity_check itself
-        db.commit.assert_not_called()
+            _batch_sanity_check(prior, scores, norms, force=False)
 
     def test_force_bypasses_zip_count(self):
+        prior  = _make_prior()
         scores = _healthy_scores(n=50)
         norms  = _signal_norms(50)
-        db = self._prev_db()
-
-        # Should not raise despite < 170 ZIPs
-        _batch_sanity_check(db, scores, norms, force=True)
+        _batch_sanity_check(prior, scores, norms, force=True)  # must not raise
 
     def test_force_bypasses_signal_collapse(self):
+        prior  = _make_prior(active_signals=5)
         scores = _healthy_scores(183, max_score=72.0)
-        norms  = _signal_norms(183, active_signals=[])  # 0 active signals
-        db = self._prev_db(active=5)
+        norms  = _signal_norms(183, active_signals=[])  # 0 active
+        _batch_sanity_check(prior, scores, norms, force=True)
 
-        _batch_sanity_check(db, scores, norms, force=True)
+    def test_guard_uses_prior_not_live_db(self):
+        """
+        Core regression test for the original bug.
+
+        Before the fix: guard called db.execute() to read displacement_scores
+        *after* new values were written in the same transaction.  PostgreSQL
+        returned the session's own uncommitted rows, so prev_avg == new_avg
+        and the collapse check (new_avg < prev_avg * 0.50) always passed.
+
+        After the fix: guard accepts a pre-fetched `prior` dict.  There is no
+        DB read inside _batch_sanity_check at all.  We simulate the bug scenario
+        by constructing:
+          - prior baseline: avg=35 (healthy, from before the run)
+          - new batch: avg ≈ 6.79 (collapsed, what the bad run computed)
+        The guard must catch this collapse even though we pass the prior
+        directly rather than reading from DB.
+        """
+        prior = _make_prior(max_score=72.4, avg_score=35.0, active_signals=5)
+
+        # Simulate today's collapsed batch: ~184 ZIPs, most at ~4, one at 72.4
+        collapsed = {"99901": 72.4}
+        collapsed.update({str(10000 + i): 4.0 for i in range(183)})
+        # avg ≈ (72.4 + 183*4) / 184 ≈ 4.39; well below 35.0 * 0.50 = 17.5
+
+        norms = _signal_norms(183, active_signals=["hpd_violations"])  # 1 active (signal collapse)
+
+        with pytest.raises(ScoringGuardError):
+            _batch_sanity_check(prior, collapsed, norms, force=False)
 
 
 # ---------------------------------------------------------------------------
@@ -235,28 +289,20 @@ class TestGuardBlocks:
 class TestSignalCollapseEdgeCases:
     def test_prev_3_active_no_collapse_trigger(self):
         """Signal collapse only triggers when previous had >= 4 active."""
+        prior  = _make_prior(active_signals=3)
         scores = _healthy_scores(183, max_score=72.0)
         norms  = _signal_norms(183, active_signals=["permits"])  # 1 active now
-        # Previous only had 3 active — guard should NOT trigger on signal collapse
-        prev_means = {"permits": 45.0, "evictions": 40.0, "llc_acquisitions": 35.0,
-                      "hpd_violations": 0.0, "complaint_rate": 0.0, "rs_unit_loss": 0.0}
-        db = _db_with_prev([72.0] * 183, prev_means)
-
-        # Only signal collapse checked here — other checks pass with healthy scores/counts
-        _batch_sanity_check(db, scores, norms, force=False)
+        _batch_sanity_check(prior, scores, norms, force=False)  # must not raise
 
     def test_exactly_2_active_signals_passes_when_prev_had_3(self):
+        prior  = _make_prior(active_signals=3)
         scores = _healthy_scores(183)
-        norms  = _signal_norms(183, active_signals=["permits", "evictions"])  # 2 active
-        prev_means = {"permits": 45.0, "evictions": 40.0, "llc_acquisitions": 35.0,
-                      "hpd_violations": 0.0, "complaint_rate": 0.0, "rs_unit_loss": 0.0}
-        db = _db_with_prev([72.0] * 183, prev_means)
-
-        _batch_sanity_check(db, scores, norms, force=False)
+        norms  = _signal_norms(183, active_signals=["permits", "evictions"])
+        _batch_sanity_check(prior, scores, norms, force=False)  # must not raise
 
 
 # ---------------------------------------------------------------------------
-# Orphan ZIP cleanup
+# Orphan ZIP cleanup (integration)
 # ---------------------------------------------------------------------------
 
 class TestOrphanCleanup:
@@ -273,8 +319,6 @@ class TestOrphanCleanup:
 
         db = SessionLocal()
         try:
-            # Purge any stale test rows left by prior runs (handles both the old
-            # '99999' test ZIP and the current '99998' test ZIP).
             db.execute(text(
                 "DELETE FROM displacement_scores WHERE zip_code IN ('99998', '99999')"
             ))
@@ -308,9 +352,104 @@ class TestOrphanCleanup:
             """)).scalar()
             assert leftover == 0, f"{leftover} orphan ZIP(s) still present after cleanup"
         finally:
-            # Belt-and-suspenders: remove test ZIPs so subsequent test runs start clean.
             db.execute(text(
                 "DELETE FROM displacement_scores WHERE zip_code IN ('99998', '99999')"
             ))
             db.commit()
+            db.close()
+
+
+# ---------------------------------------------------------------------------
+# Guard fires before writes (integration)
+# ---------------------------------------------------------------------------
+
+class TestGuardBlocksBeforeWrites:
+    """
+    Verify that when the guard fires, no rows are written to displacement_scores
+    or score_history.  This is the end-to-end proof that the fix works.
+    """
+
+    @pytest.mark.integration
+    def test_collapsed_batch_blocked_before_displacement_scores_written(self):
+        """
+        Inject a synthetic prior baseline that makes any real scoring run look
+        collapsed, trigger compute_scores(), and confirm displacement_scores
+        was not modified.
+        """
+        from models.database import SessionLocal
+        from sqlalchemy import text
+        from scoring.compute import compute_scores
+
+        db = SessionLocal()
+        try:
+            before_max = db.execute(
+                text("SELECT MAX(score) FROM displacement_scores")
+            ).scalar() or 0.0
+            before_updated = db.execute(
+                text("SELECT MAX(updated_at) FROM displacement_scores")
+            ).scalar()
+
+            # Run with an absurdly high force-threshold via a patched prior.
+            # We patch _fetch_prior_baseline to return a baseline whose avg is
+            # 1000x above any realistic score, guaranteeing the guard fires.
+            import unittest.mock as mock
+            fake_prior = {
+                "max": 9999.0, "avg": 9999.0,
+                "count": 183, "active_signals": 5,
+            }
+            with mock.patch(
+                "scoring.compute._fetch_prior_baseline", return_value=fake_prior
+            ):
+                with pytest.raises(ScoringGuardError):
+                    compute_scores(db, force=False)
+
+            # displacement_scores must be unchanged
+            after_updated = db.execute(
+                text("SELECT MAX(updated_at) FROM displacement_scores")
+            ).scalar()
+            assert after_updated == before_updated, (
+                "displacement_scores.updated_at changed after a guard-blocked run"
+            )
+        finally:
+            db.close()
+
+    @pytest.mark.integration
+    def test_collapsed_batch_does_not_write_score_history(self):
+        """
+        When the guard blocks, score_history must not receive a new snapshot.
+        Uses the same fake-prior patching approach as the displacement_scores test.
+        """
+        from datetime import date
+        from models.database import SessionLocal
+        from sqlalchemy import text
+        from scoring.compute import compute_scores
+        import unittest.mock as mock
+
+        db = SessionLocal()
+        try:
+            today = date.today()
+            # Delete any existing history for today so we can detect a fresh write.
+            db.execute(
+                text("DELETE FROM score_history WHERE scored_at = :d"), {"d": today}
+            )
+            db.commit()
+
+            fake_prior = {
+                "max": 9999.0, "avg": 9999.0,
+                "count": 183, "active_signals": 5,
+            }
+            with mock.patch(
+                "scoring.compute._fetch_prior_baseline", return_value=fake_prior
+            ):
+                with pytest.raises(ScoringGuardError):
+                    compute_scores(db, force=False)
+
+            count_today = db.execute(
+                text("SELECT COUNT(*) FROM score_history WHERE scored_at = :d"),
+                {"d": today},
+            ).scalar()
+            assert count_today == 0, (
+                f"score_history gained {count_today} rows despite guard blocking the run"
+            )
+        finally:
             db.close()
