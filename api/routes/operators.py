@@ -44,12 +44,17 @@ limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 OPERATOR_NOISE_ROOTS: frozenset[str] = frozenset({
     "ICECAP", "ICE", "BROAD", "BROADVIEW",
     "ARBOR", "STANDARD", "SYMETRA", "COMMUNITY", "OCEANVIEW",
+    # VALLEY NATIONAL BANK — lender/mortgage-assignment cluster, not a landlord operator.
+    # All ACRIS activity is deed assignments (buyer "VALLEY NATIONAL BANK ISAOA ATIMA"),
+    # which is standard mortgage servicer language, not acquisition operator activity.
+    "VALLEY",
 })
 
 # Slug equivalents (lowercase), used to block direct /operator/{slug} URLs.
 OPERATOR_NOISE_SLUGS: frozenset[str] = frozenset({
     "icecap", "ice", "broad", "broadview",
     "arbor", "standard", "symetra", "community", "oceanview",
+    "valley",
 })
 
 _SCRIPTS_DIR = Path(__file__).parent.parent.parent / "scripts"
