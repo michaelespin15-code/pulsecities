@@ -7,7 +7,7 @@ A free public intelligence tool that surfaces displacement pressure, constructio
 
 ## Screenshot
 
-Add `docs/screenshot.png` before sharing this repo publicly.
+![PulseCities](frontend/og-image.png)
 
 ## What it shows
 
