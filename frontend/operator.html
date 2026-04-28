@@ -471,7 +471,7 @@
     };
 
     function createMetaLine(parts) {
-        return parts.filter(p => p != null && p !== '').join(' · ');
+        return parts.filter(p => p != null && p !== '').join(', ');
     }
 
     function formatMobilePropertyRow(p, acq, rs, viol, zipNames) {
@@ -511,7 +511,7 @@
         const statSpan = document.createElement('span');
         statSpan.className = 'mob-meta';
         statSpan.style.marginTop = '0';
-        statSpan.textContent = statParts.join(' · ');
+        statSpan.textContent = statParts.join(', ');
         statsRow.appendChild(statSpan);
 
         div.appendChild(statsRow);
