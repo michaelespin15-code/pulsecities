@@ -105,8 +105,9 @@
                             <span class="signal-chip" data-i18n="chip_window">18-month window</span>
                             <span class="signal-chip" data-i18n="chip_public_records">public records</span>
                         </div>
-                        <div style="margin-top: 10px;">
+                        <div style="margin-top: 10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                             <button id="copy-link-btn" data-i18n="copy_link" style="font-size:0.72rem;color:rgba(148,163,184,0.55);background:rgba(148,163,184,0.06);border:1px solid rgba(148,163,184,0.15);border-radius:5px;padding:4px 10px;cursor:pointer;min-height:28px;font-family:'DM Sans',sans-serif;">Copy link</button>
+                            <a id="brief-link-btn" href="#" style="display:none;font-size:0.72rem;color:rgba(148,163,184,0.55);background:rgba(148,163,184,0.06);border:1px solid rgba(148,163,184,0.15);border-radius:5px;padding:4px 10px;min-height:28px;line-height:20px;text-decoration:none;">View evidence brief</a>
                         </div>
                     </div>
                     <div style="font-size: 0.72rem; color: rgba(148,163,184,0.35); font-family: 'JetBrains Mono', monospace; padding-top: 6px;" data-i18n="source_acris">
@@ -573,6 +574,11 @@
         document.getElementById('content').style.display       = 'block';
         plausible('Operator Profile View');
         document.getElementById('op-root').textContent         = data.operator_root;
+        const _briefBtn = document.getElementById('brief-link-btn');
+        if (_briefBtn && data.slug) {
+            _briefBtn.href = '/brief/operator/' + encodeURIComponent(data.slug);
+            _briefBtn.style.display = 'inline-flex';
+        }
         const _whyEl = document.getElementById('why-matters');
         if (_whyEl) _whyEl.textContent = _buildWhyMatters(data);
 
