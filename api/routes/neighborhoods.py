@@ -107,13 +107,26 @@ def get_neighborhood_score(
         .first()
     )
 
-    if not score:
-        raise HTTPException(
-            status_code=404,
-            detail=f"No score data for zip code {zip_code}.",
-        )
-
     hood = db.query(Neighborhood).filter(Neighborhood.zip_code == zip_code).first()
+
+    if not score:
+        # displacement_scores row missing (e.g. mid-scraper state, test teardown).
+        # Fall back to neighborhoods.current_score so the sidebar never 404s for
+        # a ZIP that is part of the scoring universe.
+        if not hood or hood.current_score is None:
+            raise HTTPException(status_code=404, detail=f"No score data for zip code {zip_code}.")
+        fallback_score = round(hood.current_score, 1)
+        return {
+            "zip_code": zip_code,
+            "name": hood.name,
+            "borough": _borough_from_zip(zip_code),
+            "score": fallback_score,
+            "signal_breakdown": {},
+            "signal_raw_counts": {},
+            "summary_text": None,
+            "signal_last_updated": {},
+            "last_updated": None,
+        }
 
     breakdown   = score.signal_breakdown or {}
     raw_counts  = _fetch_raw_counts(db, zip_code)
@@ -123,8 +136,6 @@ def get_neighborhood_score(
         "borough": _borough_from_zip(zip_code),
         "score": round(score.score, 1) if score.score is not None else None,
         "signal_breakdown": breakdown,
-        # Raw event counts behind each normalized score — used by UI and digest
-        # to show "27 LLC acquisitions" rather than just the 0–100 index value.
         "signal_raw_counts": raw_counts,
         "summary_text": _build_summary(score.score, breakdown, raw_counts),
         "signal_last_updated": score.signal_last_updated or {},
