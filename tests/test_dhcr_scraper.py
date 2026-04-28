@@ -194,19 +194,7 @@ class TestSignalBreakdownRsUnitLoss:
         from unittest.mock import MagicMock, patch
         from scoring.compute import compute_scores
 
-        zip_code = "99901"  # non-real NYC zip
-
-        mock_db = MagicMock()
-
-        # Simulate displacement_scores row returned for verification
-        mock_row = MagicMock()
-        mock_row.__getitem__ = lambda self, key: (
-            {"permits": 50.0, "evictions": 0.0, "llc_acquisitions": 0.0,
-             "assessment_spike": 0.0, "complaint_rate": 0.0, "rs_unit_loss": 0.0}
-            if key == 1 else "99901"
-        )
-        mock_db.execute.return_value.fetchone.return_value = mock_row
-        mock_db.execute.return_value.fetchall.return_value = []
+        zip_code = "10026"  # real NYC ZIP (Central Harlem) — must exist in neighborhoods
 
         with patch("scoring.compute._aggregate_permits", return_value=[(zip_code, 10)]), \
              patch("scoring.compute._aggregate_evictions", return_value=[]), \
@@ -215,8 +203,8 @@ class TestSignalBreakdownRsUnitLoss:
              patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]), \
              patch("scoring.compute._compute_borough_medians",
                    return_value={"1": 10.0, "2": 8.0, "3": 15.0, "4": 12.0, "5": 5.0}), \
-             patch("scoring.compute._get_zip_units", return_value={}), \
-             patch("scoring.compute._get_zip_borough", return_value={}):
+             patch("scoring.compute._get_zip_units", return_value={zip_code: 5000.0}), \
+             patch("scoring.compute._get_zip_borough", return_value={zip_code: 1}):
 
             from models.database import SessionLocal
             db = SessionLocal()

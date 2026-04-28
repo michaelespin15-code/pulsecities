@@ -737,17 +737,33 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
     # rs_loss_map: (zip_code -> avg_pct_loss float 0.0–1.0) — not per-unit
     rs_loss_map: Dict[str, float] = dict(rs_loss_rows)
 
-    # Only score residential zip codes — zips absent from zip_units have no
-    # residential units in parcels and would use the 1.0 fallback denominator,
-    # making them dominate per-unit normalization over genuine neighbourhoods.
-    # Guard: if zip_units is empty (parcels not loaded, or test mock), skip the
-    # filter so scoring still runs rather than silently producing zero rows.
+    # Fail hard if zip_units is empty — this means the parcels table is unavailable.
+    # Previously this fell back to the raw signal union, allowing ghost ZIPs (e.g.
+    # 99901, 12345) to enter normalization and collapse per-unit scores city-wide.
+    if not zip_units:
+        raise RuntimeError(
+            "zip_units is empty — parcels table may be mid-refresh. "
+            "Scoring aborted to prevent ghost ZIPs from corrupting normalization."
+        )
+
+    # Authoritative scoring universe: ZIPs that exist in the neighborhoods ZCTA
+    # table.  This is a hard outer bound — no ZIP can be scored unless it has a
+    # geometry row in neighborhoods, regardless of what the signal queries return.
+    # Intersecting with residential_zips (from parcels) inside that bound keeps
+    # the per-unit denominator well-defined for every scored ZIP.
+    zcta_zips = set(
+        str(r[0])
+        for r in db.execute(
+            text("SELECT DISTINCT zip_code FROM neighborhoods WHERE zip_code IS NOT NULL")
+        ).fetchall()
+    )
     residential_zips = set(zip_units.keys())
     all_zips_raw = (
         set(permit_map) | set(eviction_map) | set(llc_map) | set(complaint_map)
         | set(violation_map) | set(rs_loss_map)
     )
-    all_zips = (all_zips_raw & residential_zips) if residential_zips else all_zips_raw
+    # Intersect: must be in ZCTA universe AND have residential parcels
+    all_zips = all_zips_raw & zcta_zips & residential_zips
     if not all_zips:
         return 0
 
