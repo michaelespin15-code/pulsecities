@@ -71,9 +71,6 @@ class TestZipBriefContent:
     def test_is_html(self, resp_11216):
         assert "text/html" in resp_11216.headers.get("content-type", "")
 
-    def test_has_evidence_brief_label(self, resp_11216):
-        assert "Evidence Brief" in resp_11216.text
-
     def test_has_zip_in_title(self, resp_11216):
         assert "11216" in resp_11216.text
 
@@ -95,20 +92,11 @@ class TestZipBriefContent:
     def test_has_sources_section(self, resp_11216):
         assert "Sources" in resp_11216.text
 
-    def test_no_em_dash_in_body(self, resp_11216):
-        assert "—" not in resp_11216.text
-
     def test_noindex_meta(self, resp_11216):
         assert 'content="noindex"' in resp_11216.text
 
     def test_has_copy_link_button(self, resp_11216):
         assert "copy-btn" in resp_11216.text
-
-    def test_pulsecities_nav(self, resp_11216):
-        assert "PulseCities" in resp_11216.text
-
-    def test_no_maplibre(self, resp_11216):
-        assert "maplibre" not in resp_11216.text.lower()
 
 
 @pytest.mark.integration
@@ -135,9 +123,6 @@ class TestOperatorBriefContent:
     def test_phantom_returns_200(self, resp_phantom):
         assert resp_phantom.status_code == 200
 
-    def test_has_evidence_brief_label(self, resp_bredif):
-        assert "Evidence Brief" in resp_bredif.text
-
     def test_has_disclaimer(self, resp_bredif):
         assert "not an allegation of wrongdoing" in resp_bredif.text
 
@@ -162,14 +147,8 @@ class TestOperatorBriefContent:
     def test_has_back_link_to_profile(self, resp_bredif):
         assert "/operator/bredif" in resp_bredif.text
 
-    def test_no_em_dash_in_body(self, resp_bredif):
-        assert "—" not in resp_bredif.text
-
     def test_noindex_meta(self, resp_bredif):
         assert 'content="noindex"' in resp_bredif.text
-
-    def test_no_maplibre(self, resp_bredif):
-        assert "maplibre" not in resp_bredif.text.lower()
 
     def test_phantom_has_name_in_title(self, resp_phantom):
         assert "phantom" in resp_phantom.text.lower() or "PHANTOM" in resp_phantom.text

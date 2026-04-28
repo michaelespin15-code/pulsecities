@@ -1,5 +1,5 @@
 """
-Integration tests for GET /api/stats — plan 999.1-01.
+Integration tests for GET /api/stats.
 
 Covers:
   1. Returns 200 with correct top-level keys

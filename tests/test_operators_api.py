@@ -1,15 +1,13 @@
 """
 Integration tests for operator DB tables and API endpoints.
-Requirements: OPAPI-01 through OPAPI-04.
-
-Runs against the live pulsecities DB — requires Plan 09-01 backfill to have run.
+Runs against the live pulsecities DB with operators and operator_parcels populated.
 
 Test classes:
     TestOperatorSchema  — tables exist with correct structure
     TestBackfill        — operators and operator_parcels are seeded correctly
-    TestOperatorList    — GET /api/operators (activated in Plan 02)
-    TestOperatorDetail  — GET /api/operators/{slug} (activated in Plan 02)
-    TestGroupedSearch   — grouped search with operators key (activated in Plan 03)
+    TestOperatorList    — GET /api/operators
+    TestOperatorDetail  — GET /api/operators/{slug}
+    TestGroupedSearch   — grouped search with operators key
 """
 
 import pytest
@@ -131,7 +129,7 @@ class TestBackfill:
 
 @pytest.mark.integration
 class TestOperatorList:
-    """OPAPI-02: GET /api/operators returns operator list sorted by portfolio size."""
+    """GET /api/operators returns operator list sorted by portfolio size."""
 
     def test_list_endpoint_returns_array(self, client):
         resp = client.get("/api/operators")
@@ -179,7 +177,7 @@ class TestOperatorList:
 
 @pytest.mark.integration
 class TestOperatorDetail:
-    """OPAPI-03: GET /api/operators/{slug} returns full operator profile."""
+    """GET /api/operators/{slug} returns full operator profile."""
 
     def test_unknown_slug_404(self, client):
         resp = client.get("/api/operators/nobody")
@@ -242,7 +240,7 @@ class TestOperatorDetail:
 
 @pytest.mark.integration
 class TestGroupedSearch:
-    """OPAPI-04: Search results include operators key. (Activated in Plan 03)"""
+    """Search results include an operators key in the response."""
 
     def test_search_returns_operators_key(self, db):
         # Direct DB query to verify operators table has mtek-nyc

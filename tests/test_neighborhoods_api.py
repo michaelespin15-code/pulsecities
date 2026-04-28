@@ -1,7 +1,6 @@
 """
 Integration tests for neighborhood API endpoints.
-Requirements: API-01 (GeoJSON FeatureCollection), API-02 (score + signal_breakdown + last_updated).
-Runs against real database — requires 02-01 (ZCTA load) and 02-02 (scoring) to have run.
+Runs against a live database with ZCTA geometry and displacement scores loaded.
 """
 
 import pytest
@@ -13,7 +12,7 @@ client = TestClient(app)
 
 @pytest.mark.integration
 class TestNeighborhoodsGeoJSON:
-    """API-01: GET /api/neighborhoods returns GeoJSON FeatureCollection."""
+    """GET /api/neighborhoods returns a valid GeoJSON FeatureCollection."""
 
     def test_returns_200(self):
         resp = client.get("/api/neighborhoods")
@@ -51,7 +50,7 @@ class TestNeighborhoodsGeoJSON:
 
 @pytest.mark.integration
 class TestNeighborhoodScore:
-    """API-02: GET /api/neighborhoods/{zip_code}/score returns score + signal_breakdown."""
+    """GET /api/neighborhoods/{zip_code}/score returns score + signal_breakdown."""
 
     def test_valid_zip_returns_200_or_404(self):
         # Use a zip code known to exist from ZCTA load
@@ -215,7 +214,7 @@ class TestTopRiskNeighborhoods:
 
 @pytest.mark.integration
 class TestTopRiskNewFields:
-    """Plan 999.1-01: GET /api/neighborhoods/top-risk must include raw_count + percentile_tier."""
+    """GET /api/neighborhoods/top-risk includes raw_count and percentile_tier fields."""
 
     def test_top_risk_has_raw_count(self):
         resp = client.get("/api/neighborhoods/top-risk?limit=3")
