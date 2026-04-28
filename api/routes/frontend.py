@@ -674,19 +674,22 @@ def operators_directory(db: Session = Depends(get_db)):
         borough_str = ", ".join(boroughs[:2]) + (f" +{extra}" if extra > 0 else "")
         slug = root_to_slug[root]
         op_link = f"/operator/{_html.escape(slug)}"
-        # Stacked meta lines — no dot separator
-        acq_line = f'<div class="op-meta" data-count="{acqs}" data-i18n-label="acq">{acqs} <span class="op-label-acq">acquisitions</span></div>' if acqs else ""
-        llc_line = f'<div class="op-meta">{entities} LLCs</div>'
-        geo_html = f'<div class="op-geo">{_html.escape(borough_str)}</div>' if borough_str else ""
+        zip_count = len(zips)
+        meta_parts = []
+        if acqs:     meta_parts.append(f'{acqs} <span class="op-label-acq">acquisitions</span>')
+        if entities: meta_parts.append(f'{entities} LLC{"s" if entities != 1 else ""}')
+        if zip_count: meta_parts.append(f'{zip_count} ZIP code{"s" if zip_count != 1 else ""}')
+        meta_line = f'<div class="op-meta" data-count="{acqs}">{" · ".join(meta_parts)}</div>' if meta_parts else ""
+        geo_html  = f'<div class="op-geo">{_html.escape(borough_str)}</div>' if borough_str else ""
         rows_html += (
             f'<li class="op-row" onclick="location.href=\'{op_link}\'">'
             f'<a href="{op_link}">'
             f'<div class="op-rank">#{i}</div>'
             f'<div class="op-body">'
             f'<div class="op-name">{_html.escape(root)}</div>'
-            f'{acq_line}'
-            f'{llc_line}'
+            f'{meta_line}'
             f'{geo_html}'
+            f'<div class="op-cta">View profile →</div>'
             f'</div>'
             f'</a>'
             f'</li>\n'
@@ -753,6 +756,8 @@ footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,18
 .op-row:hover .op-name{{color:#f97316;}}
 .op-meta{{font-size:0.78rem;color:rgba(148,163,184,0.6);}}
 .op-geo{{font-size:0.73rem;color:rgba(148,163,184,0.38);}}
+.op-cta{{font-size:0.72rem;color:rgba(249,115,22,0.55);font-family:'JetBrains Mono',monospace;margin-top:2px;}}
+.op-row:hover .op-cta{{color:rgba(249,115,22,0.85);}}
 </style>
 </head>
 <body>
