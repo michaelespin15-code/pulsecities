@@ -779,9 +779,10 @@ footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,18
     <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Home</a>
   </div>
   <h1 id="dir-heading" style="font-size:1.4rem;font-weight:600;margin-bottom:6px;">NYC Operator Networks</h1>
-  <p id="dir-desc" style="font-size:0.82rem;color:rgba(148,163,184,0.55);margin-bottom:28px;line-height:1.6;">
+  <p id="dir-desc" style="font-size:0.82rem;color:rgba(148,163,184,0.55);margin-bottom:8px;line-height:1.6;">
     Ownership clusters identified in NYC deed records. Each groups LLCs by naming patterns and acquisition activity. Public records only.
   </p>
+  <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.32);margin-bottom:28px;">{n_visible} clusters tracked across an 18-month public records window.</p>
   <ul class="op-list">
 {rows_html}  </ul>
 </div>
