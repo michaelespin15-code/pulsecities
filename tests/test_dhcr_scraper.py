@@ -10,6 +10,7 @@ Tests cover:
   - signal_breakdown includes rs_unit_loss key
 """
 
+import json
 import pytest
 from unittest.mock import MagicMock, patch
 from datetime import datetime, timezone
@@ -194,7 +195,7 @@ class TestSignalBreakdownRsUnitLoss:
         from unittest.mock import MagicMock, patch
         from scoring.compute import compute_scores
 
-        zip_code = "10026"  # real NYC ZIP (Central Harlem) — must exist in neighborhoods
+        zip_code = "10026"  # real NYC ZIP — must exist in neighborhoods for zcta_zips guard
 
         with patch("scoring.compute._aggregate_permits", return_value=[(zip_code, 10)]), \
              patch("scoring.compute._aggregate_evictions", return_value=[]), \
@@ -204,20 +205,30 @@ class TestSignalBreakdownRsUnitLoss:
              patch("scoring.compute._compute_borough_medians",
                    return_value={"1": 10.0, "2": 8.0, "3": 15.0, "4": 12.0, "5": 5.0}), \
              patch("scoring.compute._get_zip_units", return_value={zip_code: 5000.0}), \
-             patch("scoring.compute._get_zip_borough", return_value={zip_code: 1}):
+             patch("scoring.compute._get_zip_borough", return_value={zip_code: 1}), \
+             patch("scoring.compute._get_zcta_zips", return_value={zip_code}):
 
             from models.database import SessionLocal
             db = SessionLocal()
             try:
                 from sqlalchemy import text
-                # Clean up test zip first
-                db.execute(text("DELETE FROM displacement_scores WHERE zip_code = :z"),
-                           {"z": zip_code})
-                db.commit()
 
-                count = compute_scores(db, force=True)  # synthetic test data bypasses production guard
+                # Save the original score row so we can restore it after the test.
+                # compute_scores upserts displacement_scores and propagates to
+                # neighborhoods — both need to be left in their pre-test state.
+                original = db.execute(
+                    text(
+                        "SELECT score, signal_breakdown, permit_intensity, eviction_rate, "
+                        "llc_acquisition_rate, assessment_spike, complaint_rate, "
+                        "cache_generated_at, signal_last_updated, created_at "
+                        "FROM displacement_scores WHERE zip_code = :z"
+                    ),
+                    {"z": zip_code},
+                ).fetchone()
 
-                # Fetch the breakdown
+                count = compute_scores(db, force=True)  # synthetic data — guard bypassed
+
+                # Fetch the breakdown written by the test run
                 row = db.execute(
                     text("SELECT signal_breakdown FROM displacement_scores WHERE zip_code = :z"),
                     {"z": zip_code},
@@ -229,7 +240,47 @@ class TestSignalBreakdownRsUnitLoss:
                         f"'rs_unit_loss' missing from signal_breakdown: {breakdown.keys()}"
                     )
             finally:
-                db.execute(text("DELETE FROM displacement_scores WHERE zip_code = :z"),
-                           {"z": zip_code})
+                if original is not None:
+                    # Restore the pre-test row exactly so production data is unchanged.
+                    db.execute(
+                        text(
+                            "INSERT INTO displacement_scores "
+                            "(zip_code, score, signal_breakdown, permit_intensity, "
+                            "eviction_rate, llc_acquisition_rate, assessment_spike, "
+                            "complaint_rate, cache_generated_at, signal_last_updated, "
+                            "created_at, updated_at) "
+                            "VALUES (:z, :score, CAST(:breakdown AS jsonb), :pi, :er, "
+                            ":llc, :asp, :cr, :cga, CAST(:slu AS jsonb), :ca, NOW()) "
+                            "ON CONFLICT ON CONSTRAINT uq_displacement_scores_zip_code "
+                            "DO UPDATE SET score=EXCLUDED.score, "
+                            "signal_breakdown=EXCLUDED.signal_breakdown, "
+                            "permit_intensity=EXCLUDED.permit_intensity, "
+                            "eviction_rate=EXCLUDED.eviction_rate, "
+                            "llc_acquisition_rate=EXCLUDED.llc_acquisition_rate, "
+                            "assessment_spike=EXCLUDED.assessment_spike, "
+                            "complaint_rate=EXCLUDED.complaint_rate, "
+                            "cache_generated_at=EXCLUDED.cache_generated_at, "
+                            "signal_last_updated=EXCLUDED.signal_last_updated, "
+                            "updated_at=NOW()"
+                        ),
+                        {
+                            "z":    zip_code,
+                            "score": original[0],
+                            "breakdown": json.dumps(original[1]) if original[1] else "{}",
+                            "pi":  original[2],
+                            "er":  original[3],
+                            "llc": original[4],
+                            "asp": original[5],
+                            "cr":  original[6],
+                            "cga": original[7],
+                            "slu": json.dumps(original[8]) if original[8] else "{}",
+                            "ca":  original[9],
+                        },
+                    )
+                else:
+                    db.execute(
+                        text("DELETE FROM displacement_scores WHERE zip_code = :z"),
+                        {"z": zip_code},
+                    )
                 db.commit()
                 db.close()

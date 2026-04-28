@@ -478,6 +478,21 @@ def _get_zip_borough(db: Session) -> Dict[str, int]:
     return {str(r[0]): int(r[1]) for r in rows}
 
 
+def _get_zcta_zips(db: Session) -> set:
+    """
+    Return the set of valid NYC ZCTA zip codes from the neighborhoods table.
+    Used as the authoritative outer bound for the scoring universe — no ZIP
+    can be scored unless it has a geometry row in neighborhoods.
+    Extracted as a named helper so tests can patch it without touching real data.
+    """
+    return set(
+        str(r[0])
+        for r in db.execute(
+            text("SELECT DISTINCT zip_code FROM neighborhoods WHERE zip_code IS NOT NULL")
+        ).fetchall()
+    )
+
+
 # ---------------------------------------------------------------------------
 # Normalization
 # ---------------------------------------------------------------------------
@@ -751,12 +766,7 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
     # geometry row in neighborhoods, regardless of what the signal queries return.
     # Intersecting with residential_zips (from parcels) inside that bound keeps
     # the per-unit denominator well-defined for every scored ZIP.
-    zcta_zips = set(
-        str(r[0])
-        for r in db.execute(
-            text("SELECT DISTINCT zip_code FROM neighborhoods WHERE zip_code IS NOT NULL")
-        ).fetchall()
-    )
+    zcta_zips = _get_zcta_zips(db)
     residential_zips = set(zip_units.keys())
     all_zips_raw = (
         set(permit_map) | set(eviction_map) | set(llc_map) | set(complaint_map)
