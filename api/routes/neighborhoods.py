@@ -304,6 +304,14 @@ def get_top_risk_neighborhoods(
                   AND par.zip_code IS NOT NULL
                 GROUP BY par.zip_code
             ),
+            hpd_violation_counts AS (
+                SELECT zip_code, COUNT(*) AS cnt
+                FROM violations_raw
+                WHERE violation_class IN ('B', 'C')
+                  AND inspection_date >= CURRENT_DATE - INTERVAL '90 days'
+                  AND zip_code IS NOT NULL
+                GROUP BY zip_code
+            ),
             -- Join all raw counts to each valid NYC ZIP, then compute PERCENT_RANK()
             -- over actual counts. Window covers all valid ZIPs (D-15 denominator).
             -- assessment_spike: fallback to signal_breakdown JSONB — assessment_history
@@ -321,6 +329,7 @@ def get_top_risk_neighborhoods(
                     COALESCE(pc.cnt, 0)  AS raw_permits,
                     COALESCE(cc.cnt, 0)  AS raw_complaint_rate,
                     COALESCE(rl.cnt, 0)  AS raw_rs_unit_loss,
+                    COALESCE(hv.cnt, 0)  AS raw_hpd,
                     -- assessment_spike: use normalized signal value from signal_breakdown
                     -- as a proxy count (dormant signal — always 0 until 2027 at earliest).
                     COALESCE((ds.signal_breakdown->>'assessment_spike')::float, 0)
@@ -330,6 +339,7 @@ def get_top_risk_neighborhoods(
                     PERCENT_RANK() OVER (ORDER BY COALESCE(pc.cnt,  0)) AS pct_permits,
                     PERCENT_RANK() OVER (ORDER BY COALESCE(cc.cnt,  0)) AS pct_complaint_rate,
                     PERCENT_RANK() OVER (ORDER BY COALESCE(rl.cnt,  0)) AS pct_rs_unit_loss,
+                    PERCENT_RANK() OVER (ORDER BY COALESCE(hv.cnt,  0)) AS pct_hpd_violations,
                     PERCENT_RANK() OVER (
                         ORDER BY COALESCE((ds.signal_breakdown->>'assessment_spike')::float, 0)
                     ) AS pct_assessment_spike
@@ -340,6 +350,7 @@ def get_top_risk_neighborhoods(
                 LEFT JOIN permit_counts pc      ON pc.zip_code = ds.zip_code
                 LEFT JOIN complaint_counts cc   ON cc.zip_code = ds.zip_code
                 LEFT JOIN rs_loss_counts rl     ON rl.zip_code = ds.zip_code
+                LEFT JOIN hpd_violation_counts hv ON hv.zip_code = ds.zip_code
                 WHERE ds.score IS NOT NULL
                   AND ({_VALID_NYC_ZIP_CLAUSE})
                   AND n.name IS NOT NULL
@@ -361,6 +372,7 @@ def get_top_risk_neighborhoods(
         "permits":          "raw_permits",
         "complaint_rate":   "raw_complaint_rate",
         "rs_unit_loss":     "raw_rs_unit_loss",
+        "hpd_violations":   "raw_hpd",
         "assessment_spike": "raw_assessment_spike",
     }
     PCT_RANK_COLS = {
@@ -369,6 +381,7 @@ def get_top_risk_neighborhoods(
         "permits":          "pct_permits",
         "complaint_rate":   "pct_complaint_rate",
         "rs_unit_loss":     "pct_rs_unit_loss",
+        "hpd_violations":   "pct_hpd_violations",
         "assessment_spike": "pct_assessment_spike",
     }
 
@@ -580,6 +593,7 @@ _SIGNAL_LABELS = {
     "llc_acquisitions": "LLC property acquisitions",
     "complaint_rate": "tenant complaints",
     "rs_unit_loss": "rent-stabilized unit loss",
+    "hpd_violations": "HPD housing violations",
     "assessment_spike": "tax assessment increases",
 }
 

@@ -118,6 +118,14 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
             WHERE created_date >= CURRENT_DATE - INTERVAL '30 days'
               AND zip_code IS NOT NULL
             GROUP BY zip_code
+        ),
+        hpd_violation_counts AS (
+            SELECT zip_code, COUNT(*) AS cnt
+            FROM violations_raw
+            WHERE violation_class IN ('B', 'C')
+              AND inspection_date >= CURRENT_DATE - INTERVAL '90 days'
+              AND zip_code IS NOT NULL
+            GROUP BY zip_code
         )
         SELECT
             ds.zip_code,
@@ -129,13 +137,15 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
             COALESCE(lc.cnt, 0) AS raw_llc,
             COALESCE(ec.cnt, 0) AS raw_evictions,
             COALESCE(pc.cnt, 0) AS raw_permits,
-            COALESCE(cc.cnt, 0) AS raw_complaints
+            COALESCE(cc.cnt, 0) AS raw_complaints,
+            COALESCE(hv.cnt, 0) AS raw_hpd
         FROM displacement_scores ds
         LEFT JOIN neighborhoods n      ON ds.zip_code = n.zip_code
         LEFT JOIN llc_counts lc        ON lc.zip_code = ds.zip_code
         LEFT JOIN eviction_counts ec   ON ec.zip_code = ds.zip_code
         LEFT JOIN permit_counts pc     ON pc.zip_code = ds.zip_code
         LEFT JOIN complaint_counts cc  ON cc.zip_code = ds.zip_code
+        LEFT JOIN hpd_violation_counts hv ON hv.zip_code = ds.zip_code
         WHERE ds.score IS NOT NULL
           AND ({_VALID_NYC_ZIP_CLAUSE})
           AND n.name IS NOT NULL
@@ -148,6 +158,7 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
         "evictions":        "raw_evictions",
         "permits":          "raw_permits",
         "complaint_rate":   "raw_complaints",
+        "hpd_violations":   "raw_hpd",
     }
 
     def _dominant(breakdown: dict) -> str | None:
@@ -166,6 +177,7 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
             "evictions":        int(row.raw_evictions or 0),
             "permits":          int(row.raw_permits or 0),
             "complaint_rate":   int(row.raw_complaints or 0),
+            "hpd_violations":   int(row.raw_hpd or 0),
         }
         entry = {
             "rank":             len(top_risk_list) + 1,
