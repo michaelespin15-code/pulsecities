@@ -411,6 +411,7 @@
                 stats_llc_unit:       'LLC transfers',
                 stats_eviction_unit:  'eviction filings',
                 stats_prefix:         'Last 30 days:',
+                stats_conjunction:    'and',
             },
             es: {
                 tagline:              'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
@@ -445,6 +446,7 @@
                 stats_llc_unit:       'transferencias LLC',
                 stats_eviction_unit:  'desalojos registrados',
                 stats_prefix:         'Últimos 30 días:',
+                stats_conjunction:    'y',
             }
         };
 
@@ -500,7 +502,10 @@
             if (llc)       parts.push(`${llc.toLocaleString()} ${s.stats_llc_unit}`);
             if (evictions) parts.push(`${evictions.toLocaleString()} ${s.stats_eviction_unit}`);
             if (parts.length) {
-                chips.textContent = `${s.stats_prefix} ${parts.join(', ')}`;
+                const joined = parts.length > 1
+                    ? parts.slice(0, -1).join(', ') + `, ${s.stats_conjunction} ` + parts[parts.length - 1]
+                    : parts[0];
+                chips.textContent = `${s.stats_prefix} ${joined}`;
                 chips.style.opacity = '1';
             }
 
@@ -541,7 +546,7 @@
                             .sort(([, a], [, b]) => b - a)
                             .slice(0, 2)
                             .map(([k, v]) => `<span data-signal="${k}" data-count="${v}">${v.toLocaleString()} ${moverSignalLabel(k, v)}</span>`)
-                            .join(' • ');
+                            .join(', ');
                         if (top2) sigLine = `<div style="font-size:11px;color:rgba(148,163,184,0.75);margin-top:8px;">${top2}</div>`;
                     }
 
