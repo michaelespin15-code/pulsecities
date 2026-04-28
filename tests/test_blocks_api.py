@@ -1,6 +1,5 @@
 """
-Integration tests for GET /api/blocks/{bbl} (API-03).
-Wave 0: stubs that will be filled in after blocks.py is implemented.
+Integration tests for GET /api/blocks/{bbl}.
 """
 import pytest
 from fastapi.testclient import TestClient
