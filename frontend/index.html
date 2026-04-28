@@ -294,17 +294,6 @@
             <!-- Stat chips: appear after data loads -->
             <p id="stat-chips" style="margin-top:8px;margin-bottom:12px;font-size:11px;color:#475569;font-family:'JetBrains Mono',monospace;"></p>
 
-            <!-- Hero proof card: live top-risk area, populated from /api/stats -->
-            <div id="hero-proof" style="display:none;margin-bottom:16px;">
-                <div class="hero-proof-label">Current highest-risk area</div>
-                <div class="hero-proof">
-                    <div id="proof-zip-name" class="hero-proof-zip"></div>
-                    <div id="proof-score" class="hero-proof-score"></div>
-                    <div id="proof-signals" class="hero-proof-signal"></div>
-                    <a id="proof-cta" href="#" class="hero-proof-cta">View this area →</a>
-                </div>
-            </div>
-
             <!-- Explore map: secondary CTA -->
             <a href="/map"
                id="cta-explore"
@@ -321,11 +310,11 @@
             <div id="watchlist-cards" class="compact-zip-grid"></div>
         </div>
 
-        <!-- Top risk right now -->
+        <!-- Highest-risk areas right now -->
         <section style="margin-bottom:40px;">
             <div class="section-head">
-                <span class="section-label" data-i18n="top_risk_label">Top risk right now</span>
-                <span class="section-helper" data-i18n="top_risk_helper">ZIPs with the highest current displacement pressure.</span>
+                <span class="section-label" data-i18n="top_risk_label">Highest-risk areas right now</span>
+                <span class="section-helper" data-i18n="top_risk_helper">Ranked by current displacement pressure.</span>
             </div>
             <div id="zip-cards">
                 <div id="zip-loading" class="font-mono" style="font-size:11px;color:#334155;padding:20px 0;text-align:center;">Loading...</div>
@@ -352,16 +341,10 @@
             </div>
         </div>
 
-        <!-- Why this matters -->
+        <!-- Source attribution -->
         <section class="trust-section" style="margin-bottom:48px;">
-            <div class="section-head">
-                <span class="section-label" data-i18n="trust_label">Why this matters</span>
-            </div>
-            <p style="font-size:14px;color:#94a3b8;line-height:1.65;margin-bottom:16px;max-width:54ch;" data-i18n="trust_body">
-                PulseCities connects records that are usually scattered across city systems: permits, evictions, complaints, ownership transfers, violations, and rent-stabilized housing.
-            </p>
-            <a href="/methodology" style="font-size:12px;color:#38bdf8;text-decoration:none;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'" data-i18n="read_methodology">Read the methodology →</a>
-            <p class="font-mono" style="font-size:10px;color:#334155;margin-top:12px;" data-i18n="sources_line">Sources: NYC DOB, HPD, ACRIS, 311, eviction filings, DHCR.</p>
+            <p style="font-size:13px;color:#64748b;margin-bottom:10px;" data-i18n="trust_body">Built from NYC public records.</p>
+            <a href="/methodology" style="font-size:12px;color:#38bdf8;text-decoration:none;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'" data-i18n="read_methodology">Read methodology →</a>
         </section>
 
     </main>
@@ -417,14 +400,12 @@
                 sig_permits_s:        'permit filing',
                 sig_complaints:       'tenant complaints',
                 sig_complaints_s:     'tenant complaint',
-                top_risk_label:       'Top risk right now',
-                top_risk_helper:      'ZIPs with the highest current displacement pressure.',
+                top_risk_label:       'Highest-risk areas right now',
+                top_risk_helper:      'Ranked by current displacement pressure.',
                 movers_helper:        'Largest score increases detected in the last 7 days.',
                 operators_helper:     'Ownership clusters worth reviewing.',
-                trust_label:          'Why this matters',
-                trust_body:           'PulseCities connects records that are usually scattered across city systems: permits, evictions, complaints, ownership transfers, violations, and rent-stabilized housing.',
-                read_methodology:     'Read the methodology →',
-                sources_line:         'Sources: NYC DOB, HPD, ACRIS, 311, eviction filings, DHCR.',
+                trust_body:           'Built from NYC public records.',
+                read_methodology:     'Read methodology →',
                 stats_llc_unit:       'LLC transfers',
                 stats_eviction_unit:  'eviction filings',
                 stats_prefix:         'Last 30 days:',
@@ -451,14 +432,12 @@
                 sig_permits_s:        'permiso de obra',
                 sig_complaints:       'quejas de inquilinos',
                 sig_complaints_s:     'queja de inquilinos',
-                top_risk_label:       'Mayor riesgo ahora',
-                top_risk_helper:      'Códigos postales con mayor presión de desplazamiento actual.',
+                top_risk_label:       'Áreas de mayor riesgo ahora',
+                top_risk_helper:      'Clasificadas por presión de desplazamiento actual.',
                 movers_helper:        'Mayores aumentos de puntuación en los últimos 7 días.',
                 operators_helper:     'Grupos de propietarios que vale la pena revisar.',
-                trust_label:          'Por qué esto importa',
-                trust_body:           'PulseCities conecta registros que suelen estar dispersos en distintos sistemas: permisos, desalojos, quejas, transferencias de propiedad, violaciones y viviendas con renta estabilizada.',
+                trust_body:           'Construido con registros públicos de NYC.',
                 read_methodology:     'Leer la metodología →',
-                sources_line:         'Fuentes: NYC DOB, HPD, ACRIS, 311, registros de desalojo, DHCR.',
                 stats_llc_unit:       'transferencias LLC',
                 stats_eviction_unit:  'desalojos registrados',
                 stats_prefix:         'Últimos 30 días:',
@@ -521,30 +500,6 @@
                 chips.style.opacity = '1';
             }
 
-            // Hero proof card — populated from the live top-risk list
-            const top = (data.top_risk_list || [])[0];
-            if (top) {
-                const sc = top.signal_counts || {};
-                const signals = [];
-                if (sc.complaint_rate) signals.push(`${sc.complaint_rate.toLocaleString()} tenant complaints`);
-                if (sc.evictions)      signals.push(`${sc.evictions} eviction filings`);
-                if (sc.permits)        signals.push(`${sc.permits} renovation permits`);
-                if (sc.llc_acquisitions) signals.push(`${sc.llc_acquisitions} LLC acquisitions`);
-
-                const proofEl    = document.getElementById('hero-proof');
-                const zipNameEl  = document.getElementById('proof-zip-name');
-                const scoreEl    = document.getElementById('proof-score');
-                const signalsEl  = document.getElementById('proof-signals');
-                const ctaEl      = document.getElementById('proof-cta');
-
-                if (proofEl && zipNameEl && scoreEl && signalsEl && ctaEl) {
-                    zipNameEl.textContent  = `${top.zip_code}  ${top.name}`;
-                    scoreEl.textContent    = `Risk score ${top.score.toFixed(1)} / 100`;
-                    signalsEl.textContent  = signals.slice(0, 3).join('  ·  ');
-                    ctaEl.href             = `/map?q=${encodeURIComponent(top.zip_code)}`;
-                    proofEl.style.display  = 'block';
-                }
-            }
         }
 
         function renderZipCards(list) {
@@ -582,7 +537,7 @@
                             .sort(([, a], [, b]) => b - a)
                             .slice(0, 2)
                             .map(([k, v]) => `<span data-signal="${k}" data-count="${v}">${v.toLocaleString()} ${moverSignalLabel(k, v)}</span>`)
-                            .join(', ');
+                            .join(' • ');
                         if (top2) sigLine = `<div style="font-size:11px;color:rgba(148,163,184,0.75);margin-top:8px;">${top2}</div>`;
                     }
 
