@@ -400,6 +400,8 @@
                 sig_permits_s:        'permit filing',
                 sig_complaints:       'tenant complaints',
                 sig_complaints_s:     'tenant complaint',
+                sig_hpd:              'housing violations',
+                sig_hpd_s:            'housing violation',
                 top_risk_label:       'Highest-risk areas right now',
                 top_risk_helper:      'Ranked by current displacement pressure.',
                 movers_helper:        'Largest score increases detected in the last 7 days.',
@@ -432,6 +434,8 @@
                 sig_permits_s:        'permiso de obra',
                 sig_complaints:       'quejas de inquilinos',
                 sig_complaints_s:     'queja de inquilinos',
+                sig_hpd:              'violaciones de vivienda',
+                sig_hpd_s:            'violación de vivienda',
                 top_risk_label:       'Áreas de mayor riesgo ahora',
                 top_risk_helper:      'Clasificadas por presión de desplazamiento actual.',
                 movers_helper:        'Mayores aumentos de puntuación en los últimos 7 días.',
@@ -477,8 +481,8 @@
 
         function moverSignalLabel(dominant, count) {
             const s = i18n[getCurrentLanguage()] || i18n.en;
-            const plural   = { llc_acquisitions: s.sig_llc,   evictions: s.sig_evictions,   permits: s.sig_permits,   complaint_rate: s.sig_complaints   };
-            const singular = { llc_acquisitions: s.sig_llc_s, evictions: s.sig_evictions_s, permits: s.sig_permits_s, complaint_rate: s.sig_complaints_s };
+            const plural   = { llc_acquisitions: s.sig_llc,   evictions: s.sig_evictions,   permits: s.sig_permits,   complaint_rate: s.sig_complaints,   hpd_violations: s.sig_hpd   };
+            const singular = { llc_acquisitions: s.sig_llc_s, evictions: s.sig_evictions_s, permits: s.sig_permits_s, complaint_rate: s.sig_complaints_s, hpd_violations: s.sig_hpd_s };
             return (count === 1 ? singular[dominant] : plural[dominant]) || plural[dominant] || '';
         }
 
