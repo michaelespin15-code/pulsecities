@@ -115,6 +115,12 @@
                 </div>
             </div>
 
+            <!-- Analyst note (operator-specific, shown only when note exists) — above stats -->
+            <div id="pattern-note" style="display:none; margin-bottom:20px; padding:12px 16px; background:rgba(249,115,22,0.05); border:1px solid rgba(249,115,22,0.12); border-radius:8px;">
+                <div style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; color:rgba(249,115,22,0.5); margin-bottom:6px; font-family:'JetBrains Mono',monospace;" data-i18n="pattern_note_header">Analyst note</div>
+                <div id="pattern-note-text" style="font-size:0.8rem; color:rgba(148,163,184,0.7); line-height:1.55;"></div>
+            </div>
+
             <!-- Stats row -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 24px;">
                 <div class="panel stat-card">
@@ -138,12 +144,6 @@
             <!-- What this shows -->
             <p style="font-size:0.82rem;color:rgba(148,163,184,0.48);margin-bottom:6px;line-height:1.65;" data-i18n="what_this_shows">Properties grouped by LLC naming patterns in public deed records. Scores reflect neighborhood displacement risk, not a claim of wrongdoing by any individual actor.</p>
             <p style="font-size:0.78rem;color:rgba(148,163,184,0.35);margin-bottom:20px;line-height:1.55;">Derived from public deed records; indicates ownership structure, not legal conclusions.</p>
-
-            <!-- Pattern note (operator-specific, shown only when note exists) -->
-            <div id="pattern-note" style="display:none; margin-bottom:16px; padding:12px 16px; background:rgba(249,115,22,0.05); border:1px solid rgba(249,115,22,0.12); border-radius:8px;">
-                <div style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; color:rgba(249,115,22,0.5); margin-bottom:6px; font-family:'JetBrains Mono',monospace;" data-i18n="pattern_note_header">Pattern note</div>
-                <div id="pattern-note-text" style="font-size:0.8rem; color:rgba(148,163,184,0.7); line-height:1.55;"></div>
-            </div>
 
             <!-- Related Operators -->
             <div id="related-section" style="display: none; margin-bottom: 16px;">
@@ -217,6 +217,7 @@
                 <div id="acq-empty" style="display: none; padding: 24px 16px; font-size: 0.8rem; color: rgba(148,163,184,0.35); text-align: center;" data-i18n="acq_empty">
                     No acquisitions found in the 18-month window.
                 </div>
+                <div id="acq-amount-note" style="display:none; padding:10px 16px 0; font-size:0.74rem; color:rgba(148,163,184,0.35); line-height:1.5;"></div>
                 <div id="acq-mobile-list" class="mobile-card-list"></div>
                 <div id="acq-toggle-wrap" style="display:none; padding:10px 16px; border-top:1px solid rgba(148,163,184,0.06);">
                     <button id="acq-toggle-btn" type="button" onclick="toggleAcquisitions()"
@@ -516,7 +517,7 @@
         return div;
     }
 
-    function formatMobileAcquisitionRow(r, zipNames) {
+    function formatMobileAcquisitionRow(r, zipNames, suppressAmount) {
         const div = document.createElement('div');
         div.className = 'mob-row';
 
@@ -553,10 +554,12 @@
             div.appendChild(dateDiv);
         }
 
-        const amtDiv = document.createElement('div');
-        amtDiv.className = 'mob-meta';
-        amtDiv.textContent = fmtCurrency(r.doc_amount);
-        div.appendChild(amtDiv);
+        if (!suppressAmount) {
+            const amtDiv = document.createElement('div');
+            amtDiv.className = 'mob-meta';
+            amtDiv.textContent = fmtCurrency(r.doc_amount);
+            div.appendChild(amtDiv);
+        }
 
         return div;
     }
@@ -699,6 +702,17 @@
         _acqTotal = rows.length;
 
         const ACQ_CAP = 20;
+        // If every row has no reportable amount, show one section note instead of
+        // repeating "N/A" on every mobile card.
+        const allAmountsNull = rows.length > 0 && rows.every(r => !(Number(r.doc_amount) > 0));
+        const acqAmountNoteEl = document.getElementById('acq-amount-note');
+        if (acqAmountNoteEl) {
+            acqAmountNoteEl.style.display = allAmountsNull ? 'block' : 'none';
+            acqAmountNoteEl.textContent = allAmountsNull
+                ? 'Transaction amounts were not reported in the public records used for this cluster.'
+                : '';
+        }
+
         if (rows.length === 0) {
             document.getElementById('acq-table').style.display = 'none';
             document.getElementById('acq-empty').style.display = 'block';
@@ -718,7 +732,7 @@
                     '<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:rgba(148,163,184,0.6);font-size:0.72rem;white-space:nowrap;">' + fmtCurrency(r.doc_amount) + '</td>';
                 tbody.appendChild(tr);
 
-                const mRow = formatMobileAcquisitionRow(r, zipNames);
+                const mRow = formatMobileAcquisitionRow(r, zipNames, allAmountsNull);
                 if (i >= ACQ_CAP) { mRow.classList.add('acq-mobile-extra'); mRow.style.display = 'none'; }
                 acqMobileList.appendChild(mRow);
             });
@@ -1029,6 +1043,8 @@
             if (ptWrap) ptWrap.style.display = 'none';
             const atWrap = document.getElementById('acq-toggle-wrap');
             if (atWrap) atWrap.style.display = 'none';
+            const anEl = document.getElementById('acq-amount-note');
+            if (anEl) { anEl.style.display = 'none'; anEl.textContent = ''; }
             render(_cachedData, _cachedZipNames);
         }
     });

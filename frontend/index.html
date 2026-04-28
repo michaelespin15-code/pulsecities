@@ -124,6 +124,46 @@
             #search-row #search-btn { width: 100%; }
         }
 
+        .hero-proof {
+            background: rgba(30,41,59,0.5);
+            border: 1px solid rgba(148,163,184,0.1);
+            border-radius: 7px;
+            padding: 12px 14px;
+        }
+        .hero-proof-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(148,163,184,0.35);
+            margin-bottom: 7px;
+        }
+        .hero-proof-zip {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+            margin-bottom: 4px;
+        }
+        .hero-proof-score {
+            font-size: 0.78rem;
+            color: rgba(148,163,184,0.55);
+            margin-bottom: 6px;
+        }
+        .hero-proof-signal {
+            font-size: 0.76rem;
+            color: rgba(148,163,184,0.5);
+            line-height: 1.65;
+        }
+        .hero-proof-cta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: rgba(249,115,22,0.7);
+            display: inline-block;
+            margin-top: 8px;
+            text-decoration: none;
+        }
+        .hero-proof-cta:hover { color: rgba(249,115,22,1); }
+
         .section-label {
             font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
@@ -210,7 +250,7 @@
                 </a>
             </div>
             <div style="display:flex;align-items:center;gap:20px;">
-                <a href="/methodology" style="font-size:12px;color:#64748b;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
+                <a href="/methodology" style="font-size:12px;color:#64748b;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
                 <button id="lang-toggle"
                         style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#475569;background:none;border:none;cursor:pointer;min-height:36px;padding:0;"
                         onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#475569'">
@@ -252,7 +292,18 @@
             <div id="empty-search-msg" class="search-empty-msg" data-i18n="search_empty_msg" style="display:none;">Enter an address, ZIP, or landlord name.</div>
 
             <!-- Stat chips: appear after data loads -->
-            <p id="stat-chips" style="margin-top:8px;margin-bottom:16px;"></p>
+            <p id="stat-chips" style="margin-top:8px;margin-bottom:12px;font-size:11px;color:#475569;font-family:'JetBrains Mono',monospace;"></p>
+
+            <!-- Hero proof card: live top-risk area, populated from /api/stats -->
+            <div id="hero-proof" style="display:none;margin-bottom:16px;">
+                <div class="hero-proof-label">Current highest-risk area</div>
+                <div class="hero-proof">
+                    <div id="proof-zip-name" class="hero-proof-zip"></div>
+                    <div id="proof-score" class="hero-proof-score"></div>
+                    <div id="proof-signals" class="hero-proof-signal"></div>
+                    <a id="proof-cta" href="#" class="hero-proof-cta">View this area →</a>
+                </div>
+            </div>
 
             <!-- Explore map: secondary CTA -->
             <a href="/map"
@@ -468,6 +519,31 @@
             if (parts.length) {
                 chips.textContent = `${s.stats_prefix} ${parts.join(', ')}`;
                 chips.style.opacity = '1';
+            }
+
+            // Hero proof card — populated from the live top-risk list
+            const top = (data.top_risk_list || [])[0];
+            if (top) {
+                const sc = top.signal_counts || {};
+                const signals = [];
+                if (sc.complaint_rate) signals.push(`${sc.complaint_rate.toLocaleString()} tenant complaints`);
+                if (sc.evictions)      signals.push(`${sc.evictions} eviction filings`);
+                if (sc.permits)        signals.push(`${sc.permits} renovation permits`);
+                if (sc.llc_acquisitions) signals.push(`${sc.llc_acquisitions} LLC acquisitions`);
+
+                const proofEl    = document.getElementById('hero-proof');
+                const zipNameEl  = document.getElementById('proof-zip-name');
+                const scoreEl    = document.getElementById('proof-score');
+                const signalsEl  = document.getElementById('proof-signals');
+                const ctaEl      = document.getElementById('proof-cta');
+
+                if (proofEl && zipNameEl && scoreEl && signalsEl && ctaEl) {
+                    zipNameEl.textContent  = `${top.zip_code}  ${top.name}`;
+                    scoreEl.textContent    = `Risk score ${top.score.toFixed(1)} / 100`;
+                    signalsEl.textContent  = signals.slice(0, 3).join('  ·  ');
+                    ctaEl.href             = `/map?q=${encodeURIComponent(top.zip_code)}`;
+                    proofEl.style.display  = 'block';
+                }
             }
         }
 
