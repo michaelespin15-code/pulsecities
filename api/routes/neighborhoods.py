@@ -1,8 +1,8 @@
 """
 Neighborhood (zip code) level API endpoints.
 
-GET /api/neighborhoods              — GeoJSON FeatureCollection (API-01)
-GET /api/neighborhoods/{zip_code}/score — score + signal breakdown (API-02)
+GET /api/neighborhoods              — GeoJSON FeatureCollection
+GET /api/neighborhoods/{zip_code}/score — score + signal breakdown
 """
 
 import hashlib

@@ -1,17 +1,16 @@
 # PulseCities — User Acceptance Test Plan
 
 **Site**: https://pulsecities.com  
-**Plan version**: 2026-04-18  
-**Tester**: Claude in Chrome (autonomous execution)
+**Plan version**: 2026-04-18
 
 ---
 
 ## How to use this document
 
-Each test scenario is self-contained. Copy any scenario block into a Claude conversation with
-Chrome access and ask it to execute the test. The scenario includes the exact URL to start from,
-the steps to take, what to assert, and what failure looks like. Results can be logged in the
-"Known Issues and Acceptable Tradeoffs" section at the bottom.
+Each test scenario is self-contained. Open the URL in a browser and follow the steps listed.
+The scenario includes the exact URL to start from, the steps to take, what to assert, and what
+failure looks like. Results can be logged in the "Known Issues and Acceptable Tradeoffs" section
+at the bottom.
 
 ---
 
