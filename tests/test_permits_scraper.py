@@ -1,12 +1,7 @@
 """
 Tests for the DOB permits scraper — BBL construction, date parsing, zip cleaning.
 
-TDD Wave 0 stubs: some tests will be RED until Task 3 fixes permits.py.
-
-Specifically:
-  - _build_bbl tests: RED until _build_bbl is added to scrapers/permits.py (Task 3)
-  - test_parse_date_mm_dd_yyyy: RED until _parse_date is updated to handle MM/DD/YYYY (Task 3)
-  - _parse tests: use a minimal mock for quarantine since _parse is a method on PermitsScraper
+_build_bbl tests are skipped when the function is not importable.
 """
 
 from datetime import date
@@ -18,7 +13,7 @@ from scrapers.permits import PermitsScraper, _parse_date, _clean_zip
 
 
 # ---------------------------------------------------------------------------
-# Helpers — try to import _build_bbl (does not exist yet in Task 1 RED phase)
+# Helpers — try to import _build_bbl (optional; guarded by skipif below)
 # ---------------------------------------------------------------------------
 
 try:
@@ -30,10 +25,10 @@ except ImportError:
 
 
 # ---------------------------------------------------------------------------
-# _build_bbl tests — RED until Task 3 adds the function
+# _build_bbl tests — skipped when function is not importable
 # ---------------------------------------------------------------------------
 
-@pytest.mark.skipif(not _BUILD_BBL_AVAILABLE, reason="_build_bbl not yet implemented (Task 3)")
+@pytest.mark.skipif(not _BUILD_BBL_AVAILABLE, reason="_build_bbl not importable")
 class TestBuildBbl:
     def test_build_bbl_manhattan(self):
         """Borough name MANHATTAN maps to code 1 -> BBL 1005070025"""
@@ -122,7 +117,7 @@ class TestParse:
 class TestParseDate:
     def test_parse_date_mm_dd_yyyy(self):
         """MM/DD/YYYY format (confirmed in research as the actual API format)
-        NOTE: This test is RED until Task 3 updates _parse_date to handle this format."""
+        MM/DD/YYYY is the format returned by the DOB permits API."""
         result = _parse_date("04/09/2026")
         assert result == date(2026, 4, 9)
 
