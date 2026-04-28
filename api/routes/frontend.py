@@ -342,6 +342,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
   <div class="cta-row">
     <a href="/map?q={zip_code}" class="btn-map">Open {zip_code} on the map &#8594;</a>
     <button class="btn-copy" id="copy-btn" onclick="copyLink()">Copy link</button>
+    <a href="/brief/zip/{zip_code}" class="btn-copy">Evidence brief</a>
   </div>
 </div></main>
 <footer><div class="footer-links">
