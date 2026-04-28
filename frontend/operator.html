@@ -98,7 +98,8 @@
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                     <div>
                         <h1 id="op-root" class="mono accent" style="font-size: 1.8rem; font-weight: 400; letter-spacing: 0.04em;"></h1>
-                        <div style="font-size: 0.78rem; color: rgba(148,163,184,0.45); margin-top: 4px;" data-i18n="op_descriptor">Acquisitions linked by LLC naming patterns in NYC deed records.</div>
+                        <div id="op-summary" class="mono" style="font-size: 0.82rem; color: rgba(148,163,184,0.65); margin-top: 5px;"></div>
+                        <div style="font-size: 0.75rem; color: rgba(148,163,184,0.38); margin-top: 4px;" data-i18n="op_descriptor">Acquisitions linked by LLC naming patterns in NYC deed records.</div>
                         <div id="why-matters" style="font-size: 0.8rem; color: rgba(148,163,184,0.6); margin-top: 3px; margin-bottom: 4px; line-height: 1.5;"></div>
                         <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
                             <span class="signal-chip" data-i18n="chip_window">18-month window</span>
@@ -158,7 +159,8 @@
             <!-- Eviction-then-buy callout -->
             <div id="eviction-wrap" style="display:none; margin-bottom: 16px;">
                 <div style="padding: 12px 16px; background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px;">
-                    <div style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(239,68,68,0.55); margin-bottom: 8px; font-family: 'JetBrains Mono', monospace;" data-i18n="eviction_flagged">Eviction before acquisition</div>
+                    <div style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(239,68,68,0.55); margin-bottom: 4px; font-family: 'JetBrains Mono', monospace;" data-i18n="eviction_flagged">Eviction filings before acquisition</div>
+                    <div style="font-size: 0.75rem; color: rgba(148,163,184,0.45); margin-bottom: 10px; line-height: 1.5;" data-i18n="eviction_flagged_note">Properties below had eviction filings recorded before a later acquisition in public records. Sourced from ACRIS and NYC housing court data.</div>
                     <div id="eviction-rows" style="display: flex; flex-direction: column; gap: 6px;"></div>
                 </div>
             </div>
@@ -325,12 +327,12 @@
             not_found:           'Operator not found.',
             stat_properties:     'Properties',
             stat_acquisitions:   'Acquisitions',
-            stat_llcs:           'LLC Entities',
-            stat_zips:           'Zip Codes',
+            stat_llcs:           'LLC entities',
+            stat_zips:           'ZIP codes',
             llc_entities_header: 'LLC Entities',
             related_operators:   'Related Operators',
             related_caveat:      'These clusters are not the same operator. The signals below are evidence of a possible relationship: shared properties, name patterns, or geographic overlap. Each operator remains as the public records show them.',
-            pattern_note_header: 'Pattern note',
+            pattern_note_header: 'Analyst note',
             recent_acq_header:   'Recent Acquisitions',
             recent_acq_window:   '(last 18 months, up to 50)',
             th_address:          'Address',
@@ -346,9 +348,10 @@
             show_all_props:      'Show all {n} properties',
             show_top_props:      'Show top 15 properties',
             portfolio_score:     'Score',
-            portfolio_hpd:       'B/C Viol.',
+            portfolio_hpd:       'B/C violations',
             portfolio_rs:        'RS Units',
-            eviction_flagged:    'Eviction before acquisition',
+            eviction_flagged:    'Eviction filings before acquisition',
+            eviction_flagged_note: 'Properties below had eviction filings recorded before a later acquisition in public records. Sourced from ACRIS and NYC housing court data.',
             entities_badge:      '{n} entities',
             shared_properties:   'Shared Properties',
             llc_in_cluster:      'LLC entities in {name} cluster',
@@ -381,11 +384,11 @@
             stat_properties:     'Propiedades',
             stat_acquisitions:   'Adquisiciones',
             stat_llcs:           'Entidades LLC',
-            stat_zips:           'C\u00f3digos Postales',
+            stat_zips:           'C\u00f3digos ZIP',
             llc_entities_header: 'Entidades LLC',
             related_operators:   'Operadores Relacionados',
             related_caveat:      'Estos grupos no son el mismo operador. Las se\u00f1ales a continuaci\u00f3n son evidencia de una posible relaci\u00f3n: propiedades compartidas, patrones de nombres o superposici\u00f3n geogr\u00e1fica. Cada operador se muestra tal como aparece en los registros p\u00fablicos.',
-            pattern_note_header: 'Nota de patr\u00f3n',
+            pattern_note_header: 'Nota del analista',
             recent_acq_header:   'Adquisiciones Recientes',
             recent_acq_window:   '(\u00faltimos 18 meses, hasta 50)',
             th_address:          'Direcci\u00f3n',
@@ -401,9 +404,10 @@
             show_all_props:      'Ver las {n} propiedades',
             show_top_props:      'Ver las 15 principales',
             portfolio_score:     'Puntuación',
-            portfolio_hpd:       'Viol. B/C',
+            portfolio_hpd:       'Violaciones B/C',
             portfolio_rs:        'Uds. Estab.',
-            eviction_flagged:    'Desalojo antes de adquisición',
+            eviction_flagged:    'Desalojos antes de adquisición',
+            eviction_flagged_note: 'Las propiedades a continuación tuvieron registros de desalojo antes de una adquisición posterior en registros públicos.',
             entities_badge:      '{n} entidades',
             shared_properties:   'Propiedades Compartidas',
             llc_in_cluster:      'Entidades LLC en el grupo {name}',
@@ -501,7 +505,7 @@
 
         const statParts = [];
         if (rs) statParts.push('RS units ' + rs.rs_unit_count);
-        statParts.push('B/C viol. ' + (bcCount > 0 ? bcCount : '0'));
+        statParts.push('B/C violations ' + (bcCount > 0 ? bcCount : '0'));
         const statSpan = document.createElement('span');
         statSpan.className = 'mob-meta';
         statSpan.style.marginTop = '0';
@@ -579,7 +583,14 @@
         document.getElementById('stat-acquisitions').textContent = data.total_acquisitions;
         document.getElementById('stat-llcs').textContent        = data.llc_entities.length;
         const uniqueZips = new Set((data.properties || []).map(p => p.zip_code).filter(Boolean));
-        document.getElementById('stat-zips').textContent        = uniqueZips.size || (data.zip_codes || []).length;
+        const zipCount = uniqueZips.size || (data.zip_codes || []).length;
+        document.getElementById('stat-zips').textContent        = zipCount;
+
+        const sumEl = document.getElementById('op-summary');
+        if (sumEl && data.total_acquisitions) {
+            sumEl.textContent = data.total_acquisitions + ' acquisition' + (data.total_acquisitions !== 1 ? 's' : '')
+                + ' across ' + zipCount + ' ZIP code' + (zipCount !== 1 ? 's' : '');
+        }
 
         // Build BBL lookup maps used by both the portfolio table and eviction callout
         const acqByBbl = {};
