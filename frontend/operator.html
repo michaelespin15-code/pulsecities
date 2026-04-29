@@ -52,7 +52,7 @@
         @media (max-width: 640px) {
             .stat-card { padding: 10px 14px; }
             .stat-val { font-size: 1.3rem; }
-            .page-wrap { padding: 20px 16px calc(140px + env(safe-area-inset-bottom)); }
+            .page-wrap { padding: 20px 16px calc(72px + env(safe-area-inset-bottom, 0px)); }
             .op-header { margin-bottom: 18px !important; }
             .desktop-table-wrap { display: none !important; }
             .mobile-card-list { display: block; }
@@ -1083,7 +1083,7 @@
     applyTranslations();
     </script>
     <footer style="text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom) + 24px);border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b;font-family:'DM Sans',sans-serif;">
-        <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;">
+        <div class="op-footer-links" style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;">
             <a href="/" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
             <a href="/map" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Map</a>
             <a href="/operators" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Operators</a>
@@ -1092,13 +1092,13 @@
             <a href="mailto:michaelespin15@gmail.com" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
         </div>
     </footer>
+<style>@media(max-width:767px){.op-footer-links{display:none!important;}}</style>
 <nav id="mbn" aria-label="Site navigation" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(15,23,42,0.97);border-top:1px solid rgba(51,65,85,0.5);padding-bottom:env(safe-area-inset-bottom,0px);">
-  <div style="display:flex;height:48px;">
-    <a href="/" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Home</a>
-    <a href="/map" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Map</a>
-    <a href="/map" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Search</a>
-    <a href="/operators" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:#38bdf8;text-decoration:none;">Operators</a>
-    <a href="/methodology" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Method</a>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);height:56px;">
+    <a href="/" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Home</a>
+    <a href="/map" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Map</a>
+    <a href="/operators" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:#38bdf8;text-decoration:none;">Operators</a>
+    <a href="/about" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">About</a>
   </div>
 </nav>
 <script>(function(){if(window.innerWidth>=768)return;document.getElementById('mbn').style.display='flex';})();</script>

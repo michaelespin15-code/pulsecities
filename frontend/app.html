@@ -219,12 +219,12 @@
                 font-size: 11px;
                 color: rgba(148,163,184,0.7);
                 text-decoration: none;
-                height: 48px;
+                height: 56px;
             }
             #mobile-bottom-nav a.active { color: #38bdf8; }
             /* Lift the drawer and legend above nav + safe area */
-            #mobile-drawer { bottom: calc(48px + env(safe-area-inset-bottom, 0px)) !important; }
-            #map-legend { bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important; }
+            #mobile-drawer { bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important; }
+            #map-legend { bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important; }
         }
         /* Mobile bottom drawer */
         #mobile-drawer {
@@ -881,9 +881,8 @@
     <nav id="mobile-bottom-nav" aria-label="Site navigation">
         <a href="/">Home</a>
         <a href="/map">Map</a>
-        <a href="/map">Search</a>
         <a href="/operators">Operators</a>
-        <a href="/methodology">Methodology</a>
+        <a href="/about">About</a>
     </nav>
 
     <div id="mobile-drawer" aria-label="Most at-risk neighborhoods">
