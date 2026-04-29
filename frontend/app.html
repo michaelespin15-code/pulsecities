@@ -203,14 +203,13 @@
         @media (max-width: 767px) {
             #mobile-bottom-nav {
                 display: flex;
+                flex-direction: row;
                 position: fixed;
                 bottom: 0; left: 0; right: 0;
                 z-index: 28;
-                height: 48px;
                 background: rgba(15,23,42,0.97);
                 border-top: 1px solid rgba(148,163,184,0.1);
                 padding-bottom: env(safe-area-inset-bottom, 0px);
-                align-items: center;
             }
             #mobile-bottom-nav a {
                 flex: 1;
@@ -220,13 +219,12 @@
                 font-size: 11px;
                 color: rgba(148,163,184,0.7);
                 text-decoration: none;
-                height: 100%;
+                height: 48px;
             }
             #mobile-bottom-nav a.active { color: #38bdf8; }
-            /* Lift the drawer above the nav bar */
-            #mobile-drawer { bottom: 48px !important; }
-            /* Keep map legend clear of the nav bar */
-            #map-legend { bottom: 56px !important; }
+            /* Lift the drawer and legend above nav + safe area */
+            #mobile-drawer { bottom: calc(48px + env(safe-area-inset-bottom, 0px)) !important; }
+            #map-legend { bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important; }
         }
         /* Mobile bottom drawer */
         #mobile-drawer {
