@@ -69,8 +69,8 @@
             </a>
             <div style="display:flex;align-items:center;gap:16px;">
                 <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Map</a>
+                <a href="/operators" style="font-size:0.78rem;color:rgba(148,163,184,0.5);text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Operators</a>
                 <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Methodology</a>
-                <a href="/about" style="font-size:0.78rem;color:rgba(148,163,184,0.5);text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">About</a>
                 <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
             </div>
         </div>
@@ -99,7 +99,7 @@
                     <div>
                         <h1 id="op-root" class="mono accent" style="font-size: 1.8rem; font-weight: 400; letter-spacing: 0.04em;"></h1>
                         <div id="op-summary" class="mono" style="font-size: 0.82rem; color: rgba(148,163,184,0.65); margin-top: 5px;"></div>
-                        <div style="font-size: 0.75rem; color: rgba(148,163,184,0.38); margin-top: 4px;" data-i18n="op_descriptor">Acquisitions linked by LLC naming patterns in NYC deed records.</div>
+                        <div style="font-size: 0.75rem; color: rgba(148,163,184,0.38); margin-top: 4px;" data-i18n="op_descriptor">Public-record activity linked to this operator.</div>
                         <div id="why-matters" style="font-size: 0.8rem; color: rgba(148,163,184,0.6); margin-top: 3px; margin-bottom: 4px; line-height: 1.5;"></div>
                         <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
                             <span class="signal-chip" data-i18n="chip_window">18-month window</span>
@@ -123,7 +123,7 @@
             </div>
 
             <!-- Stats row -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 24px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; margin-bottom: 24px;">
                 <div class="panel stat-card">
                     <div class="stat-val" id="stat-properties"></div>
                     <div class="stat-label" data-i18n="stat_properties">Properties</div>
@@ -134,11 +134,19 @@
                 </div>
                 <div class="panel stat-card">
                     <div class="stat-val" id="stat-llcs"></div>
-                    <div class="stat-label" data-i18n="stat_llcs">LLC Entities</div>
+                    <div class="stat-label" data-i18n="stat_llcs">LLC entities</div>
                 </div>
                 <div class="panel stat-card">
                     <div class="stat-val" id="stat-zips"></div>
-                    <div class="stat-label" data-i18n="stat_zips">Zip Codes</div>
+                    <div class="stat-label" data-i18n="stat_zips">ZIP codes</div>
+                </div>
+                <div class="panel stat-card">
+                    <div class="stat-val" id="stat-violations"></div>
+                    <div class="stat-label" data-i18n="stat_violations">B/C violations</div>
+                </div>
+                <div class="panel stat-card">
+                    <div class="stat-val" id="stat-evict-flags"></div>
+                    <div class="stat-label" data-i18n="stat_evict_flags">Eviction flags</div>
                 </div>
             </div>
 
@@ -173,14 +181,15 @@
                     <span id="portfolio-count" style="font-size: 0.72rem; color: rgba(148,163,184,0.35); font-family: 'JetBrains Mono', monospace;"></span>
                 </div>
                 <div class="desktop-table-wrap" id="portfolio-table-wrap">
-                    <table style="width: 100%; min-width: 500px; border-collapse: collapse; font-size: 0.78rem;">
+                    <table style="width: 100%; min-width: 620px; border-collapse: collapse; font-size: 0.78rem;">
                         <thead>
                             <tr style="color: rgba(148,163,184,0.4); font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.06em;">
                                 <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_address">Address</th>
-                                <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_zip">Zip</th>
+                                <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_zip">ZIP</th>
                                 <th scope="col" style="padding: 8px 16px; text-align: center; font-weight: 400;" data-i18n="portfolio_score">Score</th>
-                                <th scope="col" style="padding: 8px 16px; text-align: center; font-weight: 400;" data-i18n="portfolio_hpd">B/C Viol.</th>
-                                <th scope="col" style="padding: 8px 16px; text-align: center; font-weight: 400;" data-i18n="portfolio_rs">RS Units</th>
+                                <th scope="col" style="padding: 8px 16px; text-align: center; font-weight: 400;" data-i18n="portfolio_hpd">B/C viol.</th>
+                                <th scope="col" style="padding: 8px 16px; text-align: center; font-weight: 400;" data-i18n="portfolio_rs">RS units</th>
+                                <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_acquired">Acquired</th>
                             </tr>
                         </thead>
                         <tbody id="portfolio-rows"></tbody>
@@ -287,22 +296,15 @@
 
     function _buildWhyMatters(data) {
         const acqs = data.total_acquisitions || 0;
-        if (!acqs) return '';
-        const seen = new Set();
-        const boroughs = [];
+        const seen = new Set(), boroughs = [];
         for (const p of (data.properties || [])) {
             const b = _zipToBorough(p.zip_code);
             if (b && !seen.has(b)) { seen.add(b); boroughs.push(b); }
         }
-        if (!boroughs.length) return '';
-        const s = i18n[_lang] || i18n.en;
-        const acqWord = s.stat_acquisitions ? s.stat_acquisitions.toLowerCase() : 'acquisitions';
-        const bStr = boroughs.length >= 2
-            ? boroughs.slice(0, 2).join(', ')
-            : boroughs[0];
-        const score = data.highest_displacement_score || 0;
-        const base = `${acqs} ${acqWord}, ${bStr}.`;
-        return score >= 45 ? base + ' ' + (s.why_high || '') : base;
+        const bStr = boroughs.slice(0, 3).join(', ') || 'NYC';
+        let s = `This profile groups public-record activity associated with ${data.operator_root} across NYC property records.`;
+        if (acqs) s += ` ${acqs} ACRIS deed transfer${acqs !== 1 ? 's' : ''} recorded across ${bStr}.`;
+        return s;
     }
 
     function _scoreColor(score) {
@@ -331,6 +333,10 @@
             stat_acquisitions:   'Acquisitions',
             stat_llcs:           'LLC entities',
             stat_zips:           'ZIP codes',
+            stat_violations:     'B/C violations',
+            stat_evict_flags:    'Eviction flags',
+            th_acquired:         'Acquired',
+            op_descriptor:       'Public-record activity linked to this operator.',
             llc_entities_header: 'LLC Entities',
             related_operators:   'Related Operators',
             related_caveat:      'These clusters are not the same operator. The signals below are evidence of a possible relationship: shared properties, name patterns, or geographic overlap. Each operator remains as the public records show them.',
@@ -344,7 +350,6 @@
             th_amount:           'Amount',
             acq_empty:           'No acquisitions found in the 18-month window.',
             acq_pace:            'Acquisition Pace',
-            op_descriptor:       'Acquisitions linked by LLC naming patterns in NYC deed records.',
             what_this_shows:     'Properties grouped by LLC naming patterns in public deed records. Scores reflect neighborhood displacement risk, not a claim of wrongdoing by any individual actor.',
             portfolio_header:    'High-risk properties in this portfolio',
             show_all_props:      'Show all {n} properties',
@@ -387,6 +392,10 @@
             stat_acquisitions:   'Adquisiciones',
             stat_llcs:           'Entidades LLC',
             stat_zips:           'C\u00f3digos ZIP',
+            stat_violations:     'Violaciones B/C',
+            stat_evict_flags:    'Alertas de desalojo',
+            th_acquired:         'Adquirido',
+            op_descriptor:       'Actividad de registros p\u00fablicos vinculada a este operador.',
             llc_entities_header: 'Entidades LLC',
             related_operators:   'Operadores Relacionados',
             related_caveat:      'Estos grupos no son el mismo operador. Las se\u00f1ales a continuaci\u00f3n son evidencia de una posible relaci\u00f3n: propiedades compartidas, patrones de nombres o superposici\u00f3n geogr\u00e1fica. Cada operador se muestra tal como aparece en los registros p\u00fablicos.',
@@ -400,7 +409,6 @@
             th_amount:           'Monto',
             acq_empty:           'No se encontraron adquisiciones en la ventana de 18 meses.',
             acq_pace:            'Ritmo de Adquisición',
-            op_descriptor:       'Adquisiciones vinculadas por patrones de nombres LLC en registros de escrituras de NYC.',
             what_this_shows:     'Propiedades agrupadas por patrones de nombres de LLC en registros públicos. Las puntuaciones reflejan el riesgo de desplazamiento vecinal, no una acusación contra ningún actor individual.',
             portfolio_header:    'Propiedades de alto riesgo en este portafolio',
             show_all_props:      'Ver las {n} propiedades',
@@ -594,6 +602,10 @@
         const uniqueZips = new Set((data.properties || []).map(p => p.zip_code).filter(Boolean));
         const zipCount = uniqueZips.size || (data.zip_codes || []).length;
         document.getElementById('stat-zips').textContent        = zipCount;
+        const totalBCV = Object.values(data.hpd_violations || {})
+            .reduce((sum, v) => sum + (v.B || 0) + (v.C || 0), 0);
+        document.getElementById('stat-violations').textContent  = totalBCV;
+        document.getElementById('stat-evict-flags').textContent = (data.eviction_then_buy || []).length;
 
         const sumEl = document.getElementById('op-summary');
         if (sumEl && data.total_acquisitions) {
@@ -669,7 +681,8 @@
                     '<span class="mono" style="font-size:0.73rem;background:' + sc.bg + ';color:' + sc.text + ';padding:2px 7px;border-radius:4px;">' + fmtScore(p.displacement_score) + '</span>' +
                 '</td>' +
                 '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (bcCount > 0 ? '#f97316' : 'rgba(148,163,184,0.25)') + ';">' + (bcCount > 0 ? bcCount : t('na')) + '</td>' +
-                '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (rs ? 'rgba(148,163,184,0.7)' : 'rgba(148,163,184,0.22)') + ';">' + (rs ? rs.rs_unit_count : t('na')) + '</td>';
+                '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (rs ? 'rgba(148,163,184,0.7)' : 'rgba(148,163,184,0.22)') + ';">' + (rs ? rs.rs_unit_count : t('na')) + '</td>' +
+                '<td class="mono" style="padding:7px 16px;font-size:0.7rem;color:rgba(148,163,184,0.45);white-space:nowrap;">' + (acq.doc_date ? acq.doc_date.slice(0,7) : t('na')) + '</td>';
             portfolioTbody.appendChild(tr);
 
             const mRow = formatMobilePropertyRow(p, acq, rs, viol, zipNames);
