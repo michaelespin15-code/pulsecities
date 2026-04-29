@@ -357,7 +357,7 @@
     <!-- Footer -->
     <footer style="border-top:1px solid rgba(51,65,85,0.3);margin-top:16px;padding-top:20px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 64px);text-align:center;font-size:12px;color:#64748b;font-family:'DM Sans',sans-serif;">
         <div style="max-width:680px;margin:0 auto;padding:0 20px 20px;">
-            <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:12px;">
+            <div id="footer-nav" style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:12px;">
                 <a href="/" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
                 <a href="/map" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Map</a>
                 <a href="/operators" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Operators</a>
@@ -778,7 +778,10 @@
             if (!dd) return;
             var html = '', items = [];
             var nbhds = groups.neighborhoods || [], ops = groups.operators || [];
-            if (!nbhds.length && !ops.length) { _clearDd(); return; }
+            if (!nbhds.length && !ops.length) {
+                dd.innerHTML = '<div style="padding:11px 14px;font-size:12px;color:rgba(148,163,184,0.4);">No results</div>';
+                dd.style.display = 'block'; _ddItems = []; _ddIdx = -1; return;
+            }
             if (nbhds.length) {
                 html += '<div style="padding:6px 12px 2px;font-size:10px;color:rgba(148,163,184,0.45);text-transform:uppercase;letter-spacing:0.08em;">Neighborhoods</div>';
                 nbhds.forEach(function(n) {
@@ -839,7 +842,7 @@
                 return;
             }
             if (e.key === 'Enter') {
-                if (_ddIdx >= 0 && _ddItems[_ddIdx]) { e.preventDefault(); window.location.href = _ddItems[_ddIdx].href; return; }
+                if (_ddItems.length) { e.preventDefault(); window.location.href = _ddItems[_ddIdx >= 0 ? _ddIdx : 0].href; return; }
                 handleSearch();
             }
         });
@@ -867,9 +870,9 @@
         applyTranslations(_lang);
     </script>
 
-<style>@media(max-width:767px){footer{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 64px)!important;}}</style>
-<nav id="mbn" aria-label="Site navigation" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(15,23,42,0.97);border-top:1px solid rgba(51,65,85,0.5);">
-  <div style="display:flex;height:48px;padding-bottom:env(safe-area-inset-bottom,0px);">
+<style>@media(max-width:767px){footer{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 64px)!important;} #footer-nav{display:none !important;}}</style>
+<nav id="mbn" aria-label="Site navigation" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(15,23,42,0.97);border-top:1px solid rgba(51,65,85,0.5);padding-bottom:env(safe-area-inset-bottom,0px);">
+  <div style="display:flex;height:48px;">
     <a href="/" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:#38bdf8;text-decoration:none;">Home</a>
     <a href="/map" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Map</a>
     <a href="/map" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Search</a>
