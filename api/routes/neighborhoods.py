@@ -305,13 +305,16 @@ def get_top_risk_neighborhoods(
                 -- rs_unit_loss: count RS buildings with unit loss in current vs prior year.
                 -- rs_buildings has no zip_code — join via parcels.
                 -- This is a point-in-time loss count, not a 30-day window.
+                -- Both year predicates are in WHERE (not just the JOIN) so the planner can
+                -- use idx_rs_buildings_year for the prior scan and short-circuit when the
+                -- prior year is absent (as it is during the first year of data collection).
                 SELECT par.zip_code, COUNT(*) AS cnt
                 FROM rs_buildings cur
                 JOIN rs_buildings prior ON cur.bbl = prior.bbl
-                    AND prior.year = cur.year - 1
                     AND prior.rs_unit_count > cur.rs_unit_count
                 JOIN parcels par ON par.bbl = cur.bbl
                 WHERE cur.year = EXTRACT(YEAR FROM CURRENT_DATE)::int
+                  AND prior.year = EXTRACT(YEAR FROM CURRENT_DATE)::int - 1
                   AND par.zip_code IS NOT NULL
                 GROUP BY par.zip_code
             ),
