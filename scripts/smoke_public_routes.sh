@@ -156,24 +156,27 @@ done
 file_present "/about route registered" \
     "$REPO_ROOT/api/routes/frontend.py" '"/about"'
 
-# Bottom nav on each page has exactly 4 items (no 5th "Search" duplicate).
+# Static pages must NOT have a mobile bottom nav (#mbn).
+# Bottom nav lives only on /map (app.html #mobile-bottom-nav).
 for f in index.html methodology.html operator.html about.html; do
     count=$(grep -c 'id="mbn"' "$FRONTEND/$f" 2>/dev/null || true)
-    if [[ "$count" -eq 1 ]]; then
-        nav_items=$(grep -A20 'id="mbn"' "$FRONTEND/$f" | grep -c '<a href=' || true)
-        if [[ "$nav_items" -eq 4 ]]; then
-            ok "Bottom nav in $f has 4 items"
-        else
-            fail "Bottom nav in $f — expected 4 items, found $nav_items"
-        fi
+    if [[ "$count" -eq 0 ]]; then
+        ok "No bottom nav on static page $f"
     else
-        fail "Bottom nav in $f — expected 1 #mbn block, found $count"
+        fail "$f — unexpected #mbn block found ($count occurrence(s)); bottom nav removed from static pages"
     fi
 done
 
-# app.html mobile-bottom-nav: no duplicate /map href (was the Search bug).
+# app.html must still have its map-specific mobile nav (not removed by accident).
+map_nav=$(grep -c 'id="mobile-bottom-nav"' "$FRONTEND/app.html" 2>/dev/null || true)
+if [[ "$map_nav" -ge 1 ]]; then
+    ok "app.html: map mobile nav present"
+else
+    fail "app.html: #mobile-bottom-nav missing — map nav was accidentally removed"
+fi
+
+# app.html mobile nav: no duplicate /map href (the old Search bug).
 dup_map=$(grep -c 'href="/map"' "$FRONTEND/app.html" 2>/dev/null || true)
-# Expect exactly 1 (the Map nav item). More than 1 means the Search duplicate crept back.
 if [[ "$dup_map" -le 2 ]]; then
     ok "app.html: no duplicate /map in mobile nav"
 else
