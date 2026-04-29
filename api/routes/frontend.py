@@ -745,8 +745,9 @@ nav{{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0}}
 .nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
-footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b}}
 .footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
+@media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 72px)}} .footer-links{{display:none!important}} footer{{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 72px)}}}}
 .op-list{{list-style:none;padding:0;margin:0}}
 .op-row{{border-bottom:1px solid rgba(148,163,184,0.07);cursor:pointer;}}
 .op-row:hover{{background:rgba(148,163,184,0.04)}}
@@ -770,7 +771,8 @@ footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,18
     </a>
     <div style="display:flex;align-items:center;gap:16px;">
       <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Map</a>
-      <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">About</a>
+      <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Methodology</a>
+      <a href="/about" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">About</a>
       <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
     </div>
   </div>
@@ -791,7 +793,9 @@ footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,18
   <div class="footer-links">
     <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
     <a href="/map" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Map</a>
-    <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
+    <a href="/operators" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Operators</a>
+    <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
+    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
     <a href="mailto:michaelespin15@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
   </div>
 </footer>
@@ -834,12 +838,11 @@ footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,18
 }})();
 </script>
 <nav id="mbn" aria-label="Site navigation" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(15,23,42,0.97);border-top:1px solid rgba(51,65,85,0.5);padding-bottom:env(safe-area-inset-bottom,0px);">
-  <div style="display:flex;height:48px;">
-    <a href="/" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Home</a>
-    <a href="/map" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Map</a>
-    <a href="/map" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Search</a>
-    <a href="/operators" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:#38bdf8;text-decoration:none;">Operators</a>
-    <a href="/methodology" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Method</a>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);height:56px;">
+    <a href="/" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Home</a>
+    <a href="/map" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Map</a>
+    <a href="/operators" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:#38bdf8;text-decoration:none;">Operators</a>
+    <a href="/about" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">About</a>
   </div>
 </nav>
 <script>(function(){{if(window.innerWidth>=768)return;document.getElementById('mbn').style.display='flex';}})();</script>
