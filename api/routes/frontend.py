@@ -680,7 +680,7 @@ def operators_directory(db: Session = Depends(get_db)):
         if acqs:     meta_parts.append(f'{acqs} <span class="op-label-acq">acquisitions</span>')
         if entities: meta_parts.append(f'{entities} LLC{"s" if entities != 1 else ""}')
         if zip_count: meta_parts.append(f'{zip_count} ZIP code{"s" if zip_count != 1 else ""}')
-        meta_line = f'<div class="op-meta" data-count="{acqs}">{" · ".join(meta_parts)}</div>' if meta_parts else ""
+        meta_line = f'<div class="op-meta" data-count="{acqs}">{", ".join(meta_parts)}</div>' if meta_parts else ""
         geo_html  = f'<div class="op-geo">{_html.escape(borough_str)}</div>' if borough_str else ""
         rows_html += (
             f'<li class="op-row" onclick="location.href=\'{op_link}\'">'
