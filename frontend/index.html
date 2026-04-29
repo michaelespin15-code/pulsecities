@@ -250,6 +250,8 @@
                 </a>
             </div>
             <div style="display:flex;align-items:center;gap:20px;">
+                <a href="/map" style="font-size:12px;color:#64748b;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Map</a>
+                <a href="/operators" style="font-size:12px;color:#64748b;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Operators</a>
                 <a href="/methodology" style="font-size:12px;color:#64748b;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
                 <button id="lang-toggle"
                         style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#475569;background:none;border:none;cursor:pointer;min-height:36px;padding:0;"
@@ -274,20 +276,23 @@
             </p>
 
             <!-- Search -->
-            <div id="search-row" style="display:flex;gap:8px;width:100%;margin-bottom:6px;">
-                <input id="search-input"
-                       type="text"
-                       inputmode="search"
-                       placeholder="Address, ZIP, or landlord"
-                       class="input input-bordered flex-1 text-sm font-mono"
-                       style="background:rgba(30,41,59,0.9);"
-                       autocomplete="off" />
-                <button id="search-btn"
-                        class="btn shrink-0"
-                        style="background-color:#f59e0b;border-color:#f59e0b;color:#1a1a2e;font-weight:600;"
-                        data-i18n="search_btn">
-                    Search
-                </button>
+            <div style="position:relative;">
+                <div id="search-row" style="display:flex;gap:8px;width:100%;margin-bottom:6px;">
+                    <input id="search-input"
+                           type="text"
+                           inputmode="search"
+                           placeholder="Search ZIP, address, or landlord"
+                           class="input input-bordered flex-1 text-sm font-mono"
+                           style="background:rgba(30,41,59,0.9);"
+                           autocomplete="off" />
+                    <button id="search-btn"
+                            class="btn shrink-0"
+                            style="background-color:#f59e0b;border-color:#f59e0b;color:#1a1a2e;font-weight:600;"
+                            data-i18n="search_btn">
+                        Search
+                    </button>
+                </div>
+                <div id="search-dropdown" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:#1e293b;border:1px solid rgba(148,163,184,0.15);border-radius:0 0 8px 8px;z-index:50;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4);"></div>
             </div>
             <div id="empty-search-msg" class="search-empty-msg" data-i18n="search_empty_msg" style="display:none;">Enter an address, ZIP, or landlord name.</div>
 
@@ -350,7 +355,7 @@
     </main>
 
     <!-- Footer -->
-    <footer style="border-top:1px solid rgba(51,65,85,0.3);margin-top:16px;padding-top:20px;text-align:center;font-size:12px;color:#64748b;font-family:'DM Sans',sans-serif;">
+    <footer style="border-top:1px solid rgba(51,65,85,0.3);margin-top:16px;padding-top:20px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 64px);text-align:center;font-size:12px;color:#64748b;font-family:'DM Sans',sans-serif;">
         <div style="max-width:680px;margin:0 auto;padding:0 20px 20px;">
             <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:12px;">
                 <a href="/" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
@@ -759,10 +764,93 @@
         }
 
         document.getElementById('search-btn').addEventListener('click', handleSearch);
-        document.getElementById('search-input').addEventListener('keydown', e => {
-            if (e.key === 'Enter') handleSearch();
+
+        var _ddTimer = null, _ddIdx = -1, _ddItems = [];
+
+        function _clearDd() {
+            var el = document.getElementById('search-dropdown');
+            if (el) el.style.display = 'none';
+            _ddIdx = -1; _ddItems = [];
+        }
+
+        function _renderDd(groups) {
+            var dd = document.getElementById('search-dropdown');
+            if (!dd) return;
+            var html = '', items = [];
+            var nbhds = groups.neighborhoods || [], ops = groups.operators || [];
+            if (!nbhds.length && !ops.length) { _clearDd(); return; }
+            if (nbhds.length) {
+                html += '<div style="padding:6px 12px 2px;font-size:10px;color:rgba(148,163,184,0.45);text-transform:uppercase;letter-spacing:0.08em;">Neighborhoods</div>';
+                nbhds.forEach(function(n) {
+                    items.push(n);
+                    var score = n.score != null ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:#38bdf8;">' + n.score + '</span>' : '';
+                    html += '<div class="dd-row" data-href="' + n.href + '" style="padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(148,163,184,0.05);">'
+                        + '<span style="font-size:13px;color:#e2e8f0;"><span style="font-family:\'JetBrains Mono\',monospace;">' + n.zip + '</span>'
+                        + (n.name ? ' <span style="color:#94a3b8;font-size:12px;">' + n.name + (n.borough ? ', ' + n.borough : '') + '</span>' : '')
+                        + '</span>' + score + '</div>';
+                });
+            }
+            if (ops.length) {
+                html += '<div style="padding:6px 12px 2px;font-size:10px;color:rgba(148,163,184,0.45);text-transform:uppercase;letter-spacing:0.08em;">Operators</div>';
+                ops.forEach(function(o) {
+                    items.push(o);
+                    html += '<div class="dd-row" data-href="' + o.href + '" style="padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(148,163,184,0.05);">'
+                        + '<span style="font-size:13px;color:#e2e8f0;">' + o.name + '</span>'
+                        + '<span style="font-size:11px;color:#94a3b8;">' + (o.portfolio_size || '') + (o.portfolio_size ? ' props' : '') + '</span></div>';
+                });
+            }
+            _ddItems = items; _ddIdx = -1;
+            dd.innerHTML = html; dd.style.display = 'block';
+            dd.querySelectorAll('.dd-row').forEach(function(row) {
+                row.addEventListener('click', function() { window.location.href = row.getAttribute('data-href'); });
+                row.addEventListener('mouseenter', function() { dd.querySelectorAll('.dd-row').forEach(function(r){ r.style.background=''; }); row.style.background = 'rgba(148,163,184,0.06)'; });
+                row.addEventListener('mouseleave', function() { row.style.background = ''; });
+            });
+        }
+
+        document.getElementById('search-input').addEventListener('input', function() {
+            var q = this.value.trim();
+            clearTimeout(_ddTimer);
+            if (q.length < 3) { _clearDd(); return; }
+            _ddTimer = setTimeout(function() {
+                fetch('/api/search/?q=' + encodeURIComponent(q))
+                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .then(function(d) { if (d) _renderDd(d.groups); else _clearDd(); })
+                    .catch(function() { _clearDd(); });
+            }, 250);
         });
-        document.getElementById('cta-explore').addEventListener('click', () => plausible('Explore Map'));
+
+        document.getElementById('search-input').addEventListener('keydown', function(e) {
+            var dd = document.getElementById('search-dropdown');
+            var rows = dd ? dd.querySelectorAll('.dd-row') : [];
+            if (e.key === 'Escape') { _clearDd(); return; }
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (!rows.length) return;
+                _ddIdx = Math.min(_ddIdx + 1, rows.length - 1);
+                rows.forEach(function(r, i) { r.style.background = i === _ddIdx ? 'rgba(56,189,248,0.1)' : ''; });
+                return;
+            }
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (!rows.length) return;
+                _ddIdx = Math.max(_ddIdx - 1, -1);
+                rows.forEach(function(r, i) { r.style.background = i === _ddIdx ? 'rgba(56,189,248,0.1)' : ''; });
+                return;
+            }
+            if (e.key === 'Enter') {
+                if (_ddIdx >= 0 && _ddItems[_ddIdx]) { e.preventDefault(); window.location.href = _ddItems[_ddIdx].href; return; }
+                handleSearch();
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#search-row') && !e.target.closest('#search-dropdown')) _clearDd();
+        });
+        document.getElementById('cta-explore').addEventListener('click', function() {
+            this.textContent = 'Loading map...';
+            plausible('Explore Map');
+        });
 
         // Language toggle
         const langToggle = document.getElementById('lang-toggle');
@@ -779,5 +867,15 @@
         applyTranslations(_lang);
     </script>
 
+<style>@media(max-width:767px){footer{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 64px)!important;}}</style>
+<nav id="mbn" aria-label="Site navigation" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(15,23,42,0.97);border-top:1px solid rgba(51,65,85,0.5);">
+  <div style="display:flex;height:48px;padding-bottom:env(safe-area-inset-bottom,0px);">
+    <a href="/" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:#38bdf8;text-decoration:none;">Home</a>
+    <a href="/map" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Map</a>
+    <a href="/operators" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Operators</a>
+    <a href="/methodology" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Method</a>
+  </div>
+</nav>
+<script>(function(){if(window.innerWidth>=768)return;document.getElementById('mbn').style.display='flex';})();</script>
 </body>
 </html>
