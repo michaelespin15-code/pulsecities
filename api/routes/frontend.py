@@ -833,6 +833,15 @@ footer{{text-align:center;padding:24px 16px;border-top:1px solid rgba(148,163,18
   }});
 }})();
 </script>
+<nav id="mbn" aria-label="Site navigation" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(15,23,42,0.97);border-top:1px solid rgba(51,65,85,0.5);">
+  <div style="display:flex;height:48px;padding-bottom:env(safe-area-inset-bottom,0px);">
+    <a href="/" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Home</a>
+    <a href="/map" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Map</a>
+    <a href="/operators" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:#38bdf8;text-decoration:none;">Operators</a>
+    <a href="/methodology" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(148,163,184,0.6);text-decoration:none;">Method</a>
+  </div>
+</nav>
+<script>(function(){{if(window.innerWidth>=768)return;document.getElementById('mbn').style.display='flex';}})();</script>
 </body>
 </html>"""
 

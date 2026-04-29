@@ -613,7 +613,6 @@
                             <h4 id="pulse-evictions-header" class="text-xs font-semibold text-red-400 uppercase tracking-wider mb-1">Recent Evictions</h4>
                             <p id="eviction-lag-note" class="text-xs text-slate-400 italic mb-2">Eviction filings typically appear 2&ndash;4 weeks after they occur.</p>
                             <div id="pulse-evictions-list" class="flex flex-col gap-1 text-sm" role="list"></div>
-                            <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:rgba(148,163,184,0.35);">Source: NYC Open Data (6z8x-wfk4)</div>
                         </div>
 
                         <!-- Empty state -->
@@ -883,7 +882,8 @@
     <!-- Mobile bottom nav — visible on map view, hidden when sheet is open -->
     <nav id="mobile-bottom-nav" aria-label="Site navigation">
         <a href="/">Home</a>
-        <a href="/map" class="active">Map</a>
+        <a href="/map">Map</a>
+        <a href="/map">Search</a>
         <a href="/operators">Operators</a>
         <a href="/methodology">Methodology</a>
     </nav>
@@ -2340,9 +2340,19 @@
         // Operator layer — toggle colored overlay for known operator portfolios
         // ---------------------------------------------------------------------------
         const _OPERATOR_PATTERNS = [
-            { re: /\bMTEK\b/,            slug: 'mtek-nyc' },
+            { re: /\bMTEK\b/,              slug: 'mtek-nyc' },
             { re: /\bPHANTOM\s+CAPITAL\b/, slug: 'phantom-capital' },
-            { re: /\bBREDIF\b/,           slug: 'bredif' },
+            { re: /\bBREDIF\b/,            slug: 'bredif' },
+            { re: /\bOCEANVIEW\b/,         slug: 'oceanview' },
+            { re: /\bTOORAK\b/,            slug: 'toorak' },
+            { re: /\bICECAP\b/,            slug: 'icecap' },
+            { re: /\bRIDGEWOOD\b/,         slug: 'ridgewood' },
+            { re: /\bCHURCHILL\b/,         slug: 'churchill' },
+            { re: /\bSYMETRA\b/,           slug: 'symetra' },
+            { re: /\bARBOR\b/,             slug: 'arbor' },
+            { re: /\bDERBY\b/,             slug: 'derby' },
+            { re: /\bEMPORIUM\b/,          slug: 'emporium' },
+            { re: /\bBROADVIEW\b/,         slug: 'broadview' },
         ];
         // Colors in same order as _OPERATOR_PATTERNS
         const _OP_COLORS = { 'mtek-nyc': '#f97316', 'phantom-capital': '#a78bfa', 'bredif': '#60a5fa' };
@@ -3212,6 +3222,16 @@
                 const btn = document.getElementById('address-search-btn');
                 if (!btn.disabled) btn.click();
             }
+        });
+
+        var _addrTimer = null;
+        document.getElementById('address-input').addEventListener('input', function() {
+            var q = this.value.trim();
+            clearTimeout(_addrTimer);
+            if (q.length < 3) return;
+            _addrTimer = setTimeout(function() {
+                document.getElementById('address-search-btn').click();
+            }, 400);
         });
 
         // Escape closes the methodology modal and any open sidebar panel
@@ -4129,6 +4149,17 @@
             collapseBtn.textContent = collapsed ? '‹' : '›';
             collapseBtn.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
         }
+
+        // Set mobile nav active state
+        (function(){
+            var nav = document.getElementById('mobile-bottom-nav');
+            if (!nav) return;
+            var p = window.location.pathname;
+            nav.querySelectorAll('a').forEach(function(a){
+                var h = a.getAttribute('href');
+                if (h === '/' ? p === '/' : p === h || p.startsWith(h + '/')) a.classList.add('active');
+            });
+        }());
     </script>
 
 
