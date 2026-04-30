@@ -612,7 +612,9 @@
             const container = document.getElementById('movers-cards');
             if (!section || !container) return;
 
-            list.slice(0, 5).forEach(n => {
+            const qualified = list.filter(n => n.delta >= 1.0 && n.raw_count > 0);
+            if (qualified.length < 2) return;
+            qualified.slice(0, 5).forEach(n => {
                 const row     = document.createElement('a');
                 row.href      = `/map?q=${encodeURIComponent(n.zip_code)}`;
                 row.className = 'mover-row';
