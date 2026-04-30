@@ -405,7 +405,9 @@
                 trust_body:           'Built from NYC public records.',
                 read_methodology:     'Read methodology →',
                 stats_llc_unit:       'LLC transfers',
+                stats_llc_unit_s:     'LLC transfer',
                 stats_eviction_unit:  'eviction filings',
+                stats_eviction_unit_s:'eviction filing',
                 stats_prefix:         'Last 30 days:',
                 stats_conjunction:    'and',
             },
@@ -440,7 +442,9 @@
                 trust_body:           'Construido con registros públicos de NYC.',
                 read_methodology:     'Leer la metodología →',
                 stats_llc_unit:       'transferencias LLC',
+                stats_llc_unit_s:     'transferencia LLC',
                 stats_eviction_unit:  'desalojos registrados',
+                stats_eviction_unit_s:'desalojo registrado',
                 stats_prefix:         'Últimos 30 días:',
                 stats_conjunction:    'y',
             }
@@ -495,12 +499,14 @@
 
             const s = i18n[getCurrentLanguage()] || i18n.en;
             const parts = [];
-            if (llc)       parts.push(`${llc.toLocaleString()} ${s.stats_llc_unit}`);
-            if (evictions) parts.push(`${evictions.toLocaleString()} ${s.stats_eviction_unit}`);
+            if (llc)       parts.push(`${llc.toLocaleString()} ${llc === 1 ? s.stats_llc_unit_s : s.stats_llc_unit}`);
+            if (evictions) parts.push(`${evictions.toLocaleString()} ${evictions === 1 ? s.stats_eviction_unit_s : s.stats_eviction_unit}`);
             if (parts.length) {
-                const joined = parts.length > 1
-                    ? parts.slice(0, -1).join(', ') + `, ${s.stats_conjunction} ` + parts[parts.length - 1]
-                    : parts[0];
+                const joined = parts.length === 2
+                    ? `${parts[0]} ${s.stats_conjunction} ${parts[1]}`
+                    : parts.length > 2
+                        ? parts.slice(0, -1).join(', ') + `, ${s.stats_conjunction} ` + parts[parts.length - 1]
+                        : parts[0];
                 chips.textContent = `${s.stats_prefix} ${joined}`;
                 chips.style.opacity = '1';
             }
