@@ -3,7 +3,7 @@ Integration tests for GET /api/stats.
 
 Covers:
   1. Returns 200 with correct top-level keys
-  2. llc_transfers_30d and evictions_30d are non-negative integers
+  2. llc_transfers_recent and evictions_30d are non-negative integers
   3. top_risk object has required shape (zip_code, name, borough, score, last_updated)
   4. X-RateLimit-Limit header is present (confirms slowapi is active)
 """
@@ -26,16 +26,16 @@ class TestStatsAPI:
     def test_returns_correct_top_level_keys(self):
         resp = client.get("/api/stats")
         body = resp.json()
-        assert "llc_transfers_30d" in body, f"Missing llc_transfers_30d: {list(body.keys())}"
+        assert "llc_transfers_recent" in body, f"Missing llc_transfers_recent: {list(body.keys())}"
         assert "evictions_30d" in body, f"Missing evictions_30d: {list(body.keys())}"
         assert "top_risk" in body, f"Missing top_risk: {list(body.keys())}"
 
     def test_counts_are_non_negative_integers(self):
         resp = client.get("/api/stats")
         body = resp.json()
-        assert isinstance(body["llc_transfers_30d"], int), "llc_transfers_30d must be int"
+        assert isinstance(body["llc_transfers_recent"], int), "llc_transfers_recent must be int"
         assert isinstance(body["evictions_30d"], int), "evictions_30d must be int"
-        assert body["llc_transfers_30d"] >= 0
+        assert body["llc_transfers_recent"] >= 0
         assert body["evictions_30d"] >= 0
 
     def test_top_risk_shape_when_present(self):
