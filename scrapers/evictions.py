@@ -158,8 +158,14 @@ class EvictionsScraper(BaseScraper):
         borough = record.eviction_borough
         zip_raw = record.zip_code
 
-        # Eviction type — R=residential, C=commercial; normalized by model_validator
+        # Eviction type — normalize OCA abbreviations to canonical form.
+        # OCA changed residential_commercial_ind from full words to single letters
+        # ('Residential' -> 'R', 'Commercial' -> 'C') without notice.
         eviction_type = record.eviction_type
+        if eviction_type == "R":
+            eviction_type = "Residential"
+        elif eviction_type == "C":
+            eviction_type = "Commercial"
 
         docket = (record.docket_number or "").strip() or None
         court_index = (record.court_index_number or "").strip() or None
