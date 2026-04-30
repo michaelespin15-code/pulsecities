@@ -165,8 +165,8 @@ class TestScoreNormalization:
                  patch("scoring.compute._aggregate_assessment_spike", return_value=[]), \
                  patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]), \
                  patch("scoring.compute._compute_borough_medians", return_value={"1": 10.0, "2": 8.0, "3": 15.0, "4": 12.0, "5": 5.0}), \
-                 patch("scoring.compute._get_zip_units", return_value={}), \
-                 patch("scoring.compute._get_zip_borough", return_value={}):
+                 patch("scoring.compute._get_zip_units", return_value={zip_code: 10.0}), \
+                 patch("scoring.compute._get_zip_borough", return_value={zip_code: "3"}):
                 count = compute_scores(db, force=True)
 
             assert count == 1, f"Expected 1 zip scored, got {count}"
@@ -216,8 +216,8 @@ class TestScoreNormalization:
                  patch("scoring.compute._aggregate_assessment_spike", return_value=[]), \
                  patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]), \
                  patch("scoring.compute._compute_borough_medians", return_value={"1": 10.0, "2": 8.0, "3": 15.0, "4": 12.0, "5": 5.0}), \
-                 patch("scoring.compute._get_zip_units", return_value={}), \
-                 patch("scoring.compute._get_zip_borough", return_value={}):
+                 patch("scoring.compute._get_zip_units", return_value={z: 10.0 for z in zip_codes}), \
+                 patch("scoring.compute._get_zip_borough", return_value={z: "3" for z in zip_codes}):
                 count = compute_scores(db, force=True)
 
             assert count == 3, f"Expected 3 zips scored, got {count}"
@@ -311,8 +311,8 @@ class TestScoreNormalization:
                  patch("scoring.compute._aggregate_violations", return_value=[]), \
                  patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]), \
                  patch("scoring.compute._compute_borough_medians", return_value={"1": 10.0, "2": 8.0, "3": 15.0, "4": 12.0, "5": 5.0}), \
-                 patch("scoring.compute._get_zip_units", return_value={}), \
-                 patch("scoring.compute._get_zip_borough", return_value={}):
+                 patch("scoring.compute._get_zip_units", return_value={zip_code: 10.0}), \
+                 patch("scoring.compute._get_zip_borough", return_value={zip_code: "3"}):
                 compute_scores(db, force=True)
 
             row = db.execute(
@@ -368,8 +368,8 @@ class TestScoreNormalization:
                 _aggregate_violations=[],
                 _aggregate_rs_unit_loss=[],
                 _compute_borough_medians={"1": 10.0, "2": 8.0, "3": 15.0, "4": 12.0, "5": 5.0},
-                _get_zip_units={},
-                _get_zip_borough={},
+                _get_zip_units={zip_code: 10.0},
+                _get_zip_borough={zip_code: "3"},
             )
             _insert_test_neighborhoods(db, [zip_code])
             with patch("scoring.compute._aggregate_permits", return_value=patches["_aggregate_permits"]), \
@@ -431,8 +431,8 @@ class TestScoreNormalization:
                  patch("scoring.compute._aggregate_violations", return_value=[]), \
                  patch("scoring.compute._aggregate_rs_unit_loss", return_value=[]), \
                  patch("scoring.compute._compute_borough_medians", return_value={"1": 20.0, "2": 15.0, "3": 18.0, "4": 12.0, "5": 8.0}), \
-                 patch("scoring.compute._get_zip_units", return_value={}), \
-                 patch("scoring.compute._get_zip_borough", return_value={}):
+                 patch("scoring.compute._get_zip_units", return_value={zip_code: 10.0}), \
+                 patch("scoring.compute._get_zip_borough", return_value={zip_code: "3"}):
                 count = compute_scores(db, force=True)
             assert count >= 1
             row = db.execute(

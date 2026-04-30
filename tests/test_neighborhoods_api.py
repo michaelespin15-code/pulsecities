@@ -73,7 +73,9 @@ class TestNeighborhoodScore:
         assert "last_updated" in body
 
     def test_nonexistent_zip_returns_404(self):
-        resp = client.get("/api/neighborhoods/99999/score")
+        # 99999 has a stale test-data row in neighborhoods; use 00000 which is
+        # guaranteed to never appear in the scoring universe.
+        resp = client.get("/api/neighborhoods/00000/score")
         assert resp.status_code == 404
 
     def test_invalid_zip_returns_400(self):
