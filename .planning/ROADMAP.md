@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 NYC Displacement Intelligence** — Phases 1–7 (shipped 2026-04-16)
-- 🔄 **v2.0 Public Launch + Operator Intelligence** — Phases 8–10 (in progress)
+- ✅ **v2.0 Public Launch + Operator Intelligence** — Phases 8–10 (shipped 2026-04-30)
 
 ## Phases
 
@@ -25,8 +25,8 @@ See `.planning/milestones/v1.0-ROADMAP.md` for full phase details.
 **v2.0 Public Launch + Operator Intelligence**
 
 - [x] **Phase 8: Production Deployment** — pulsecities.com live over HTTPS with gunicorn + Nginx, systemd auto-restart, runbook
-- [ ] **Phase 9: Operator Data + API** — DB schema, backfill, and REST endpoints for operator portfolio intelligence
-- [ ] **Phase 10: Operator UI + Map Layer** — Profile pages, LLC linking from block events, and toggleable operator map layer
+- [x] **Phase 9: Operator Data + API** — DB schema, backfill, and REST endpoints for operator portfolio intelligence
+- [x] **Phase 10: Operator UI + Map Layer** — Profile pages, LLC linking from block events, and toggleable operator map layer
 
 ## Phase Details
 
@@ -87,9 +87,9 @@ Plans:
 | 5. Hardening & Frontend Polish | v1.0 | 4/4 | Complete | 2026-04-12 |
 | 6. Product Evolution | v1.0 | 6/6 | Complete | 2026-04-12 |
 | 7. Pre-Ship Hardening | v1.0 | 6/6 | Complete | 2026-04-13 |
-| 8. Production Deployment | v2.0 | 0/3 | Not started | — |
-| 9. Operator Data + API | v2.0 | 0/3 | Not started | — |
-| 10. Operator UI + Map Layer | v2.0 | 0/? | Not started | — |
+| 8. Production Deployment | v2.0 | 3/3 | Complete | 2026-04-28 |
+| 9. Operator Data + API | v2.0 | 3/3 | Complete | 2026-04-29 |
+| 10. Operator UI + Map Layer | v2.0 | 3/3 | Complete | 2026-04-30 |
 
 ## Backlog
 
