@@ -104,3 +104,16 @@ Plans:
 - [x] 999.1-02-PLAN.md — Hero overlay HTML/CSS structure, show/hide state machine, i18n keys, subscribe em dash fix
 - [x] 999.1-03-PLAN.md — initHeroStats() animation, hero search handler, ZIP cards, hover sparkline/tooltips
 - [ ] 999.1-04-PLAN.md — Leaderboard _buildTopRiskItem() update + human-verify checkpoint
+
+### Backlog: DOF assessments scraper cleanup
+
+`dof_assessments` scraper fails nightly with:
+  `ON CONFLICT DO UPDATE command cannot affect row a second time`
+
+Root cause: duplicate rows in the DOF batch share the same conflict key,
+causing PostgreSQL to reject the upsert. Annual scraper so not urgent —
+data was loaded correctly on last full run (2026-04-12, 858k parcels).
+
+Fix when convenient: deduplicate within the batch before upsert, or
+switch to `on_conflict_do_nothing` if duplicate rows are expected from
+the source.
