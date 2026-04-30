@@ -468,7 +468,7 @@ def get_top_movers(
             SELECT DISTINCT ON (zip_code)
                 zip_code, composite_score AS prev_score
             FROM score_history
-            WHERE scored_at <= CURRENT_DATE - INTERVAL '6 days'
+            WHERE scored_at <= CURRENT_DATE - INTERVAL '13 days'
             ORDER BY zip_code, scored_at DESC
         ),
         llc_counts AS (
