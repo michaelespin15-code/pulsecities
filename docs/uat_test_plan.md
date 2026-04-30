@@ -1023,7 +1023,7 @@ Use this section to log findings that are not bugs but deliberate product decisi
 **[I18N]** The Spanish translation (EN/ES toggle) applies only to static UI strings. API-generated text (summary_text, dominant signal labels) remains in English.  
 *Decision: Backend i18n is out of scope for current phase.*
 
-**[API]** The `/api/neighborhoods/{zip}/summary` (AI-generated neighborhood summary) endpoint is not yet implemented.  
+**[API]** The `/api/neighborhoods/{zip}/summary` (automated neighborhood summary) endpoint is not yet implemented.  
 *Decision: Deferred to a future phase. Must include per-IP rate limiting before launch.*
 
 ---
