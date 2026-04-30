@@ -529,7 +529,7 @@ def get_top_movers(
         LEFT JOIN eviction_counts ec   ON ec.zip_code = l.zip_code
         LEFT JOIN permit_counts pc     ON pc.zip_code = l.zip_code
         LEFT JOIN complaint_counts cc  ON cc.zip_code = l.zip_code
-        WHERE l.composite_score - w.prev_score >= 0.5
+        WHERE l.composite_score - w.prev_score >= 1.0
           AND ({valid_zip})
         ORDER BY delta DESC
         LIMIT :limit

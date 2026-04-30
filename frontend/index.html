@@ -607,7 +607,7 @@
         }
 
         function renderMovers(list) {
-            if (!list || !list.length) return;
+            if (!list || list.length < 2) return;
             const section   = document.getElementById('movers-section');
             const container = document.getElementById('movers-cards');
             if (!section || !container) return;
