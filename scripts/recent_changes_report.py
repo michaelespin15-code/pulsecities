@@ -184,10 +184,10 @@ def section_recent_raw_events(db, days: int) -> None:
     """), {"t": TIER_HIGH}).fetchall()
     hr_zips = {r.zip_code for r in high_risk}
 
-    def _print_table(label, rows, col_names, col_getters):
+    def _print_table(label, rows, col_names, col_getters, empty_msg=None):
         print(f"\n{label}:")
         if not rows:
-            print("  No recent records found.")
+            print(f"  {empty_msg or 'No recent records found.'}")
             return
         header = "  " + "  ".join(f"{c:<{w}}" for c, (_, w) in zip(col_names, col_getters))
         print(header)
@@ -219,7 +219,8 @@ def section_recent_raw_events(db, days: int) -> None:
          (lambda r: (r.address or "")[:35], 37),
          (lambda r: r.filing_date, 11)])
 
-    # LLC transfers
+    # LLC transfers — uses full days window, not the 3-day cap, because ACRIS
+    # deed records lag 2-6 weeks so short windows always return empty.
     llc = db.execute(text("""
         SELECT p.zip_code, o.party_name_normalized AS buyer, o.doc_date,
                o.doc_amount, ds.score
@@ -229,17 +230,18 @@ def section_recent_raw_events(db, days: int) -> None:
         WHERE o.party_type = '2'
           AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
           AND o.party_name_normalized ILIKE '%LLC%'
-          AND o.doc_date >= CURRENT_DATE - :w * INTERVAL '1 day'
+          AND o.doc_date >= CURRENT_DATE - :days * INTERVAL '1 day'
         ORDER BY (ds.score IS NOT NULL) DESC, ds.score DESC NULLS LAST,
                  o.doc_date DESC
         LIMIT 50
-    """), {"w": window}).fetchall()
-    _print_table("LLC transfers", llc,
+    """), {"days": days}).fetchall()
+    _print_table(f"LLC transfers (last {days} days)", llc,
         ["ZIP", "Buyer", "Date", "Amount"],
         [(lambda r: r.zip_code, 6),
          (lambda r: (r.buyer or "")[:30], 32),
          (lambda r: r.doc_date, 11),
-         (lambda r: f"${int(r.doc_amount):,}" if r.doc_amount else "N/A", 12)])
+         (lambda r: f"${int(r.doc_amount):,}" if r.doc_amount else "N/A", 12)],
+        empty_msg=f"No records in last {days} days. ACRIS deed records lag 2-6 weeks; try --days 30.")
 
     # HPD violations
     viols = db.execute(text("""
@@ -275,7 +277,8 @@ def section_recent_raw_events(db, days: int) -> None:
         [(lambda r: r.zip_code, 6),
          (lambda r: (r.eviction_type or "")[:12], 14),
          (lambda r: (r.address or "")[:35], 37),
-         (lambda r: r.executed_date, 11)])
+         (lambda r: r.executed_date, 11)],
+        empty_msg="No recent records found. Eviction data currently appears to lag about 6 days.")
 
     # 311 complaints
     comps = db.execute(text("""
@@ -319,6 +322,10 @@ def main():
     finally:
         db.close()
 
+    print()
+    print("Data freshness notes:")
+    print("  ACRIS:     2-6 week recording lag (deeds recorded after signing)")
+    print("  Evictions: usually several days behind source publication")
     print()
 
 
