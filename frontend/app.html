@@ -2654,7 +2654,7 @@
             const data = await _prefetchStats;
             if (!data) return;
 
-            const { llc_transfers_30d: llcCount, evictions_30d: evictionCount, top_risk: topRisk } = data;
+            const { llc_transfers_recent: llcCount, evictions_30d: evictionCount, top_risk: topRisk } = data;
             _heroLlcCount = llcCount;
             _heroEvictionCount = evictionCount;
 
