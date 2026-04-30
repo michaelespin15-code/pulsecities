@@ -292,7 +292,8 @@
             <div id="empty-search-msg" class="search-empty-msg" data-i18n="search_empty_msg" style="display:none;">Enter an address, ZIP, or landlord name.</div>
 
             <!-- Stat chips: appear after data loads -->
-            <p id="stat-chips" style="margin-top:8px;margin-bottom:12px;font-size:11px;color:#475569;font-family:'JetBrains Mono',monospace;"></p>
+            <p id="stat-chips" style="margin-top:8px;margin-bottom:4px;font-size:11px;color:#475569;font-family:'JetBrains Mono',monospace;"></p>
+            <p id="stat-lag-note" data-i18n="stats_lag_note" style="display:none;margin-bottom:12px;font-size:10px;color:#334155;font-style:italic;"></p>
 
             <!-- Explore map: secondary CTA -->
             <a href="/map"
@@ -408,8 +409,9 @@
                 stats_llc_unit_s:     'LLC transfer',
                 stats_eviction_unit:  'eviction filings',
                 stats_eviction_unit_s:'eviction filing',
-                stats_prefix:         'Last 30 days:',
+                stats_prefix:         'Recent activity:',
                 stats_conjunction:    'and',
+                stats_lag_note:       'Some public records, such as property transfers, may appear with a delay.',
             },
             es: {
                 tagline:              'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
@@ -445,8 +447,9 @@
                 stats_llc_unit_s:     'transferencia LLC',
                 stats_eviction_unit:  'desalojos registrados',
                 stats_eviction_unit_s:'desalojo registrado',
-                stats_prefix:         'Últimos 30 días:',
+                stats_prefix:         'Actividad reciente:',
                 stats_conjunction:    'y',
+                stats_lag_note:       'Algunos registros públicos, como transferencias de propiedades, pueden aparecer con retraso.',
             }
         };
 
@@ -489,12 +492,13 @@
         }
 
         function populateStats(data) {
-            const llc       = data.llc_transfers_30d || 0;
-            const evictions = data.evictions_30d     || 0;
+            const llc       = data.llc_transfers_recent || 0;
+            const evictions = data.evictions_30d        || 0;
             _liveLlc        = llc;
             _liveEvictions  = evictions;
 
-            const chips = document.getElementById('stat-chips');
+            const chips   = document.getElementById('stat-chips');
+            const lagNote = document.getElementById('stat-lag-note');
             if (!chips || (!llc && !evictions)) return;
 
             const s = i18n[getCurrentLanguage()] || i18n.en;
@@ -509,6 +513,10 @@
                         : parts[0];
                 chips.textContent = `${s.stats_prefix} ${joined}`;
                 chips.style.opacity = '1';
+                if (lagNote) {
+                    lagNote.textContent = s.stats_lag_note;
+                    lagNote.style.display = '';
+                }
             }
 
         }

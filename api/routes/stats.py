@@ -67,7 +67,7 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
         WHERE party_type = '2'
           AND doc_type IN ('DEED', 'DEEDP', 'ASST')
           AND party_name_normalized LIKE '%LLC%'
-          AND doc_date >= CURRENT_DATE - INTERVAL '30 days'
+          AND doc_date >= CURRENT_DATE - INTERVAL '90 days'
           AND party_name_normalized NOT ILIKE '%MORTGAGE%'
           AND party_name_normalized NOT ILIKE '%LOAN SERVICING%'
           AND party_name_normalized NOT ILIKE '%LOAN SERVICE%'
@@ -205,8 +205,8 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
             break
 
     result = {
-        "llc_transfers_30d": int(llc_count),
-        "evictions_30d":     int(eviction_count),
+        "llc_transfers_recent": int(llc_count),
+        "evictions_30d":        int(eviction_count),
         "top_risk":          top_risk,
         "top_risk_list":     top_risk_list,
     }
