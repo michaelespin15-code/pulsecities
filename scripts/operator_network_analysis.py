@@ -20,6 +20,7 @@ from pathlib import Path
 from sqlalchemy import text
 
 from models.database import get_scraper_db
+from scoring.operator_classification import OperatorClass, classify_operator_candidate
 
 logger = logging.getLogger(__name__)
 
@@ -177,6 +178,14 @@ def run_analysis(db) -> list[dict]:
     for r in rows:
         root = _operator_root(r.party_name_normalized)
         if not root:
+            continue
+        # Per-entity suppression check: filter bank/lender/intermediary names
+        # before they can contaminate otherwise-legitimate clusters.
+        # "RIDGEWOOD SAVINGS BANK" would cluster with "6702 RIDGEWOOD LLC" on
+        # root "RIDGEWOOD" without this gate.
+        cls = classify_operator_candidate(r.party_name_normalized)
+        if cls.operator_class == OperatorClass.SUPPRESSED:
+            logger.debug("Skipping suppressed entity: %s (%s)", r.party_name_normalized, cls.reasons)
             continue
         g = groups[root]
         g["llc_names"].add(r.party_name_normalized)
