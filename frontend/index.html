@@ -270,37 +270,54 @@
 
         <!-- Hero -->
         <section style="margin-bottom:48px;">
-            <h1 class="font-mono" style="font-size:2rem;font-weight:600;color:#38bdf8;letter-spacing:-0.02em;margin-bottom:12px;">PulseCities</h1>
-            <p style="font-size:1rem;font-weight:500;color:#e2e8f0;margin-bottom:6px;max-width:38ch;" data-i18n="hero_subhead">
-                Search an address or ZIP to see recent displacement signals.
-            </p>
-            <p class="font-mono" style="font-size:12px;color:#64748b;margin-bottom:24px;" data-i18n="tagline">
-                The displacement story NYC doesn't officially tell.
-            </p>
+            <h1 class="font-mono" style="font-size:2rem;font-weight:600;color:#38bdf8;letter-spacing:-0.02em;margin-bottom:20px;">PulseCities</h1>
+            <!-- hero_subhead kept for i18n wiring but hidden: search placeholder covers it -->
+            <p style="display:none;" data-i18n="hero_subhead">Search an address or ZIP to see recent displacement signals.</p>
 
-            <!-- Search -->
-            <div style="position:relative;">
-                <div id="search-row" style="display:flex;gap:8px;width:100%;margin-bottom:6px;">
+            <!-- Search: primary action -->
+            <div style="position:relative;margin-bottom:10px;">
+                <div id="search-row" style="display:flex;gap:8px;width:100%;">
                     <input id="search-input"
                            type="text"
                            inputmode="search"
-                           placeholder="Search ZIP, address, or landlord"
-                           class="input input-bordered flex-1 text-sm font-mono"
-                           style="background:rgba(30,41,59,0.9);"
-                           autocomplete="off" />
+                           placeholder="Enter an address or ZIP (e.g. 11216 or 123 Main St)"
+                           class="input input-bordered flex-1 font-mono"
+                           style="background:rgba(30,41,59,0.9);font-size:1rem;padding:14px 16px;height:auto;"
+                           autocomplete="off"
+                           autofocus />
                     <button id="search-btn"
                             class="btn shrink-0"
-                            style="background-color:#f59e0b;border-color:#f59e0b;color:#1a1a2e;font-weight:600;"
+                            style="background-color:#f59e0b;border-color:#f59e0b;color:#1a1a2e;font-weight:600;padding:0 20px;"
                             data-i18n="search_btn">
                         Search
                     </button>
                 </div>
                 <div id="search-dropdown" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:#1e293b;border:1px solid rgba(148,163,184,0.15);border-radius:0 0 8px 8px;z-index:50;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4);"></div>
             </div>
+
+            <!-- Example searches -->
+            <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;">
+                <span style="font-size:11px;color:#475569;font-family:'JetBrains Mono',monospace;line-height:1.8;">Try:</span>
+                <a href="/map?q=11216" style="font-size:11px;color:#64748b;text-decoration:none;font-family:'JetBrains Mono',monospace;line-height:1.8;border-bottom:1px solid rgba(100,116,139,0.4);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Crown Heights (11216)</a>
+                <a href="/map?q=10026" style="font-size:11px;color:#64748b;text-decoration:none;font-family:'JetBrains Mono',monospace;line-height:1.8;border-bottom:1px solid rgba(100,116,139,0.4);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Harlem (10026)</a>
+                <a href="/map?q=11221" style="font-size:11px;color:#64748b;text-decoration:none;font-family:'JetBrains Mono',monospace;line-height:1.8;border-bottom:1px solid rgba(100,116,139,0.4);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Bushwick (11221)</a>
+            </div>
+
+            <!-- Source trust line -->
+            <p style="font-size:12px;color:#475569;margin-bottom:4px;line-height:1.6;">
+                Built from NYC public records: ACRIS, DOB permits, HPD violations, evictions, and 311 complaints. Updated daily.
+                <span id="stat-updated" style="color:#334155;margin-left:6px;"></span>
+            </p>
+
+            <!-- Value line -->
+            <p style="font-size:12px;color:#475569;margin-bottom:20px;line-height:1.6;max-width:54ch;">
+                PulseCities shows where ownership turnover, construction, and tenant pressure signals are increasing across NYC.
+            </p>
+
             <div id="empty-search-msg" class="search-empty-msg" data-i18n="search_empty_msg" style="display:none;">Enter an address, ZIP, or landlord name.</div>
 
             <!-- Stat chips: appear after data loads -->
-            <p id="stat-chips" style="margin-top:8px;margin-bottom:4px;font-size:11px;color:#475569;font-family:'JetBrains Mono',monospace;"></p>
+            <p id="stat-chips" style="margin-top:4px;margin-bottom:4px;font-size:11px;color:#334155;font-family:'JetBrains Mono',monospace;"></p>
             <p id="stat-lag-note" data-i18n="stats_lag_note" style="display:none;margin-bottom:12px;font-size:10px;color:#334155;font-style:italic;"></p>
 
             <!-- Explore map: secondary CTA -->
@@ -309,6 +326,11 @@
                style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;"
                onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'"
                data-i18n="explore_map">Explore the map &rarr;</a>
+
+            <!-- Tagline: de-emphasized, below search area -->
+            <p class="font-mono" style="font-size:11px;color:#334155;margin-top:16px;opacity:0.7;" data-i18n="tagline">
+                The displacement story NYC doesn't officially tell.
+            </p>
         </section>
 
         <!-- Watchlist: returning users only -->
@@ -389,7 +411,7 @@
                 search_empty_msg:     'Enter an address, ZIP, or landlord name.',
                 llc_label:            'LLC transfers (30d)',
                 eviction_label:       'evictions (30d)',
-                search_placeholder:   'Search ZIP, address, or landlord',
+                search_placeholder:   'Enter an address or ZIP (e.g. 11216 or 123 Main St)',
                 search_btn:           'Search',
                 explore_map:          'Explore the map →',
                 recent_findings:      'Recent operator findings',
@@ -538,6 +560,17 @@
             const evictions = data.evictions_30d        || 0;
             _liveLlc        = llc;
             _liveEvictions  = evictions;
+
+            // "Updated Apr 30" from score computation timestamp
+            const lu = data.top_risk && data.top_risk.last_updated;
+            if (lu) {
+                try {
+                    const d = new Date(lu);
+                    const mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+                    const el = document.getElementById('stat-updated');
+                    if (el) el.textContent = 'Scores updated ' + mon + ' ' + d.getDate() + '.';
+                } catch (_) {}
+            }
 
             const chips   = document.getElementById('stat-chips');
             const lagNote = document.getElementById('stat-lag-note');
