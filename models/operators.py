@@ -7,10 +7,10 @@ operator_parcels — join table: one row per (operator, BBL) pair.
                    Backfilled from ownership_raw; refreshed nightly (future: FRESH-01).
 """
 
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import Date, Float, ForeignKey, Index, Integer, Numeric, String, UniqueConstraint
+from sqlalchemy import DateTime, Date, Float, ForeignKey, Index, Integer, Numeric, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -29,6 +29,11 @@ class Operator(TimestampMixin, Base):
     # Cached aggregates recomputed by backfill script
     borough_spread: Mapped[int | None] = mapped_column(Integer, nullable=True)
     highest_displacement_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    # Classification gate results
+    operator_class: Mapped[str] = mapped_column(Text, nullable=False, default="review")
+    classification_reasons: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    classification_confidence: Mapped[float | None] = mapped_column(Numeric(4, 3), nullable=True)
+    classified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     __table_args__ = (
         UniqueConstraint("operator_root", name="uq_operators_root"),
