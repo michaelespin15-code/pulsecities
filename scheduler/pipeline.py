@@ -135,8 +135,8 @@ def _run_scraper_with_retry(scraper_name: str, ScraperClass) -> bool:
 
     try:
         scraper_run = _attempt()
-        # Post-run data quality assertion: quarantine rate check
         if scraper_run is not None:
+            # Quarantine rate check
             total = (scraper_run.records_processed or 0) + (scraper_run.records_failed or 0)
             if total > 0:
                 quarantine_rate = (scraper_run.records_failed or 0) / total
@@ -147,6 +147,15 @@ def _run_scraper_with_retry(scraper_name: str, ScraperClass) -> bool:
                         f"({quarantine_rate:.1%}) — possible upstream schema change. "
                         f"Threshold: 10%.",
                     )
+            # Warning status alert — fires when records=0 despite expectation.
+            # Catches source freezes, API outages, and silent data gaps that
+            # do not raise exceptions and would otherwise go unreported.
+            if scraper_run.status == "warning":
+                send_alert(
+                    f"Scraper anomaly: {scraper_name}",
+                    f"status=warning | records={scraper_run.records_processed} | "
+                    f"{scraper_run.warning_message or 'no detail'}",
+                )
         return True
     except Exception as exc:
         # All retries exhausted — log and continue to next scraper
