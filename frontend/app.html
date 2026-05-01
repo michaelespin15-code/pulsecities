@@ -394,6 +394,14 @@
 </head>
 <body>
 
+    <!-- Stale data banner -->
+    <div id="stale-data-banner" style="display:none;background:#fffbeb;border-bottom:1px solid #f59e0b;position:relative;z-index:50;" role="alert">
+        <div style="max-width:100%;padding:8px 16px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+            <p id="stale-data-banner-text" style="margin:0;font-size:12px;color:#92400e;line-height:1.5;"></p>
+            <button id="stale-data-banner-dismiss" onclick="(function(){document.getElementById('stale-data-banner').style.display='none';try{localStorage.setItem(document.getElementById('stale-data-banner').dataset.dismissKey,'1');}catch(e){}})()" style="flex-shrink:0;background:none;border:none;cursor:pointer;color:#b45309;font-size:16px;padding:0 0 0 8px;line-height:1;" aria-label="Dismiss">&#x2715;</button>
+        </div>
+    </div>
+
     <div class="flex h-screen">
         <!-- Map container: flex-1 fills remaining width -->
         <div id="map" class="flex-1 relative">
@@ -1592,6 +1600,8 @@
         // ---- end i18n ----
 
         const _prefetchStats    = fetch('/api/stats').then(r => r.ok ? r.json() : null).catch(() => null);
+        // Banner fires immediately on load without waiting for hero interaction.
+        _prefetchStats.then(d => { if (d && d.data_freshness) initStaleBanner(d.data_freshness); }).catch(() => {});
         const _prefetchTopRisk  = fetch('/api/neighborhoods/top-risk?limit=10').then(r => r.ok ? r.json() : null).catch(() => null);
         const _prefetchSchedule = fetch('/api/schedule').then(r => r.ok ? r.json() : null).catch(() => null);
         let _digestSendDay = 'Sunday';  // overwritten when _prefetchSchedule resolves
@@ -2648,11 +2658,46 @@
                 + t('hero', 'hook_neutral_b').replace('{evictions}', evictionCount.toLocaleString());
         }
 
+        function initStaleBanner(freshness) {
+            if (!freshness) return;
+            const SIGNAL_LABELS = {
+                acris:      'ACRIS ownership data',
+                permits:    'permit data',
+                evictions:  'eviction data',
+                complaints: 'complaint data',
+                violations: 'HPD violations data',
+            };
+            const stale = Object.entries(freshness)
+                .filter(([, info]) => info && info.stale && info.through)
+                .map(([key, info]) => ({ key, label: SIGNAL_LABELS[key] || key, through: info.through }));
+            if (!stale.length) return;
+
+            const dismissKey = 'stale_banner_' + stale.map(s => s.through).sort()[0];
+            try { if (localStorage.getItem(dismissKey)) return; } catch (e) {}
+
+            let msg;
+            if (stale.length === 1 && stale[0].key === 'acris') {
+                msg = 'ACRIS ownership data current through ' + stale[0].through + '. NYC Open Data has not published new records since this date.';
+            } else if (stale.length === 1) {
+                msg = stale[0].label + ' current through ' + stale[0].through + '. NYC Open Data has not published new records since this date.';
+            } else {
+                msg = 'Some signal data is delayed. Last updated: ' + stale.map(s => s.label + ' (' + s.through + ')').join(', ') + '. Upstream source delay.';
+            }
+
+            const banner = document.getElementById('stale-data-banner');
+            if (!banner) return;
+            banner.dataset.dismissKey = dismissKey;
+            document.getElementById('stale-data-banner-text').textContent = msg;
+            banner.style.display = 'block';
+        }
+
         // Fetches /api/stats once on hero reveal. Populates all three editorial stat columns
         // and triggers the cascade animation.
         async function initHeroStats() {
             const data = await _prefetchStats;
             if (!data) return;
+
+            initStaleBanner(data.data_freshness);
 
             const { llc_transfers_recent: llcCount, evictions_30d: evictionCount, top_risk: topRisk } = data;
             _heroLlcCount = llcCount;

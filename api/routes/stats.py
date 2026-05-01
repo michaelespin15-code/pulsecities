@@ -50,6 +50,48 @@ import time as _time
 _STATS_CACHE: dict = {}
 _STATS_TTL = 3600  # 1 hour — counts change nightly, not per request
 
+_FRESHNESS_CACHE: dict = {}
+_FRESHNESS_TTL = 300  # 5 minutes
+
+# Signal freshness thresholds (days). Same values as daily_health_check.py.
+_FRESHNESS_CHECKS = [
+    ("acris",       "SELECT MAX(doc_date) FROM ownership_raw",     7),
+    ("permits",     "SELECT MAX(filing_date) FROM permits_raw",    10),
+    ("evictions",   "SELECT MAX(executed_date) FROM evictions_raw", 14),
+    ("complaints",  "SELECT MAX(created_date) FROM complaints_raw", 10),
+    ("violations",  "SELECT MAX(inspection_date) FROM violations_raw", 10),
+]
+
+
+def _compute_freshness(db):
+    now = _time.monotonic()
+    cached = _FRESHNESS_CACHE.get("data")
+    if cached and now < cached[1]:
+        return cached[0]
+
+    from datetime import date as _date, datetime as _datetime
+    today = _date.today()
+    signals = {}
+    for name, query, threshold in _FRESHNESS_CHECKS:
+        try:
+            val = db.execute(text(query)).scalar()
+            if val is None:
+                signals[name] = {"through": None, "days_stale": None, "stale": False}
+                continue
+            # datetime is a subclass of date — check datetime first.
+            max_date = val.date() if isinstance(val, _datetime) else val
+            days = (today - max_date).days
+            signals[name] = {
+                "through": max_date.isoformat(),
+                "days_stale": days,
+                "stale": days > threshold,
+            }
+        except Exception:
+            signals[name] = {"through": None, "days_stale": None, "stale": False}
+
+    _FRESHNESS_CACHE["data"] = (signals, now + _FRESHNESS_TTL)
+    return signals
+
 
 @router.get("")
 @limiter.limit("60/minute")
@@ -207,8 +249,9 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
     result = {
         "llc_transfers_recent": int(llc_count),
         "evictions_30d":        int(eviction_count),
-        "top_risk":          top_risk,
-        "top_risk_list":     top_risk_list,
+        "top_risk":             top_risk,
+        "top_risk_list":        top_risk_list,
+        "data_freshness":       _compute_freshness(db),
     }
     _STATS_CACHE["data"] = (result, _time.monotonic() + _STATS_TTL)
     return result
