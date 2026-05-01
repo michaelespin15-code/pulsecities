@@ -150,17 +150,22 @@ class BaseScraper(ABC):
 
     def _compute_rolling_avg(self, db, current_started_at: datetime) -> float | None:
         """
-        Return the mean records_processed over the prior _ROLLING_WINDOW_DAYS days
-        of successful runs for this scraper, excluding the current run.
-        Returns None when fewer than _ROLLING_MIN_SAMPLES exist (e.g. first few
-        runs, weekly/annual scrapers with sparse history).
+        Return the mean records_processed over the prior _ROLLING_WINDOW_DAYS days,
+        excluding the current run.
+
+        Includes both 'success' and 'warning' status runs so that a sustained source
+        freeze (where runs produce 0 records with 'warning' status) does not dilute
+        the baseline into silence. Including 'warning' runs keeps the average anchored
+        to healthy-period counts even after weeks of zero-record runs.
+
+        Returns None when fewer than _ROLLING_MIN_SAMPLES exist.
         """
         row = db.execute(
             text("""
                 SELECT AVG(records_processed) AS avg_val, COUNT(*) AS n
                 FROM scraper_runs
                 WHERE scraper_name   = :name
-                  AND status         = 'success'
+                  AND status         IN ('success', 'warning')
                   AND started_at     >= :window_start
                   AND started_at     < :current_started_at
             """),
@@ -246,7 +251,15 @@ class BaseScraper(ABC):
                 logger.warning("%s: anomaly: %s", self.SCRAPER_NAME, msg)
                 scraper_run.warning_message = msg
 
-            if records_processed == 0 and rolling_avg is not None and rolling_avg > 100:
+            # Use expected_min as a permanent floor so the "warning" status
+            # cannot self-silence when a source freeze fills the rolling-avg
+            # window with 0-record runs (which would bring rolling_avg to 0).
+            expected_min_floor = SCRAPER_EXPECTED_MIN_RECORDS.get(self.SCRAPER_NAME)
+            zero_with_expectation = records_processed == 0 and (
+                (rolling_avg is not None and rolling_avg > 100)
+                or (expected_min_floor is not None and expected_min_floor > 100)
+            )
+            if zero_with_expectation:
                 scraper_run.status = "warning"
             else:
                 scraper_run.status = "success"
