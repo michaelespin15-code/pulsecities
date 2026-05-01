@@ -8,6 +8,8 @@ GET /api/neighborhoods/{zip_code}/score — score + signal breakdown
 import hashlib
 import json
 import logging
+import os
+import time as _time
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
@@ -25,6 +27,13 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/neighborhoods", tags=["neighborhoods"])
 limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
+_PERF = os.getenv("PERF_LOGGING") == "1"
+
+# GeoJSON full FeatureCollection. Geometry only changes when MapPLUTO is refreshed
+# (monthly), scores only change nightly. 23h TTL keeps this warm all day.
+_GEOJSON_CACHE: dict = {}
+_GEOJSON_TTL = 82800  # 23 hours
+
 
 @router.get("")
 @limiter.limit("60/minute")
@@ -34,54 +43,68 @@ def list_neighborhoods_geojson(request: Request, response: Response, db: Session
     Geometry is simplified via ST_SimplifyPreserveTopology for performance.
     Score is LEFT JOINed — null for neighborhoods with no displacement data.
     """
-    rows = db.execute(
-        text(
-            """
-            SELECT
-                n.id,
-                n.zip_code,
-                n.name,
-                n.borough,
-                ds.score,
-                ds.cache_generated_at,
-                ST_AsGeoJSON(ST_SimplifyPreserveTopology(n.geometry, 0.0001)) as geom_json
-            FROM neighborhoods n
-            LEFT JOIN displacement_scores ds ON n.zip_code = ds.zip_code
-            WHERE n.geometry IS NOT NULL
-              AND n.zip_code != '99999'
-            """
-        )
-    ).fetchall()
+    cached = _GEOJSON_CACHE.get("data")
+    if cached and _time.monotonic() < cached[2]:
+        body_bytes, etag = cached[0], cached[1]
+        if _PERF:
+            logger.info("[perf] /api/neighborhoods served from cache")
+    else:
+        t0 = _time.monotonic()
+        rows = db.execute(
+            text(
+                """
+                SELECT
+                    n.id,
+                    n.zip_code,
+                    n.name,
+                    n.borough,
+                    ds.score,
+                    ds.cache_generated_at,
+                    ST_AsGeoJSON(ST_SimplifyPreserveTopology(n.geometry, 0.0001)) as geom_json
+                FROM neighborhoods n
+                LEFT JOIN displacement_scores ds ON n.zip_code = ds.zip_code
+                WHERE n.geometry IS NOT NULL
+                  AND n.zip_code != '99999'
+                """
+            )
+        ).fetchall()
 
-    features = []
-    for row in rows:
-        geom = json.loads(row.geom_json) if row.geom_json else None
-        features.append(
-            {
-                "type": "Feature",
-                "id": row.id,
-                "geometry": geom,
-                "properties": {
-                    "zip_code": row.zip_code,
-                    "name": row.name,
-                    "borough": row.borough,
-                    "score": round(row.score, 1) if row.score is not None else None,
-                    "last_updated": (
-                        row.cache_generated_at.isoformat()
-                        if row.cache_generated_at
-                        else None
-                    ),
-                },
-            }
-        )
+        features = []
+        for row in rows:
+            geom = json.loads(row.geom_json) if row.geom_json else None
+            features.append(
+                {
+                    "type": "Feature",
+                    "id": row.id,
+                    "geometry": geom,
+                    "properties": {
+                        "zip_code": row.zip_code,
+                        "name": row.name,
+                        "borough": row.borough,
+                        "score": round(row.score, 1) if row.score is not None else None,
+                        "last_updated": (
+                            row.cache_generated_at.isoformat()
+                            if row.cache_generated_at
+                            else None
+                        ),
+                    },
+                }
+            )
 
-    body_bytes = json.dumps(
-        {"type": "FeatureCollection", "features": features},
-        separators=(",", ":"),
-        sort_keys=True,
-    ).encode()
-    etag = f'"{hashlib.md5(body_bytes).hexdigest()}"'
-    headers = {"Cache-Control": "public, max-age=3600", "ETag": etag}
+        body_bytes = json.dumps(
+            {"type": "FeatureCollection", "features": features},
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode()
+        etag = f'"{hashlib.md5(body_bytes).hexdigest()}"'
+        _GEOJSON_CACHE["data"] = (body_bytes, etag, _time.monotonic() + _GEOJSON_TTL)
+
+        elapsed = _time.monotonic() - t0
+        if _PERF or elapsed > 1.0:
+            logger.info("[perf] /api/neighborhoods query %.2fs rows=%d bytes=%d",
+                        elapsed, len(rows), len(body_bytes))
+
+    headers = {"Cache-Control": "public, max-age=82800", "ETag": etag}
 
     if request.headers.get("if-none-match") == etag:
         return Response(status_code=304, headers=headers)
@@ -191,9 +214,10 @@ _BOROUGH_CASE = """
 # Filters out junk/sentinel ZIP codes that fall outside all NYC borough ranges.
 _VALID_NYC_ZIP_CLAUSE = " OR ".join(f"({v})" for v in _BOROUGH_ZIP_CLAUSE.values())
 
-# TTL caches — data only changes at nightly scoring (2am UTC).
+# TTL caches — data changes once per day at 2am UTC.
+# 23h keeps each worker warm all day without risking stale reads across scoring runs.
 _TOP_RISK_CACHE: dict = {}
-_TOP_RISK_TTL = 3600
+_TOP_RISK_TTL = 82800  # 23 hours
 
 _TOP_MOVERS_CACHE: dict = {}
 _TOP_MOVERS_TTL = 3600
@@ -221,8 +245,7 @@ def get_top_risk_neighborhoods(
             detail=f"borough must be one of: {', '.join(sorted(_VALID_BOROUGHS))}",
         )
 
-    response.headers["Cache-Control"] = "public, max-age=3600"
-    import time as _time
+    response.headers["Cache-Control"] = "public, max-age=82800"
     capped = min(max(1, limit), 25)
     cache_key = (capped, borough)
     cached = _TOP_RISK_CACHE.get(cache_key)
@@ -248,6 +271,7 @@ def get_top_risk_neighborhoods(
         if borough else ""
     )
 
+    _tr_t0 = _time.monotonic()
     rows = db.execute(
         text(
             f"""
@@ -429,7 +453,13 @@ def get_top_risk_neighborhoods(
 
     result = [dict(entry, rank=i + 1) for i, entry in enumerate(candidates[:capped])]
 
-    import time as _time
+    _tr_elapsed = _time.monotonic() - _tr_t0
+    if _PERF or _tr_elapsed > 2.0:
+        logger.info(
+            "[perf] /api/neighborhoods/top-risk cold query %.2fs rows=%d",
+            _tr_elapsed, len(rows),
+        )
+
     _TOP_RISK_CACHE[cache_key] = (result, _time.monotonic() + _TOP_RISK_TTL)
     return {"neighborhoods": result}
 
@@ -447,7 +477,6 @@ def get_top_movers(
     Pulls from score_history snapshots; limit capped at 20.
     """
     response.headers["Cache-Control"] = "public, max-age=3600"
-    import time as _time
     capped = min(max(1, limit), 20)
     cached = _TOP_MOVERS_CACHE.get(capped)
     if cached and _time.monotonic() < cached[1]:

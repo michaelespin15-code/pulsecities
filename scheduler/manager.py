@@ -9,6 +9,7 @@ To invoke the pipeline manually:
 """
 
 import logging
+import threading
 from contextlib import asynccontextmanager
 from fastapi.responses import Response
 from starlette.requests import Request as StarletteRequest
@@ -27,9 +28,17 @@ _WARMUP_SCOPE = {
 
 
 def _warm_caches() -> None:
-    """Pre-fill in-process caches that are expensive on first hit."""
+    """Pre-fill in-process caches that are expensive on first hit.
+
+    Runs in a daemon thread so worker startup is not blocked. The top-risk
+    query takes ~15s cold; any request that arrives before warm-up completes
+    will trigger its own fill and then benefit from the cached result.
+    """
     from models.database import SessionLocal
-    from api.routes.neighborhoods import get_top_risk_neighborhoods
+    from api.routes.neighborhoods import (
+        get_top_risk_neighborhoods,
+        list_neighborhoods_geojson,
+    )
 
     db = SessionLocal()
     try:
@@ -39,9 +48,33 @@ def _warm_caches() -> None:
             limit=10,
             db=db,
         )
-        logger.info("Cache warm-up complete: top-risk neighborhoods")
+        logger.info("cache warm: top-risk neighborhoods complete")
     except Exception:
-        logger.warning("Cache warm-up failed — first request will be slow", exc_info=True)
+        logger.warning("cache warm: top-risk failed", exc_info=True)
+
+    try:
+        _geojson_scope = {**_WARMUP_SCOPE, "path": "/api/neighborhoods",
+                          "headers": []}
+        list_neighborhoods_geojson(
+            request=StarletteRequest(scope=_geojson_scope),
+            response=Response(),
+            db=db,
+        )
+        logger.info("cache warm: neighborhoods GeoJSON complete")
+    except Exception:
+        logger.warning("cache warm: GeoJSON failed", exc_info=True)
+
+    try:
+        from api.routes.stats import get_citywide_stats
+        _stats_scope = {**_WARMUP_SCOPE, "path": "/api/stats", "headers": []}
+        get_citywide_stats(
+            request=StarletteRequest(scope=_stats_scope),
+            response=Response(),
+            db=db,
+        )
+        logger.info("cache warm: stats complete")
+    except Exception:
+        logger.warning("cache warm: stats failed", exc_info=True)
     finally:
         db.close()
 
@@ -53,6 +86,6 @@ async def lifespan(app):
     api/main.py imports this symbol; it must remain a valid asynccontextmanager.
     """
     logger.info("API starting — nightly pipeline runs via system cron at 2:00 AM UTC")
-    _warm_caches()
+    threading.Thread(target=_warm_caches, daemon=True, name="cache-warm").start()
     yield
     logger.info("API shutting down")
