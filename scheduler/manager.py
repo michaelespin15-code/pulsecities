@@ -53,6 +53,7 @@ def _warm_caches() -> None:
         logger.warning("cache warm: top-risk failed", exc_info=True)
 
     try:
+        from api.routes.neighborhoods import _GEOJSON_CACHE
         _geojson_scope = {**_WARMUP_SCOPE, "path": "/api/neighborhoods",
                           "headers": []}
         list_neighborhoods_geojson(
@@ -60,7 +61,9 @@ def _warm_caches() -> None:
             response=Response(),
             db=db,
         )
-        logger.info("cache warm: neighborhoods GeoJSON complete")
+        cached = _GEOJSON_CACHE.get("data")
+        count = len(cached[0]) if cached else 0
+        logger.info("[cache] neighborhoods warmed count=%d", count)
     except Exception:
         logger.warning("cache warm: GeoJSON failed", exc_info=True)
 

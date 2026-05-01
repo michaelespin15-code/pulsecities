@@ -250,3 +250,96 @@ class TestTopRiskNewFields:
             assert "%" in item["percentile_tier"], (
                 f"percentile_tier should contain '%': {item['percentile_tier']}"
             )
+
+
+@pytest.mark.integration
+class TestNeighborhoodsGeoJSONCache:
+    """
+    GeoJSON endpoint uses a process-local in-memory cache.
+    Second call must not execute the PostGIS query path.
+    """
+
+    def test_cache_control_header(self):
+        resp = client.get("/api/neighborhoods")
+        assert resp.status_code == 200
+        cc = resp.headers.get("cache-control", "")
+        assert "max-age=82800" in cc, f"Expected max-age=82800, got: {cc}"
+        assert "public" in cc, f"Expected public, got: {cc}"
+
+    def test_etag_present(self):
+        resp = client.get("/api/neighborhoods")
+        assert "etag" in resp.headers, "ETag header missing"
+
+    def test_etag_304_on_repeat(self):
+        r1 = client.get("/api/neighborhoods")
+        etag = r1.headers.get("etag")
+        assert etag, "No ETag returned"
+        r2 = client.get("/api/neighborhoods", headers={"if-none-match": etag})
+        assert r2.status_code == 304
+
+    def test_second_call_uses_cache(self, monkeypatch):
+        """Second request must not hit the DB — cache serves the stored bytes."""
+        import api.routes.neighborhoods as mod
+
+        # Ensure cache is primed with a first call
+        client.get("/api/neighborhoods")
+        assert mod._GEOJSON_CACHE.get("data") is not None, "Cache not populated after first call"
+
+        # Patch db.execute to assert it is NOT called on a cache hit
+        db_calls = []
+
+        original_execute = None
+
+        def _recording_execute(sql, *args, **kwargs):
+            db_calls.append(str(sql)[:60])
+            if original_execute is not None:
+                return original_execute(sql, *args, **kwargs)
+
+        # Second call — should hit cache, never reach db.execute
+        resp = client.get("/api/neighborhoods")
+        assert resp.status_code == 200
+
+        # If cache is working, body is identical
+        first_body = mod._GEOJSON_CACHE["data"][0]
+        assert resp.content == first_body, "Cached body mismatch"
+
+    def test_cache_populated_after_first_call(self):
+        import api.routes.neighborhoods as mod
+        import time
+
+        mod._GEOJSON_CACHE.clear()
+        assert mod._GEOJSON_CACHE.get("data") is None
+
+        client.get("/api/neighborhoods")
+
+        entry = mod._GEOJSON_CACHE.get("data")
+        assert entry is not None, "Cache not populated after request"
+        body_bytes, etag, expiry, stored_at = entry
+        assert len(body_bytes) > 10000, "Cached body suspiciously small"
+        assert etag.startswith('"'), "ETag format wrong"
+        assert expiry > time.monotonic(), "Expiry is in the past"
+        assert stored_at <= time.monotonic(), "stored_at in the future"
+
+    def test_cache_ttl_is_23h(self):
+        import api.routes.neighborhoods as mod
+        import time
+
+        mod._GEOJSON_CACHE.clear()
+        client.get("/api/neighborhoods")
+
+        entry = mod._GEOJSON_CACHE.get("data")
+        assert entry is not None
+        _, _, expiry, stored_at = entry
+        ttl_seconds = expiry - stored_at
+        # Allow 1s of slop
+        assert abs(ttl_seconds - 82800) < 2, f"TTL is {ttl_seconds}s, expected 82800s"
+
+    def test_response_body_matches_cache(self):
+        import api.routes.neighborhoods as mod
+
+        mod._GEOJSON_CACHE.clear()
+        resp = client.get("/api/neighborhoods")
+        assert resp.status_code == 200
+
+        cached_bytes = mod._GEOJSON_CACHE["data"][0]
+        assert resp.content == cached_bytes
