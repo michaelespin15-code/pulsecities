@@ -1599,10 +1599,28 @@
         }
         // ---- end i18n ----
 
-        const _prefetchStats    = fetch('/api/stats').then(r => r.ok ? r.json() : null).catch(() => null);
+        // [perf] boot: script execution begins
+        const _perfBoot = performance.now();
+        console.debug('[perf] boot start');
+
+        const _prefetchStats = (function() {
+            const t = performance.now();
+            return fetch('/api/stats')
+                .then(r => r.ok ? r.json() : null)
+                .then(d => { console.debug('[perf] /api/stats', Math.round(performance.now() - t) + 'ms'); return d; })
+                .catch(() => null);
+        })();
         // Banner fires immediately on load without waiting for hero interaction.
         _prefetchStats.then(d => { if (d && d.data_freshness) initStaleBanner(d.data_freshness); }).catch(() => {});
-        const _prefetchTopRisk  = fetch('/api/neighborhoods/top-risk?limit=10').then(r => r.ok ? r.json() : null).catch(() => null);
+
+        const _prefetchTopRisk = (function() {
+            const t = performance.now();
+            return fetch('/api/neighborhoods/top-risk?limit=10')
+                .then(r => r.ok ? r.json() : null)
+                .then(d => { console.debug('[perf] /api/neighborhoods/top-risk', Math.round(performance.now() - t) + 'ms'); return d; })
+                .catch(() => null);
+        })();
+
         const _prefetchSchedule = fetch('/api/schedule').then(r => r.ok ? r.json() : null).catch(() => null);
         let _digestSendDay = 'Sunday';  // overwritten when _prefetchSchedule resolves
         _prefetchSchedule.then(d => { if (d && d.send_day) _digestSendDay = d.send_day; });
@@ -1701,6 +1719,9 @@
             _updateSubscribeUI(_cachedZip, _cachedZipData && _cachedZipData.name);
         }
 
+        // [perf] map init
+        const _perfMapInit = performance.now();
+        console.debug('[perf] map init start');
         const map = new maplibregl.Map({
             container: 'map',
             style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
@@ -1710,10 +1731,21 @@
         });
 
         map.on('load', function () {
-            // Load neighborhood boundaries from the API
+            console.debug('[perf] map base style loaded', Math.round(performance.now() - _perfMapInit) + 'ms');
+
+            // GeoJSON source — MapLibre fetches this URL internally.
+            // Choropleth cannot render until the fetch completes, but sidebar
+            // content (top-risk list) is independent and already loading in parallel.
             map.addSource('neighborhoods', {
                 type: 'geojson',
                 data: '/api/neighborhoods'
+            });
+
+            // Track when GeoJSON finishes loading
+            const _perfGeoJsonStart = performance.now();
+            map.once('sourcedata', function onFirstSourceData(e) {
+                if (e.sourceId !== 'neighborhoods' || !e.isSourceLoaded) return;
+                console.debug('[perf] GeoJSON source loaded', Math.round(performance.now() - _perfGeoJsonStart) + 'ms');
             });
 
             // Choropleth fill layer — green to red by displacement score
@@ -3335,6 +3367,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            console.debug('[perf] DOMContentLoaded', Math.round(performance.now() - _perfBoot) + 'ms from script start');
+
             const label = lang === 'es' ? 'ES / EN' : 'EN / ES';
             const toggleBtn = document.getElementById('lang-toggle');
             if (toggleBtn) toggleBtn.textContent = label;
@@ -3528,7 +3562,12 @@
             });
         }
 
+        let _sidebarFirstRender = false;
         function _populateTopRiskList(listId, skeletonId, data) {
+            if (!_sidebarFirstRender && listId === 'top-risk-list') {
+                _sidebarFirstRender = true;
+                console.debug('[perf] first sidebar render', Math.round(performance.now() - _perfBoot) + 'ms from script start');
+            }
             const skeleton = document.getElementById(skeletonId);
             if (skeleton) skeleton.remove();
             const list = document.getElementById(listId);
