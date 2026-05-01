@@ -237,6 +237,14 @@
 </head>
 <body>
 
+    <!-- Stale data banner — shown when upstream source freeze >7 days -->
+    <div id="stale-data-banner" style="display:none;background:#fffbeb;border-bottom:1px solid #f59e0b;" role="alert">
+        <div style="max-width:680px;margin:0 auto;padding:10px 20px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+            <p id="stale-data-banner-text" style="margin:0;font-size:13px;color:#92400e;line-height:1.5;"></p>
+            <button id="stale-data-banner-dismiss" onclick="(function(){document.getElementById('stale-data-banner').style.display='none';try{localStorage.setItem(document.getElementById('stale-data-banner').dataset.dismissKey,'1');}catch(e){}})()" style="flex-shrink:0;background:none;border:none;cursor:pointer;color:#b45309;font-size:18px;padding:0 0 0 8px;line-height:1;" aria-label="Dismiss">&#x2715;</button>
+        </div>
+    </div>
+
     <!-- Nav -->
     <header style="border-bottom:1px solid rgba(51,65,85,0.4);position:sticky;top:0;z-index:20;background:rgba(10,10,26,0.92);backdrop-filter:blur(8px);">
         <nav style="max-width:680px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">
@@ -491,6 +499,40 @@
             return (count === 1 ? singular[dominant] : plural[dominant]) || plural[dominant] || '';
         }
 
+        function initStaleBanner(freshness) {
+            if (!freshness) return;
+            const SIGNAL_LABELS = {
+                acris:      'ACRIS ownership data',
+                permits:    'permit data',
+                evictions:  'eviction data',
+                complaints: 'complaint data',
+                violations: 'HPD violations data',
+            };
+            const stale = Object.entries(freshness)
+                .filter(([, info]) => info && info.stale && info.through)
+                .map(([key, info]) => ({ key, label: SIGNAL_LABELS[key] || key, through: info.through }));
+            if (!stale.length) return;
+
+            const dismissKey = 'stale_banner_' + stale.map(s => s.through).sort()[0];
+            try { if (localStorage.getItem(dismissKey)) return; } catch (e) {}
+
+            let msg;
+            if (stale.length === 1 && stale[0].key === 'acris') {
+                msg = 'ACRIS ownership data current through ' + stale[0].through + '. NYC Open Data has not published new records since this date.';
+            } else if (stale.length === 1) {
+                msg = stale[0].label + ' current through ' + stale[0].through + '. NYC Open Data has not published new records since this date.';
+            } else {
+                const oldest = stale.map(s => s.through).sort()[0];
+                msg = 'Some signal data is delayed. Last updated: ' + stale.map(s => s.label + ' (' + s.through + ')').join(', ') + '. Upstream source delay.';
+            }
+
+            const banner = document.getElementById('stale-data-banner');
+            if (!banner) return;
+            banner.dataset.dismissKey = dismissKey;
+            document.getElementById('stale-data-banner-text').textContent = msg;
+            banner.style.display = 'block';
+        }
+
         function populateStats(data) {
             const llc       = data.llc_transfers_recent || 0;
             const evictions = data.evictions_30d        || 0;
@@ -685,6 +727,7 @@
                 _cachedStats = data;
                 populateStats(data);
                 renderZipCards(data.top_risk_list || []);
+                initStaleBanner(data.data_freshness);
             })
             .catch(() => {
                 const loading = document.getElementById('zip-loading');
