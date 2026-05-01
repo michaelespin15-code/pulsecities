@@ -45,10 +45,11 @@ def list_neighborhoods_geojson(request: Request, response: Response, db: Session
     """
     cached = _GEOJSON_CACHE.get("data")
     if cached and _time.monotonic() < cached[2]:
-        body_bytes, etag = cached[0], cached[1]
-        if _PERF:
-            logger.info("[perf] /api/neighborhoods served from cache")
+        body_bytes, etag, _cached_at = cached[0], cached[1], cached[3]
+        age_ms = round((_time.monotonic() - _cached_at) * 1000)
+        logger.info("[cache] neighborhoods hit age_ms=%d", age_ms)
     else:
+        logger.info("[cache] neighborhoods miss")
         t0 = _time.monotonic()
         rows = db.execute(
             text(
@@ -97,12 +98,12 @@ def list_neighborhoods_geojson(request: Request, response: Response, db: Session
             sort_keys=True,
         ).encode()
         etag = f'"{hashlib.md5(body_bytes).hexdigest()}"'
-        _GEOJSON_CACHE["data"] = (body_bytes, etag, _time.monotonic() + _GEOJSON_TTL)
+        _cached_at = _time.monotonic()
+        _GEOJSON_CACHE["data"] = (body_bytes, etag, _cached_at + _GEOJSON_TTL, _cached_at)
 
         elapsed = _time.monotonic() - t0
-        if _PERF or elapsed > 1.0:
-            logger.info("[perf] /api/neighborhoods query %.2fs rows=%d bytes=%d",
-                        elapsed, len(rows), len(body_bytes))
+        logger.info("[cache] neighborhoods miss resolved %.2fs rows=%d bytes=%d",
+                    elapsed, len(rows), len(body_bytes))
 
     headers = {"Cache-Control": "public, max-age=82800", "ETag": etag}
 
