@@ -119,9 +119,25 @@
         .zip-card:hover { border-color: rgba(148,163,184,0.5) !important; }
 
         @media (max-width: 480px) {
-            #byline-link { display: none !important; }
             #search-row { flex-wrap: wrap; }
             #search-row #search-btn { width: 100%; }
+        }
+
+        @media (max-width: 540px) {
+            #site-nav {
+                flex-wrap: wrap;
+                padding: 10px 16px;
+                row-gap: 6px;
+            }
+            #wordmark-group {
+                width: 100%;
+                padding-bottom: 8px;
+                border-bottom: 1px solid rgba(51,65,85,0.25);
+            }
+            #nav-links {
+                width: 100%;
+                gap: 16px;
+            }
         }
 
         .hero-proof {
@@ -237,22 +253,14 @@
 </head>
 <body>
 
-    <!-- Stale data banner — shown when upstream source freeze >7 days -->
-    <div id="stale-data-banner" style="display:none;background:#fffbeb;border-bottom:1px solid #f59e0b;" role="alert">
-        <div style="max-width:680px;margin:0 auto;padding:10px 20px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
-            <p id="stale-data-banner-text" style="margin:0;font-size:13px;color:#92400e;line-height:1.5;"></p>
-            <button id="stale-data-banner-dismiss" onclick="(function(){document.getElementById('stale-data-banner').style.display='none';try{localStorage.setItem(document.getElementById('stale-data-banner').dataset.dismissKey,'1');}catch(e){}})()" style="flex-shrink:0;background:none;border:none;cursor:pointer;color:#b45309;font-size:18px;padding:0 0 0 8px;line-height:1;" aria-label="Dismiss">&#x2715;</button>
-        </div>
-    </div>
-
     <!-- Nav -->
     <header style="border-bottom:1px solid rgba(51,65,85,0.4);position:sticky;top:0;z-index:20;background:rgba(10,10,26,0.92);backdrop-filter:blur(8px);">
-        <nav style="max-width:680px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">
-            <div style="display:flex;align-items:baseline;gap:10px;">
+        <nav id="site-nav" style="max-width:680px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">
+            <div id="wordmark-group" style="display:flex;align-items:baseline;gap:10px;">
                 <a href="/" style="font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:600;color:#38bdf8;text-decoration:none;letter-spacing:-0.01em;">PulseCities</a>
-                <a id="byline-link" href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:#334155;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#64748b'" onmouseout="this.style.color='#334155'">by Michael Espin</a>
+                <a id="byline-link" href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" aria-label="by Michael Espin on LinkedIn" style="font-size:11px;color:#475569;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#475569'">by Michael Espin</a>
             </div>
-            <div style="display:flex;align-items:center;gap:20px;">
+            <div id="nav-links" style="display:flex;align-items:center;gap:20px;">
                 <a href="/map" style="font-size:12px;color:#64748b;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Map</a>
                 <a href="/operators" style="font-size:12px;color:#64748b;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Operators</a>
                 <a href="/methodology" style="font-size:12px;color:#64748b;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
@@ -280,7 +288,7 @@
                     <input id="search-input"
                            type="text"
                            inputmode="search"
-                           placeholder="Enter an address or ZIP (e.g. 11216 or 123 Main St)"
+                           placeholder="Enter an address, ZIP, or neighborhood"
                            class="input input-bordered flex-1 font-mono"
                            style="background:rgba(30,41,59,0.9);font-size:1rem;padding:14px 16px;height:auto;"
                            autocomplete="off"
@@ -305,20 +313,20 @@
 
             <!-- Source trust line -->
             <p style="font-size:12px;color:#475569;margin-bottom:4px;line-height:1.6;">
-                Built from NYC public records: ACRIS, DOB permits, HPD violations, evictions, and 311 complaints. Updated daily.
-                <span id="stat-updated" style="color:#334155;margin-left:6px;"></span>
+                NYC public records: ACRIS, DOB, HPD, evictions, and 311. Updated daily.
+                <span id="stat-updated" style="color:#334155;margin-left:4px;"></span>
             </p>
 
             <!-- Value line -->
             <p style="font-size:12px;color:#475569;margin-bottom:20px;line-height:1.6;max-width:54ch;">
-                PulseCities shows where ownership turnover, construction, and tenant pressure signals are increasing across NYC.
+                Ownership, construction, and tenant-pressure signals in one view.
             </p>
 
             <div id="empty-search-msg" class="search-empty-msg" data-i18n="search_empty_msg" style="display:none;">Enter an address, ZIP, or landlord name.</div>
 
             <!-- Stat chips: appear after data loads -->
-            <p id="stat-chips" style="margin-top:4px;margin-bottom:4px;font-size:11px;color:#334155;font-family:'JetBrains Mono',monospace;"></p>
-            <p id="stat-lag-note" data-i18n="stats_lag_note" style="display:none;margin-bottom:12px;font-size:10px;color:#334155;font-style:italic;"></p>
+            <p id="stat-chips" style="margin-top:4px;margin-bottom:2px;font-size:11px;color:#475569;font-family:'JetBrains Mono',monospace;"></p>
+            <p id="stat-lag-note" data-i18n="stats_lag_note" style="display:none;margin-bottom:10px;font-size:10px;color:#334155;font-style:italic;"></p>
 
             <!-- Explore map: secondary CTA -->
             <a href="/map"
@@ -344,8 +352,8 @@
         <!-- Highest-risk areas right now -->
         <section style="margin-bottom:40px;">
             <div class="section-head">
-                <span class="section-label" data-i18n="top_risk_label">Highest-risk areas right now</span>
-                <span class="section-helper" data-i18n="top_risk_helper">Ranked by current displacement pressure.</span>
+                <span class="section-label" data-i18n="top_risk_label">Highest-risk areas</span>
+                <span class="section-helper" data-i18n="top_risk_helper">Current displacement-pressure score</span>
             </div>
             <div id="zip-cards">
                 <div id="zip-loading" class="font-mono" style="font-size:11px;color:#334155;padding:20px 0;text-align:center;">Loading...</div>
@@ -355,8 +363,8 @@
         <!-- Changed this week -->
         <div id="movers-section" style="display:none;margin-bottom:40px;">
             <div class="section-head">
-                <span class="section-label" data-i18n="changed_this_week">Where activity is picking up</span>
-                <span class="section-helper" data-i18n="movers_helper">Recent increases driven by real activity.</span>
+                <span class="section-label" data-i18n="changed_this_week">Rising this week</span>
+                <span class="section-helper" data-i18n="movers_helper">Recent score increases from new records</span>
             </div>
             <div id="movers-cards"></div>
         </div>
@@ -364,8 +372,8 @@
         <!-- Recent operator findings -->
         <div id="operators-outer" style="margin-bottom:40px;">
             <div class="section-head">
-                <span class="section-label" data-i18n="recent_findings">Highlighted operators</span>
-                <span class="section-helper" data-i18n="operators_helper">A few ownership clusters worth reviewing. <a href="/operators" style="color:#38bdf8;text-decoration:none;">View all operators</a></span>
+                <span class="section-label" data-i18n="recent_findings">Operator findings</span>
+                <span class="section-helper" data-i18n="operators_helper">Ownership clusters worth reviewing</span>
             </div>
             <div id="operator-cards">
                 <div id="operator-loading" class="font-mono" style="font-size:11px;color:#334155;padding:16px 0;text-align:center;">Loading...</div>
@@ -383,11 +391,14 @@
     <!-- Footer -->
     <footer style="border-top:1px solid rgba(51,65,85,0.3);margin-top:16px;padding-top:20px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px);text-align:center;font-size:12px;color:#64748b;font-family:'DM Sans',sans-serif;">
         <div style="max-width:680px;margin:0 auto;padding:0 20px 20px;">
-            <div style="font-size:11px;color:#64748b;margin-bottom:8px;">Built by Michael Espin</div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:10px;">
+                <a href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Built by Michael Espin</a>
+            </div>
             <div id="footer-nav" style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;align-items:center;">
                 <a href="/methodology" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
                 <a href="/about" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
                 <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
+                <a href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">LinkedIn</a>
                 <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="color:#64748b;text-decoration:none;display:inline-flex;align-items:center;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
             </div>
         </div>
@@ -411,14 +422,14 @@
                 search_empty_msg:     'Enter an address, ZIP, or landlord name.',
                 llc_label:            'LLC transfers (30d)',
                 eviction_label:       'evictions (30d)',
-                search_placeholder:   'Enter an address or ZIP (e.g. 11216 or 123 Main St)',
+                search_placeholder:   'Enter an address, ZIP, or neighborhood',
                 search_btn:           'Search',
                 explore_map:          'Explore the map →',
-                recent_findings:      'Recent operator findings',
+                recent_findings:      'Operator findings',
                 operator_profile:     'View operator profile →',
                 op_acquisitions:      'acquisitions',
                 your_watchlist:       'Your Watchlist',
-                changed_this_week:    'Where activity is picking up',
+                changed_this_week:    'Rising this week',
                 sig_llc:              'LLC acquisitions',
                 sig_llc_s:            'LLC acquisition',
                 sig_evictions:        'evictions',
@@ -429,19 +440,19 @@
                 sig_complaints_s:     'tenant complaint',
                 sig_hpd:              'housing violations',
                 sig_hpd_s:            'housing violation',
-                top_risk_label:       'Highest-risk areas right now',
-                top_risk_helper:      'Ranked by current displacement pressure.',
-                movers_helper:        'Recent increases driven by real activity.',
-                operators_helper:     'Ownership clusters worth reviewing.',
+                top_risk_label:       'Highest-risk areas',
+                top_risk_helper:      'Current displacement-pressure score',
+                movers_helper:        'Recent score increases from new records',
+                operators_helper:     'Ownership clusters worth reviewing',
                 trust_body:           'Built from NYC public records.',
                 read_methodology:     'Read methodology →',
                 stats_llc_unit:       'LLC transfers',
                 stats_llc_unit_s:     'LLC transfer',
                 stats_eviction_unit:  'eviction filings',
                 stats_eviction_unit_s:'eviction filing',
-                stats_prefix:         'Recent activity:',
-                stats_conjunction:    'and',
-                stats_lag_note:       'Some public records, such as property transfers, may appear with a delay.',
+                stats_prefix:         'Live records:',
+                stats_conjunction:    '·',
+                stats_lag_note:       'Some records appear with a delay.',
             },
             es: {
                 tagline:              'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
@@ -449,14 +460,14 @@
                 search_empty_msg:     'Ingresa una dirección, código postal o nombre del propietario.',
                 llc_label:            'transferencias LLC (30d)',
                 eviction_label:       'desalojos (30d)',
-                search_placeholder:   'Dirección, código postal o propietario',
+                search_placeholder:   'Dirección, código postal o vecindario',
                 search_btn:           'Buscar',
                 explore_map:          'Explorar el mapa →',
-                recent_findings:      'Hallazgos recientes',
+                recent_findings:      'Operadores destacados',
                 operator_profile:     'Ver perfil del operador →',
                 op_acquisitions:      'adquisiciones',
                 your_watchlist:       'Tu Lista de Seguimiento',
-                changed_this_week:    'Donde aumenta la actividad',
+                changed_this_week:    'En aumento esta semana',
                 sig_llc:              'adquisiciones LLC',
                 sig_llc_s:            'adquisición LLC',
                 sig_evictions:        'desalojos',
@@ -467,19 +478,19 @@
                 sig_complaints_s:     'queja de inquilinos',
                 sig_hpd:              'violaciones de vivienda',
                 sig_hpd_s:            'violación de vivienda',
-                top_risk_label:       'Áreas de mayor riesgo ahora',
-                top_risk_helper:      'Clasificadas por presión de desplazamiento actual.',
-                movers_helper:        'Aumentos recientes impulsados por actividad real.',
-                operators_helper:     'Grupos de propietarios que vale la pena revisar.',
+                top_risk_label:       'Áreas de mayor riesgo',
+                top_risk_helper:      'Puntuación de presión de desplazamiento actual',
+                movers_helper:        'Aumentos recientes de puntuación',
+                operators_helper:     'Grupos de propietarios que vale la pena revisar',
                 trust_body:           'Construido con registros públicos de NYC.',
                 read_methodology:     'Leer la metodología →',
                 stats_llc_unit:       'transferencias LLC',
                 stats_llc_unit_s:     'transferencia LLC',
                 stats_eviction_unit:  'desalojos registrados',
                 stats_eviction_unit_s:'desalojo registrado',
-                stats_prefix:         'Actividad reciente:',
-                stats_conjunction:    'y',
-                stats_lag_note:       'Algunos registros públicos, como transferencias de propiedades, pueden aparecer con retraso.',
+                stats_prefix:         'Registros en vivo:',
+                stats_conjunction:    '·',
+                stats_lag_note:       'Algunos registros pueden aparecer con retraso.',
             }
         };
 
@@ -519,40 +530,6 @@
             const plural   = { llc_acquisitions: s.sig_llc,   evictions: s.sig_evictions,   permits: s.sig_permits,   complaint_rate: s.sig_complaints,   hpd_violations: s.sig_hpd   };
             const singular = { llc_acquisitions: s.sig_llc_s, evictions: s.sig_evictions_s, permits: s.sig_permits_s, complaint_rate: s.sig_complaints_s, hpd_violations: s.sig_hpd_s };
             return (count === 1 ? singular[dominant] : plural[dominant]) || plural[dominant] || '';
-        }
-
-        function initStaleBanner(freshness) {
-            if (!freshness) return;
-            const SIGNAL_LABELS = {
-                acris:      'ACRIS ownership data',
-                permits:    'permit data',
-                evictions:  'eviction data',
-                complaints: 'complaint data',
-                violations: 'HPD violations data',
-            };
-            const stale = Object.entries(freshness)
-                .filter(([, info]) => info && info.stale && info.through)
-                .map(([key, info]) => ({ key, label: SIGNAL_LABELS[key] || key, through: info.through }));
-            if (!stale.length) return;
-
-            const dismissKey = 'stale_banner_' + stale.map(s => s.through).sort()[0];
-            try { if (localStorage.getItem(dismissKey)) return; } catch (e) {}
-
-            let msg;
-            if (stale.length === 1 && stale[0].key === 'acris') {
-                msg = 'ACRIS ownership data current through ' + stale[0].through + '. NYC Open Data has not published new records since this date.';
-            } else if (stale.length === 1) {
-                msg = stale[0].label + ' current through ' + stale[0].through + '. NYC Open Data has not published new records since this date.';
-            } else {
-                const oldest = stale.map(s => s.through).sort()[0];
-                msg = 'Some signal data is delayed. Last updated: ' + stale.map(s => s.label + ' (' + s.through + ')').join(', ') + '. Upstream source delay.';
-            }
-
-            const banner = document.getElementById('stale-data-banner');
-            if (!banner) return;
-            banner.dataset.dismissKey = dismissKey;
-            document.getElementById('stale-data-banner-text').textContent = msg;
-            banner.style.display = 'block';
         }
 
         function populateStats(data) {
@@ -760,7 +737,6 @@
                 _cachedStats = data;
                 populateStats(data);
                 renderZipCards(data.top_risk_list || []);
-                initStaleBanner(data.data_freshness);
             })
             .catch(() => {
                 const loading = document.getElementById('zip-loading');
