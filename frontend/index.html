@@ -191,7 +191,7 @@
         }
         .section-helper {
             font-size: 12px;
-            color: #475569;
+            color: #94a3b8;
             display: block;
         }
         .section-head {
@@ -239,10 +239,9 @@
         #stat-chips {
             font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
-            color: #475569;
+            color: #94a3b8;
             opacity: 0;
             transition: opacity 0.4s ease-out;
-            text-align: center;
         }
 
         /* Footer safe area */
@@ -278,9 +277,13 @@
 
         <!-- Hero -->
         <section style="margin-bottom:48px;">
-            <h1 class="font-mono" style="font-size:2rem;font-weight:600;color:#38bdf8;letter-spacing:-0.02em;margin-bottom:20px;">PulseCities</h1>
-            <!-- hero_subhead kept for i18n wiring but hidden: search placeholder covers it -->
-            <p style="display:none;" data-i18n="hero_subhead">Search an address or ZIP to see recent displacement signals.</p>
+            <h1 class="font-mono" style="font-size:2rem;font-weight:600;color:#38bdf8;letter-spacing:-0.02em;margin-bottom:10px;">PulseCities</h1>
+
+            <!-- Main tagline: primary subtitle -->
+            <p style="font-size:15px;color:#94a3b8;margin-bottom:18px;line-height:1.5;" data-i18n="tagline">The displacement story NYC doesn't officially tell.</p>
+
+            <!-- Search support line -->
+            <p style="font-size:13px;color:#64748b;margin-bottom:14px;line-height:1.55;" data-i18n="hero_subhead">Search any NYC address, ZIP, or neighborhood using public records updated daily.</p>
 
             <!-- Search: primary action -->
             <div style="position:relative;margin-bottom:10px;">
@@ -304,29 +307,17 @@
             </div>
 
             <!-- Example searches -->
-            <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;">
-                <span style="font-size:11px;color:#475569;font-family:'JetBrains Mono',monospace;line-height:1.8;">Try:</span>
-                <a href="/map?q=11216" style="font-size:11px;color:#64748b;text-decoration:none;font-family:'JetBrains Mono',monospace;line-height:1.8;border-bottom:1px solid rgba(100,116,139,0.4);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Crown Heights (11216)</a>
-                <a href="/map?q=10026" style="font-size:11px;color:#64748b;text-decoration:none;font-family:'JetBrains Mono',monospace;line-height:1.8;border-bottom:1px solid rgba(100,116,139,0.4);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Harlem (10026)</a>
-                <a href="/map?q=11221" style="font-size:11px;color:#64748b;text-decoration:none;font-family:'JetBrains Mono',monospace;line-height:1.8;border-bottom:1px solid rgba(100,116,139,0.4);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Bushwick (11221)</a>
+            <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;">
+                <span style="font-size:11px;color:#64748b;font-family:'JetBrains Mono',monospace;line-height:1.8;">Try:</span>
+                <a href="/map?q=11216" style="font-size:11px;color:#94a3b8;text-decoration:none;font-family:'JetBrains Mono',monospace;line-height:1.8;border-bottom:1px solid rgba(148,163,184,0.3);" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Crown Heights (11216)</a>
+                <a href="/map?q=10026" style="font-size:11px;color:#94a3b8;text-decoration:none;font-family:'JetBrains Mono',monospace;line-height:1.8;border-bottom:1px solid rgba(148,163,184,0.3);" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Harlem (10026)</a>
+                <a href="/map?q=11221" style="font-size:11px;color:#94a3b8;text-decoration:none;font-family:'JetBrains Mono',monospace;line-height:1.8;border-bottom:1px solid rgba(148,163,184,0.3);" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Bushwick (11221)</a>
             </div>
-
-            <!-- Source trust line -->
-            <p style="font-size:12px;color:#475569;margin-bottom:4px;line-height:1.6;">
-                NYC public records: ACRIS, DOB, HPD, evictions, and 311. Updated daily.
-                <span id="stat-updated" style="color:#334155;margin-left:4px;"></span>
-            </p>
-
-            <!-- Value line -->
-            <p style="font-size:12px;color:#475569;margin-bottom:20px;line-height:1.6;max-width:54ch;">
-                Ownership, construction, and tenant-pressure signals in one view.
-            </p>
 
             <div id="empty-search-msg" class="search-empty-msg" data-i18n="search_empty_msg" style="display:none;">Enter an address, ZIP, or landlord name.</div>
 
-            <!-- Stat chips: appear after data loads -->
-            <p id="stat-chips" style="margin-top:4px;margin-bottom:2px;font-size:11px;color:#475569;font-family:'JetBrains Mono',monospace;"></p>
-            <p id="stat-lag-note" data-i18n="stats_lag_note" style="display:none;margin-bottom:10px;font-size:10px;color:#334155;font-style:italic;"></p>
+            <!-- Live records line: appears after data loads -->
+            <p id="stat-chips" style="margin-top:4px;margin-bottom:12px;font-size:11px;color:#94a3b8;font-family:'JetBrains Mono',monospace;"></p>
 
             <!-- Explore map: secondary CTA -->
             <a href="/map"
@@ -334,11 +325,6 @@
                style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;"
                onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'"
                data-i18n="explore_map">Explore the map &rarr;</a>
-
-            <!-- Tagline: de-emphasized, below search area -->
-            <p class="font-mono" style="font-size:11px;color:#334155;margin-top:16px;opacity:0.7;" data-i18n="tagline">
-                The displacement story NYC doesn't officially tell.
-            </p>
         </section>
 
         <!-- Watchlist: returning users only -->
@@ -372,18 +358,19 @@
         <!-- Recent operator findings -->
         <div id="operators-outer" style="margin-bottom:40px;">
             <div class="section-head">
-                <span class="section-label" data-i18n="recent_findings">Operator findings</span>
-                <span class="section-helper" data-i18n="operators_helper">Ownership clusters worth reviewing</span>
+                <span class="section-label" data-i18n="recent_findings">Operators</span>
+                <span class="section-helper" data-i18n="operators_helper">Ownership clusters worth reviewing.</span>
             </div>
             <div id="operator-cards">
                 <div id="operator-loading" class="font-mono" style="font-size:11px;color:#334155;padding:16px 0;text-align:center;">Loading...</div>
             </div>
         </div>
 
-        <!-- Source attribution -->
+        <!-- Methodology trust section -->
         <section class="trust-section" style="margin-bottom:48px;">
-            <p style="font-size:13px;color:#64748b;margin-bottom:10px;" data-i18n="trust_body">Built from NYC public records.</p>
-            <a href="/methodology" style="font-size:12px;color:#38bdf8;text-decoration:none;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'" data-i18n="read_methodology">Read methodology →</a>
+            <span class="section-label" style="margin-bottom:6px;">Methodology</span>
+            <p style="font-size:13px;color:#94a3b8;margin-bottom:10px;line-height:1.55;" data-i18n="trust_body">Six public-record signals normalized across NYC ZIP codes.</p>
+            <a href="/methodology" class="font-mono" style="font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" data-i18n="read_methodology">How scores work &rarr;</a>
         </section>
 
     </main>
@@ -418,14 +405,14 @@
         const i18n = {
             en: {
                 tagline:              "The displacement story NYC doesn't officially tell.",
-                hero_subhead:         'Search an address or ZIP to see recent displacement signals.',
+                hero_subhead:         'Search any NYC address, ZIP, or neighborhood using public records updated daily.',
                 search_empty_msg:     'Enter an address, ZIP, or landlord name.',
                 llc_label:            'LLC transfers (30d)',
                 eviction_label:       'evictions (30d)',
                 search_placeholder:   'Enter an address, ZIP, or neighborhood',
                 search_btn:           'Search',
                 explore_map:          'Explore the map →',
-                recent_findings:      'Operator findings',
+                recent_findings:      'Operators',
                 operator_profile:     'View operator profile →',
                 op_acquisitions:      'acquisitions',
                 your_watchlist:       'Your Watchlist',
@@ -443,27 +430,26 @@
                 top_risk_label:       'Highest-risk areas',
                 top_risk_helper:      'Current displacement-pressure score',
                 movers_helper:        'Recent score increases from new records',
-                operators_helper:     'Ownership clusters worth reviewing',
-                trust_body:           'Built from NYC public records.',
-                read_methodology:     'Read methodology →',
+                operators_helper:     'Ownership clusters worth reviewing.',
+                trust_body:           'Six public-record signals normalized across NYC ZIP codes.',
+                read_methodology:     'How scores work →',
                 stats_llc_unit:       'LLC transfers',
                 stats_llc_unit_s:     'LLC transfer',
                 stats_eviction_unit:  'eviction filings',
                 stats_eviction_unit_s:'eviction filing',
                 stats_prefix:         'Live records:',
-                stats_conjunction:    '·',
-                stats_lag_note:       'Some records appear with a delay.',
+                stats_conjunction:    'and',
             },
             es: {
                 tagline:              'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
-                hero_subhead:         'Busca una dirección o código postal para ver señales de desplazamiento.',
+                hero_subhead:         'Busca cualquier dirección, código postal o vecindario de NYC con registros públicos actualizados diariamente.',
                 search_empty_msg:     'Ingresa una dirección, código postal o nombre del propietario.',
                 llc_label:            'transferencias LLC (30d)',
                 eviction_label:       'desalojos (30d)',
                 search_placeholder:   'Dirección, código postal o vecindario',
                 search_btn:           'Buscar',
                 explore_map:          'Explorar el mapa →',
-                recent_findings:      'Operadores destacados',
+                recent_findings:      'Operadores',
                 operator_profile:     'Ver perfil del operador →',
                 op_acquisitions:      'adquisiciones',
                 your_watchlist:       'Tu Lista de Seguimiento',
@@ -481,16 +467,15 @@
                 top_risk_label:       'Áreas de mayor riesgo',
                 top_risk_helper:      'Puntuación de presión de desplazamiento actual',
                 movers_helper:        'Aumentos recientes de puntuación',
-                operators_helper:     'Grupos de propietarios que vale la pena revisar',
-                trust_body:           'Construido con registros públicos de NYC.',
-                read_methodology:     'Leer la metodología →',
+                operators_helper:     'Grupos de propietarios que vale la pena revisar.',
+                trust_body:           'Seis señales de registros públicos normalizadas para los ZIP de NYC.',
+                read_methodology:     'Cómo funcionan las puntuaciones →',
                 stats_llc_unit:       'transferencias LLC',
                 stats_llc_unit_s:     'transferencia LLC',
                 stats_eviction_unit:  'desalojos registrados',
                 stats_eviction_unit_s:'desalojo registrado',
                 stats_prefix:         'Registros en vivo:',
-                stats_conjunction:    '·',
-                stats_lag_note:       'Algunos registros pueden aparecer con retraso.',
+                stats_conjunction:    'y',
             }
         };
 
@@ -538,19 +523,7 @@
             _liveLlc        = llc;
             _liveEvictions  = evictions;
 
-            // "Updated Apr 30" from score computation timestamp
-            const lu = data.top_risk && data.top_risk.last_updated;
-            if (lu) {
-                try {
-                    const d = new Date(lu);
-                    const mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
-                    const el = document.getElementById('stat-updated');
-                    if (el) el.textContent = 'Scores updated ' + mon + ' ' + d.getDate() + '.';
-                } catch (_) {}
-            }
-
-            const chips   = document.getElementById('stat-chips');
-            const lagNote = document.getElementById('stat-lag-note');
+            const chips = document.getElementById('stat-chips');
             if (!chips || (!llc && !evictions)) return;
 
             const s = i18n[getCurrentLanguage()] || i18n.en;
@@ -565,12 +538,7 @@
                         : parts[0];
                 chips.textContent = `${s.stats_prefix} ${joined}`;
                 chips.style.opacity = '1';
-                if (lagNote) {
-                    lagNote.textContent = s.stats_lag_note;
-                    lagNote.style.display = '';
-                }
             }
-
         }
 
         function renderZipCards(list) {
@@ -579,83 +547,34 @@
             if (loading) loading.remove();
             if (!container || !list || !list.length) return;
 
-            const rankColors = ['#f97316', '#94a3b8', '#64748b'];
-            let compactGrid  = null;
-
             list.forEach(n => {
-                const color     = scoreColor(n.score);
-                const rankColor = rankColors[(n.rank - 1)] || '#64748b';
-                const isTop     = n.rank === 1;
-                const scoreStr  = n.score != null ? n.score.toFixed(1) : 'N/A';
-                const nameLine  = [n.name, n.borough].filter(Boolean).join(', ');
-                const card      = document.createElement('a');
-                card.href       = `/map?q=${encodeURIComponent(n.zip_code)}`;
-                card.style.textDecoration = 'none';
-
-                if (isTop) {
-                    card.className = 'zip-card featured-zip block rounded-lg border';
-                    card.style.cssText = [
-                        'background:rgba(30,41,59,0.7)',
-                        `border-color:${scoreBorder(n.score)}`,
-                        'padding:18px 20px',
-                        'margin-bottom:10px',
-                    ].join(';');
-
-                    let sigLine = '';
-                    if (n.signal_counts) {
-                        const top2 = Object.entries(n.signal_counts)
-                            .filter(([, v]) => v > 0)
-                            .sort(([, a], [, b]) => b - a)
-                            .slice(0, 2)
-                            .map(([k, v]) => `<span data-signal="${k}" data-count="${v}">${v.toLocaleString()} ${moverSignalLabel(k, v)}</span>`)
-                            .join(', ');
-                        if (top2) sigLine = `<div style="font-size:11px;color:rgba(148,163,184,0.75);margin-top:8px;">${top2}</div>`;
-                    }
-
-                    card.innerHTML = `
-                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
-                            <div>
-                                <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;">
-                                    <span class="font-mono" style="font-size:11px;color:${rankColor};">#${n.rank}</span>
-                                    <span class="font-mono" style="font-size:1.2rem;font-weight:700;color:#f1f5f9;">${n.zip_code}</span>
-                                </div>
-                                <div style="font-size:13px;color:#94a3b8;">${nameLine}</div>
-                                ${sigLine}
-                            </div>
-                            <div style="text-align:right;flex-shrink:0;">
-                                <div class="font-mono" style="font-size:1.5rem;font-weight:700;color:${color};line-height:1;">${scoreStr}</div>
-                                <div class="font-mono" style="font-size:10px;color:#334155;margin-top:2px;">/ 100</div>
-                            </div>
+                const color    = scoreColor(n.score);
+                const scoreStr = n.score != null ? n.score.toFixed(1) : 'N/A';
+                const nameLine = [n.name, n.borough].filter(Boolean).join(', ');
+                const row      = document.createElement('a');
+                row.href            = `/map?q=${encodeURIComponent(n.zip_code)}`;
+                row.style.cssText   = 'display:block;text-decoration:none;';
+                row.innerHTML = `
+                    <div style="display:flex;align-items:baseline;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(51,65,85,0.4);">
+                        <div style="display:flex;align-items:baseline;gap:8px;min-width:0;overflow:hidden;">
+                            <span class="font-mono" style="font-size:11px;color:#64748b;flex-shrink:0;">${n.rank}.</span>
+                            <span class="font-mono" style="font-size:14px;font-weight:700;color:#f1f5f9;flex-shrink:0;">${n.zip_code}</span>
+                            <span style="font-size:12px;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nameLine}</span>
                         </div>
-                    `;
-                    container.appendChild(card);
-
-                    compactGrid = document.createElement('div');
-                    compactGrid.className = 'compact-zip-grid';
-                    container.appendChild(compactGrid);
-                } else {
-                    if (!compactGrid) {
-                        compactGrid = document.createElement('div');
-                        compactGrid.className = 'compact-zip-grid';
-                        container.appendChild(compactGrid);
-                    }
-                    card.className = 'zip-card block rounded-lg border';
-                    card.style.cssText = [
-                        'background:rgba(30,41,59,0.6)',
-                        `border-color:${scoreBorder(n.score)}`,
-                        'padding:14px 16px',
-                    ].join(';');
-                    card.innerHTML = `
-                        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:3px;">
-                            <span class="font-mono" style="font-size:10px;color:${rankColor};">#${n.rank}</span>
-                            <span class="font-mono" style="font-size:14px;font-weight:700;color:#f1f5f9;">${n.zip_code}</span>
-                        </div>
-                        <div style="font-size:11px;color:#64748b;margin-bottom:6px;">${nameLine}</div>
-                        <div class="font-mono" style="font-size:13px;font-weight:600;color:${color};">${scoreStr}<span style="color:#334155;font-size:10px;font-weight:400;"> / 100</span></div>
-                    `;
-                    compactGrid.appendChild(card);
-                }
+                        <span class="font-mono" style="font-size:13px;font-weight:600;color:${color};flex-shrink:0;margin-left:12px;">${scoreStr}</span>
+                    </div>
+                `;
+                container.appendChild(row);
             });
+
+            const cta = document.createElement('a');
+            cta.href      = '/map';
+            cta.className = 'font-mono';
+            cta.style.cssText = 'display:inline-block;margin-top:12px;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;';
+            cta.textContent = 'View full rankings →';
+            cta.addEventListener('mouseover', () => { cta.style.opacity = '1'; });
+            cta.addEventListener('mouseout',  () => { cta.style.opacity = '0.7'; });
+            container.appendChild(cta);
         }
 
         function renderMovers(list) {
@@ -682,7 +601,7 @@
                         <span class="font-mono" style="font-size:11px;font-weight:600;color:#ef4444;">${deltaStr}</span>
                     </div>
                     <div style="font-size:11px;color:#64748b;margin-top:2px;">${nameStr}</div>
-                    ${driver ? `<div style="font-size:11px;color:rgba(148,163,184,0.65);margin-top:2px;" data-signal="${n.dominant_signal || ''}" data-count="${n.raw_count || 0}">${driver}</div>` : ''}
+                    ${driver ? `<div style="font-size:11px;color:#94a3b8;margin-top:2px;" data-signal="${n.dominant_signal || ''}" data-count="${n.raw_count || 0}">${driver}</div>` : ''}
                 `;
                 container.appendChild(row);
             });
@@ -701,32 +620,35 @@
             }
             if (!container) return;
 
-            const s            = i18n[getCurrentLanguage()] || i18n.en;
-            const profileLabel = s.operator_profile || 'View operator profile →';
-            const acqLabel     = s.op_acquisitions  || 'acquisitions';
+            const s        = i18n[getCurrentLanguage()] || i18n.en;
+            const acqLabel = s.op_acquisitions || 'acquisitions';
 
             ops = (ops || []).filter(op => ALLOWED_OPERATOR_ROOTS.has(op.operator_root));
             if (!ops.length) { if (outer) outer.style.display = 'none'; return; }
             container.innerHTML = '';
             ops.forEach(op => {
-                const card = document.createElement('a');
-                card.href  = `/operator/${encodeURIComponent(op.operator_root)}`;
-                card.className = 'zip-card block rounded-lg border border-slate-700';
-                card.style.cssText = [
-                    'background:rgba(30,41,59,0.65)',
-                    'padding:14px 16px',
-                    'text-decoration:none',
-                    'margin-bottom:8px',
-                ].join(';');
-                const llcStr = `${op.llc_count} LLC${op.llc_count !== 1 ? 's' : ''}`;
+                const row = document.createElement('a');
+                row.href          = `/operator/${encodeURIComponent(op.operator_root)}`;
+                row.style.cssText = 'display:block;text-decoration:none;';
                 const acqStr = `${op.total_acquisitions} ${acqLabel}`;
-                card.innerHTML =
-                    `<div class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:3px;">${op.operator_root}</div>` +
-                    `<div style="font-size:11px;color:#475569;margin-bottom:2px;">${acqStr}</div>` +
-                    `<div style="font-size:11px;color:#475569;margin-bottom:6px;">${llcStr}</div>` +
-                    `<div style="font-size:11px;color:#38bdf8;">${profileLabel}</div>`;
-                container.appendChild(card);
+                const llcStr = `${op.llc_count} LLC${op.llc_count !== 1 ? 's' : ''}`;
+                row.innerHTML = `
+                    <div style="display:flex;align-items:baseline;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(51,65,85,0.4);">
+                        <span class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;">${op.operator_root}</span>
+                        <span style="font-size:11px;color:#94a3b8;flex-shrink:0;margin-left:12px;">${acqStr}, ${llcStr}</span>
+                    </div>
+                `;
+                container.appendChild(row);
             });
+
+            const cta = document.createElement('a');
+            cta.href      = '/operators';
+            cta.className = 'font-mono';
+            cta.style.cssText = 'display:inline-block;margin-top:12px;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;';
+            cta.textContent = 'View operators →';
+            cta.addEventListener('mouseover', () => { cta.style.opacity = '1'; });
+            cta.addEventListener('mouseout',  () => { cta.style.opacity = '0.7'; });
+            container.appendChild(cta);
         }
 
         // Fetch citywide stats
