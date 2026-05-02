@@ -752,14 +752,14 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 .op-row{{border-bottom:1px solid rgba(148,163,184,0.07);cursor:pointer;}}
 .op-row:hover{{background:rgba(148,163,184,0.04)}}
 .op-row a{{display:flex;align-items:flex-start;gap:12px;padding:14px 0;text-decoration:none;color:inherit;}}
-.op-rank{{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:rgba(148,163,184,0.28);min-width:24px;padding-top:3px;flex-shrink:0;}}
+.op-rank{{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:rgba(148,163,184,0.5);min-width:24px;padding-top:3px;flex-shrink:0;}}
 .op-body{{display:flex;flex-direction:column;gap:3px;}}
 .op-name{{font-family:'JetBrains Mono',monospace;font-size:0.88rem;color:#e2e8f0;letter-spacing:0.04em;font-weight:500;}}
 .op-row:hover .op-name{{color:#f97316;}}
-.op-meta{{font-size:0.78rem;color:rgba(148,163,184,0.6);}}
-.op-geo{{font-size:0.73rem;color:rgba(148,163,184,0.38);}}
-.op-cta{{font-size:0.72rem;color:rgba(249,115,22,0.55);font-family:'JetBrains Mono',monospace;margin-top:2px;}}
-.op-row:hover .op-cta{{color:rgba(249,115,22,0.85);}}
+.op-meta{{font-size:0.78rem;color:#94a3b8;}}
+.op-geo{{font-size:0.73rem;color:rgba(148,163,184,0.65);}}
+.op-cta{{font-size:0.72rem;color:rgba(249,115,22,0.75);font-family:'JetBrains Mono',monospace;margin-top:2px;}}
+.op-row:hover .op-cta{{color:rgba(249,115,22,0.95);}}
 </style>
 </head>
 <body>
@@ -782,10 +782,10 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Home</a>
   </div>
   <h1 id="dir-heading" style="font-size:1.4rem;font-weight:600;margin-bottom:6px;">NYC Operator Networks</h1>
-  <p id="dir-desc" style="font-size:0.82rem;color:rgba(148,163,184,0.55);margin-bottom:8px;line-height:1.6;">
+  <p id="dir-desc" style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px;line-height:1.6;">
     Ownership clusters identified in NYC deed records. Each groups LLCs by naming patterns and acquisition activity. Public records only.
   </p>
-  <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.32);margin-bottom:28px;">{n_visible} clusters tracked across an 18-month public records window.</p>
+  <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.55);margin-bottom:28px;">{n_visible} clusters tracked across an 18-month public records window.</p>
   <ul class="op-list">
 {rows_html}  </ul>
 </div>

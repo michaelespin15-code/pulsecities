@@ -25,7 +25,7 @@
         .accent { color: #f97316; }
         .panel { background: #1e293b; border: 1px solid rgba(148,163,184,0.1); border-radius: 8px; }
         .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; color: #f97316; font-weight: 400; }
-        .stat-label { font-size: 0.7rem; color: rgba(148,163,184,0.6); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+        .stat-label { font-size: 0.7rem; color: rgba(148,163,184,0.85); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
         .tag-strong { background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.35); color: #f97316; font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; }
         .tag-possible { background: rgba(148,163,184,0.08); border: 1px solid rgba(148,163,184,0.2); color: rgba(148,163,184,0.7); font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; }
         .signal-chip { display: inline-flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; background: rgba(15,23,42,0.6); border: 1px solid rgba(148,163,184,0.12); border-radius: 4px; padding: 2px 7px; color: rgba(148,163,184,0.75); }
@@ -46,8 +46,8 @@
         .mob-row { padding: 12px 16px; border-top: 1px solid rgba(148,163,184,0.06); }
         .mob-row:first-child { border-top: none; }
         .mob-addr { font-size: 0.85rem; color: rgba(241,245,249,0.88); line-height: 1.4; word-break: break-word; }
-        .mob-meta { font-size: 0.75rem; color: rgba(148,163,184,0.55); margin-top: 3px; line-height: 1.45; font-family: 'JetBrains Mono', monospace; }
-        .mob-buyer { font-size: 0.78rem; color: rgba(148,163,184,0.7); margin-top: 3px; line-height: 1.4; word-break: break-word; font-family: 'JetBrains Mono', monospace; }
+        .mob-meta { font-size: 0.75rem; color: rgba(148,163,184,0.8); margin-top: 3px; line-height: 1.45; font-family: 'JetBrains Mono', monospace; }
+        .mob-buyer { font-size: 0.78rem; color: #94a3b8; margin-top: 3px; line-height: 1.4; word-break: break-word; font-family: 'JetBrains Mono', monospace; }
         .mob-score { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; }
         @media (max-width: 640px) {
             .stat-card { padding: 10px 14px; }
@@ -68,10 +68,10 @@
                 <span style="font-size: 0.85rem; color: rgba(148,163,184,0.6);">PulseCities</span>
             </a>
             <div style="display:flex;align-items:center;gap:16px;">
-                <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Map</a>
-                <a href="/operators" style="font-size:0.78rem;color:rgba(148,163,184,0.5);text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Operators</a>
-                <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Methodology</a>
-                <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
+                <a href="/map" style="font-size:0.78rem;color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Map</a>
+                <a href="/operators" style="font-size:0.78rem;color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Operators</a>
+                <a href="/methodology" style="font-size:0.78rem;color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
+                <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#64748b;background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
             </div>
         </div>
     </nav>
@@ -98,9 +98,9 @@
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                     <div>
                         <h1 id="op-root" class="mono accent" style="font-size: 1.8rem; font-weight: 400; letter-spacing: 0.04em;"></h1>
-                        <div id="op-summary" class="mono" style="font-size: 0.82rem; color: rgba(148,163,184,0.65); margin-top: 5px;"></div>
-                        <div style="font-size: 0.75rem; color: rgba(148,163,184,0.38); margin-top: 4px;" data-i18n="op_descriptor">Public-record activity linked to this operator.</div>
-                        <div id="why-matters" style="font-size: 0.8rem; color: rgba(148,163,184,0.6); margin-top: 3px; margin-bottom: 4px; line-height: 1.5;"></div>
+                        <div id="op-summary" class="mono" style="font-size: 0.82rem; color: #94a3b8; margin-top: 5px;"></div>
+                        <div style="font-size: 0.75rem; color: rgba(148,163,184,0.65); margin-top: 4px;" data-i18n="op_descriptor">Public-record activity linked to this operator.</div>
+                        <div id="why-matters" style="font-size: 0.8rem; color: #94a3b8; margin-top: 3px; margin-bottom: 4px; line-height: 1.5;"></div>
                         <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
                             <span class="signal-chip" data-i18n="chip_window">18-month window</span>
                             <span class="signal-chip" data-i18n="chip_public_records">public records</span>
@@ -110,7 +110,7 @@
                             <a id="brief-link-btn" href="#" style="display:none;font-size:0.72rem;color:rgba(148,163,184,0.55);background:rgba(148,163,184,0.06);border:1px solid rgba(148,163,184,0.15);border-radius:5px;padding:4px 10px;min-height:28px;line-height:20px;text-decoration:none;">View evidence brief</a>
                         </div>
                     </div>
-                    <div style="font-size: 0.72rem; color: rgba(148,163,184,0.35); font-family: 'JetBrains Mono', monospace; padding-top: 6px;" data-i18n="source_acris">
+                    <div style="font-size: 0.72rem; color: rgba(148,163,184,0.55); font-family: 'JetBrains Mono', monospace; padding-top: 6px;" data-i18n="source_acris">
                         Source: NYC ACRIS
                     </div>
                 </div>
@@ -151,15 +151,15 @@
             </div>
 
             <!-- What this shows -->
-            <p style="font-size:0.82rem;color:rgba(148,163,184,0.48);margin-bottom:6px;line-height:1.65;" data-i18n="what_this_shows">Properties grouped by LLC naming patterns in public deed records. Scores reflect neighborhood displacement risk, not a claim of wrongdoing by any individual actor.</p>
-            <p style="font-size:0.78rem;color:rgba(148,163,184,0.35);margin-bottom:20px;line-height:1.55;">Derived from public deed records; indicates ownership structure, not legal conclusions.</p>
+            <p style="font-size:0.82rem;color:rgba(148,163,184,0.75);margin-bottom:6px;line-height:1.65;" data-i18n="what_this_shows">Properties grouped by LLC naming patterns in public deed records. Scores reflect neighborhood displacement risk, not a claim of wrongdoing by any individual actor.</p>
+            <p style="font-size:0.78rem;color:rgba(148,163,184,0.55);margin-bottom:20px;line-height:1.55;">Derived from public deed records; indicates ownership structure, not legal conclusions.</p>
 
             <!-- Related Operators -->
             <div id="related-section" style="display: none; margin-bottom: 16px;">
-                <div style="font-size: 0.78rem; font-weight: 600; color: rgba(148,163,184,0.5); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;" data-i18n="related_operators">
+                <div style="font-size: 0.78rem; font-weight: 600; color: rgba(148,163,184,0.75); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;" data-i18n="related_operators">
                     Related Operators
                 </div>
-                <div style="font-size: 0.75rem; color: rgba(148,163,184,0.4); margin-bottom: 14px; line-height: 1.5;" data-i18n="related_caveat">
+                <div style="font-size: 0.75rem; color: rgba(148,163,184,0.65); margin-bottom: 14px; line-height: 1.5;" data-i18n="related_caveat">
                     These clusters are not the same operator. The signals below are evidence of a possible relationship: shared properties, name patterns, or geographic overlap. Each operator remains as the public records show them.
                 </div>
                 <div id="related-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
@@ -178,7 +178,7 @@
             <div class="panel" style="margin-bottom: 16px;">
                 <div style="padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(148,163,184,0.07);">
                     <span style="font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8);" data-i18n="portfolio_header">High-risk properties in this portfolio</span>
-                    <span id="portfolio-count" style="font-size: 0.72rem; color: rgba(148,163,184,0.35); font-family: 'JetBrains Mono', monospace;"></span>
+                    <span id="portfolio-count" style="font-size: 0.72rem; color: rgba(148,163,184,0.6); font-family: 'JetBrains Mono', monospace;"></span>
                 </div>
                 <div class="desktop-table-wrap" id="portfolio-table-wrap">
                     <table style="width: 100%; min-width: 620px; border-collapse: collapse; font-size: 0.78rem;">
@@ -259,7 +259,7 @@
             </div>
 
             <div style="margin-top: 28px; padding-top: 14px; border-top: 1px solid rgba(148,163,184,0.07);">
-                <p id="last-updated" style="font-size: 0.72rem; color: rgba(148,163,184,0.3); font-family: 'JetBrains Mono', monospace;"></p>
+                <p id="last-updated" style="font-size: 0.72rem; color: rgba(148,163,184,0.55); font-family: 'JetBrains Mono', monospace;"></p>
                 <p style="font-size: 0.75rem; color: rgba(148,163,184,0.45); margin-top: 6px;"><a id="explore-ops-link" href="/operators" style="color: rgba(148,163,184,0.45);" data-i18n="explore_ops">Explore other NYC operator networks</a></p>
             </div>
 
@@ -673,16 +673,16 @@
             if (i % 2 === 0) tr.style.background = 'rgba(15,23,42,0.18)';
             tr.innerHTML =
                 '<td style="padding:7px 16px;color:rgba(241,245,249,0.85);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(acq.address || p.bbl) + '</td>' +
-                '<td class="mono" style="padding:7px 16px;color:rgba(148,163,184,0.55);font-size:0.72rem;white-space:nowrap;">' +
+                '<td class="mono" style="padding:7px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;white-space:nowrap;">' +
                     esc(p.zip_code || '') +
-                    (p.zip_code && zipNames[p.zip_code] ? '<br><span style="font-size:0.63rem;color:rgba(148,163,184,0.3);font-family:inherit;">' + esc(zipNames[p.zip_code]) + '</span>' : '') +
+                    (p.zip_code && zipNames[p.zip_code] ? '<br><span style="font-size:0.63rem;color:rgba(148,163,184,0.5);font-family:inherit;">' + esc(zipNames[p.zip_code]) + '</span>' : '') +
                 '</td>' +
                 '<td style="padding:7px 16px;text-align:center;">' +
                     '<span class="mono" style="font-size:0.73rem;background:' + sc.bg + ';color:' + sc.text + ';padding:2px 7px;border-radius:4px;">' + fmtScore(p.displacement_score) + '</span>' +
                 '</td>' +
-                '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (bcCount > 0 ? '#f97316' : 'rgba(148,163,184,0.25)') + ';">' + (bcCount > 0 ? bcCount : t('na')) + '</td>' +
-                '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (rs ? 'rgba(148,163,184,0.7)' : 'rgba(148,163,184,0.22)') + ';">' + (rs ? rs.rs_unit_count : t('na')) + '</td>' +
-                '<td class="mono" style="padding:7px 16px;font-size:0.7rem;color:rgba(148,163,184,0.45);white-space:nowrap;">' + (acq.doc_date ? acq.doc_date.slice(0,7) : t('na')) + '</td>';
+                '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (bcCount > 0 ? '#f97316' : 'rgba(148,163,184,0.35)') + ';">' + (bcCount > 0 ? bcCount : t('na')) + '</td>' +
+                '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (rs ? '#94a3b8' : 'rgba(148,163,184,0.35)') + ';">' + (rs ? rs.rs_unit_count : t('na')) + '</td>' +
+                '<td class="mono" style="padding:7px 16px;font-size:0.7rem;color:rgba(148,163,184,0.65);white-space:nowrap;">' + (acq.doc_date ? acq.doc_date.slice(0,7) : t('na')) + '</td>';
             portfolioTbody.appendChild(tr);
 
             const mRow = formatMobilePropertyRow(p, acq, rs, viol, zipNames);
@@ -745,10 +745,10 @@
                 if (i >= ACQ_CAP) { tr.classList.add('acq-extra'); tr.style.display = 'none'; }
                 tr.innerHTML =
                     '<td style="padding:8px 16px;color:rgba(241,245,249,0.85);">' + esc(r.address || r.bbl || t('na')) + '</td>' +
-                    '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.6);font-size:0.72rem;line-height:1.3;">' + esc(r.zip_code || '') + (r.zip_code && zipNames[r.zip_code] ? '<br><span style="font-size:0.65rem;color:rgba(148,163,184,0.35);font-family:inherit;">' + esc(zipNames[r.zip_code]) + '</span>' : '') + '</td>' +
-                    '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.55);font-size:0.7rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(r.buyer_name || '') + '</td>' +
-                    '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.5);font-size:0.72rem;white-space:nowrap;">' + esc(r.doc_date || '') + '</td>' +
-                    '<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:rgba(148,163,184,0.6);font-size:0.72rem;white-space:nowrap;">' + fmtCurrency(r.doc_amount) + '</td>';
+                    '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;line-height:1.3;">' + esc(r.zip_code || '') + (r.zip_code && zipNames[r.zip_code] ? '<br><span style="font-size:0.65rem;color:rgba(148,163,184,0.55);font-family:inherit;">' + esc(zipNames[r.zip_code]) + '</span>' : '') + '</td>' +
+                    '<td class="mono" style="padding:8px 16px;color:#94a3b8;font-size:0.7rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(r.buyer_name || '') + '</td>' +
+                    '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;white-space:nowrap;">' + esc(r.doc_date || '') + '</td>' +
+                    '<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:#94a3b8;font-size:0.72rem;white-space:nowrap;">' + fmtCurrency(r.doc_amount) + '</td>';
                 tbody.appendChild(tr);
 
                 const mRow = formatMobileAcquisitionRow(r, zipNames, allAmountsNull);
@@ -873,13 +873,13 @@
                 const count = (sig.shared_bbls || []).length;
                 if (count > 0) {
                     const detail = document.createElement('div');
-                    detail.style.cssText = 'width:100%;font-size:0.7rem;color:rgba(148,163,184,0.45);padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
+                    detail.style.cssText = 'width:100%;font-size:0.7rem;color:rgba(148,163,184,0.7);padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
                     detail.textContent = count + ' shared BBL' + (count !== 1 ? 's' : '') + '. See shared properties below.';
                     sigRow.appendChild(detail);
                 }
             } else if (sig.detail) {
                 const detail = document.createElement('div');
-                detail.style.cssText = 'width:100%;font-size:0.7rem;color:rgba(148,163,184,0.45);padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
+                detail.style.cssText = 'width:100%;font-size:0.7rem;color:rgba(148,163,184,0.7);padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
                 detail.textContent = sig.detail;
                 sigRow.appendChild(detail);
             }
@@ -890,12 +890,12 @@
             const sharedDiv = document.createElement('div');
             sharedDiv.style.cssText = 'border-top:1px solid rgba(148,163,184,0.07);padding:10px 16px;';
             const label = document.createElement('div');
-            label.style.cssText  = 'font-size:0.68rem;color:rgba(148,163,184,0.4);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;';
+            label.style.cssText  = 'font-size:0.68rem;color:rgba(148,163,184,0.65);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;';
             label.textContent    = t('shared_properties');
             sharedDiv.appendChild(label);
             rel.shared_properties.forEach(prop => {
                 const row = document.createElement('div');
-                row.style.cssText = 'font-size:0.75rem;color:rgba(148,163,184,0.65);padding:2px 0;font-family:"JetBrains Mono",monospace;';
+                row.style.cssText = 'font-size:0.75rem;color:#94a3b8;padding:2px 0;font-family:"JetBrains Mono",monospace;';
                 const zipLabel    = prop.zip_code
                     ? ' \u00b7 ' + prop.zip_code + (_cachedZipNames[prop.zip_code] ? ' ' + _cachedZipNames[prop.zip_code] : '')
                     : '';
@@ -913,7 +913,7 @@
             const summ = document.createElement('summary');
             summ.style.cssText = 'padding:10px 16px;display:flex;align-items:center;justify-content:space-between;';
             summ.innerHTML =
-                '<span style="font-size:0.72rem;color:rgba(148,163,184,0.4);">' +
+                '<span style="font-size:0.72rem;color:rgba(148,163,184,0.65);">' +
                     t('llc_in_cluster').replace('{name}', esc(rel.operator_root)) +
                 '</span>' +
                 '<svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.3)" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>';
