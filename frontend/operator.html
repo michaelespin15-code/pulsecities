@@ -28,7 +28,7 @@
         .stat-label { font-size: 0.7rem; color: rgba(148,163,184,0.85); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
         .tag-strong { background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.35); color: #f97316; font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; }
         .tag-possible { background: rgba(148,163,184,0.08); border: 1px solid rgba(148,163,184,0.2); color: rgba(148,163,184,0.7); font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; }
-        .signal-chip { display: inline-flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; background: rgba(15,23,42,0.6); border: 1px solid rgba(148,163,184,0.12); border-radius: 4px; padding: 2px 7px; color: rgba(148,163,184,0.75); }
+        .signal-chip { display: inline-flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; background: rgba(15,23,42,0.6); border: 1px solid rgba(148,163,184,0.18); border-radius: 4px; padding: 2px 7px; color: rgba(148,163,184,0.9); }
         .llc-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; background: rgba(15,23,42,0.5); border: 1px solid rgba(148,163,184,0.1); border-radius: 4px; padding: 3px 8px; color: rgba(148,163,184,0.8); }
         details > summary { list-style: none; cursor: pointer; }
         details > summary::-webkit-details-marker { display: none; }
@@ -46,8 +46,8 @@
         .mob-row { padding: 12px 16px; border-top: 1px solid rgba(148,163,184,0.06); }
         .mob-row:first-child { border-top: none; }
         .mob-addr { font-size: 0.85rem; color: rgba(241,245,249,0.88); line-height: 1.4; word-break: break-word; }
-        .mob-meta { font-size: 0.75rem; color: rgba(148,163,184,0.8); margin-top: 3px; line-height: 1.45; font-family: 'JetBrains Mono', monospace; }
-        .mob-buyer { font-size: 0.78rem; color: #94a3b8; margin-top: 3px; line-height: 1.4; word-break: break-word; font-family: 'JetBrains Mono', monospace; }
+        .mob-meta { font-size: 0.75rem; color: #94a3b8; margin-top: 3px; line-height: 1.45; }
+        .mob-buyer { font-size: 0.78rem; color: #94a3b8; margin-top: 3px; line-height: 1.4; word-break: break-word; }
         .mob-score { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; }
         @media (max-width: 640px) {
             .stat-card { padding: 10px 14px; }
@@ -65,13 +65,13 @@
         <div style="max-width: 860px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between;">
             <a href="/" style="display: flex; align-items: center; gap: 8px; color: #f1f5f9;">
                 <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span style="font-size: 0.85rem; color: rgba(148,163,184,0.6);">PulseCities</span>
+                <span style="font-size: 0.85rem; color: rgba(241,245,249,0.8);">PulseCities</span>
             </a>
             <div style="display:flex;align-items:center;gap:16px;">
-                <a href="/map" style="font-size:0.78rem;color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Map</a>
-                <a href="/operators" style="font-size:0.78rem;color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Operators</a>
-                <a href="/methodology" style="font-size:0.78rem;color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
-                <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#64748b;background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
+                <a href="/map" style="font-size:0.78rem;color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Map</a>
+                <a href="/operators" style="font-size:0.78rem;color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Operators</a>
+                <a href="/methodology" style="font-size:0.78rem;color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Methodology</a>
+                <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#94a3b8;background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
             </div>
         </div>
     </nav>
@@ -98,8 +98,8 @@
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                     <div>
                         <h1 id="op-root" class="mono accent" style="font-size: 1.8rem; font-weight: 400; letter-spacing: 0.04em;"></h1>
-                        <div id="op-summary" class="mono" style="font-size: 0.82rem; color: #94a3b8; margin-top: 5px;"></div>
-                        <div style="font-size: 0.75rem; color: rgba(148,163,184,0.65); margin-top: 4px;" data-i18n="op_descriptor">Public-record activity linked to this operator.</div>
+                        <div id="op-summary" style="font-size: 0.82rem; color: #94a3b8; margin-top: 5px;"></div>
+                        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;" data-i18n="op_descriptor">Public-record activity linked to this operator.</div>
                         <div id="why-matters" style="font-size: 0.8rem; color: #94a3b8; margin-top: 3px; margin-bottom: 4px; line-height: 1.5;"></div>
                         <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
                             <span class="signal-chip" data-i18n="chip_window">18-month window</span>
@@ -119,7 +119,7 @@
             <!-- Analyst note (operator-specific, shown only when note exists) — above stats -->
             <div id="pattern-note" style="display:none; margin-bottom:20px; padding:12px 16px; background:rgba(249,115,22,0.05); border:1px solid rgba(249,115,22,0.12); border-radius:8px;">
                 <div style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; color:rgba(249,115,22,0.5); margin-bottom:6px; font-family:'JetBrains Mono',monospace;" data-i18n="pattern_note_header">Analyst note</div>
-                <div id="pattern-note-text" style="font-size:0.8rem; color:rgba(148,163,184,0.7); line-height:1.55;"></div>
+                <div id="pattern-note-text" style="font-size:0.8rem; color:#94a3b8; line-height:1.55;"></div>
             </div>
 
             <!-- Stats row -->
@@ -151,15 +151,15 @@
             </div>
 
             <!-- What this shows -->
-            <p style="font-size:0.82rem;color:rgba(148,163,184,0.75);margin-bottom:6px;line-height:1.65;" data-i18n="what_this_shows">Properties grouped by LLC naming patterns in public deed records. Scores reflect neighborhood displacement risk, not a claim of wrongdoing by any individual actor.</p>
-            <p style="font-size:0.78rem;color:rgba(148,163,184,0.55);margin-bottom:20px;line-height:1.55;">Derived from public deed records; indicates ownership structure, not legal conclusions.</p>
+            <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:6px;line-height:1.65;" data-i18n="what_this_shows">Properties grouped by LLC naming patterns in public deed records. Scores reflect neighborhood displacement risk, not a claim of wrongdoing by any individual actor.</p>
+            <p style="font-size:0.78rem;color:#94a3b8;margin-bottom:20px;line-height:1.55;">Derived from public deed records; indicates ownership structure, not legal conclusions.</p>
 
             <!-- Related Operators -->
             <div id="related-section" style="display: none; margin-bottom: 16px;">
                 <div style="font-size: 0.78rem; font-weight: 600; color: rgba(148,163,184,0.75); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;" data-i18n="related_operators">
                     Related Operators
                 </div>
-                <div style="font-size: 0.75rem; color: rgba(148,163,184,0.65); margin-bottom: 14px; line-height: 1.5;" data-i18n="related_caveat">
+                <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 14px; line-height: 1.5;" data-i18n="related_caveat">
                     These clusters are not the same operator. The signals below are evidence of a possible relationship: shared properties, name patterns, or geographic overlap. Each operator remains as the public records show them.
                 </div>
                 <div id="related-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
@@ -897,7 +897,7 @@
                 const row = document.createElement('div');
                 row.style.cssText = 'font-size:0.75rem;color:#94a3b8;padding:2px 0;font-family:"JetBrains Mono",monospace;';
                 const zipLabel    = prop.zip_code
-                    ? ' \u00b7 ' + prop.zip_code + (_cachedZipNames[prop.zip_code] ? ' ' + _cachedZipNames[prop.zip_code] : '')
+                    ? ', ' + prop.zip_code + (_cachedZipNames[prop.zip_code] ? ' ' + _cachedZipNames[prop.zip_code] : '')
                     : '';
                 row.textContent = prop.address + zipLabel;
                 sharedDiv.appendChild(row);
