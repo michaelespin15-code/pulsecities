@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" style="color-scheme: dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -148,6 +148,9 @@
             #sidebar {
                 transition: width 0.25s cubic-bezier(0.4,0,0.2,1),
                             padding 0.25s cubic-bezier(0.4,0,0.2,1);
+            }
+            @media (prefers-reduced-motion: reduce) {
+                #sidebar { transition: none; }
             }
             #sidebar.collapsed {
                 width: 0 !important;
@@ -383,6 +386,14 @@
         #renovation-flip-alert:not(.hidden) {
             animation: sidebar-fade-in 0.18s ease-out;
         }
+        @media (prefers-reduced-motion: reduce) {
+            .pulse-dot { animation: none; opacity: 0.7; }
+            #pulse-section:not(.hidden),
+            #active-buyers-section:not(.hidden),
+            #history-section:not(.hidden),
+            #recent-activity-section:not(.hidden),
+            #renovation-flip-alert:not(.hidden) { animation: none; }
+        }
         /* Desktop: sheet-scroll is a transparent flex column passthrough */
         #sheet-scroll {
             display: flex;
@@ -390,9 +401,25 @@
             flex: 1 1 auto;
             min-height: 0;
         }
+    <style>
+        .skip-link {
+            position: absolute;
+            top: -48px;
+            left: 0;
+            z-index: 9999;
+            background: #1e293b;
+            color: #38bdf8;
+            padding: 8px 16px;
+            font-size: 14px;
+            text-decoration: none;
+            border-radius: 0 0 4px 0;
+            transition: top 0.1s;
+        }
+        .skip-link:focus { top: 0; }
     </style>
 </head>
 <body>
+    <a href="#sidebar" class="skip-link">Skip to content</a>
 
     <!-- Stale data banner -->
     <div id="stale-data-banner" style="display:none;background:#fffbeb;border-bottom:1px solid #f59e0b;position:relative;z-index:50;" role="alert">
@@ -472,7 +499,8 @@
                     <input
                         id="address-input"
                         type="text"
-                        placeholder="Search your building address"
+                        placeholder="123 Broadway, Brooklyn…"
+                        aria-labelledby="address-lookup-title"
                         class="input input-sm input-bordered flex-1 min-w-0 text-sm font-mono"
                         style="min-height: 44px;"
                         autocomplete="off"
@@ -485,7 +513,7 @@
                         style="min-height: 44px; width: 80px;"
                     >Search</button>
                 </div>
-                <div id="address-error" class="hidden text-xs text-error mt-2"></div>
+                <div id="address-error" class="hidden text-xs text-error mt-2" aria-live="polite"></div>
             </div>
 
             <!-- Grouped search results — neighborhoods, operators, properties -->
@@ -639,7 +667,6 @@
                         <div id="signal-rows" class="flex flex-col gap-2"></div>
                         <button
                             id="methodology-trigger"
-                            onclick="document.getElementById('methodology-modal').classList.remove('hidden')"
                             class="text-xs text-sky-400 hover:text-sky-300 text-left underline mt-2 block"
                             style="min-height: 44px; display: flex; align-items: center; background: none; border: none; padding: 0; cursor: pointer;"
                         >
@@ -730,6 +757,7 @@
                         id="landlord-input"
                         type="text"
                         placeholder="Blackstone"
+                        aria-labelledby="landlord-section-title"
                         class="input input-sm input-bordered flex-1 text-sm font-mono min-w-0"
                         style="min-height: 36px;"
                         autocomplete="off"
@@ -742,7 +770,7 @@
                         style="min-height: 36px;"
                     >Search</button>
                 </div>
-                <div id="landlord-error" class="hidden text-xs text-error mt-2"></div>
+                <div id="landlord-error" class="hidden text-xs text-error mt-2" aria-live="polite"></div>
                 <div id="landlord-results" class="hidden">
                     <p id="landlord-summary" class="text-xs text-slate-400 mt-2 mb-2 leading-relaxed"></p>
                     <div id="landlord-list" class="flex flex-col max-h-52 overflow-y-auto -mx-1 px-1"></div>
@@ -789,6 +817,7 @@
                             id="subscribe-email"
                             type="email"
                             placeholder="Email address"
+                            aria-labelledby="subscribe-area-label"
                             class="input input-sm input-bordered flex-1 min-w-0"
                             style="min-height:36px;font-size:12px;"
                             autocomplete="email"
@@ -800,7 +829,7 @@
                             style="min-height:36px;background:#f97316;border-color:#f97316;color:#fff;font-size:12px;"
                         >Watch</button>
                     </div>
-                    <div id="subscribe-msg" class="hidden text-xs mt-1.5"></div>
+                    <div id="subscribe-msg" class="hidden text-xs mt-1.5" aria-live="polite"></div>
                     <div id="subscribe-helper" class="hidden text-xs text-slate-500 mt-1.5">You'll only get updates for this area. Unsubscribe anytime.</div>
                     <div class="mt-2">
                         <button id="subscribe-citywide-btn" type="button"
@@ -839,7 +868,10 @@
     <div
         id="methodology-modal"
         class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-        onclick="if(event.target===this)this.classList.add('hidden')"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="methodology-title"
+        onclick="if(event.target===this)closeMethodologyModal()"
     >
         <div class="bg-base-200 rounded-2xl p-6 max-w-md w-full mx-4 overflow-y-auto" style="max-height:min(85vh,520px);padding-bottom:max(1.5rem,env(safe-area-inset-bottom,1.5rem));" onclick="event.stopPropagation()">
             <div class="flex justify-between items-start mb-4">
@@ -848,7 +880,7 @@
                     class="text-slate-400 hover:text-base-content text-xl leading-none"
                     style="min-height:44px;min-width:44px;"
                     aria-label="Close"
-                    onclick="document.getElementById('methodology-modal').classList.add('hidden')"
+                    onclick="closeMethodologyModal()"
                 >&#10005;</button>
             </div>
             <p class="text-sm text-slate-400 mb-4">PulseCities scores each NYC ZIP using six public-record signals, normalized by residential units and refreshed nightly.</p>
@@ -898,6 +930,7 @@
             id="mobile-drawer-handle"
             onclick="toggleDrawer()"
             aria-expanded="false"
+            aria-controls="mobile-drawer-list"
             style="width:100%;min-height:52px;padding:12px 20px 14px;background:transparent;border:none;cursor:pointer;text-align:left;"
         >
             <div style="width:36px;height:4px;background:rgba(148,163,184,0.2);border-radius:2px;margin:0 auto 10px;"></div>
@@ -3308,11 +3341,36 @@
             }, 400);
         });
 
+        // Methodology modal open/close with focus management and focus trap
+        var _modalPreviousFocus = null;
+        function openMethodologyModal() {
+            _modalPreviousFocus = document.activeElement;
+            var modal = document.getElementById('methodology-modal');
+            modal.classList.remove('hidden');
+            var firstFocusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (firstFocusable) firstFocusable.focus();
+        }
+        function closeMethodologyModal() {
+            document.getElementById('methodology-modal').classList.add('hidden');
+            if (_modalPreviousFocus) { _modalPreviousFocus.focus(); _modalPreviousFocus = null; }
+        }
+        document.getElementById('methodology-trigger').addEventListener('click', openMethodologyModal);
+        document.getElementById('methodology-modal').addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                var focusable = Array.from(this.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'));
+                if (!focusable.length) return;
+                var first = focusable[0], last = focusable[focusable.length - 1];
+                if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }
+                else { if (document.activeElement === last) { e.preventDefault(); first.focus(); } }
+            }
+        });
+
         // Escape closes the methodology modal and any open sidebar panel
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                document.getElementById('methodology-modal').classList.add('hidden');
-                if (_currentPanel !== 'empty') {
+                if (!document.getElementById('methodology-modal').classList.contains('hidden')) {
+                    closeMethodologyModal();
+                } else if (_currentPanel !== 'empty') {
                     if (window.innerWidth < 768) showMobileMap();
                     else showEmptyState();
                 }

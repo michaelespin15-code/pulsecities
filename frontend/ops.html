@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="color-scheme: dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>PulseCities Ops</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -142,10 +142,13 @@ tr:last-child td { border-bottom: none; }
 .dot-gray { background: #475569; }
 
 #error-banner { display: none; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: #f87171; }
+.skip-link { position:absolute;top:-48px;left:0;z-index:9999;background:#1e293b;color:#38bdf8;padding:8px 16px;font-size:14px;text-decoration:none;border-radius:0 0 4px 0;transition:top 0.1s; }
+.skip-link:focus { top:0; }
 </style>
 </head>
 <body>
-<div class="page">
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div id="main-content" class="page">
 
     <div id="error-banner"></div>
 
@@ -203,7 +206,7 @@ tr:last-child td { border-bottom: none; }
         <div class="panel">
             <div class="section-title">Recent Subscribers</div>
             <table id="subs-table">
-                <thead><tr><th>Email</th><th>ZIP</th><th>Neighborhood</th><th>When</th></tr></thead>
+                <thead><tr><th scope="col">Email</th><th scope="col">ZIP</th><th scope="col">Neighborhood</th><th scope="col">When</th></tr></thead>
                 <tbody id="subs-body"><tr><td colspan="4" class="muted">Loading…</td></tr></tbody>
             </table>
         </div>
@@ -218,7 +221,7 @@ tr:last-child td { border-bottom: none; }
         <div class="panel">
             <div class="section-title">Top Risk Right Now</div>
             <table id="risk-table">
-                <thead><tr><th>ZIP</th><th>Neighborhood</th><th>Score</th></tr></thead>
+                <thead><tr><th scope="col">ZIP</th><th scope="col">Neighborhood</th><th scope="col">Score</th></tr></thead>
                 <tbody id="risk-body"><tr><td colspan="3" class="muted">Loading…</td></tr></tbody>
             </table>
         </div>
