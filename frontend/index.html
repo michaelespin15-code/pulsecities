@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" style="color-scheme: dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -28,6 +28,7 @@
     <meta name="twitter:title" content="PulseCities | NYC Displacement Signals">
     <meta name="twitter:description" content="Search NYC addresses and ZIP codes for displacement signals using public records: permits, evictions, HPD violations, 311 complaints, and ownership transfers.">
     <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+    <meta name="theme-color" content="#0a0a1a">
 
     <script type="application/ld+json">
     {
@@ -114,6 +115,9 @@
             50%       { opacity: 1.0; }
         }
         .pulse-dot { animation: pulse-dot 2.5s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+            .pulse-dot { animation: none; opacity: 0.7; }
+        }
 
         .zip-card { transition: border-color 0.15s, background 0.15s; }
         .zip-card:hover { border-color: rgba(148,163,184,0.5) !important; }
@@ -247,9 +251,33 @@
         footer {
             padding-bottom: calc(env(safe-area-inset-bottom) + 24px);
         }
+
+        .skip-link {
+            position: absolute;
+            top: -48px;
+            left: 0;
+            z-index: 9999;
+            background: #1e293b;
+            color: #38bdf8;
+            padding: 8px 16px;
+            font-size: 14px;
+            text-decoration: none;
+            border-radius: 0 0 4px 0;
+            transition: top 0.1s;
+        }
+        .skip-link:focus { top: 0; }
+
+        #nav-links a:hover, #nav-links a:focus-visible { color: #e2e8f0 !important; }
+        #nav-links a:focus-visible, #nav-links button:focus-visible {
+            outline: 2px solid rgba(56,189,248,0.6);
+            outline-offset: 2px;
+            border-radius: 3px;
+        }
+        #nav-links button:hover { color: #e2e8f0 !important; }
     </style>
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to content</a>
 
     <!-- Nav -->
     <header style="border-bottom:1px solid rgba(51,65,85,0.4);position:sticky;top:0;z-index:20;background:rgba(10,10,26,0.92);backdrop-filter:blur(8px);">
@@ -259,13 +287,13 @@
                 <a id="byline-link" href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" aria-label="by Michael Espin on LinkedIn" style="font-size:11px;color:#94a3b8;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#cbd5e1'" onmouseout="this.style.color='#94a3b8'">by Michael Espin</a>
             </div>
             <div id="nav-links" style="display:flex;align-items:center;gap:20px;">
-                <a href="/map" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Map</a>
-                <a href="/operators" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Operators</a>
-                <a href="/methodology" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Methodology</a>
-                <a href="/about" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">About</a>
+                <a href="/map" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;">Map</a>
+                <a href="/operators" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;">Operators</a>
+                <a href="/methodology" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;">Methodology</a>
+                <a href="/about" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;">About</a>
                 <button id="lang-toggle"
-                        style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#94a3b8;background:none;border:none;cursor:pointer;min-height:36px;padding:0;"
-                        onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">
+                        aria-label="Switch to Spanish"
+                        style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#94a3b8;background:none;border:none;cursor:pointer;min-height:36px;padding:0;">
                     EN / ES
                 </button>
             </div>
@@ -273,7 +301,7 @@
     </header>
 
     <!-- Main content -->
-    <main style="max-width:680px;margin:0 auto;padding:48px 20px 0;">
+    <main id="main-content" style="max-width:680px;margin:0 auto;padding:48px 20px 0;">
 
         <!-- Hero -->
         <section style="margin-bottom:48px;">
@@ -294,8 +322,7 @@
                            placeholder="Enter an address, ZIP, or neighborhood"
                            class="input input-bordered flex-1 font-mono"
                            style="background:rgba(30,41,59,0.9);font-size:1rem;padding:14px 16px;height:auto;"
-                           autocomplete="off"
-                           autofocus />
+                           autocomplete="off" />
                     <button id="search-btn"
                             class="btn shrink-0"
                             style="background-color:#f59e0b;border-color:#f59e0b;color:#1a1a2e;font-weight:600;padding:0 20px;"
@@ -314,7 +341,7 @@
                 <a href="/map?q=11221" style="font-size:11px;color:#94a3b8;text-decoration:none;font-family:'JetBrains Mono',monospace;line-height:1.8;border-bottom:1px solid rgba(148,163,184,0.3);" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Bushwick (11221)</a>
             </div>
 
-            <div id="empty-search-msg" class="search-empty-msg" data-i18n="search_empty_msg" style="display:none;">Enter an address, ZIP, or landlord name.</div>
+            <div id="empty-search-msg" class="search-empty-msg" data-i18n="search_empty_msg" aria-live="polite" style="display:none;">Enter an address, ZIP, or landlord name.</div>
 
             <!-- Live records line: appears after data loads -->
             <p id="stat-chips" style="margin-top:4px;margin-bottom:12px;font-size:11px;color:#94a3b8;font-family:'JetBrains Mono',monospace;"></p>
@@ -342,7 +369,7 @@
                 <span class="section-helper" data-i18n="top_risk_helper">Current displacement-pressure score</span>
             </div>
             <div id="zip-cards">
-                <div id="zip-loading" class="font-mono" style="font-size:11px;color:#334155;padding:20px 0;text-align:center;">Loading...</div>
+                <div id="zip-loading" class="font-mono" style="font-size:11px;color:#334155;padding:20px 0;text-align:center;">Loading…</div>
             </div>
         </section>
 
@@ -362,7 +389,7 @@
                 <span class="section-helper" data-i18n="operators_helper">Ownership clusters worth reviewing.</span>
             </div>
             <div id="operator-cards">
-                <div id="operator-loading" class="font-mono" style="font-size:11px;color:#334155;padding:16px 0;text-align:center;">Loading...</div>
+                <div id="operator-loading" class="font-mono" style="font-size:11px;color:#334155;padding:16px 0;text-align:center;">Loading…</div>
             </div>
         </div>
 
@@ -768,25 +795,24 @@
                 nbhds.forEach(function(n) {
                     items.push(n);
                     var score = n.score != null ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:#38bdf8;">' + n.score + '</span>' : '';
-                    html += '<div class="dd-row" data-href="' + n.href + '" style="padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(148,163,184,0.05);">'
+                    html += '<a class="dd-row" href="' + n.href + '" style="padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(148,163,184,0.05);text-decoration:none;">'
                         + '<span style="font-size:13px;color:#e2e8f0;"><span style="font-family:\'JetBrains Mono\',monospace;">' + n.zip + '</span>'
                         + (n.name ? ' <span style="color:#94a3b8;font-size:12px;">' + n.name + (n.borough ? ', ' + n.borough : '') + '</span>' : '')
-                        + '</span>' + score + '</div>';
+                        + '</span>' + score + '</a>';
                 });
             }
             if (ops.length) {
                 html += '<div style="padding:6px 12px 2px;font-size:10px;color:rgba(148,163,184,0.45);text-transform:uppercase;letter-spacing:0.08em;">Operators</div>';
                 ops.forEach(function(o) {
                     items.push(o);
-                    html += '<div class="dd-row" data-href="' + o.href + '" style="padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(148,163,184,0.05);">'
+                    html += '<a class="dd-row" href="' + o.href + '" style="padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(148,163,184,0.05);text-decoration:none;">'
                         + '<span style="font-size:13px;color:#e2e8f0;">' + o.name + '</span>'
-                        + '<span style="font-size:11px;color:#94a3b8;">' + (o.portfolio_size || '') + (o.portfolio_size ? ' props' : '') + '</span></div>';
+                        + '<span style="font-size:11px;color:#94a3b8;">' + (o.portfolio_size || '') + (o.portfolio_size ? ' props' : '') + '</span></a>';
                 });
             }
             _ddItems = items; _ddIdx = -1;
             dd.innerHTML = html; dd.style.display = 'block';
             dd.querySelectorAll('.dd-row').forEach(function(row) {
-                row.addEventListener('click', function() { window.location.href = row.getAttribute('data-href'); });
                 row.addEventListener('mouseenter', function() { dd.querySelectorAll('.dd-row').forEach(function(r){ r.style.background=''; }); row.style.background = 'rgba(148,163,184,0.06)'; });
                 row.addEventListener('mouseleave', function() { row.style.background = ''; });
             });
@@ -831,6 +857,8 @@
         document.addEventListener('click', function(e) {
             if (!e.target.closest('#search-row') && !e.target.closest('#search-dropdown')) _clearDd();
         });
+        if (window.innerWidth >= 768) { document.getElementById('search-input').focus(); }
+
         document.getElementById('cta-explore').addEventListener('click', function() {
             this.textContent = 'Loading map...';
             plausible('Explore Map');
@@ -839,10 +867,12 @@
         // Language toggle
         const langToggle = document.getElementById('lang-toggle');
         langToggle.textContent = _lang === 'es' ? 'ES / EN' : 'EN / ES';
+        langToggle.setAttribute('aria-label', _lang === 'es' ? 'Switch to English' : 'Switch to Spanish');
         langToggle.addEventListener('click', () => {
             _lang = _lang === 'en' ? 'es' : 'en';
             localStorage.setItem('pc-lang', _lang);
             langToggle.textContent = _lang === 'es' ? 'ES / EN' : 'EN / ES';
+            langToggle.setAttribute('aria-label', _lang === 'es' ? 'Switch to English' : 'Switch to Spanish');
             applyTranslations(_lang);
             if (_cachedStats) populateStats(_cachedStats);
             if (_cachedOperators) renderOperators(_cachedOperators);

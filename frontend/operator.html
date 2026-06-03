@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" style="color-scheme: dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Operator Profile | PulseCities</title>
     <meta name="description" content="LLC portfolio and affiliated operator network for a NYC acquisition cluster, sourced from ACRIS public records.">
     <link rel="canonical" id="canonical-url" href="https://pulsecities.com/">
@@ -57,9 +57,13 @@
             .desktop-table-wrap { display: none !important; }
             .mobile-card-list { display: block; }
         }
+    <style>
+        .skip-link { position:absolute;top:-48px;left:0;z-index:9999;background:#1e293b;color:#38bdf8;padding:8px 16px;font-size:14px;text-decoration:none;border-radius:0 0 4px 0;transition:top 0.1s; }
+        .skip-link:focus { top:0; }
     </style>
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to content</a>
     <!-- Nav -->
     <nav style="border-bottom: 1px solid rgba(148,163,184,0.08); padding: 12px 0;">
         <div style="max-width: 860px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between;">
@@ -71,12 +75,12 @@
                 <a href="/map" style="font-size:0.78rem;color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Map</a>
                 <a href="/operators" style="font-size:0.78rem;color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Operators</a>
                 <a href="/methodology" style="font-size:0.78rem;color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Methodology</a>
-                <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#94a3b8;background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
+                <button id="lang-toggle" aria-label="Switch to Spanish" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#94a3b8;background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
             </div>
         </div>
     </nav>
 
-    <div class="page-wrap">
+    <div id="main-content" class="page-wrap">
         <a href="/" style="font-size: 0.75rem; color: rgba(148,163,184,0.7); display: inline-block; margin-bottom: 20px;" data-i18n="back_map">← Home</a>
 
         <!-- Loading -->
@@ -107,6 +111,7 @@
                         </div>
                         <div style="margin-top: 10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                             <button id="copy-link-btn" data-i18n="copy_link" style="font-size:0.72rem;color:rgba(148,163,184,0.55);background:rgba(148,163,184,0.06);border:1px solid rgba(148,163,184,0.15);border-radius:5px;padding:4px 10px;cursor:pointer;min-height:28px;font-family:'DM Sans',sans-serif;">Copy link</button>
+                            <span id="copy-link-announce" aria-live="polite" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;"></span>
                             <a id="brief-link-btn" href="#" style="display:none;font-size:0.72rem;color:rgba(148,163,184,0.55);background:rgba(148,163,184,0.06);border:1px solid rgba(148,163,184,0.15);border-radius:5px;padding:4px 10px;min-height:28px;line-height:20px;text-decoration:none;">View evidence brief</a>
                         </div>
                     </div>
@@ -682,7 +687,7 @@
                 '</td>' +
                 '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (bcCount > 0 ? '#f97316' : 'rgba(148,163,184,0.35)') + ';">' + (bcCount > 0 ? bcCount : t('na')) + '</td>' +
                 '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (rs ? '#94a3b8' : 'rgba(148,163,184,0.35)') + ';">' + (rs ? rs.rs_unit_count : t('na')) + '</td>' +
-                '<td class="mono" style="padding:7px 16px;font-size:0.7rem;color:rgba(148,163,184,0.65);white-space:nowrap;">' + (acq.doc_date ? acq.doc_date.slice(0,7) : t('na')) + '</td>';
+                '<td class="mono" style="padding:7px 16px;font-size:0.7rem;color:rgba(148,163,184,0.65);white-space:nowrap;">' + (acq.doc_date ? new Intl.DateTimeFormat('en-US', {year:'numeric',month:'short',timeZone:'UTC'}).format(new Date(acq.doc_date)) : t('na')) + '</td>';
             portfolioTbody.appendChild(tr);
 
             const mRow = formatMobilePropertyRow(p, acq, rs, viol, zipNames);
@@ -1038,10 +1043,12 @@
     // Lang toggle
     const langToggle = document.getElementById('lang-toggle');
     langToggle.textContent = _lang === 'es' ? 'ES / EN' : 'EN / ES';
+    langToggle.setAttribute('aria-label', _lang === 'es' ? 'Switch to English' : 'Switch to Spanish');
     langToggle.addEventListener('click', () => {
         _lang = _lang === 'en' ? 'es' : 'en';
         localStorage.setItem('pc-lang', _lang);
         langToggle.textContent = _lang === 'es' ? 'ES / EN' : 'EN / ES';
+        langToggle.setAttribute('aria-label', _lang === 'es' ? 'Switch to English' : 'Switch to Spanish');
         applyTranslations();
         _renderLastUpdated();
         if (_cachedData) {
@@ -1075,6 +1082,8 @@
             navigator.clipboard.writeText(window.location.href).then(() => {
                 plausible('Operator Copy Link');
                 _copyBtn.textContent = t('link_copied');
+                var announce = document.getElementById('copy-link-announce');
+                if (announce) { announce.textContent = t('link_copied'); setTimeout(() => { announce.textContent = ''; }, 2500); }
                 setTimeout(() => { _copyBtn.textContent = t('copy_link'); }, 2000);
             }).catch(() => {});
         });
