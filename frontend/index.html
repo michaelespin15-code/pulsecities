@@ -35,7 +35,7 @@
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "PulseCities",
-        "description": "Real-time displacement risk scores for all 178 NYC neighborhoods, built on six public data signals.",
+        "description": "Displacement risk scores for all 178 NYC neighborhoods, built on six public data signals.",
         "url": "https://pulsecities.com",
         "applicationCategory": "DataVisualization",
         "operatingSystem": "Web",
@@ -311,7 +311,7 @@
             <p style="font-size:15px;color:#cbd5e1;margin-bottom:18px;line-height:1.5;" data-i18n="tagline">The displacement story NYC doesn't officially tell.</p>
 
             <!-- Search support line -->
-            <p style="font-size:13px;color:#94a3b8;margin-bottom:14px;line-height:1.55;" data-i18n="hero_subhead">Search any NYC address, ZIP, or neighborhood using public records updated daily.</p>
+            <p style="font-size:13px;color:#94a3b8;margin-bottom:14px;line-height:1.55;" data-i18n="hero_subhead">Search any NYC address, ZIP, or neighborhood using public records.</p>
 
             <!-- Search: primary action -->
             <div style="position:relative;margin-bottom:10px;">
@@ -332,6 +332,9 @@
                 </div>
                 <div id="search-dropdown" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:#1e293b;border:1px solid rgba(148,163,184,0.15);border-radius:0 0 8px 8px;z-index:50;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4);"></div>
             </div>
+
+            <!-- Freshness chip: data-through date from /api/status, links to /status. Hidden until populated, and stays hidden if the fetch fails. -->
+            <a id="freshness-chip" href="/status" style="display:none;align-items:center;gap:6px;margin-bottom:14px;font-size:11px;color:#64748b;font-family:'JetBrains Mono',monospace;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"></a>
 
             <!-- Example searches -->
             <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;">
@@ -433,7 +436,7 @@
         const i18n = {
             en: {
                 tagline:              "The displacement story NYC doesn't officially tell.",
-                hero_subhead:         'Search any NYC address, ZIP, or neighborhood using public records updated daily.',
+                hero_subhead:         'Search any NYC address, ZIP, or neighborhood using public records.',
                 search_empty_msg:     'Enter an address, ZIP, or landlord name.',
                 llc_label:            'LLC transfers (30d)',
                 eviction_label:       'evictions (30d)',
@@ -470,7 +473,7 @@
             },
             es: {
                 tagline:              'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
-                hero_subhead:         'Busca cualquier dirección, código postal o vecindario de NYC con registros públicos actualizados diariamente.',
+                hero_subhead:         'Busca cualquier dirección, código postal o vecindario de NYC con registros públicos.',
                 search_empty_msg:     'Ingresa una dirección, código postal o nombre del propietario.',
                 llc_label:            'transferencias LLC (30d)',
                 eviction_label:       'desalojos (30d)',
@@ -678,6 +681,21 @@
             cta.addEventListener('mouseout',  () => { cta.style.opacity = '0.7'; });
             container.appendChild(cta);
         }
+
+        // Freshness chip: show the most recent data-through date and link to /status.
+        // Stays hidden if the endpoint is unavailable or returns no date.
+        fetch('/api/status')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                const chip = document.getElementById('freshness-chip');
+                if (!chip || !data || !data.data_through) return;
+                const d = new Date(data.data_through + 'T00:00:00Z');
+                if (isNaN(d)) return;
+                const date = d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+                chip.textContent = 'Data through ' + date + ' · Status';
+                chip.style.display = 'inline-flex';
+            })
+            .catch(() => {});
 
         // Fetch citywide stats
         fetch('/api/stats')
