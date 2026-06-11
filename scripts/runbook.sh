@@ -10,6 +10,9 @@
 #   bash scripts/runbook.sh smoke-test      # Verify site is healthy
 #   bash scripts/runbook.sh status          # Show service and cert status
 #
+# Restore from backup (nightly dumps live in /var/backups/pulsecities, see scripts/backup_db.sh):
+#   gunzip -c /var/backups/pulsecities/pulsecities_YYYY-MM-DD.sql.gz | psql "$DATABASE_URL"
+#
 # Requirements: Run from /root/pulsecities with sudo access.
 # All commands are idempotent — safe to re-run on failure.
 # =============================================================================
