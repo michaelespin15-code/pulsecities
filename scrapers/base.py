@@ -298,6 +298,16 @@ class BaseScraper(ABC):
             scraper_run.watermark_timestamp = new_watermark
             db.add(scraper_run)
             db.commit()
+            # commit() expires every attribute on scraper_run (expire_on_commit
+            # defaults to True). The caller reads this row after get_scraper_db()
+            # closes the session, so a lazy reload of an expired attribute fires
+            # against a detached instance and raises DetachedInstanceError
+            # ("Instance is not bound to a Session") — which the pipeline catches
+            # and miscounts as a scraper failure. Reload the row while the session
+            # is still live, then expunge it so its values travel back intact and
+            # the next commit in get_scraper_db() can't re-expire them.
+            db.refresh(scraper_run)
+            db.expunge(scraper_run)
 
         return scraper_run
 
