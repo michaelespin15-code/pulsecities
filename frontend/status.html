@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme: dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulseCities | Data status</title>
+    <meta name="description" content="Live freshness for every PulseCities data source: property transfers, evictions, HPD violations, 311 complaints, permits, business licenses, and rent stabilization.">
+    <link rel="canonical" href="https://pulsecities.com/status">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+    <meta property="og:title" content="PulseCities | Data status">
+    <meta property="og:description" content="Live freshness for every PulseCities data source.">
+    <meta property="og:url" content="https://pulsecities.com/status">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="PulseCities">
+    <meta property="og:image" content="https://pulsecities.com/og-image.png">
+
+    <script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>
+    <script>
+        window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+        plausible.init()
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:      #0f172a;
+            --surface: #1e293b;
+            --border:  rgba(148, 163, 184, 0.12);
+            --text:    #e2e8f0;
+            --muted:   #94a3b8;
+            --faint:   rgba(148, 163, 184, 0.45);
+            --orange:  #f97316;
+            --sky:     #38bdf8;
+            --green:   #4ade80;
+            --amber:   #f59e0b;
+            --mono:    'JetBrains Mono', monospace;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        a { color: var(--sky); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Nav */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .nav-brand {
+            font-size: 14px; font-weight: 600; color: var(--orange);
+            text-decoration: none; display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+        }
+        .nav-brand:hover { text-decoration: none; opacity: 0.85; }
+        .nav-breadcrumb { font-size: 12px; color: var(--faint); font-family: var(--mono); }
+        .nav-right { display: flex; align-items: center; gap: 20px; font-size: 13px; }
+        .nav-right a { color: var(--muted); }
+        .nav-right a:hover { color: var(--text); text-decoration: none; }
+
+        /* Layout */
+        .container { max-width: 740px; margin: 0 auto; padding: 56px 24px 80px; }
+
+        .page-header { margin-bottom: 36px; }
+        .page-label {
+            font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+            color: var(--orange); font-family: var(--mono); margin-bottom: 12px;
+        }
+        h1 { font-size: clamp(22px, 4vw, 30px); font-weight: 600; line-height: 1.25; margin-bottom: 12px; }
+        .page-intro { font-size: 15px; color: var(--muted); line-height: 1.65; }
+
+        /* Status table */
+        .status-list {
+            border-top: 1px solid var(--border);
+            margin-top: 8px;
+        }
+        .status-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 16px;
+            align-items: center;
+            padding: 16px 2px;
+            border-bottom: 1px solid var(--border);
+        }
+        .src-name { font-size: 15px; font-weight: 500; color: var(--text); }
+        .src-date { text-align: right; }
+        .src-date .date { font-family: var(--mono); font-size: 13px; color: var(--text); display: block; }
+        .src-date .date-cap {
+            font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em;
+            text-transform: uppercase; color: var(--faint);
+        }
+        .src-state {
+            display: inline-flex; align-items: center; gap: 7px;
+            font-family: var(--mono); font-size: 12px; min-width: 78px; justify-content: flex-end;
+        }
+        .src-state .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .state-ok { color: var(--green); }
+        .state-ok .dot { background: var(--green); }
+        .state-delayed { color: var(--amber); }
+        .state-delayed .dot { background: var(--amber); }
+
+        .src-note {
+            font-size: 12.5px; color: var(--muted); line-height: 1.55;
+            padding: 0 2px 14px; margin-top: -6px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .status-meta {
+            font-family: var(--mono); font-size: 12px; color: var(--faint);
+            margin-top: 20px;
+        }
+        .status-empty { color: var(--muted); padding: 24px 2px; font-size: 14px; }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 28px 24px;
+            padding-bottom: max(28px, calc(env(safe-area-inset-bottom, 0px) + 28px));
+            text-align: center; font-size: 13px; color: var(--muted);
+        }
+        .footer-byline { font-size: 14px; color: var(--text); margin-bottom: 10px; }
+        .footer-byline a { color: var(--sky); font-weight: 500; }
+        .footer-links { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .footer-links a { color: var(--muted); font-size: 13px; }
+        .footer-links a:hover { color: var(--text); }
+
+        @media (max-width: 600px) {
+            .container { padding: 36px 16px calc(env(safe-area-inset-bottom, 0px) + 24px); }
+            nav { padding: 0 16px; }
+            .nav-breadcrumb { display: none; }
+            .nav-right { gap: 14px; }
+            .status-row { grid-template-columns: 1fr auto; row-gap: 4px; }
+            .src-state { grid-column: 2; min-width: 0; }
+            .src-date { grid-column: 1 / -1; text-align: left; }
+            .src-date .date { display: inline; }
+            .src-date .date-cap { display: inline; margin-left: 6px; }
+        }
+        .skip-link { position:absolute;top:-48px;left:0;z-index:9999;background:#1e293b;color:#38bdf8;padding:8px 16px;font-size:14px;text-decoration:none;border-radius:0 0 4px 0;transition:top 0.1s; }
+        .skip-link:focus { top:0; }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to content</a>
+
+<nav>
+    <a href="/" class="nav-brand">
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <rect width="32" height="32" rx="6" fill="#1a1a2e"/>
+            <polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        PulseCities
+    </a>
+    <span class="nav-breadcrumb">/ status</span>
+    <div class="nav-right">
+        <a href="/map">Map</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/about">About</a>
+    </div>
+</nav>
+
+<div id="main-content" class="container">
+    <header class="page-header">
+        <p class="page-label">Data status</p>
+        <h1>Data status</h1>
+        <p class="page-intro">Where each source stands right now. Most sources refresh nightly from NYC public records. When a city feed pauses upstream, it shows here as delayed with the date its data runs through.</p>
+    </header>
+
+    <div id="status-list" class="status-list" aria-live="polite">
+        <p class="status-empty">Loading current status.</p>
+    </div>
+
+    <p id="status-meta" class="status-meta"></p>
+</div>
+
+<footer>
+    <p class="footer-byline">Built by Michael Espin</p>
+    <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/about">About</a>
+        <a href="/status">Status</a>
+        <a href="mailto:nycdisplacement@gmail.com">Contact</a>
+    </div>
+</footer>
+
+<script>
+    function fmtDate(iso) {
+        if (!iso) return null;
+        var d = new Date(iso + 'T00:00:00Z');
+        if (isNaN(d)) return null;
+        return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+    }
+
+    function setText(parent, sel, text) {
+        var el = parent.querySelector(sel);
+        if (el) el.textContent = text;
+    }
+
+    function render(payload) {
+        var list = document.getElementById('status-list');
+        var sources = (payload && payload.sources) || [];
+        if (!sources.length) {
+            list.innerHTML = '<p class="status-empty">Status is temporarily unavailable.</p>';
+            return;
+        }
+        list.innerHTML = '';  // clear the loading placeholder
+
+        // Row markup is static; all source-controlled strings go in via textContent.
+        var ROW = '<div class="src-name"></div>'
+            + '<div class="src-date"><span class="date"></span><span class="date-cap"></span></div>'
+            + '<div class="src-state"><span class="dot"></span><span class="state-label"></span></div>';
+
+        sources.forEach(function (s) {
+            var isOk = s.state === 'ok';
+            var through = fmtDate(s.data_through);
+            var updated = fmtDate(s.last_success ? s.last_success.slice(0, 10) : null);
+            var dateMain, dateCap;
+            if (through) { dateMain = through; dateCap = 'data through'; }
+            else if (updated) { dateMain = updated; dateCap = 'updated'; }
+            else { dateMain = 'Not yet run'; dateCap = ''; }
+
+            var row = document.createElement('div');
+            row.className = 'status-row';
+            row.innerHTML = ROW;
+            setText(row, '.src-name', s.name);
+            setText(row, '.src-date .date', dateMain);
+            setText(row, '.src-date .date-cap', dateCap);
+            row.querySelector('.src-state').classList.add(isOk ? 'state-ok' : 'state-delayed');
+            setText(row, '.state-label', isOk ? 'ok' : 'delayed');
+            list.appendChild(row);
+
+            if (s.note) {
+                var note = document.createElement('p');
+                note.className = 'src-note';
+                note.textContent = s.note;
+                list.appendChild(note);
+            }
+        });
+
+        var gen = payload.generated_at ? new Date(payload.generated_at) : null;
+        if (gen && !isNaN(gen)) {
+            document.getElementById('status-meta').textContent =
+                'Last checked ' + gen.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) + '.';
+        }
+    }
+
+    fetch('/api/status', { headers: { 'Accept': 'application/json' } })
+        .then(function (r) { if (!r.ok) throw new Error('status ' + r.status); return r.json(); })
+        .then(render)
+        .catch(function () {
+            document.getElementById('status-list').innerHTML =
+                '<p class="status-empty">Status is temporarily unavailable. Please check back shortly.</p>';
+        });
+</script>
+
+</body>
+</html>
