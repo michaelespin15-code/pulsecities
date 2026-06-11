@@ -53,3 +53,42 @@ These previously appeared (or could appear) as operators. They acquire via nomin
 - **ICE** -> Financial institution. Dominant entity ICE LENDER HOLDINGS LLC (91% of acquisitions), 100% at nominal/$0. Reasons: known_finance_cluster.
 - **EMPORIUM** -> Financial institution. Dominant entity EMPORIUM TPO LLC (69% of acquisitions), 100% at nominal/$0. Reasons: isaoa_atima.
 
+## RIDGEWOOD cluster integrity (Task 2)
+
+Documentation only. No re-clustering was performed in this session.
+
+The RIDGEWOOD root holds 48 parcels merged from 10 distinct acquiring entity
+names. The cluster is dominated by RIDGEWOOD SAVINGS BANK and is correctly
+screened as `financial_institution`. However, the root tokenizer grouped these
+entities purely on the shared "RIDGEWOOD" place-name token, and that swept in
+six non-bank real-estate entities that are unrelated to the bank.
+
+Entities merged into the RIDGEWOOD root:
+
+| Entity name | Parcels | Type |
+|-------------|--------:|------|
+| RIDGEWOOD SAVINGS BANK | 39 | Bank |
+| RIDGEWOOD SAVINGS BANK ISAOA/ATIMA | 1 | Bank |
+| RIDGEWOOD SAVINGS BANK ISAOA | 1 | Bank |
+| RIDGEWOOD SAVING BANK (source typo) | 1 | Bank |
+| 6702 RIDGEWOOD LLC | 1 | Non-bank real estate |
+| 232 RIDGEWOOD AVE CORP | 1 | Non-bank real estate |
+| 510 RIDGEWOOD AVE CORP | 1 | Non-bank real estate |
+| RIDGEWOOD 407 LLC | 1 | Non-bank real estate |
+| RIDGEWOOD 781 LLC A NEW YORK | 1 | Non-bank real estate |
+| RIDGEWOOD LOFTS LLC | 1 | Non-bank real estate |
+
+Finding: **yes, non-bank RIDGEWOOD LLCs were swept in by name matching.** 42 of
+48 parcels (88%) are RIDGEWOOD SAVINGS BANK variants; the remaining 6 (12%) are
+address- or place-named real-estate entities (RIDGEWOOD is a Queens
+neighborhood and a street name) that share only the token, not ownership.
+
+Impact for this gate: none. The cluster is bank-dominated, so screening the
+whole root as `financial_institution` is the correct public-surface outcome,
+and the six swept-in entities are individually one-parcel and would not clear
+the operator promotion thresholds on their own. The contamination matters for
+cluster *accuracy*, not for the leak this task closes. A future re-clustering
+pass should split on the institutional-entity boundary (bank vs address-named
+real-estate LLC) rather than the bare place token. Recommended but out of scope
+here.
+
