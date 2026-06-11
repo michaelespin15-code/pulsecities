@@ -152,7 +152,7 @@ class TestParseValid:
         db = MagicMock()
         row = scraper._parse(db, VALID_RAW)
         assert row is not None
-        assert row["eviction_type"] == "R"
+        assert row["eviction_type"] == "Residential"
 
     def test_raw_data_stored(self, scraper):
         db = MagicMock()
@@ -176,7 +176,7 @@ class TestParseValid:
         raw["eviction_type"] = "C"
         row = scraper._parse(db, raw)
         assert row is not None
-        assert row["eviction_type"] == "C"
+        assert row["eviction_type"] == "Commercial"
 
 
 # ---------------------------------------------------------------------------
