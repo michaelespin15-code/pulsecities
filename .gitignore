@@ -15,3 +15,4 @@ og_cache/
 TODO.md
 CONTEXT_FOR_AI.md
 DONE.md
+audits/*.json
