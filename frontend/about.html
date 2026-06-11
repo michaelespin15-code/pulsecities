@@ -550,7 +550,7 @@
         <p style="margin-top:12px;font-size:13px;color:var(--muted);">Follow project updates: <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" style="color:var(--sky);">@PulseCities</a></p>
     </section>
 
-    <p style="font-size:12px;color:var(--faint);margin-top:52px;">Last updated: April 2026</p>
+    <p id="about-last-updated" style="font-size:12px;color:var(--faint);margin-top:52px;display:none;"></p>
 
 </div>
 
@@ -565,6 +565,24 @@
         <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="display:inline-flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
     </div>
 </footer>
+
+<script>
+    // Last-updated line: mirror the homepage freshness chip. Newest data-through
+    // date across sources from /api/status. Stays hidden if the endpoint is
+    // unavailable, so the page never shows a stale hardcoded date.
+    fetch('/api/status')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+            const el = document.getElementById('about-last-updated');
+            if (!el || !data || !data.data_through) return;
+            const d = new Date(data.data_through + 'T00:00:00Z');
+            if (isNaN(d)) return;
+            const date = d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+            el.textContent = 'Last updated: ' + date;
+            el.style.display = 'block';
+        })
+        .catch(() => {});
+</script>
 
 </body>
 </html>

@@ -343,8 +343,7 @@ class TestNoiseOperatorVisibility:
     NOISE_SLUGS = ["icecap", "ice", "broad", "broadview",
                    "arbor", "standard", "symetra", "community", "oceanview",
                    "valley"]  # VALLEY NATIONAL BANK reclassified as lender noise
-    VISIBLE_SLUGS = ["mtek-nyc", "phantom-capital", "bredif",
-                     "ridgewood", "cross"]
+    VISIBLE_SLUGS = ["mtek-nyc", "phantom-capital", "bredif"]
 
     def test_top_excludes_all_noise_roots(self, client):
         resp = client.get("/api/operators/top?limit=10")

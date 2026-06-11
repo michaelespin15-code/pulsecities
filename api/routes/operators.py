@@ -202,10 +202,16 @@ def get_top_operators(
     """
     clusters = _load_audit()["clusters"]
 
-    # Only surface operators that have a DB entry (valid profile page).
+    # Only surface confirmed operators (class 'operator') that have a DB entry.
+    # The operator_class gate is the source of truth — it screens out banks,
+    # servicers, GSEs, government bodies, and HDFCs. OPERATOR_NOISE_ROOTS below
+    # is a redundant belt-and-suspenders check for the finance clusters that
+    # predate the classification column.
     db_roots: set[str] = {
         r.operator_root
-        for r in db.execute(text("SELECT operator_root FROM operators")).fetchall()
+        for r in db.execute(
+            text("SELECT operator_root FROM operators WHERE operator_class = 'operator'")
+        ).fetchall()
     }
 
     top = sorted(
