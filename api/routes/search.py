@@ -148,12 +148,15 @@ def search_grouped(
         ]
 
     # ── Operators ───────────────────────────────────────────────────────────────
+    # Classification gate: only class 'operator' is searchable. Banks, servicers,
+    # GSEs, government bodies, and HDFCs are screened out so a name search never
+    # surfaces an institutional cluster as a trackable operator.
     op_rows = db.execute(
         text("""
             SELECT operator_root, slug, display_name, total_properties
             FROM operators
-            WHERE display_name ILIKE :pattern
-               OR operator_root ILIKE :pattern
+            WHERE operator_class = 'operator'
+              AND (display_name ILIKE :pattern OR operator_root ILIKE :pattern)
             ORDER BY total_properties DESC NULLS LAST
             LIMIT 10
         """),
