@@ -137,7 +137,7 @@ def _nav_html() -> str:
 
 def _footer_html() -> str:
     return """<footer><div class="footer-links">
-  <a href="/">Home</a><a href="/map">Map</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="mailto:michaelespin15@gmail.com">Contact</a>
+  <a href="/">Home</a><a href="/map">Map</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="/status">Status</a><a href="mailto:michaelespin15@gmail.com">Contact</a>
 </div></footer>"""
 
 
