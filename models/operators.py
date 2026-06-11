@@ -29,8 +29,9 @@ class Operator(TimestampMixin, Base):
     # Cached aggregates recomputed by backfill script
     borough_spread: Mapped[int | None] = mapped_column(Integer, nullable=True)
     highest_displacement_score: Mapped[float | None] = mapped_column(Float, nullable=True)
-    # Classification gate results
-    operator_class: Mapped[str] = mapped_column(Text, nullable=False, default="review")
+    # Classification gate results. Taxonomy: operator / financial_institution /
+    # government / nonprofit_hdfc / unclassified. Only 'operator' is shown publicly.
+    operator_class: Mapped[str] = mapped_column(Text, nullable=False, default="unclassified")
     classification_reasons: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     classification_confidence: Mapped[float | None] = mapped_column(Numeric(4, 3), nullable=True)
     classified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

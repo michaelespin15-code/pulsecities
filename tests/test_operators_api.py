@@ -136,7 +136,17 @@ class TestOperatorList:
         assert resp.status_code == 200
         data = resp.json()
         assert isinstance(data, list), "Expected a JSON array"
-        assert len(data) >= 20, f"Expected >= 20 operators, got {len(data)}"
+        # Classification gate: only class 'operator' is returned, so the list is
+        # the curated set, not every seeded cluster.
+        assert len(data) >= 1
+
+    def test_list_excludes_institutional_clusters(self, client):
+        """Banks and lenders (RIDGEWOOD, VALLEY) must never appear in the list."""
+        resp = client.get("/api/operators")
+        assert resp.status_code == 200
+        slugs = {item["slug"] for item in resp.json()}
+        assert "ridgewood" not in slugs, "RIDGEWOOD (savings bank) leaked into the operator list"
+        assert "valley" not in slugs, "VALLEY (national bank) leaked into the operator list"
 
     def test_list_items_have_required_fields(self, client):
         resp = client.get("/api/operators")

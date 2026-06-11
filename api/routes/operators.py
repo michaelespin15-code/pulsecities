@@ -148,7 +148,9 @@ def _load_audit() -> dict:
 @router.get("/")
 @limiter.limit("60/minute")
 def list_operators(request: Request, response: Response, db: Session = Depends(get_db)):
-    """All operator clusters ordered by portfolio size. Served from cached DB columns."""
+    """Operator clusters ordered by portfolio size. Only class 'operator' is
+    public — banks, servicers, GSEs, government bodies, and HDFCs are screened
+    out by the classification gate (scripts/classify_operators.py)."""
     rows = db.execute(
         text("""
             SELECT
@@ -161,6 +163,7 @@ def list_operators(request: Request, response: Response, db: Session = Depends(g
                 highest_displacement_score,
                 jsonb_array_length(llc_entities) AS llc_count
             FROM operators
+            WHERE operator_class = 'operator'
             ORDER BY total_properties DESC
         """)
     ).fetchall()
@@ -244,6 +247,12 @@ def get_operator_profile_by_slug(
         {"slug": slug},
     ).fetchone()
     if op_row is None:
+        raise HTTPException(status_code=404, detail="Operator not found")
+
+    # Classification gate: only real operators expose a full profile. Lenders,
+    # GSEs, government bodies, and HDFCs 404 here so no signal data leaks even on
+    # a direct API hit; their public surface is the minimal SSR page instead.
+    if getattr(op_row, "operator_class", "operator") != "operator":
         raise HTTPException(status_code=404, detail="Operator not found")
 
     operator_id = op_row.id
