@@ -477,10 +477,17 @@
             .replace(/"/g, '&quot;');
     }
 
+    // Properties and evictions rows with no address show the lot, not a bare BBL.
+    function addrOrLot(address, bbl) {
+        if (address) return address;
+        if (bbl) return 'Lot ' + bbl + ' (no address on record)';
+        return '';
+    }
+
     const PATTERN_NOTES = {
         'BREDIF':  '64 of 66 properties were acquired in a single January 2026 bulk transfer of distressed note portfolios, with individual transaction amounts not disclosed. The two remaining acquisitions from June 2025 are standard deed transfers. Dollar values showing $0 in the table reflect the note portfolio pricing structure, not missing data.',
         'MTEK':    '37 properties at an average of $1M each, concentrated in Brooklyn displacement corridors from Bushwick to East Flatbush. Each LLC is tied to a specific street or neighborhood (MTEK FORT GREENE, MTEK FULTON, MTEK UNION), grouping nearby acquisitions under a single shell and fragmenting the full portfolio across public entity searches.',
-        'PHANTOM': '64 direct-purchase acquisitions averaging $827K each across South Bronx and East Brooklyn, using 32 LLC shells spun up in numbered sequences (PHANTOM CAPITAL 10, 11, 12...). The fragmentation is deliberate: no single entity name in public records reveals more than a fraction of the portfolio\'s true scale.',
+        'PHANTOM': '64 direct-purchase acquisitions averaging $827K each across South Bronx and East Brooklyn, using 32 LLC shells in numbered sequences (PHANTOM CAPITAL 10, 11, 12...). No single entity name in public records shows more than a fraction of the portfolio. The 32 entities follow numbered naming sequences.',
     };
 
     function createMetaLine(parts) {
@@ -489,7 +496,7 @@
 
     function formatMobilePropertyRow(p, acq, rs, viol, zipNames) {
         const sc = _scoreColor(p.displacement_score);
-        const addr = (acq && acq.address) ? acq.address : p.bbl;
+        const addr = addrOrLot(acq && acq.address, p.bbl);
         const bcCount = (viol.B || 0) + (viol.C || 0);
         const zipName = p.zip_code && zipNames[p.zip_code] ? zipNames[p.zip_code] : null;
 
@@ -537,7 +544,7 @@
 
         const addrDiv = document.createElement('div');
         addrDiv.className = 'mob-addr';
-        addrDiv.textContent = r.address || r.bbl || t('na');
+        addrDiv.textContent = addrOrLot(r.address, r.bbl) || t('na');
         div.appendChild(addrDiv);
 
         const zipName = r.zip_code && zipNames[r.zip_code] ? zipNames[r.zip_code] : null;
@@ -634,7 +641,7 @@
             const evContainer = document.getElementById('eviction-rows');
             evictions.forEach(e => {
                 const acq = acqByBbl[e.bbl] || {};
-                const addr = acq.address || e.bbl;
+                const addr = addrOrLot(acq.address, e.bbl);
                 const row = document.createElement('div');
                 row.style.cssText = 'font-size:0.8rem;color:rgba(241,245,249,0.8);line-height:1.5;';
                 row.innerHTML =
@@ -677,7 +684,7 @@
             tr.style.borderTop = '1px solid rgba(148,163,184,0.05)';
             if (i % 2 === 0) tr.style.background = 'rgba(15,23,42,0.18)';
             tr.innerHTML =
-                '<td style="padding:7px 16px;color:rgba(241,245,249,0.85);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(acq.address || p.bbl) + '</td>' +
+                '<td style="padding:7px 16px;color:rgba(241,245,249,0.85);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(addrOrLot(acq.address, p.bbl)) + '</td>' +
                 '<td class="mono" style="padding:7px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;white-space:nowrap;">' +
                     esc(p.zip_code || '') +
                     (p.zip_code && zipNames[p.zip_code] ? '<br><span style="font-size:0.63rem;color:rgba(148,163,184,0.5);font-family:inherit;">' + esc(zipNames[p.zip_code]) + '</span>' : '') +
@@ -749,7 +756,7 @@
                 if (i % 2 === 0) tr.style.background = 'rgba(15,23,42,0.2)';
                 if (i >= ACQ_CAP) { tr.classList.add('acq-extra'); tr.style.display = 'none'; }
                 tr.innerHTML =
-                    '<td style="padding:8px 16px;color:rgba(241,245,249,0.85);">' + esc(r.address || r.bbl || t('na')) + '</td>' +
+                    '<td style="padding:8px 16px;color:rgba(241,245,249,0.85);">' + esc(addrOrLot(r.address, r.bbl) || t('na')) + '</td>' +
                     '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;line-height:1.3;">' + esc(r.zip_code || '') + (r.zip_code && zipNames[r.zip_code] ? '<br><span style="font-size:0.65rem;color:rgba(148,163,184,0.55);font-family:inherit;">' + esc(zipNames[r.zip_code]) + '</span>' : '') + '</td>' +
                     '<td class="mono" style="padding:8px 16px;color:#94a3b8;font-size:0.7rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(r.buyer_name || '') + '</td>' +
                     '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;white-space:nowrap;">' + esc(r.doc_date || '') + '</td>' +
