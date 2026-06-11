@@ -304,3 +304,165 @@ def classify_operator_candidate(name, stats=None):
         reasons=["passes_all_gates"],
         confidence=0.85,
     )
+
+
+# ===========================================================================
+# Public operator gate — institutional taxonomy
+#
+# A coarser, safety-first classifier that decides whether a cluster appears as
+# a real estate OPERATOR on public pages, or is screened out as a lender, GSE,
+# government body, or HDFC. Distinct from classify_operator_candidate() above
+# (which drives the nightly promotion pipeline); this answers the narrower
+# public-surface question and writes operators.operator_class.
+#
+# Classes:
+#   operator              - real acquisition operator; the ONLY class shown publicly
+#   financial_institution - bank, servicer, GSE, fund, insurer, foreclosure buyer
+#   government            - city/state/federal housing body
+#   nonprofit_hdfc        - HDFC or housing development fund corporation
+#   unclassified          - default; not enough signal to promote to operator
+#
+# The separation that matters in the data: real operators pay market price for
+# deeds; lenders, funds, and foreclosure buyers acquire via nominal/$0
+# consideration or a single institutional entity name. That behavioral split
+# does most of the work; the lexical term lists and the curated finance-root
+# backstop catch the rest.
+# ===========================================================================
+
+OPERATOR = "operator"
+FINANCIAL_INSTITUTION = "financial_institution"
+GOVERNMENT = "government"
+NONPROFIT_HDFC = "nonprofit_hdfc"
+UNCLASSIFIED = "unclassified"
+
+# Confirmed operators. Stay class 'operator' regardless of signals — e.g. BREDIF
+# acquired a distressed-note portfolio in one $0 bulk transfer, which would
+# otherwise trip the nominal-consideration behavioral check.
+OPERATOR_ALLOWLIST: frozenset = frozenset(
+    {"MTEK", "PHANTOM", "BREDIF", "TOWNHOUSE", "MELO", "HABIB"}
+)
+
+# Human-curated finance/lender roots. Behavioral checks already catch these, but
+# they are kept as an explicit backstop so a data refresh can never quietly
+# promote a known lender onto a public operator page.
+KNOWN_FINANCE_ROOTS: frozenset = frozenset(
+    {"ICECAP", "ICE", "BROAD", "BROADVIEW", "ARBOR", "STANDARD",
+     "SYMETRA", "COMMUNITY", "OCEANVIEW", "VALLEY"}
+)
+
+# Behavioral thresholds.
+_NOMINAL_MAJORITY = 0.50   # >50% of acquisitions at nominal/$0 consideration
+_DOMINANT_MAJORITY = 0.50  # >50% of acquisitions under one entity name
+
+# Lexical term lists, checked against the root plus every entity name.
+# Government and HDFC are checked before financial so a housing body or HDFC is
+# never mislabeled a bank.
+_GOVERNMENT_TERMS = [
+    "HUD", "SECRETARY OF HOUSING", "CITY OF NEW YORK", "HPD", "NYCHA",
+    "NEW YORK CITY", "NYC HOUSING", "HOUSING PRESERVATION",
+    "DEPARTMENT OF", "COMMISSIONER OF", "PUBLIC ADMINISTRATOR",
+]
+_NONPROFIT_TERMS = [
+    "HDFC", "HOUSING DEVELOPMENT FUND",
+]
+# Financial includes the task's institutional list plus the servicer/bank names
+# already maintained in _NAME_CHECKS (reused via _check_name below).
+_FINANCIAL_TERMS = [
+    "BANK", "SAVINGS", "FEDERAL", "CREDIT UNION", "NATIONAL ASSOCIATION",
+    "TRUST COMPANY", "FANNIE MAE", "FREDDIE MAC", "FSB", "MORTGAGE",
+    "SERVICING", "LOAN",
+]
+
+# Reason codes from _check_name() that mean "financial institution".
+_FINANCIAL_REASONS = {
+    "gse_fnma", "gse_fhlmc", "named_bank", "named_servicer",
+    "bank_keyword", "mortgage_keyword", "isaoa_atima",
+    "legal_intermediary", "title_escrow",
+}
+
+
+def _terms_hit(blob: str, terms: list[str]) -> list[str]:
+    """Return the subset of terms present in blob as whole words."""
+    hits = []
+    for term in terms:
+        if re.search(r"\b" + re.escape(term) + r"\b", blob):
+            hits.append(term.lower().replace(" ", "_"))
+    return hits
+
+
+def _behavioral_institution(stats: dict) -> list[str]:
+    """Reason codes for lender/foreclosure acquisition behavior."""
+    reasons = []
+    acq = stats.get("acquisition_count") or 0
+
+    nominal_ratio = stats.get("nominal_ratio")
+    if acq >= 5 and nominal_ratio is not None and nominal_ratio > _NOMINAL_MAJORITY:
+        reasons.append("behavioral_majority_nominal")
+
+    share = stats.get("dominant_entity_share")
+    is_llc = stats.get("dominant_entity_is_llc")
+    if (
+        acq >= 5
+        and share is not None and share > _DOMINANT_MAJORITY
+        and is_llc is False
+    ):
+        reasons.append("behavioral_single_non_llc_entity")
+
+    return reasons
+
+
+def classify_operator(root: str, entity_names=None, stats=None):
+    """
+    Assign a cluster to the public operator taxonomy.
+
+    root:         operator_root token (e.g. "RIDGEWOOD").
+    entity_names: list of acquiring entity / LLC names in the cluster.
+    stats:        dict with any of acquisition_count, property_count,
+                  nominal_ratio, dominant_entity_share, dominant_entity_is_llc.
+
+    Returns (operator_class: str, reasons: list[str]).
+    """
+    root_u = (root or "").upper().strip()
+    names = [root_u] + [str(n).upper() for n in (entity_names or []) if n]
+    blob = " ".join(names)
+    s = stats or {}
+
+    # 1. Confirmed operators win outright.
+    if root_u in OPERATOR_ALLOWLIST:
+        return OPERATOR, ["allowlist"]
+
+    # 2. Curated finance-root backstop.
+    if root_u in KNOWN_FINANCE_ROOTS:
+        return FINANCIAL_INSTITUTION, ["known_finance_cluster"]
+
+    # 3. Government, then HDFC — before financial so they are never mislabeled.
+    gov = _terms_hit(blob, _GOVERNMENT_TERMS)
+    if gov:
+        return GOVERNMENT, gov
+
+    hdfc = _terms_hit(blob, _NONPROFIT_TERMS)
+    if hdfc:
+        return NONPROFIT_HDFC, hdfc
+
+    # 4. Financial: task term list + the maintained named-bank/servicer patterns.
+    fin = _terms_hit(blob, _FINANCIAL_TERMS)
+    fin += [r for r in _check_name(blob) if r in _FINANCIAL_REASONS]
+    if fin:
+        # A government reason from _check_name routes to government, not financial.
+        if "government" in _check_name(blob):
+            return GOVERNMENT, ["government"]
+        return FINANCIAL_INSTITUTION, sorted(set(fin))
+
+    # 5. Behavioral lender/foreclosure signature.
+    behavioral = _behavioral_institution(s)
+    if behavioral:
+        return FINANCIAL_INSTITUTION, behavioral
+
+    # 6. Positive operator: real entity structure and enough volume, no
+    #    institutional signal above. Otherwise leave it for human review.
+    acq = s.get("acquisition_count") or 0
+    props = s.get("property_count") or 0
+    if _has_entity_structure(blob) and acq >= _MIN_ACQUISITIONS and props >= _MIN_PROPERTIES:
+        return OPERATOR, ["acquisition_operator"]
+
+    return UNCLASSIFIED, ["insufficient_signal"]

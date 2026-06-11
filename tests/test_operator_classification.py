@@ -442,3 +442,105 @@ class TestPromotionCriteria:
         # Should not be suppressed by name patterns.
         assert "bank_keyword" not in (result.reasons or [])
         assert result.operator_class != OperatorClass.SUPPRESSED
+
+
+# ---------------------------------------------------------------------------
+# Public operator gate — institutional taxonomy (classify_operator)
+# ---------------------------------------------------------------------------
+
+from scoring.operator_classification import (  # noqa: E402
+    classify_operator,
+    OPERATOR,
+    FINANCIAL_INSTITUTION,
+    GOVERNMENT,
+    NONPROFIT_HDFC,
+    UNCLASSIFIED,
+    OPERATOR_ALLOWLIST,
+)
+
+# Real operator: pays market price, diverse LLC entities.
+_OPERATOR_STATS = {
+    "acquisition_count": 12, "property_count": 10,
+    "nominal_ratio": 0.05, "dominant_entity_share": 0.3, "dominant_entity_is_llc": True,
+}
+
+
+class TestPublicOperatorGate:
+    def test_allowlist_members_are_operator(self):
+        for root in ("MTEK", "PHANTOM", "BREDIF", "TOWNHOUSE", "MELO", "HABIB"):
+            klass, reasons = classify_operator(root, [], {})
+            assert klass == OPERATOR, f"{root} should be operator"
+            assert "allowlist" in reasons
+
+    def test_allowlist_expanded_to_six(self):
+        assert OPERATOR_ALLOWLIST == frozenset(
+            {"MTEK", "PHANTOM", "BREDIF", "TOWNHOUSE", "MELO", "HABIB"}
+        )
+
+    def test_ridgewood_savings_bank_is_financial(self):
+        klass, reasons = classify_operator(
+            "RIDGEWOOD",
+            ["RIDGEWOOD SAVINGS BANK", "6702 RIDGEWOOD LLC"],
+            {"acquisition_count": 48, "property_count": 48, "nominal_ratio": 0.92,
+             "dominant_entity_share": 0.81, "dominant_entity_is_llc": False},
+        )
+        assert klass == FINANCIAL_INSTITUTION
+
+    def test_lender_caught_by_nominal_consideration(self):
+        # No bank word in the name, but majority $0 consideration → lender behavior.
+        klass, reasons = classify_operator(
+            "TOORAK", ["TOORAK CAPITAL PARTNERS LLC"],
+            {"acquisition_count": 65, "property_count": 65, "nominal_ratio": 1.0,
+             "dominant_entity_share": 0.98, "dominant_entity_is_llc": True},
+        )
+        assert klass == FINANCIAL_INSTITUTION
+        assert "behavioral_majority_nominal" in reasons
+
+    def test_single_non_llc_entity_is_financial(self):
+        klass, reasons = classify_operator(
+            "SOMECO", ["GENERIC HOLDINGS"],
+            {"acquisition_count": 20, "property_count": 18, "nominal_ratio": 0.2,
+             "dominant_entity_share": 0.9, "dominant_entity_is_llc": False},
+        )
+        assert klass == FINANCIAL_INSTITUTION
+        assert "behavioral_single_non_llc_entity" in reasons
+
+    def test_hdfc_is_nonprofit(self):
+        klass, _ = classify_operator("RIVERSIDE", ["RIVERSIDE HDFC"], {"acquisition_count": 6, "property_count": 6})
+        assert klass == NONPROFIT_HDFC
+
+    def test_housing_development_fund_is_nonprofit(self):
+        klass, _ = classify_operator("FUND", ["EAST SIDE HOUSING DEVELOPMENT FUND CORP"], {})
+        assert klass == NONPROFIT_HDFC
+
+    def test_government_city_of_new_york(self):
+        klass, _ = classify_operator("NYC", ["CITY OF NEW YORK HPD"], {"acquisition_count": 6, "property_count": 6})
+        assert klass == GOVERNMENT
+
+    def test_government_hud_secretary(self):
+        klass, _ = classify_operator("HUD", ["SECRETARY OF HOUSING AND URBAN DEVELOPMENT"], {})
+        assert klass == GOVERNMENT
+
+    def test_clean_operator_promoted(self):
+        klass, reasons = classify_operator("CLEANCO", ["CLEAN REALTY LLC"], _OPERATOR_STATS)
+        assert klass == OPERATOR
+        assert "acquisition_operator" in reasons
+
+    def test_thin_clean_cluster_is_unclassified(self):
+        # No institutional signal, but too little volume to promote.
+        klass, _ = classify_operator("TINY", ["TINY REALTY LLC"], {"acquisition_count": 2, "property_count": 2})
+        assert klass == UNCLASSIFIED
+
+    def test_known_finance_root_backstop(self):
+        klass, reasons = classify_operator("VALLEY", ["VALLEY NATIONAL BANK"], {})
+        assert klass == FINANCIAL_INSTITUTION
+
+    def test_only_operator_class_is_public(self):
+        # The gate the API enforces: anything not 'operator' must be excluded.
+        for root, ents, st in [
+            ("RIDGEWOOD", ["RIDGEWOOD SAVINGS BANK"], {"acquisition_count": 10, "nominal_ratio": 0.9}),
+            ("NYC", ["CITY OF NEW YORK"], {}),
+            ("RIVERSIDE", ["RIVERSIDE HDFC"], {}),
+        ]:
+            klass, _ = classify_operator(root, ents, st)
+            assert klass != OPERATOR

@@ -516,6 +516,63 @@ def property_page(bbl: str, db: Session = Depends(get_db)):
     return HTMLResponse(html)
 
 
+_CLASS_LABELS = {
+    "financial_institution": "Financial institution",
+    "government": "Government",
+    "nonprofit_hdfc": "Nonprofit / HDFC",
+    "unclassified": "Unclassified",
+}
+
+
+def _minimal_operator_page(display_name: str, operator_class: str) -> str:
+    """Minimal profile for non-operator clusters: name, class label, one line.
+
+    No portfolio, signals, or analyst note. Keeps lender and institutional
+    activity such as foreclosure off the operator profile surface.
+    """
+    name = _html.escape(display_name or "Entity")
+    label = _CLASS_LABELS.get(operator_class, "Not an operator")
+    return f"""<!DOCTYPE html>
+<html lang="en" style="color-scheme: dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{name} | PulseCities</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://pulsecities.com/operators">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+  body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#e2e8f0;line-height:1.7;
+       min-height:100vh;display:flex;flex-direction:column}}
+  a{{color:#38bdf8;text-decoration:none}}
+  a:hover{{text-decoration:underline}}
+  nav{{border-bottom:1px solid rgba(148,163,184,0.12);padding:0 24px;height:52px;display:flex;align-items:center;gap:16px}}
+  .brand{{font-size:14px;font-weight:600;color:#f97316}}
+  .wrap{{flex:1;max-width:620px;margin:0 auto;padding:72px 24px;width:100%}}
+  .label{{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#94a3b8;margin-bottom:12px}}
+  h1{{font-size:clamp(22px,4vw,28px);font-weight:600;margin-bottom:10px}}
+  .klass{{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;color:#cbd5e1;
+         border:1px solid rgba(148,163,184,0.25);border-radius:6px;padding:4px 10px;margin-bottom:20px}}
+  p{{color:#94a3b8;font-size:15px}}
+  .back{{display:inline-block;margin-top:28px;font-size:13px}}
+  footer{{border-top:1px solid rgba(148,163,184,0.12);padding:24px;text-align:center;font-size:13px;color:#94a3b8}}
+</style>
+</head>
+<body>
+<nav><a href="/" class="brand">PulseCities</a></nav>
+<div class="wrap">
+  <p class="label">Not an operator profile</p>
+  <h1>{name}</h1>
+  <div class="klass">{label}</div>
+  <p>Lender and institutional activity such as foreclosure is excluded from operator profiles.</p>
+  <a class="back" href="/operators">Back to operators</a>
+</div>
+<footer><a href="/">Home</a></footer>
+</body>
+</html>"""
+
+
 @router.head("/operator/{root}", include_in_schema=False)
 def operator_page_head(root: str):
     return Response(status_code=200)
@@ -544,7 +601,7 @@ def operator_page(root: str, db: Session = Depends(get_db)):
     # Look up both directions so title/meta always use the canonical operator_root.
     op_row = db.execute(
         text(
-            "SELECT operator_root, slug FROM operators "
+            "SELECT operator_root, slug, display_name, operator_class FROM operators "
             "WHERE operator_root = :root OR slug = :slug LIMIT 1"
         ),
         {"root": root_upper, "slug": root.lower()},
@@ -552,6 +609,13 @@ def operator_page(root: str, db: Session = Depends(get_db)):
     if op_row:
         root_upper   = op_row.operator_root  # canonical root for title/meta
         canonical_id = op_row.slug
+        # Classification gate: only real operators get a full profile. Everything
+        # else (banks, GSEs, government, HDFC) gets a minimal page so foreclosure
+        # and lender activity is never presented as operator behavior.
+        if (op_row.operator_class or "unclassified") != "operator":
+            return HTMLResponse(
+                _minimal_operator_page(op_row.display_name or root_upper, op_row.operator_class)
+            )
     else:
         canonical_id = root_upper.lower()
 
@@ -631,8 +695,12 @@ def operators_directory(db: Session = Depends(get_db)):
     from api.routes.operators import OPERATOR_NOISE_ROOTS, _load_audit
     clusters = _load_audit()["clusters"]
 
-    # Build root → slug map from the operators table so links use canonical slugs
-    slug_rows = db.execute(text("SELECT operator_root, slug FROM operators")).fetchall()
+    # Build root → slug map from the operators table so links use canonical slugs.
+    # Only class 'operator' rows: the classification gate keeps banks, servicers,
+    # GSEs, government bodies, and HDFCs out of the directory.
+    slug_rows = db.execute(
+        text("SELECT operator_root, slug FROM operators WHERE operator_class = 'operator'")
+    ).fetchall()
     root_to_slug: dict[str, str] = {r.operator_root: r.slug for r in slug_rows}
 
     def _zip_to_borough(z: str) -> str | None:
