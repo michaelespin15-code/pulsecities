@@ -13,6 +13,8 @@ Tests cover:
 import pytest
 from unittest.mock import MagicMock, patch
 
+from sqlalchemy.dialects import postgresql
+
 from scrapers.dof import DOFScraper
 
 
@@ -198,6 +200,35 @@ class TestParseAssessedValue:
 # ---------------------------------------------------------------------------
 # TestParseFieldMapping
 # ---------------------------------------------------------------------------
+
+class TestUpsertBatch:
+    def test_multirow_insert_compiles_with_uniform_params(self, scraper):
+        """Every row must bind the same columns. With mixed keys plus the
+        on_speculation_watch_list/created_at/updated_at defaults, the multi-row
+        insert failed to compile and killed the nightly pipeline."""
+        captured = {}
+        db = MagicMock()
+
+        def _capture(stmt):
+            captured["stmt"] = stmt
+            return MagicMock(rowcount=2)
+
+        db.execute.side_effect = _capture
+
+        batch = [
+            {"bbl": "1007060035", "borough": 1, "block": "00706", "lot": "0035",
+             "address": "447 10 AVENUE", "zip_code": "10001", "assessed_total": 342732.0},
+            # second row has no address/zip — the heterogeneity that broke compile
+            {"bbl": "1007060036", "borough": 1, "block": "00706", "lot": "0036",
+             "address": None, "zip_code": None, "assessed_total": 100.0},
+        ]
+        scraper._upsert_batch(db, batch)
+
+        compiled = captured["stmt"].compile(dialect=postgresql.dialect())
+        for col in ("on_speculation_watch_list", "created_at", "updated_at"):
+            bound = [k for k in compiled.params if k.startswith(col)]
+            assert len(bound) == len(batch), f"{col} not bound on every row: {bound}"
+
 
 class TestParseFieldMapping:
     def test_block_zero_padded_to_5(self, scraper):
