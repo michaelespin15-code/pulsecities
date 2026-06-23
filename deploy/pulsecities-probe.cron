@@ -1,0 +1,9 @@
+# PulseCities external health probe — every 5 minutes.
+# Alerts via scheduler.alerts.send_alert on any non-200 from /api/health.
+# Separate from the 2AM pipeline cron so the two never interfere.
+#
+# Deploy: cp deploy/pulsecities-probe.cron /etc/cron.d/pulsecities-probe
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+*/5 * * * * root /root/pulsecities/scripts/health_probe.sh >> /var/log/pulsecities/health_probe.log 2>&1
