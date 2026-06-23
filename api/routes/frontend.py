@@ -626,10 +626,6 @@ def operator_page(root: str, db: Session = Depends(get_db)):
     if len(root_upper) < 2:
         return HTMLResponse(_operator_not_found_page(root), status_code=404)
 
-    cached = _op_page_cache.get(root_upper)
-    if cached and time.monotonic() < cached[1]:
-        return HTMLResponse(cached[0])
-
     from api.routes.operators import OPERATOR_NOISE_ROOTS, OPERATOR_NOISE_SLUGS
 
     # Block finance/lender noise operators — they have DB entries but should not
@@ -653,8 +649,16 @@ def operator_page(root: str, db: Session = Depends(get_db)):
     if not op_row:
         return HTMLResponse(_operator_not_found_page(root), status_code=404)
 
-    root_upper   = op_row.operator_root  # canonical root for title/meta
+    root_upper   = op_row.operator_root  # canonical root for title/meta and cache key
     canonical_id = op_row.slug
+
+    # Read cache under the canonical root so the slug URL and the root URL share
+    # one entry. Reading before resolution keyed on the raw path and missed every
+    # slug request.
+    cached = _op_page_cache.get(root_upper)
+    if cached and time.monotonic() < cached[1]:
+        return HTMLResponse(cached[0])
+
     # Classification gate: only real operators get a full profile. Everything
     # else (banks, GSEs, government, HDFC) gets a minimal page so foreclosure
     # and lender activity is never presented as operator behavior.
