@@ -49,14 +49,24 @@ cmd_deploy() {
     git fetch origin main
     git reset --hard origin/main
 
-    log "Installing/updating Python dependencies..."
+    # Once we touch site-packages, the running workers hold stale modules until a
+    # restart. Installing under a live process is what took the site down for 6.5
+    # days in June 2026 (anyio upgraded on disk, old module still loaded). Arm a
+    # restart that fires even if a later step aborts, so deps and workers never
+    # drift apart.
+    deps_changed=0
+    trap '[ "$deps_changed" = 1 ] && { log "Restarting gunicorn after dependency change..."; systemctl restart "$SERVICE"; }' EXIT
+
+    log "Installing pinned dependencies..."
     "$VENV/pip" install -r requirements.txt --quiet
+    deps_changed=1
 
     log "Running Alembic migrations..."
     "$VENV/alembic" upgrade head
 
     log "Restarting gunicorn via systemd..."
     systemctl restart "$SERVICE"
+    trap - EXIT
 
     log "Waiting for gunicorn to come up..."
     sleep 3
