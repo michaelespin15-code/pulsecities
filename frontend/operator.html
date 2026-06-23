@@ -363,6 +363,7 @@
             portfolio_rs:        'RS Units',
             eviction_flagged:    'Eviction filings before acquisition',
             eviction_flagged_note: 'Properties below had eviction filings recorded before a later acquisition in public records. Sourced from ACRIS and NYC housing court data.',
+            evicted_filed:       'eviction case filed',
             entities_badge:      '{n} entities',
             shared_properties:   'Shared Properties',
             llc_in_cluster:      'LLC entities in {name} cluster',
@@ -422,6 +423,7 @@
             portfolio_rs:        'Uds. Estab.',
             eviction_flagged:    'Desalojos antes de adquisición',
             eviction_flagged_note: 'Las propiedades a continuación tuvieron registros de desalojo antes de una adquisición posterior en registros públicos.',
+            evicted_filed:       'caso de desalojo presentado',
             entities_badge:      '{n} entidades',
             shared_properties:   'Propiedades Compartidas',
             llc_in_cluster:      'Entidades LLC en el grupo {name}',
@@ -645,7 +647,7 @@
                 row.style.cssText = 'font-size:0.8rem;color:rgba(241,245,249,0.8);line-height:1.5;';
                 row.innerHTML =
                     '<span class="mono" style="color:rgba(239,68,68,0.8);">' + esc(addr) + '</span>' +
-                    ': evicted <span class="mono">' + esc(e.eviction_date || '') + '</span>' +
+                    ': ' + t('evicted_filed') + ' <span class="mono">' + esc(e.eviction_date || '') + '</span>' +
                     ', then acquired <span class="mono">' + esc(e.acquisition_date || '') + '</span>' +
                     ' by <span class="mono" style="color:rgba(148,163,184,0.65);">' + esc(e.acquiring_entity || '') + '</span>';
                 evContainer.appendChild(row);
