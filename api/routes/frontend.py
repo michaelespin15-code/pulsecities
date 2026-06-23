@@ -630,21 +630,21 @@ def operator_page(root: str, db: Session = Depends(get_db)):
     if cached and time.monotonic() < cached[1]:
         return HTMLResponse(cached[0])
 
-    from api.routes.operators import OPERATOR_NOISE_ROOTS, OPERATOR_NOISE_SLUGS, _load_audit
+    from api.routes.operators import OPERATOR_NOISE_ROOTS, OPERATOR_NOISE_SLUGS
 
     # Block finance/lender noise operators — they have DB entries but should not
     # render public profiles.  Return 404 so search engines don't index them.
     if root.lower() in OPERATOR_NOISE_SLUGS or root_upper in OPERATOR_NOISE_ROOTS:
         return Response(status_code=404)
 
-    clusters = _load_audit()["clusters"]
-
     # The path param may be a slug (e.g. "mtek-nyc") or an operator_root (e.g. "MTEK").
     # Look up both directions so title/meta always use the canonical operator_root.
     op_row = db.execute(
         text(
-            "SELECT operator_root, slug, display_name, operator_class FROM operators "
-            "WHERE operator_root = :root OR slug = :slug LIMIT 1"
+            "SELECT operator_root, slug, display_name, operator_class, "
+            "total_properties, total_acquisitions, "
+            "jsonb_array_length(llc_entities) AS llc_count "
+            "FROM operators WHERE operator_root = :root OR slug = :slug LIMIT 1"
         ),
         {"root": root_upper, "slug": root.lower()},
     ).fetchone()
@@ -663,32 +663,29 @@ def operator_page(root: str, db: Session = Depends(get_db)):
             _minimal_operator_page(op_row.display_name or root_upper, op_row.operator_class)
         )
 
-    cluster = clusters.get(root_upper)
     url = f"https://pulsecities.com/operator/{canonical_id}"
 
-    if cluster:
-        entity_count = len(cluster.get("llc_entities") or [])
-        acq_count    = cluster.get("total_acquisitions", 0)
-        title = f"{root_upper} LLC Network | NYC Property Acquisitions | PulseCities"
-        if acq_count and entity_count:
-            desc = (
-                f"{root_upper}: {acq_count} property "
-                f"{'acquisition' if acq_count == 1 else 'acquisitions'} in NYC, "
-                f"tracked across {entity_count} LLC "
-                f"{'entity' if entity_count == 1 else 'entities'}. "
-                "Sourced from ACRIS public deed records."
-            )
-        elif acq_count:
-            desc = (
-                f"{root_upper}: {acq_count} property "
-                f"{'acquisition' if acq_count == 1 else 'acquisitions'} in NYC. "
-                "Sourced from ACRIS public deed records."
-            )
-        else:
-            desc = f"{root_upper} LLC network in NYC. Sourced from ACRIS public deed records."
+    # Head counts come from the operators row, the same source the body renders,
+    # so the title and description never contradict the page.
+    acq_count    = op_row.total_acquisitions or 0
+    entity_count = op_row.llc_count or 0
+    title = f"{root_upper} LLC Network | NYC Property Acquisitions | PulseCities"
+    if acq_count and entity_count:
+        desc = (
+            f"{root_upper}: {acq_count} property "
+            f"{'acquisition' if acq_count == 1 else 'acquisitions'} in NYC, "
+            f"tracked across {entity_count} LLC "
+            f"{'entity' if entity_count == 1 else 'entities'}. "
+            "Sourced from ACRIS public deed records."
+        )
+    elif acq_count:
+        desc = (
+            f"{root_upper}: {acq_count} property "
+            f"{'acquisition' if acq_count == 1 else 'acquisitions'} in NYC. "
+            "Sourced from ACRIS public deed records."
+        )
     else:
-        title = f"{root_upper} | NYC Operator Profile | PulseCities"
-        desc  = f"{root_upper} LLC network in NYC. Sourced from ACRIS public deed records."
+        desc = f"{root_upper} LLC network in NYC. Sourced from ACRIS public deed records."
 
     e_title = _html.escape(title, quote=True)
     e_desc  = _html.escape(desc,  quote=True)
