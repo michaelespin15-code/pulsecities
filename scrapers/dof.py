@@ -150,27 +150,27 @@ class DOFScraper(BaseScraper):
         }
 
     def _upsert_batch(self, db, batch: list[dict]) -> int:
-        # Strip fields not in the Parcel model before inserting
-        # (assessment_year is in raw_data, address/zip_code are NOT updated on conflict)
+        # Every row must carry the same columns. A multi-row insert with
+        # heterogeneous keys, plus the Python-side defaults on
+        # on_speculation_watch_list/created_at/updated_at, makes SQLAlchemy bind
+        # the first row's defaults un-suffixed while later rows get _m1.., which
+        # fails to compile (the f405 that aborted the nightly pipeline). Supply
+        # all columns on every row, and the NOT NULL watch-list flag explicitly.
+        now = datetime.now(timezone.utc)
         parcel_rows = []
         for row in batch:
-            parcel_row = {
+            parcel_rows.append({
                 "bbl": row["bbl"],
+                "borough": row.get("borough"),
+                "block": row.get("block"),
+                "lot": row.get("lot"),
+                "address": row.get("address"),
+                "zip_code": row.get("zip_code"),
                 "assessed_total": row["assessed_total"],
-            }
-            # Include borough/block/lot for new inserts only, not updated on conflict
-            if row.get("borough") is not None:
-                parcel_row["borough"] = row["borough"]
-            if row.get("block") is not None:
-                parcel_row["block"] = row["block"]
-            if row.get("lot") is not None:
-                parcel_row["lot"] = row["lot"]
-            # Include address/zip only for new rows (not overwritten on conflict)
-            if row.get("address") is not None:
-                parcel_row["address"] = row["address"]
-            if row.get("zip_code") is not None:
-                parcel_row["zip_code"] = row["zip_code"]
-            parcel_rows.append(parcel_row)
+                "on_speculation_watch_list": False,
+                "created_at": now,
+                "updated_at": now,
+            })
 
         stmt = (
             insert(Parcel)
