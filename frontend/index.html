@@ -334,7 +334,7 @@
             </div>
 
             <!-- Freshness chip: data-through date from /api/status, links to /status. Hidden until populated, and stays hidden if the fetch fails. -->
-            <a id="freshness-chip" href="/status" style="display:none;align-items:center;gap:6px;margin-bottom:14px;font-size:11px;color:#64748b;font-family:'JetBrains Mono',monospace;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"></a>
+            <a id="freshness-chip" href="/status" aria-label="Data source freshness and status" style="display:none;align-items:center;gap:6px;margin-bottom:14px;font-size:11px;color:#64748b;font-family:'JetBrains Mono',monospace;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"></a>
 
             <!-- Example searches -->
             <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;">
@@ -394,6 +394,12 @@
             <div id="operator-cards">
                 <div id="operator-loading" class="font-mono" style="font-size:11px;color:#334155;padding:16px 0;text-align:center;">Loading…</div>
             </div>
+            <p style="margin-top:8px;font-size:11px;color:#64748b;">
+                Tracked profiles:
+                <a href="/operator/MTEK" style="color:#94a3b8;text-decoration:none;">MTEK</a>,
+                <a href="/operator/PHANTOM" style="color:#94a3b8;text-decoration:none;">PHANTOM</a>,
+                <a href="/operator/BREDIF" style="color:#94a3b8;text-decoration:none;">BREDIF</a>
+            </p>
         </div>
 
         <!-- Methodology trust section -->
