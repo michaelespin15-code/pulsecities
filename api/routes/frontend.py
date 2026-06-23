@@ -12,7 +12,7 @@ import json
 import logging
 import re
 import time
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 from fastapi import APIRouter, Depends
@@ -641,8 +641,8 @@ def operator_page(root: str, db: Session = Depends(get_db)):
     # Look up both directions so title/meta always use the canonical operator_root.
     op_row = db.execute(
         text(
-            "SELECT operator_root, slug, display_name, operator_class, "
-            "total_properties, total_acquisitions, "
+            "SELECT id, operator_root, slug, display_name, operator_class, "
+            "total_properties, total_acquisitions, llc_entities, "
             "jsonb_array_length(llc_entities) AS llc_count "
             "FROM operators WHERE operator_root = :root OR slug = :slug LIMIT 1"
         ),
@@ -691,6 +691,54 @@ def operator_page(root: str, db: Session = Depends(get_db)):
     e_desc  = _html.escape(desc,  quote=True)
     e_url   = _html.escape(url,   quote=True)
 
+    # --- Server-rendered body so the page carries real content without JS ---
+    # The client JS hydrates the same elements on load (and clears the acquisition
+    # rows first), so this is the substantive content a crawler sees, not a shell.
+    zip_count = db.execute(
+        text(
+            "SELECT count(DISTINCT p.zip_code) FROM operator_parcels op "
+            "JOIN parcels p ON p.bbl = op.bbl WHERE op.operator_id = :id"
+        ),
+        {"id": op_row.id},
+    ).scalar() or 0
+
+    cutoff = date.today() - timedelta(days=548)  # same 18-month window the profile API uses
+    acq_rows = db.execute(
+        text(
+            "SELECT p.address, o.bbl, p.zip_code, o.party_name_normalized AS buyer, "
+            "o.doc_date, o.doc_amount "
+            "FROM ownership_raw o JOIN parcels p ON p.bbl = o.bbl "
+            "WHERE o.party_type = '2' AND o.party_name_normalized = ANY(:names) "
+            "AND o.doc_date >= :cutoff "
+            "ORDER BY o.doc_date DESC NULLS LAST LIMIT 20"
+        ),
+        {"names": op_row.llc_entities or [], "cutoff": cutoff},
+    ).fetchall()
+
+    def _e(v):
+        return _html.escape(str(v), quote=True)
+
+    summary_html = (
+        f"{acq_count} acquisition{'' if acq_count == 1 else 's'} "
+        f"across {zip_count} ZIP code{'' if zip_count == 1 else 's'}"
+        if acq_count else ""
+    )
+
+    acq_body = ""
+    for r in acq_rows:
+        addr = _e(r.address) if r.address else f"Lot {_e(r.bbl)} (no address on record)"
+        doc_date = r.doc_date.isoformat() if r.doc_date else ""
+        amount = f"${int(r.doc_amount):,}" if r.doc_amount and float(r.doc_amount) > 0 else "N/A"
+        acq_body += (
+            "<tr>"
+            f'<td style="padding:8px 16px;color:rgba(241,245,249,0.85);">{addr}</td>'
+            f'<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;">{_e(r.zip_code or "")}</td>'
+            f'<td class="mono" style="padding:8px 16px;color:#94a3b8;font-size:0.7rem;">{_e(r.buyer or "")}</td>'
+            f'<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;">{_e(doc_date)}</td>'
+            f'<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:#94a3b8;font-size:0.72rem;">{_e(amount)}</td>'
+            "</tr>"
+        )
+
     html = _operator_template()
     html = html.replace('<title>Operator Profile | PulseCities</title>', f'<title>{title}</title>', 1)
     html = html.replace(
@@ -718,6 +766,28 @@ def operator_page(root: str, db: Session = Depends(get_db)):
         f'    <meta name="twitter:image" content="https://pulsecities.com/og-image.png">'
     )
     html = html.replace('</head>', f'{og_block}\n</head>', 1)
+
+    # Inject the real operator data into the body so the served HTML is
+    # substantive on first byte. The client JS overwrites these on hydration.
+    html = html.replace(
+        '<h1 id="op-root" class="mono accent" style="font-size: 1.8rem; font-weight: 400; letter-spacing: 0.04em;"></h1>',
+        f'<h1 id="op-root" class="mono accent" style="font-size: 1.8rem; font-weight: 400; letter-spacing: 0.04em;">{_e(root_upper)}</h1>',
+        1,
+    )
+    html = html.replace(
+        '<div id="op-summary" style="font-size: 0.82rem; color: #94a3b8; margin-top: 5px;"></div>',
+        f'<div id="op-summary" style="font-size: 0.82rem; color: #94a3b8; margin-top: 5px;">{_e(summary_html)}</div>',
+        1,
+    )
+    html = html.replace('<div class="stat-val" id="stat-properties"></div>',
+                        f'<div class="stat-val" id="stat-properties">{op_row.total_properties or 0}</div>', 1)
+    html = html.replace('<div class="stat-val" id="stat-acquisitions"></div>',
+                        f'<div class="stat-val" id="stat-acquisitions">{acq_count}</div>', 1)
+    html = html.replace('<div class="stat-val" id="stat-llcs"></div>',
+                        f'<div class="stat-val" id="stat-llcs">{entity_count}</div>', 1)
+    html = html.replace('<div class="stat-val" id="stat-zips"></div>',
+                        f'<div class="stat-val" id="stat-zips">{zip_count}</div>', 1)
+    html = html.replace('<tbody id="acq-rows"></tbody>', f'<tbody id="acq-rows">{acq_body}</tbody>', 1)
 
     _op_page_cache[root_upper] = (html, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(html)

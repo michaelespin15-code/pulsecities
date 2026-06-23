@@ -36,9 +36,8 @@
         details[open] .chevron { transform: rotate(180deg); }
         a { color: inherit; text-decoration: none; }
         a:hover { color: #f97316; }
-        #error-state { display: none; }
-        #loading-state { display: flex; }
-        #content { display: none; }
+        #loading-state { display: none; }
+        #content { display: block; }
         .stat-card { padding: 14px 16px; }
         .page-wrap { max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; }
         .desktop-table-wrap { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -82,17 +81,6 @@
     <div id="main-content" class="page-wrap">
         <a href="/" style="font-size: 0.75rem; color: rgba(148,163,184,0.7); display: inline-block; margin-bottom: 20px;" data-i18n="back_map">← Home</a>
 
-        <!-- Loading -->
-        <div id="loading-state" style="justify-content: center; padding: 80px 0; color: rgba(148,163,184,0.4); font-size: 0.85rem; font-family: 'JetBrains Mono', monospace;" data-i18n="loading">
-            Loading operator profile...
-        </div>
-
-        <!-- Error -->
-        <div id="error-state" style="padding: 60px 0; text-align: center;">
-            <div style="font-size: 1.4rem; font-weight: 600; color: rgba(241,245,249,0.75); margin-bottom: 8px;">Operator not found</div>
-            <div style="color: rgba(148,163,184,0.5); font-size: 0.85rem; margin-bottom: 24px;" id="error-msg">This operator profile is not available yet.</div>
-            <a href="/operators" style="font-size: 0.8rem; color: rgba(249,115,22,0.8); border: 1px solid rgba(249,115,22,0.25); padding: 8px 18px; border-radius: 6px;">Back to operators</a>
-        </div>
 
         <!-- Content -->
         <div id="content">
@@ -331,8 +319,6 @@
     const i18n = {
         en: {
             back_map:            '\u2190 Home',
-            loading:             'Loading operator profile...',
-            not_found:           'Operator not found.',
             stat_properties:     'Properties',
             stat_acquisitions:   'Acquisitions',
             stat_llcs:           'LLC entities',
@@ -391,8 +377,6 @@
         },
         es: {
             back_map:            '\u2190 Inicio',
-            loading:             'Cargando perfil del operador...',
-            not_found:           'Operador no encontrado.',
             stat_properties:     'Propiedades',
             stat_acquisitions:   'Adquisiciones',
             stat_llcs:           'Entidades LLC',
@@ -591,7 +575,6 @@
         _cachedZipNames = zipNames || {};
         zipNames        = _cachedZipNames;
 
-        document.getElementById('loading-state').style.display = 'none';
         document.getElementById('content').style.display       = 'block';
         plausible('Operator Profile View');
         document.getElementById('op-root').textContent         = data.operator_root;
@@ -751,6 +734,9 @@
         } else {
             const tbody = document.getElementById('acq-rows');
             const acqMobileList = document.getElementById('acq-mobile-list');
+            // Drop any server-rendered rows before hydrating so they are not doubled.
+            tbody.innerHTML = '';
+            acqMobileList.innerHTML = '';
             rows.forEach((r, i) => {
                 const tr = document.createElement('tr');
                 tr.style.borderTop = '1px solid rgba(148,163,184,0.06)';
@@ -961,15 +947,11 @@
         container.appendChild(card);
     }
 
+    // The server returns 404 for unknown operators and full SSR content for real
+    // ones, so a client hydrate failure should keep the server-rendered page
+    // rather than blanking it. Log and leave the SSR content in place.
     function showError(msg) {
-        document.getElementById('loading-state').style.display = 'none';
-        document.getElementById('content').style.display       = 'none';
-        document.getElementById('error-state').style.display   = 'block';
-        // Never surface raw JS exception text — only show messages we explicitly set.
-        const safe = (msg === 'Operator not found.' || msg === 'No operator specified.' || (msg && msg.startsWith('API error')))
-            ? msg
-            : 'This operator profile is not available yet.';
-        document.getElementById('error-msg').textContent = safe;
+        console.warn('[PulseCities] operator hydrate issue:', msg);
     }
 
     // Operator data loading
