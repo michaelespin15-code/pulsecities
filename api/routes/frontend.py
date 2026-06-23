@@ -573,6 +573,48 @@ def _minimal_operator_page(display_name: str, operator_class: str) -> str:
 </html>"""
 
 
+def _operator_not_found_page(label: str) -> str:
+    """404 body for a slug that does not resolve to a tracked operator.
+
+    Served with HTTP 404 so crawlers treat it as a real not-found, never a
+    soft 404 on a 200 shell.
+    """
+    name = _html.escape(label or "operator")
+    return f"""<!DOCTYPE html>
+<html lang="en" style="color-scheme: dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operator not found | PulseCities</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+  body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#e2e8f0;line-height:1.7;
+       min-height:100vh;display:flex;flex-direction:column}}
+  a{{color:#38bdf8;text-decoration:none}}
+  a:hover{{text-decoration:underline}}
+  nav{{border-bottom:1px solid rgba(148,163,184,0.12);padding:0 24px;height:52px;display:flex;align-items:center}}
+  .brand{{font-size:14px;font-weight:600;color:#f97316}}
+  .wrap{{flex:1;max-width:620px;margin:0 auto;padding:72px 24px;width:100%}}
+  h1{{font-size:clamp(22px,4vw,28px);font-weight:600;margin-bottom:10px}}
+  p{{color:#94a3b8;font-size:15px}}
+  .back{{display:inline-block;margin-top:28px;font-size:13px}}
+  footer{{border-top:1px solid rgba(148,163,184,0.12);padding:24px;text-align:center;font-size:13px;color:#94a3b8}}
+</style>
+</head>
+<body>
+<nav><a href="/" class="brand">PulseCities</a></nav>
+<div class="wrap">
+  <h1>Operator not found</h1>
+  <p>No tracked operator matches "{name}". Browse the full list of tracked operator networks instead.</p>
+  <a class="back" href="/operators">Back to operators</a>
+</div>
+<footer><a href="/">Home</a></footer>
+</body>
+</html>"""
+
+
 @router.head("/operator/{root}", include_in_schema=False)
 def operator_page_head(root: str):
     return Response(status_code=200)
@@ -582,7 +624,7 @@ def operator_page_head(root: str):
 def operator_page(root: str, db: Session = Depends(get_db)):
     root_upper = root.upper().strip()
     if len(root_upper) < 2:
-        return HTMLResponse(_operator_template())
+        return HTMLResponse(_operator_not_found_page(root), status_code=404)
 
     cached = _op_page_cache.get(root_upper)
     if cached and time.monotonic() < cached[1]:
@@ -606,18 +648,20 @@ def operator_page(root: str, db: Session = Depends(get_db)):
         ),
         {"root": root_upper, "slug": root.lower()},
     ).fetchone()
-    if op_row:
-        root_upper   = op_row.operator_root  # canonical root for title/meta
-        canonical_id = op_row.slug
-        # Classification gate: only real operators get a full profile. Everything
-        # else (banks, GSEs, government, HDFC) gets a minimal page so foreclosure
-        # and lender activity is never presented as operator behavior.
-        if (op_row.operator_class or "unclassified") != "operator":
-            return HTMLResponse(
-                _minimal_operator_page(op_row.display_name or root_upper, op_row.operator_class)
-            )
-    else:
-        canonical_id = root_upper.lower()
+    # An unresolved slug is a real 404, not a 200 shell that a crawler reads as
+    # a soft 404.
+    if not op_row:
+        return HTMLResponse(_operator_not_found_page(root), status_code=404)
+
+    root_upper   = op_row.operator_root  # canonical root for title/meta
+    canonical_id = op_row.slug
+    # Classification gate: only real operators get a full profile. Everything
+    # else (banks, GSEs, government, HDFC) gets a minimal page so foreclosure
+    # and lender activity is never presented as operator behavior.
+    if (op_row.operator_class or "unclassified") != "operator":
+        return HTMLResponse(
+            _minimal_operator_page(op_row.display_name or root_upper, op_row.operator_class)
+        )
 
     cluster = clusters.get(root_upper)
     url = f"https://pulsecities.com/operator/{canonical_id}"
