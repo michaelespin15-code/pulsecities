@@ -11,7 +11,8 @@ Used by:
 import logging
 from datetime import datetime
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from models.database import get_db
@@ -35,6 +36,12 @@ def health(db: Session = Depends(get_db)):
     Returns 200 with scraper status if DB is reachable.
     Returns 503 if DB connection fails.
     """
+    try:
+        db.execute(text("SELECT 1"))
+    except Exception:
+        logger.exception("health check: database unreachable")
+        raise HTTPException(status_code=503, detail="database unavailable")
+
     try:
         scrapers = {}
         for name in SCRAPER_NAMES:
@@ -65,7 +72,6 @@ def health(db: Session = Depends(get_db)):
             "scrapers": scrapers,
             "timestamp": datetime.utcnow().isoformat() + "Z",
         }
-    except Exception as exc:
-        logger.exception("Health check failed: %s", exc)
-        from fastapi import HTTPException
-        raise HTTPException(status_code=503, detail=f"Database unavailable: {exc}")
+    except Exception:
+        logger.exception("health check: scraper status query failed")
+        raise HTTPException(status_code=503, detail="database unavailable")
