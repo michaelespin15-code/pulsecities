@@ -474,7 +474,7 @@
                 stats_llc_unit_s:     'LLC transfer',
                 stats_eviction_unit:  'eviction filings',
                 stats_eviction_unit_s:'eviction filing',
-                stats_prefix:         'On record, last 90 days:',
+                stats_prefix:         'Recently on record:',
                 stats_conjunction:    'and',
             },
             es: {
@@ -511,7 +511,7 @@
                 stats_llc_unit_s:     'transferencia LLC',
                 stats_eviction_unit:  'desalojos registrados',
                 stats_eviction_unit_s:'desalojo registrado',
-                stats_prefix:         'En registro, últimos 90 días:',
+                stats_prefix:         'Recientemente en registro:',
                 stats_conjunction:    'y',
             }
         };
@@ -563,9 +563,10 @@
             const chips = document.getElementById('stat-chips');
             if (!chips || !llc) return;
 
-            // Single 90-day window shown: the LLC transfer count only. The
-            // eviction count uses a 30-day window, so it is intentionally left
-            // off this line to keep the stated "last 90 days" accurate.
+            // Only the LLC transfer count is shown here. We avoid naming a fixed
+            // window ("last 90 days"): ACRIS pauses upstream at NYC Open Data for
+            // weeks at a time, so a today-anchored window would overstate recency.
+            // "Recently on record" stays true whether or not the feed is current.
             const s = i18n[getCurrentLanguage()] || i18n.en;
             const unit = llc === 1 ? s.stats_llc_unit_s : s.stats_llc_unit;
             chips.textContent = `${s.stats_prefix} ${llc.toLocaleString()} ${unit}`;
