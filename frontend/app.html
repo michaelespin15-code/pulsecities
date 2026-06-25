@@ -2466,13 +2466,19 @@
                 const details = await Promise.all(list.map(op =>
                     fetch('/api/operators/' + op.slug).then(r => r.ok ? r.json() : null).catch(() => null)
                 ));
-                const matchArgs = [];
+                // One color per ZIP across ALL operators: a MapLibre 'match' expression
+                // rejects duplicate branch labels, and operators routinely overlap in the
+                // same ZIP. First operator to claim a ZIP wins it.
+                const zipColor = new Map();
                 details.forEach((d, i) => {
                     if (!d || !list[i]) return;
                     const color = _OP_COLORS[list[i].slug] || '#94a3b8';
-                    [...new Set((d.properties || []).map(p => p.zip_code).filter(Boolean))]
-                        .forEach(z => matchArgs.push(z, color));
+                    (d.properties || []).forEach(p => {
+                        if (p.zip_code && !zipColor.has(p.zip_code)) zipColor.set(p.zip_code, color);
+                    });
                 });
+                const matchArgs = [];
+                zipColor.forEach((color, z) => matchArgs.push(z, color));
                 if (!matchArgs.length) return;
                 _operatorPaintColor = ['match', ['get', 'zip_code'], ...matchArgs, 'transparent'];
                 map.addLayer({ id: 'operator-overlay', type: 'fill', source: 'neighborhoods',
