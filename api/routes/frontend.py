@@ -811,16 +811,7 @@ def operators_directory(db: Session = Depends(get_db)):
     if _operators_cache and time.monotonic() < _operators_cache[1]:
         return HTMLResponse(_operators_cache[0])
 
-    from api.routes.operators import OPERATOR_NOISE_ROOTS, _load_audit
-    clusters = _load_audit()["clusters"]
-
-    # Build root → slug map from the operators table so links use canonical slugs.
-    # Only class 'operator' rows: the classification gate keeps banks, servicers,
-    # GSEs, government bodies, and HDFCs out of the directory.
-    slug_rows = db.execute(
-        text("SELECT operator_root, slug FROM operators WHERE operator_class = 'operator'")
-    ).fetchall()
-    root_to_slug: dict[str, str] = {r.operator_root: r.slug for r in slug_rows}
+    from api.routes.operators import OPERATOR_NOISE_ROOTS
 
     def _zip_to_borough(z: str) -> str | None:
         try:
@@ -834,35 +825,48 @@ def operators_directory(db: Session = Depends(get_db)):
         if (11001 <= n <= 11109) or (11354 <= n <= 11697): return "Queens"
         return None
 
-    # Only include operators that:
-    #   1. have LLC entities (measurable footprint)
-    #   2. have a DB entry (valid profile page — no dead links)
-    #   3. are not finance/lender noise (ASST-only activity, not DEED transfers)
-    operators = sorted(
-        [
-            {"root": r, **c}
-            for r, c in clusters.items()
-            if len(c.get("llc_entities") or []) > 0
-            and r in root_to_slug
-            and r not in OPERATOR_NOISE_ROOTS
-        ],
-        key=lambda x: x.get("total_acquisitions", 0),
-        reverse=True,
-    )
+    # Read every count from the same DB sources the profile page uses, so the two
+    # pages can never disagree: total_acquisitions and the LLC-entity count come
+    # straight from the operators row, and the ZIP count is the live
+    # operator_parcels -> parcels join (count(DISTINCT zip)) — exactly what
+    # operator_page() computes. The audit JSON is no longer consulted for these
+    # numbers; it drifts from the DB and was the source of the directory/profile
+    # mismatch.
+    #
+    # Filter: class 'operator' only (the classification gate keeps banks, GSEs,
+    # servicers, government, and HDFCs out), a measurable LLC footprint, and not a
+    # known finance/lender noise root.
+    db_rows = db.execute(
+        text(
+            "SELECT o.operator_root, o.slug, "
+            "       COALESCE(o.total_acquisitions, 0) AS acqs, "
+            "       COALESCE(jsonb_array_length(o.llc_entities), 0) AS entities, "
+            "       count(DISTINCT p.zip_code) AS zip_count, "
+            "       array_agg(DISTINCT p.zip_code) FILTER (WHERE p.zip_code IS NOT NULL) AS zips "
+            "FROM operators o "
+            "LEFT JOIN operator_parcels op ON op.operator_id = o.id "
+            "LEFT JOIN parcels p ON p.bbl = op.bbl "
+            "WHERE o.operator_class = 'operator' "
+            "  AND COALESCE(jsonb_array_length(o.llc_entities), 0) > 0 "
+            "GROUP BY o.id "
+            "ORDER BY COALESCE(o.total_acquisitions, 0) DESC, o.operator_root"
+        )
+    ).fetchall()
+    operators = [r for r in db_rows if r.operator_root not in OPERATOR_NOISE_ROOTS]
 
     rows_html = ""
     list_items = []
     for i, op in enumerate(operators, 1):
-        root = op["root"]
-        entities = len(op.get("llc_entities") or [])
-        acqs = op.get("total_acquisitions", 0)
-        zips = op.get("zip_codes") or []
+        root = op.operator_root
+        entities = op.entities
+        acqs = op.acqs
+        zips = op.zips or []
         boroughs = list(dict.fromkeys(b for z in zips if (b := _zip_to_borough(z))))
         extra = len(boroughs) - 2
         borough_str = ", ".join(boroughs[:2]) + (f" +{extra}" if extra > 0 else "")
-        slug = root_to_slug[root]
+        slug = op.slug
         op_link = f"/operator/{_html.escape(slug)}"
-        zip_count = len(zips)
+        zip_count = op.zip_count
         meta_parts = []
         if acqs:     meta_parts.append(f'{acqs} <span class="op-label-acq">acquisitions</span>')
         if entities: meta_parts.append(f'{entities} LLC{"s" if entities != 1 else ""}')
