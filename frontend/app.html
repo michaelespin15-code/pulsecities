@@ -677,7 +677,7 @@
             <div id="block-panel" class="hidden flex-1 flex flex-col gap-4">
                 <!-- Back navigation (D-10) -->
                 <button id="back-btn" class="text-sm text-sky-400 text-left hover:underline" style="min-height: 44px;">
-                    &#8592; Back to &#8212;
+                    &#8592; Back
                 </button>
 
                 <!-- Block score card -->
@@ -1280,6 +1280,7 @@
                     copy_success:            'Copied!',
                     copy_fail:               'Copy failed',
                     back_to:                 '← Back to {zip}',
+                    back:                    '← Back',
                     bbl_label:               'BBL: {bbl}',
                     reno_flip_count:         '{n} propert{plural} with LLC acquisition + renovation permit within 60 days',
                     reno_flip_acquired:      'acquired by',
@@ -1498,6 +1499,7 @@
                     copy_success:            '¡Copiado!',
                     copy_fail:               'Error al copiar',
                     back_to:                 '← Volver a {zip}',
+                    back:                    '← Volver',
                     bbl_label:               'BBL: {bbl}',
                     reno_flip_count:         '{n} propiedad{plural} con adquisición LLC y permiso de renovación en 60 días',
                     reno_flip_acquired:      'adquirida por',
@@ -3039,8 +3041,12 @@
             setPanel('block');
             history.pushState(null, '', '/property/' + bbl);
 
-            // Back button shows current zip (D-10)
-            document.getElementById('back-btn').textContent = t('ui', 'back_to').replace('{zip}', _cachedZip || '');
+            // Back button names the ZIP when we have one; otherwise a plain "Back"
+            // (never "Back to " with a dangling destination — that surfaced on
+            // direct address lookups where no ZIP context was set).
+            document.getElementById('back-btn').textContent = _cachedZip
+                ? t('ui', 'back_to').replace('{zip}', _cachedZip)
+                : t('ui', 'back');
 
             // BBL display
             document.getElementById('block-bbl').textContent = t('ui', 'bbl_label').replace('{bbl}', bbl);
