@@ -2458,7 +2458,9 @@
             }
             // First time: fetch all operator portfolios and build the match expression
             try {
-                const list = await fetch('/api/operators').then(r => r.ok ? r.json() : []);
+                // Trailing slash is required: GET /api/operators (no slash) 307-redirects to
+                // http://, which the browser blocks as mixed content on the HTTPS page.
+                const list = await fetch('/api/operators/').then(r => r.ok ? r.json() : []);
                 const details = await Promise.all(list.map(op =>
                     fetch('/api/operators/' + op.slug).then(r => r.ok ? r.json() : null).catch(() => null)
                 ));
