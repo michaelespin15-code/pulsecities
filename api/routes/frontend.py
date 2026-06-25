@@ -663,8 +663,12 @@ def operator_page(root: str, db: Session = Depends(get_db)):
     # else (banks, GSEs, government, HDFC) gets a minimal page so foreclosure
     # and lender activity is never presented as operator behavior.
     if (op_row.operator_class or "unclassified") != "operator":
+        # 404, not 200: a bank or GSE is not an operator profile, so the page must
+        # not register as live content for crawlers (soft-404). The body already
+        # carries noindex; the status code completes the signal.
         return HTMLResponse(
-            _minimal_operator_page(op_row.display_name or root_upper, op_row.operator_class)
+            _minimal_operator_page(op_row.display_name or root_upper, op_row.operator_class),
+            status_code=404,
         )
 
     url = f"https://pulsecities.com/operator/{canonical_id}"
