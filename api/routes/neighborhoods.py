@@ -701,11 +701,12 @@ def _build_summary(score: float | None, breakdown: dict[str, Any], raw_counts: d
     """
     Generate a 1–2 sentence plain-English summary from score + signal breakdown.
 
-    Tier thresholds (mirrors frontend color bands):
-      Critical  76–100  — severe, multiple signals elevated
-      High      56–75   — clear pressure, dominant signal named
-      Moderate  34–55   — emerging pressure, primary signal named
-      Low        1–33   — limited evidence of displacement pressure
+    Tier thresholds — must mirror the map legend (app.html) and weekly digest, or a
+    neighborhood reads as one tier in the summary and a different color on the map:
+      Critical  85–100  — severe, multiple signals elevated
+      High      67–84   — clear pressure, dominant signal named
+      Moderate  34–66   — emerging pressure, primary signal named
+      Low        0–33   — limited evidence of displacement pressure
 
     Top signals are the breakdown keys with values above 30 (non-trivial),
     sorted descending. Up to 2 are named in the sentence.
@@ -716,10 +717,10 @@ def _build_summary(score: float | None, breakdown: dict[str, Any], raw_counts: d
     s = round(score, 1)
 
     # Tier label and opening clause
-    if s >= 76:
+    if s >= 85:
         tier = "Critical"
         opening = f"This neighborhood shows critical displacement pressure (score {s})."
-    elif s >= 56:
+    elif s >= 67:
         tier = "High"
         opening = f"This neighborhood shows high displacement pressure (score {s})."
     elif s >= 34:
