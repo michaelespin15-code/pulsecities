@@ -235,6 +235,13 @@ def _build_neighborhood_page(
         ],
     }, indent=2)
 
+    embed_code = (
+        f'<a href="https://pulsecities.com/neighborhood/{zip_code}">'
+        f'<img src="https://pulsecities.com/badge/{zip_code}.svg" '
+        f'alt="PulseCities displacement score for {name} ({zip_code})" '
+        f'width="320" height="64"></a>'
+    )
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -342,6 +349,13 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
       <div class="faq-item"><p class="faq-q">{e(_FAQ_Q3)}</p><p class="faq-a">{e(_FAQ_A3)}</p></div>
     </div>
   </section>
+  <section style="margin-bottom:32px;">
+    <h2>Embed this score</h2>
+    <p class="section-sub">A live badge for articles and community pages. It stays current as the score changes and links back to this page.</p>
+    <p style="margin-bottom:12px;"><img src="/badge/{zip_code}.svg" alt="PulseCities displacement score badge for {e(name)} ({zip_code})" width="320" height="64" style="display:block;"></p>
+    <textarea id="embed-code" readonly rows="3" aria-label="Embed code" style="width:100%;max-width:560px;background:var(--surface);color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px;font-family:SFMono-Regular,Menlo,Consolas,monospace;line-height:1.5;resize:none;">{e(embed_code)}</textarea>
+    <p style="margin-top:8px;"><button class="btn-copy" id="copy-embed-btn" onclick="copyEmbed()">Copy embed code</button></p>
+  </section>
   <p class="meth-link"><a href="/methodology">Read the methodology &#8594;</a></p>
   <div class="cta-row">
     <a href="/map?q={zip_code}" class="btn-map">Open {zip_code} on the map &#8594;</a>
@@ -364,6 +378,21 @@ function copyLink() {{
     navigator.clipboard.writeText(url).then(onDone).catch(function() {{ fallback(url, onDone); }});
   }} else {{
     fallback(url, onDone);
+  }}
+}}
+function copyEmbed() {{
+  var ta = document.getElementById('embed-code');
+  var btn = document.getElementById('copy-embed-btn');
+  function onDone() {{
+    btn.textContent = 'Copied!';
+    setTimeout(function() {{ btn.textContent = 'Copy embed code'; }}, 2000);
+  }}
+  ta.select();
+  if (navigator.clipboard && navigator.clipboard.writeText) {{
+    navigator.clipboard.writeText(ta.value).then(onDone).catch(function() {{ document.execCommand('copy'); onDone(); }});
+  }} else {{
+    document.execCommand('copy');
+    onDone();
   }}
 }}
 function fallback(url, onDone) {{
