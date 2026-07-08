@@ -311,3 +311,32 @@ class TestPropertyPage:
     def test_non_numeric_bbl_returns_200_shell(self, client):
         resp = client.get("/property/not-a-bbl")
         assert resp.status_code == 200
+
+
+class TestCanonicalTierBands:
+    """
+    Tripwire for tier-band drift in the client. Canonical bands are
+    Low 0-33, Moderate 34-66, High 67-84, Critical 85+ everywhere:
+    map fill, legend, panel label, summaries, digest. This has drifted
+    three separate times; if a threshold changes, change it in every
+    surface and update this test in the same commit.
+    """
+
+    def _app(self):
+        return (Path(__file__).parent.parent / "frontend" / "app.html").read_text()
+
+    def test_choropleth_uses_canonical_steps(self):
+        app = self._app()
+        assert "'step', ['get', 'score']" in app, "choropleth no longer uses discrete steps"
+        assert "interpolate', ['linear'], ['get', 'score']" not in app, \
+            "choropleth reverted to a continuous ramp; legend bands no longer match the map"
+
+    def test_no_legacy_score_thresholds(self):
+        app = self._app()
+        for legacy in ("score >= 70", "score >= 76", "score >= 55", "score >= 56", "s >= 76", "s >= 56"):
+            assert legacy not in app, f"legacy tier threshold '{legacy}' is back in app.html"
+
+    def test_canonical_thresholds_present(self):
+        app = self._app()
+        for canon in ("score >= 85", "score >= 67", "score >= 34"):
+            assert canon in app, f"canonical threshold '{canon}' missing from app.html"
