@@ -1,0 +1,536 @@
+{
+  "A:/operator/MTEK": {
+    "path": "/operator/MTEK",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operator/MTEK",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "api_calls": [],
+      "stat_props": null,
+      "stat_acq": null,
+      "acq_rows": 0,
+      "portfolio_rows": 0,
+      "content_visible": "<eval error: Page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.\n    at eval (eval at evaluate (:302:30), <anonymous>:1:1)\n    at eval (<anonymous>)\n    at UtilityScript.evaluate (<anonymous>:302:30)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)>",
+      "error_visible": "<eval error: Page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.\n    at eval (eval at evaluate (:302:30), <anonymous>:1:1)\n    at eval (<anonymous>)\n    at UtilityScript.evaluate (<anonymous>:302:30)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)>",
+      "h1": null
+    }
+  },
+  "A:/operator/PHANTOM": {
+    "path": "/operator/PHANTOM",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operator/PHANTOM",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "api_calls": [],
+      "stat_props": null,
+      "stat_acq": null,
+      "acq_rows": 0,
+      "portfolio_rows": 0,
+      "content_visible": "<eval error: Page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.\n    at eval (eval at evaluate (:302:30), <anonymous>:1:1)\n    at eval (<anonymous>)\n    at UtilityScript.evaluate (<anonymous>:302:30)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)>",
+      "error_visible": "<eval error: Page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.\n    at eval (eval at evaluate (:302:30), <anonymous>:1:1)\n    at eval (<anonymous>)\n    at UtilityScript.evaluate (<anonymous>:302:30)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)>",
+      "h1": null
+    }
+  },
+  "A:/operator/BREDIF": {
+    "path": "/operator/BREDIF",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operator/BREDIF",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "api_calls": [],
+      "stat_props": null,
+      "stat_acq": null,
+      "acq_rows": 0,
+      "portfolio_rows": 0,
+      "content_visible": "<eval error: Page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.\n    at eval (eval at evaluate (:302:30), <anonymous>:1:1)\n    at eval (<anonymous>)\n    at UtilityScript.evaluate (<anonymous>:302:30)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)>",
+      "error_visible": "<eval error: Page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.\n    at eval (eval at evaluate (:302:30), <anonymous>:1:1)\n    at eval (<anonymous>)\n    at UtilityScript.evaluate (<anonymous>:302:30)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)>",
+      "h1": null
+    }
+  },
+  "A:/operator/TOWNHOUSE": {
+    "path": "/operator/TOWNHOUSE",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operator/TOWNHOUSE",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "api_calls": [],
+      "stat_props": null,
+      "stat_acq": null,
+      "acq_rows": 0,
+      "portfolio_rows": 0,
+      "content_visible": "<eval error: Page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.\n    at eval (eval at evaluate (:302:30), <anonymous>:1:1)\n    at eval (<anonymous>)\n    at UtilityScript.evaluate (<anonymous>:302:30)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)>",
+      "error_visible": "<eval error: Page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.\n    at eval (eval at evaluate (:302:30), <anonymous>:1:1)\n    at eval (<anonymous>)\n    at UtilityScript.evaluate (<anonymous>:302:30)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)>",
+      "h1": null
+    }
+  },
+  "A:/operator/MELO": {
+    "path": "/operator/MELO",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operator/MELO",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "api_calls": [],
+      "stat_props": null,
+      "stat_acq": null,
+      "acq_rows": 0,
+      "portfolio_rows": 0,
+      "content_visible": "<eval error: Page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.\n    at eval (eval at evaluate (:302:30), <anonymous>:1:1)\n    at eval (<anonymous>)\n    at UtilityScript.evaluate (<anonymous>:302:30)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)>",
+      "error_visible": "<eval error: Page.evaluate: TypeError: Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.\n    at eval (eval at evaluate (:302:30), <anonymous>:1:1)\n    at eval (<anonymous>)\n    at UtilityScript.evaluate (<anonymous>:302:30)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)>",
+      "h1": null
+    }
+  },
+  "B:/operator/OCEANVIEW": {
+    "path": "/operator/OCEANVIEW",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operator/OCEANVIEW",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "content_visible": false,
+      "error_visible": false,
+      "is_minimal": false,
+      "api_calls": []
+    }
+  },
+  "B:/operator/RIDGEWOOD": {
+    "path": "/operator/RIDGEWOOD",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operator/RIDGEWOOD",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "content_visible": false,
+      "error_visible": false,
+      "is_minimal": false,
+      "api_calls": []
+    }
+  },
+  "B:/operator/VALLEY": {
+    "path": "/operator/VALLEY",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operator/VALLEY",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "content_visible": false,
+      "error_visible": false,
+      "is_minimal": false,
+      "api_calls": []
+    }
+  },
+  "B:/operator/COMMUNITY": {
+    "path": "/operator/COMMUNITY",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operator/COMMUNITY",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "content_visible": false,
+      "error_visible": false,
+      "is_minimal": false,
+      "api_calls": []
+    }
+  },
+  "B:/operator/METROPOLITAN": {
+    "path": "/operator/METROPOLITAN",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operator/METROPOLITAN",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "content_visible": false,
+      "error_visible": false,
+      "is_minimal": false,
+      "api_calls": []
+    }
+  },
+  "B:/operator/TOORAK": {
+    "path": "/operator/TOORAK",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operator/TOORAK",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "content_visible": false,
+      "error_visible": false,
+      "is_minimal": false,
+      "api_calls": []
+    }
+  },
+  "B:/operator/JOVIA": {
+    "path": "/operator/JOVIA",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operator/JOVIA",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "content_visible": false,
+      "error_visible": false,
+      "is_minimal": false,
+      "api_calls": []
+    }
+  },
+  "B:/operator/BATTALION": {
+    "path": "/operator/BATTALION",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operator/BATTALION",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "content_visible": false,
+      "error_visible": false,
+      "is_minimal": false,
+      "api_calls": []
+    }
+  },
+  "B:/operator/ARION": {
+    "path": "/operator/ARION",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operator/ARION",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "content_visible": false,
+      "error_visible": false,
+      "is_minimal": false,
+      "api_calls": []
+    }
+  },
+  "B:/operator/HABIB": {
+    "path": "/operator/HABIB",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operator/HABIB",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "content_visible": false,
+      "error_visible": false,
+      "is_minimal": false,
+      "api_calls": []
+    }
+  },
+  "C:/operators": {
+    "path": "/operators",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/operators",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "rows": [],
+      "links": [],
+      "count_label": null
+    }
+  },
+  "D:/": {
+    "path": "/",
+    "final_status": 200,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()",
+      "error: Failed to load resource: the server responded with a status of 500 ()",
+      "error: Failed to load resource: the server responded with a status of 500 ()",
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/api/status",
+        "status": 500
+      },
+      {
+        "url": "https://pulsecities.com/api/stats",
+        "status": 500
+      },
+      {
+        "url": "https://pulsecities.com/api/neighborhoods/top-movers?limit=8",
+        "status": 500
+      },
+      {
+        "url": "https://pulsecities.com/api/operators/top?limit=3",
+        "status": 500
+      }
+    ],
+    "body_text": "Skip to content\nPulseCities\nby Michael Espin\nMap\nOperators\nMethodology\nAbout\nEN / ES\nPulseCities\n\nThe displacement story NYC doesn't officially tell.\n\nSearch any NYC address, ZIP, or neighborhood using public records.\n\nSearch\nTry:\nCrown Heights (11216)\nHarlem (10026)\nBushwick (11221)\n\nExplore the map \u2192\nHIGHEST-RISK AREAS\nCurrent displacement-pressure score\nLoading\u2026\nMETHODOLOGY\n\nSix public-record signals normalized across NYC ZIP codes.\n\nHow scores work \u2192\nBuilt by Michael Espin\nMethodology\nAbout\nStatus\nContact\nLinkedIn",
+    "extra": {
+      "loading_chips": 2,
+      "operator_cards": true,
+      "has_watchlist": false,
+      "title": "PulseCities | NYC Displacement Signals"
+    }
+  },
+  "D:/map": {
+    "path": "/map",
+    "final_status": 200,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()",
+      "error: Failed to load resource: the server responded with a status of 500 ()",
+      "error: Failed to load resource: the server responded with a status of 500 ()",
+      "error: nt"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/api/neighborhoods/top-risk?limit=10",
+        "status": 500
+      },
+      {
+        "url": "https://pulsecities.com/api/stats",
+        "status": 500
+      },
+      {
+        "url": "https://pulsecities.com/api/schedule",
+        "status": 500
+      },
+      {
+        "url": "https://pulsecities.com/api/neighborhoods",
+        "status": 500
+      }
+    ],
+    "body_text": "Skip to content\n\u203a\nDISPLACEMENT RISK\nLow 0-33\nModerate 34-66\nHigh 67-84\nCritical 85+\nNo data\nOperator portfolios\nMapLibre | \u00a9 CARTO, \u00a9 OpenStreetMap contributors\n\u2190 Home\nEN / ES\nPulseCities\n\nNYC Displacement Risk\n\nLOOK UP A BUILDING\nSearch\n\nTap or click any neighborhood on the map to see its displacement risk score, or pick one from the list below.\n\nSearch landlord or LLC name\nSearch\n\nMOST AT-RISK NEIGHBORHOODS RIGHT NOW\n\nAll\nBK\nMN\nQN\nBX\nSI\n\nNo data available.\n\nCounts reflect the past 365 days\n\nWatch an area\nSelect a neighborhood on the map to get updates.\nWatch\nGet NYC-wide updates instead\nHome\nOperators\nMethodology\nAbout\nStatus\nBuilt by \nMichael Espin\nBuilt by\nMichael Espin",
+    "extra": {
+      "has_canvas": true,
+      "maplibre": true
+    }
+  },
+  "D:/map?q=11216": {
+    "path": "/map?q=11216",
+    "final_status": 200,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()",
+      "error: Failed to load resource: the server responded with a status of 500 ()",
+      "error: Failed to load resource: the server responded with a status of 500 ()",
+      "error: Failed to load resource: the server responded with a status of 500 ()",
+      "error: Score fetch returned 500",
+      "error: nt"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/api/neighborhoods/top-risk?limit=10",
+        "status": 500
+      },
+      {
+        "url": "https://pulsecities.com/api/stats",
+        "status": 500
+      },
+      {
+        "url": "https://pulsecities.com/api/schedule",
+        "status": 500
+      },
+      {
+        "url": "https://pulsecities.com/api/neighborhoods/11216/score",
+        "status": 500
+      },
+      {
+        "url": "https://pulsecities.com/api/neighborhoods",
+        "status": 500
+      }
+    ],
+    "body_text": "Skip to content\n\u203a\nDISPLACEMENT RISK\nLow 0-33\nModerate 34-66\nHigh 67-84\nCritical 85+\nNo data\nOperator portfolios\nMapLibre | \u00a9 CARTO, \u00a9 OpenStreetMap contributors\n\u2190 Home\nEN / ES\nPulseCities\n\nNYC Displacement Risk\n\nLOOK UP A BUILDING\nSearch\n11216\n\u2014\nDisplacement Risk\nWatch\nCompare\nNo score computed yet for this zip code.\nSearch landlord or LLC name\nSearch\n\nMOST AT-RISK NEIGHBORHOODS RIGHT NOW\n\nAll\nBK\nMN\nQN\nBX\nSI\n\nNo data available.\n\nCounts reflect the past 365 days\n\nWatch this area\nGet public-record updates for 11216 when displacement risk changes.\nWatch 11216\nYou'll only get updates for this area. Unsubscribe anytime.\nGet NYC-wide updates instead\nHome\nOperators\nMethodology\nAbout\nStatus\nBuilt by \nMichael Espin\nBuilt by\nMichael Espin",
+    "extra": {
+      "has_canvas": true,
+      "panel_text": "Skip to content\n\u203a\nDISPLACEMENT RISK\nLow 0-33\nModerate 34-66\nHigh 67-84\nCritical 85+\nNo data\nOperator portfolios\nMapLibre | \u00a9 CARTO, \u00a9 OpenStreetMap contributors\n\u2190 Home\nEN / ES\nPulseCities\n\nNYC Displacement Risk\n\nLOOK UP A BUILDING\nSearch\n11216\n\u2014\nDisplacement Risk\nWatch\nCompare\nNo score computed yet for this zip code.\nSearch landlord or LLC name\nSearch\n\nMOST AT-RISK NEIGHBORHOODS RIGHT NOW\n\nAll\nBK\nMN\nQN\nBX\nSI\n\nNo data available.\n\nCounts reflect the past 365 days\n\nWatch this area\nGet public-record updates for 11216 when displacement risk changes.\nWatch 11216\nYou'll only get updates for this area. Unsubscribe anytime.\nGet NYC-wide updates instead\nHome\nOperators\nMethodology\nAbout\nStatus\nBuilt by \nMichael Espin\nBuilt by\nMichael Espin",
+      "has_score": true
+    }
+  },
+  "D:/neighborhood/11216": {
+    "path": "/neighborhood/11216",
+    "final_status": 500,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/neighborhood/11216",
+        "status": 500
+      }
+    ],
+    "body_text": "Internal Server Error",
+    "extra": {
+      "has_score": false,
+      "body_head": "Internal Server Error"
+    }
+  },
+  "D:/status": {
+    "path": "/status",
+    "final_status": 200,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/api/status",
+        "status": 500
+      }
+    ],
+    "body_text": "Skip to content\nPulseCities\n/ status\nMap\nMethodology\nAbout\n\nDATA STATUS\n\nData status\n\nWhere each source stands right now. Most sources refresh nightly from NYC public records. When a city feed pauses upstream, it shows here as delayed with the date its data runs through.\n\nStatus is temporarily unavailable. Please check back shortly.\n\nBuilt by Michael Espin\n\nHome\nMethodology\nAbout\nStatus\nContact",
+    "extra": {
+      "body": "Skip to content\nPulseCities\n/ status\nMap\nMethodology\nAbout\n\nDATA STATUS\n\nData status\n\nWhere each source stands right now. Most sources refresh nightly from NYC public records. When a city feed pauses upstream, it shows here as delayed with the date its data runs through.\n\nStatus is temporarily unavailable. Please check back shortly.\n\nBuilt by Michael Espin\n\nHome\nMethodology\nAbout\nStatus\nContact"
+    }
+  },
+  "D:/methodology": {
+    "path": "/methodology",
+    "final_status": 200,
+    "console_errors": [],
+    "page_errors": [],
+    "failed_requests": [],
+    "body_text": "Skip to content\nPulseCities\n/ methodology\nOpen the map\n\nMETHODOLOGY\n\nPulseCities methodology\n\nPulseCities tracks where displacement pressure is increasing across NYC. Each neighborhood score reflects changes in public records: evictions, building complaints, permits, and ownership patterns. It does not predict outcomes. It shows where pressure is building.\n\nWhat PulseCities measures\nDisplacement pressure by neighborhood\nBased on public record activity\nUpdated nightly\nNot predictive\n\nExplore the map or browse operator profiles.\n\nHow to read the score\nA score is not a prediction about a specific tenant or building. It shows where multiple displacement-pressure signals appear together at the ZIP code level. A high score means a neighborhood has more public-record indicators associated with housing pressure. A low score does not mean no risk exists.\nWhat this shows\n\nA nightly pipeline that pulls public data from New York City, joins it by Borough Block Lot (BBL), and produces a displacement risk score for every ZIP code in the city. Select a neighborhood to see the score, the signals driving it, and what has been recorded on the ground.\n\nYou can also search any landlord or LLC name to see their full NYC portfolio: how many entities they use, which buildings they own, and what violations or evictions are connected to them.\n\nData sources\n\nEvery dataset is public record. Dataset IDs link to the underlying public records where available.\n\nACRIS Ownership Records\ndataset bnx9-e6tj, dataset 636b-3b5g, dataset 8h5j-fqxa\n\nDeed transfers in NYC: document master, buyer/seller parties, and BBL legals. Three joined tables. ACRIS data has a city-side reporting lag of approximately two weeks. NYC Open Data has not published new deed transfers since April 30. Source-side delay.\n\nDOB Building Permits\ndataset ipu4-2q9a\n\nPermit filings from the Department of Buildings. The scorer counts alteration permits (type AL) on residential buildings with 3+ units. Updated nightly.\n\nNYC 311 Service Requests\ndataset erm2-nwe9\n\nHousing-related complaints including heat, hot water, pests, mold, and maintenance issues. Filtered to displacement-relevant complaint types. Updated nightly.\n\nNYC Eviction Records\ndataset 6z8x-wfk4\n\nResidential evictions executed by NYC marshals. The scorer uses executed evictions only, not filings. OCA data typically lags 2 to 4 weeks. Updated nightly.\n\nHPD Housing Violations\ndataset wvxf-dwi5\n\nClass B and C violations on 3+ unit residential buildings. The scorer uses a 90-day inspection window. Updated nightly.\n\nDHCR Building Registrations\ndataset kj4p-ruqc\n\nAnnual rent-stabilized unit counts per building from DHCR. Used to measure year-over-year RS unit loss. Updated annually.\n\nMapPLUTO\ndataset 64uk-42ks\n\nNYC Dept of City Planning parcel reference data. Used to normalize all signals per residential unit and to join records by BBL. Updated annually.\n\nHow scoring works\n\nThe score runs from 0 to 100. Higher numbers mean more displacement-pressure signals in the public record.\n\nAll displacement signals are measured over the past 365 days (HPD violations use a 90-day window), normalized per residential unit.\n\nSIX SIGNALS\nSIGNAL\tWEIGHT\tWINDOW\nLLC acquisitions\nResidential deed transfers to LLC buyers. LLC-to-LLC transfers (where both buyer and seller are LLCs) and mortgage servicers are excluded.\t26%\t365 days\nPermit filings\nAlteration permits (type AL) on 3+ unit residential buildings. Can signal reinvestment, turnover pressure, or building changes.\t21%\t365 days\n311 complaint rate\nHousing-related complaints including heat, hot water, pests, mold, and maintenance issues.\t17%\t365 days\nEvictions\nExecuted residential evictions by NYC marshals. Filed cases that resolved without execution are not counted. OCA data typically lags 2 to 4 weeks.\t13%\t365 days\nHPD violations\nClass B and C violations on 3+ unit buildings. Clusters of serious violations can indicate building distress, neglect, or pressure on tenants.\t8%\t90 days\nRent-stabilized unit loss\nYear-over-year loss in registered rent-stabilized units per building. A direct signal of rent-stabilized housing loss when annual comparisons are available.\nDormant until 2027. Requires two consecutive DHCR annual snapshots.\n\t15%\tAnnual\n\nWhen a signal is dormant, its weight is redistributed proportionally to the active signals so the composite always sums to 100%.\n\nSCORE RANGES\n0 \u2013 25\nLow pressure\n26 \u2013 50\nModerate pressure\n51 \u2013 80\nHigh pressure\n81 \u2013 100\nCritical (alert flag shown)\nBONUS SIGNALS\n\nThese adjust the composite score upward independent of the six weighted signals.\n\n+8 pts\nBuilding appears on HPD Speculation Watch List\n+4 pts\nOwner portfolio over 20 properties citywide\n+3 pts\nHPD building registration lapsed\nWhy scores are normalized\n\nRaw event counts favor dense neighborhoods simply because they have more buildings and residents. PulseCities normalizes all signals per residential unit using MapPLUTO unit counts so the score reflects signal intensity, not neighborhood size.\n\nZIP codes with zero or null unit counts fall back to the borough median residential unit count to prevent division-by-zero artifacts in lower-density areas.\n\nMethodology reference\n\nPulseCities is inspired by displacement-risk indicator work from the Association for Neighborhood and Housing Development (ANHD), which has been scoring NYC buildings for displacement risk since 2016 using rent-stabilized unit loss, tenant turnover, and sale prices.\n\nPulseCities uses its own scoring model, live data pipeline, and public-record normalization. It is not affiliated with ANHD or the NYC Equitable Development Data Explorer.\n\nLimitations\n\u2715\nA score is not evidence that a specific landlord is breaking the law. Displacement pressure is not the same as illegal behavior.\n\u2715\nThe score describes current conditions, not predictions. Whether pressure translates to displacement depends on factors outside the data.\n\u2715\nA high-score neighborhood does not mean every tenant is at risk. A low score does not mean no displacement pressure exists.\n\u2715\nPublic records can lag. ACRIS data typically lags two weeks. Eviction data typically lags two to four weeks.\n\u2715\nSource data can contain address or entity inconsistencies that affect matching accuracy.\n\u2715\nOperator matching is conservative and based on public records. Some related entities may not be connected.\nThe rent stabilization signal is dormant until 2027, when a second consecutive DHCR annual snapshot becomes available. Its 15% weight is redistributed proportionally to the five active signals in the interim. The rent stabilization dataset used for the operator detail view is historical through 2023.\nHow data updates\n\nScrapers run every night at 2am UTC. Most datasets refresh daily. ACRIS data has a 2-week reporting lag from the city. Eviction data has a 2 to 4 week reporting lag. The site shows the timestamp of the most recent successful scraper run at the bottom of every page.\n\nStack\nFastAPI\nPostgreSQL + PostGIS\nMapLibre GL JS\nPython scrapers\nAPScheduler\nPydantic\nFrequently asked questions\nWHAT DOES THE SCORE MEAN?\n\nThe score shows how many displacement-pressure signals appear in public records for a ZIP code. A higher number means more indicators are present. It does not predict what will happen to any specific tenant or building.\n\nDOES THIS PREDICT EVICTION?\n\nNo. PulseCities shows where public-record pressure is building, not where evictions will occur. The score reflects activity in the record, not outcomes.\n\nWHERE DOES THE DATA COME FROM?\n\nAll data is from NYC Open Data: ACRIS deed records, DOB permits, HPD violations, 311 complaints, eviction records, and DHCR rent-stabilized building registrations. Every dataset is public record.\n\nHOW OFTEN IS IT UPDATED?\n\nScrapers run nightly at 2am UTC. Most datasets refresh daily. ACRIS data lags approximately two weeks; eviction data lags two to four weeks.\n\nContact\n\nQuestions, corrections, or story tips.\n\nnycdisplacement@gmail.com\n\nLast updated: April 2026\n\nBuilt by Michael Espin\n\nHome\nMethodology\nAbout\nStatus\nContact",
+    "extra": {
+      "title": "NYC Displacement Risk Methodology | PulseCities",
+      "h1": "PulseCities methodology"
+    }
+  },
+  "D:/about": {
+    "path": "/about",
+    "final_status": 200,
+    "console_errors": [
+      "error: Failed to load resource: the server responded with a status of 500 ()"
+    ],
+    "page_errors": [],
+    "failed_requests": [
+      {
+        "url": "https://pulsecities.com/api/status",
+        "status": 500
+      }
+    ],
+    "body_text": "Skip to content\nPulseCities\n/ about\nMap\nMethodology\nOperators\nContact\n\nABOUT\n\nAbout PulseCities\n\nA public tool for tracking displacement pressure across NYC neighborhoods.\n\nThe displacement story NYC doesn't officially tell.\n\nPulseCities connects public records that are usually scattered across city systems: permits, evictions, complaints, violations, ownership transfers, and rent-stabilized housing data.\n\nExplore the map\nRead the methodology\nContact\nWhat PulseCities does\nSearch a place\nLook up an address or ZIP and see recent public-record activity nearby.\nTrack signals\nReview permits, complaints, evictions, violations, ownership changes, and rent-stabilized unit loss in one place.\nFollow patterns\nSpot neighborhoods, buildings, and operators where multiple displacement-pressure signals appear together. Operator profiles are being expanded through public-record matching.\nWho it is for\n\nTENANTS\n\nFor people trying to understand what is changing around their building or block.\n\nJOURNALISTS\n\nFor reporters looking for public-record leads, landlord patterns, and neighborhood movement.\n\nLEGAL AID AND ORGANIZERS\n\nFor teams that need a faster way to triage places worth reviewing.\n\nRESEARCHERS\n\nFor people studying housing pressure, NYC public records, and urban change.\n\nPulseCities is an investigative tool, not legal advice.\n\nBuilt from public records\n\nPulseCities combines six public-record signals into a neighborhood-level score: DOB permits, HPD violations, 311 complaints, eviction records, ACRIS ownership transfers, and DHCR rent-stabilized unit data.\n\nScores are normalized by residential units so raw counts do not overwhelm dense neighborhoods. A score is not a prediction about a specific tenant or building. It shows where multiple displacement-pressure signals appear together.\n\nRead the full methodology, data sources, and scoring weights \u2192\n\nWhy PulseCities exists\n\nNYC housing records are public, but they are scattered across separate systems. PulseCities brings those records into one place so tenants, reporters, organizers, and researchers can see where pressure is building and trace the signals back to source data.\n\nBuilt by Michael Espin\n\nPulseCities was built by Michael Espin, a computer science and AI systems graduate focused on public data infrastructure, civic tools, and applied data engineering.\n\nThe project combines Python data pipelines, FastAPI, PostgreSQL/PostGIS, public-record scraping, geospatial scoring, and a fast MapLibre interface.\n\nPython pipelines\nFastAPI\nPostgreSQL + PostGIS\nMapLibre GL JS\nPublic-record scraping\nSix-signal scoring\nContact\n\nQuestions, corrections, or story tips.\n\nnycdisplacement@gmail.com\n\nData corrections\n\nPulseCities uses public records that can lag, contain address inconsistencies, or change after publication. If something looks wrong, send the address, ZIP, source label, and record date. NYC public records have city-side reporting lags: ACRIS data typically lags two weeks, eviction data two to four weeks.\n\nFor reporters\n\nReporters can cite PulseCities as a public-record analysis tool. When referencing scores or ownership patterns, please link to the relevant ZIP page, operator profile, or the methodology so readers can review the underlying data and sources.\n\nFollow project updates: @PulseCities\n\nBuilt by Michael Espin\n\nHome\nMethodology\nAbout\nStatus\nContact",
+    "extra": {
+      "title": "PulseCities | About",
+      "h1": "About PulseCities"
+    }
+  }
+}
