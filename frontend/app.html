@@ -445,6 +445,14 @@
                     </button>
                 </div>
             </div>
+            <!-- Since-your-last-visit diff: appears only when this browser holds a
+                 snapshot of previously viewed scores and one of them moved -->
+            <div id="last-visit-banner" class="hidden absolute top-4 left-0 right-0 flex justify-center z-10 pointer-events-none">
+                <div class="bg-slate-900/90 backdrop-blur-sm text-xs text-slate-200 px-4 py-2 rounded-full border border-slate-700 shadow-lg flex items-center gap-2 pointer-events-auto" style="max-width:min(92%,560px);">
+                    <span id="last-visit-text" class="truncate font-mono" style="cursor:pointer;"></span>
+                    <button id="last-visit-dismiss" class="text-slate-500 hover:text-slate-200 transition-colors leading-none" aria-label="Dismiss" style="min-height:32px;min-width:32px;font-size:1rem;">&times;</button>
+                </div>
+            </div>
             <!-- Comparison mode overlay — floats over map center while user picks a second zip -->
             <div id="compare-hint" class="hidden absolute top-4 left-0 right-0 flex justify-center z-10 pointer-events-none">
                 <div class="bg-slate-900/90 backdrop-blur-sm text-sm text-slate-200 px-4 py-2.5 rounded-full border border-slate-700 shadow-lg flex items-center gap-3 pointer-events-auto">
@@ -1217,6 +1225,86 @@
             });
         });
 
+        // --- Since your last visit --------------------------------------
+        // Diffs against the scores this browser actually saw, never against
+        // a timestamp, so the banner cannot claim a change we didn't show.
+        // No stored state, a schema bump, or a snapshot older than 90 days
+        // means no banner. Storage failures turn the feature off silently.
+        const VISIT_STATE_KEY = 'pc_visit_state';
+        const VISIT_SCHEMA    = 1;
+
+        function _readVisitState() {
+            try {
+                const st = JSON.parse(localStorage.getItem(VISIT_STATE_KEY));
+                if (!st || st.v !== VISIT_SCHEMA || !st.lastSeen || !st.zips) return null;
+                const ageDays = (Date.now() - new Date(st.lastSeen + 'T00:00:00').getTime()) / 86400000;
+                if (ageDays > 90 || ageDays < 0) return null;
+                return st;
+            } catch (e) { return null; }
+        }
+
+        // Read once at load, before this session overwrites the snapshot
+        const _visitSnapshot = _readVisitState();
+
+        function recordZipSeen(zip, score) {
+            if (score === null || score === undefined) return;
+            try {
+                let st = null;
+                try { st = JSON.parse(localStorage.getItem(VISIT_STATE_KEY)); } catch (e) {}
+                if (!st || st.v !== VISIT_SCHEMA || !st.zips) st = { v: VISIT_SCHEMA, lastSeen: '', zips: {} };
+                delete st.zips[zip];  // re-insert so key order tracks recency
+                st.zips[zip] = Math.round(score * 10) / 10;
+                const keys = Object.keys(st.zips);
+                if (keys.length > 20) delete st.zips[keys[0]];
+                st.lastSeen = new Date().toISOString().slice(0, 10);
+                localStorage.setItem(VISIT_STATE_KEY, JSON.stringify(st));
+            } catch (e) { /* private mode or full storage */ }
+        }
+
+        function initLastVisitBanner() {
+            if (!_visitSnapshot) return;
+            const today = new Date().toISOString().slice(0, 10);
+            if (_visitSnapshot.lastSeen === today) return;
+
+            fetch('/api/neighborhoods')
+                .then(r => r.ok ? r.json() : null)
+                .then(geo => {
+                    if (!geo || !geo.features) return;
+                    const current = {};
+                    geo.features.forEach(f => {
+                        const p = f.properties || {};
+                        if (p.zip_code && p.score !== null && p.score !== undefined) current[p.zip_code] = p.score;
+                    });
+                    const moves = Object.entries(_visitSnapshot.zips)
+                        .map(([zip, old]) => ({ zip, old, now: current[zip] }))
+                        .filter(m => m.now !== undefined && Math.abs(m.now - m.old) >= 2)
+                        .sort((a, b) => Math.abs(b.now - b.old) - Math.abs(a.now - a.old));
+                    if (!moves.length) return;
+
+                    const dateDisp = new Date(_visitSnapshot.lastSeen + 'T00:00:00')
+                        .toLocaleDateString(_locale(), { month: 'short', day: 'numeric' });
+                    const parts = moves.slice(0, 3).map(m =>
+                        `${m.zip} ${m.old.toFixed(1)} → ${m.now.toFixed(1)}`);
+                    document.getElementById('last-visit-text').textContent =
+                        t('ui', 'last_visit_prefix').replace('{date}', dateDisp) + ' ' + parts.join(' · ');
+                    document.getElementById('last-visit-banner').classList.remove('hidden');
+                    plausible('Last Visit Banner Shown');
+
+                    document.getElementById('last-visit-text').onclick = () => {
+                        document.getElementById('last-visit-banner').classList.add('hidden');
+                        selectNeighborhood(moves[0].zip);
+                    };
+                    document.getElementById('last-visit-dismiss').onclick = () => {
+                        document.getElementById('last-visit-banner').classList.add('hidden');
+                        moves.forEach(m => recordZipSeen(m.zip, m.now));
+                    };
+                })
+                .catch(() => {});
+        }
+
+        // Low priority: let the map and panel settle first
+        setTimeout(initLastVisitBanner, 2500);
+
         // AI read: server generates once per ZIP per score change and caches,
         // so most visits get an instant cached response. Cold generation takes
         // a few seconds; the section shows a generating note meanwhile and
@@ -1356,6 +1444,7 @@
                     ai_read_label:       'AI read',
                     ai_read_generating:  'generating…',
                     ai_read_note:        'Written by Claude from the exact counts in this panel. Check it against the signal breakdown below.',
+                    last_visit_prefix:   'Since your last visit ({date}):',
                     recent_activity:     'Recent Activity',
                     reno_flip_title:     'Renovation-Flip Pattern Detected',
                     reno_flip_toggle:    'See addresses',
@@ -1580,6 +1669,7 @@
                     ai_read_label:       'Lectura IA',
                     ai_read_generating:  'generando…',
                     ai_read_note:        'Escrito por Claude en inglés a partir de los conteos exactos de este panel. Verifícalo con el desglose de señales.',
+                    last_visit_prefix:   'Desde tu última visita ({date}):',
                     recent_activity:     'Actividad Reciente',
                     reno_flip_title:     'Patrón de Renovación-Reventa Detectado',
                     reno_flip_toggle:    'Ver direcciones',
@@ -3612,6 +3702,7 @@
                     renderActiveBuyers(zip, seq);
                     renderScoreHistory(zip, _historyDays);
                     renderAiRead(zip, data.score);
+                    recordZipSeen(zip, data.score);
                 } else {
                     _scoreLoadEl.style.opacity = '';
                     showDetail(zip, null, null);
