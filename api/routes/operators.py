@@ -466,3 +466,115 @@ def get_operator_profile_by_slug(
         "acquisition_timeline": acquisition_timeline,
         "related_operators":    related,
     }
+
+
+@router.get("/{slug}/network")
+@limiter.limit("30/minute")
+def get_operator_network(
+    request: Request,
+    response: Response,
+    slug: str,
+    db: Session = Depends(get_db),
+):
+    """
+    Ego graph for one operator cluster: the operator node, its acquiring
+    LLC entities, and the ZIP codes those entities bought into. Feeds the
+    network visualization on the operator profile page.
+    """
+    if not re.match(r"^[a-z0-9-]+$", slug):
+        raise HTTPException(status_code=400, detail="Invalid slug format")
+
+    op_row = db.execute(
+        text("SELECT id, slug, operator_root, display_name, operator_class FROM operators WHERE slug = :slug"),
+        {"slug": slug},
+    ).fetchone()
+    if op_row is None:
+        raise HTTPException(status_code=404, detail="Operator not found")
+
+    # Same classification gate as the profile endpoint: lenders, GSEs,
+    # government bodies, and HDFCs must not expose a network graph.
+    if getattr(op_row, "operator_class", "operator") != "operator":
+        raise HTTPException(status_code=404, detail="Operator not found")
+
+    # Deferred import: frontend.py imports from this module at top level.
+    from api.routes.frontend import _tier_info
+
+    llc_rows = db.execute(text("""
+        SELECT acquiring_entity,
+               COUNT(*)              AS parcels,
+               MIN(acquisition_date) AS first_seen,
+               MAX(acquisition_date) AS last_seen
+        FROM operator_parcels
+        WHERE operator_id = :op_id AND acquiring_entity IS NOT NULL
+        GROUP BY acquiring_entity
+        ORDER BY parcels DESC
+    """), {"op_id": op_row.id}).fetchall()
+
+    edge_rows = db.execute(text("""
+        SELECT op.acquiring_entity, p.zip_code, COUNT(*) AS n
+        FROM operator_parcels op
+        JOIN parcels p ON p.bbl = op.bbl
+        WHERE op.operator_id = :op_id
+          AND op.acquiring_entity IS NOT NULL
+          AND p.zip_code IS NOT NULL
+        GROUP BY op.acquiring_entity, p.zip_code
+    """), {"op_id": op_row.id}).fetchall()
+
+    zip_codes = sorted({r.zip_code for r in edge_rows})
+    zip_meta: dict[str, tuple] = {}
+    if zip_codes:
+        for r in db.execute(text("""
+            SELECT n.zip_code, n.name, ds.score
+            FROM neighborhoods n
+            LEFT JOIN displacement_scores ds ON ds.zip_code = n.zip_code
+            WHERE n.zip_code = ANY(:zips)
+        """), {"zips": zip_codes}).fetchall():
+            zip_meta[r.zip_code] = (r.name, float(r.score) if r.score is not None else None)
+
+    op_node_id = f"op:{op_row.operator_root}"
+    nodes = [{
+        "id":    op_node_id,
+        "type":  "operator",
+        "label": op_row.display_name or op_row.operator_root,
+        "parcels": sum(r.parcels for r in llc_rows),
+    }]
+    edges = []
+
+    for r in llc_rows:
+        llc_id = f"llc:{r.acquiring_entity}"
+        nodes.append({
+            "id":      llc_id,
+            "type":    "llc",
+            "label":   r.acquiring_entity.title(),
+            "parcels": r.parcels,
+            "first_seen": r.first_seen.isoformat() if r.first_seen else None,
+            "last_seen":  r.last_seen.isoformat() if r.last_seen else None,
+        })
+        edges.append({"source": op_node_id, "target": llc_id, "weight": r.parcels})
+
+    for z in zip_codes:
+        name, score = zip_meta.get(z, (None, None))
+        _, color = _tier_info(score) if score is not None else ("Unknown", "#64748b")
+        nodes.append({
+            "id":    f"zip:{z}",
+            "type":  "zip",
+            "label": z,
+            "name":  name,
+            "score": score,
+            "color": color,
+            "parcels": sum(r.n for r in edge_rows if r.zip_code == z),
+        })
+
+    for r in edge_rows:
+        edges.append({"source": f"llc:{r.acquiring_entity}", "target": f"zip:{r.zip_code}", "weight": r.n})
+
+    response.headers["Cache-Control"] = "public, max-age=300"
+    return {
+        "operator": {
+            "slug":          op_row.slug,
+            "operator_root": op_row.operator_root,
+            "display_name":  op_row.display_name or op_row.operator_root,
+        },
+        "nodes": nodes,
+        "edges": edges,
+    }

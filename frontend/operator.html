@@ -146,6 +146,23 @@
             <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:6px;line-height:1.65;" data-i18n="what_this_shows">Properties grouped by LLC naming patterns in public deed records. Scores reflect neighborhood displacement risk, not a claim of wrongdoing by any individual actor.</p>
             <p style="font-size:0.78rem;color:#94a3b8;margin-bottom:20px;line-height:1.55;">Derived from public deed records; indicates ownership structure, not legal conclusions.</p>
 
+            <!-- LLC network graph -->
+            <div id="network-section" style="display:none; margin-bottom: 24px;">
+                <div style="font-size: 0.78rem; font-weight: 600; color: rgba(148,163,184,0.75); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;" data-i18n="network_header">
+                    LLC Network
+                </div>
+                <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 12px; line-height: 1.5;" data-i18n="network_caveat">
+                    Each LLC this operator acquired through, connected to the ZIP codes where it bought. Node size tracks recorded acquisitions. ZIP color shows current displacement pressure.
+                </div>
+                <div id="network-wrap" style="position:relative; background:rgba(30,41,59,0.35); border:1px solid rgba(148,163,184,0.12); border-radius:10px; overflow:hidden;">
+                    <svg id="network-svg" style="display:block; width:100%; height:auto;" role="img" aria-label="Network graph of LLC entities and ZIP codes for this operator"></svg>
+                    <div id="network-tip" style="display:none; position:absolute; pointer-events:none; background:#1e293b; border:1px solid rgba(148,163,184,0.25); border-radius:6px; padding:7px 10px; font-size:0.72rem; color:#e2e8f0; line-height:1.45; max-width:230px; z-index:5; box-shadow:0 4px 16px rgba(0,0,0,0.4);"></div>
+                </div>
+                <div style="font-size: 0.7rem; color: rgba(148,163,184,0.45); margin-top: 8px;" data-i18n="network_hint">
+                    Select a ZIP to open it on the map. Select an LLC to search its records.
+                </div>
+            </div>
+
             <!-- Related Operators -->
             <div id="related-section" style="display: none; margin-bottom: 16px;">
                 <div style="font-size: 0.78rem; font-weight: 600; color: rgba(148,163,184,0.75); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;" data-i18n="related_operators">
@@ -330,6 +347,12 @@
             llc_entities_header: 'LLC Entities',
             related_operators:   'Related Operators',
             related_caveat:      'These clusters are not the same operator. The signals below are evidence of a possible relationship: shared properties, name patterns, or geographic overlap. Each operator remains as the public records show them.',
+            network_header:      'LLC Network',
+            network_caveat:      'Each LLC this operator acquired through, connected to the ZIP codes where it bought. Node size tracks recorded acquisitions. ZIP color shows current displacement pressure.',
+            network_hint:        'Select a ZIP to open it on the map. Select an LLC to search its records.',
+            network_acq:         'acquisitions',
+            network_zips:        'ZIP codes',
+            network_score:       'score',
             pattern_note_header: 'Analyst note',
             recent_acq_header:   'Recent Acquisitions',
             recent_acq_window:   '(last 18 months, up to 50)',
@@ -388,6 +411,12 @@
             llc_entities_header: 'Entidades LLC',
             related_operators:   'Operadores Relacionados',
             related_caveat:      'Estos grupos no son el mismo operador. Las se\u00f1ales a continuaci\u00f3n son evidencia de una posible relaci\u00f3n: propiedades compartidas, patrones de nombres o superposici\u00f3n geogr\u00e1fica. Cada operador se muestra tal como aparece en los registros p\u00fablicos.',
+            network_header:      'Red de LLC',
+            network_caveat:      'Cada LLC con la que este operador adquiri\u00f3, conectada a los c\u00f3digos postales donde compr\u00f3. El tama\u00f1o del nodo refleja adquisiciones registradas. El color del ZIP muestra la presi\u00f3n de desplazamiento actual.',
+            network_hint:        'Selecciona un ZIP para abrirlo en el mapa. Selecciona una LLC para buscar sus registros.',
+            network_acq:         'adquisiciones',
+            network_zips:        'c\u00f3digos postales',
+            network_score:       'puntuaci\u00f3n',
             pattern_note_header: 'Nota del analista',
             recent_acq_header:   'Adquisiciones Recientes',
             recent_acq_window:   '(\u00faltimos 18 meses, hasta 50)',
@@ -570,6 +599,199 @@
         return div;
     }
 
+    // ---- LLC network graph ----------------------------------------------
+    // Dependency-free force layout. Node counts stay under ~80 (operator +
+    // LLCs + ZIPs), so the O(n^2) repulsion pass is cheap enough to run to
+    // convergence up front and render a static SVG.
+
+    let _networkLoaded = false;
+
+    function renderNetwork(slug) {
+        if (_networkLoaded || !slug) return;
+        _networkLoaded = true;
+        fetch('/api/operators/' + encodeURIComponent(slug) + '/network')
+            .then(r => { if (!r.ok) throw new Error('network ' + r.status); return r.json(); })
+            .then(g => {
+                if (!g.nodes || g.nodes.length < 3) return;
+                document.getElementById('network-section').style.display = 'block';
+                _drawNetwork(g);
+            })
+            .catch(() => { /* section stays hidden */ });
+    }
+
+    function _drawNetwork(g) {
+        const svg = document.getElementById('network-svg');
+        const NS  = 'http://www.w3.org/2000/svg';
+        const n   = g.nodes.length;
+        const W   = 800;
+        const H   = n <= 24 ? 430 : n <= 48 ? 540 : 640;
+        svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+        svg.innerHTML = '';
+
+        const idx = {};
+        g.nodes.forEach((nd, i) => { idx[nd.id] = i; });
+
+        const rOf = nd =>
+            nd.type === 'operator' ? 16 :
+            nd.type === 'llc'      ? 5 + Math.sqrt(nd.parcels || 1) * 2.4 :
+                                     4 + Math.sqrt(nd.parcels || 1) * 2.0;
+
+        // Seed: operator pinned center, LLCs on an inner ring, ZIPs outer
+        const cx = W / 2, cy = H / 2;
+        const llcs = g.nodes.filter(nd => nd.type === 'llc');
+        const zips = g.nodes.filter(nd => nd.type === 'zip');
+        g.nodes.forEach(nd => { if (nd.type === 'operator') { nd.x = cx; nd.y = cy; nd.fixed = true; } });
+        llcs.forEach((nd, i) => {
+            const a = (i / llcs.length) * 2 * Math.PI - Math.PI / 2;
+            nd.x = cx + Math.cos(a) * 120; nd.y = cy + Math.sin(a) * 120;
+        });
+        zips.forEach((nd, i) => {
+            const a = (i / zips.length) * 2 * Math.PI - Math.PI / 2 + 0.25;
+            nd.x = cx + Math.cos(a) * 230; nd.y = cy + Math.sin(a) * 230;
+        });
+
+        for (let it = 0; it < 260; it++) {
+            const cool = 1 - it / 260;
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    const a = g.nodes[i], b = g.nodes[j];
+                    let dx = b.x - a.x, dy = b.y - a.y;
+                    const d2 = dx * dx + dy * dy || 1;
+                    if (d2 > 90000) continue;
+                    const d = Math.sqrt(d2);
+                    const f = 2400 / d2 * cool;
+                    dx /= d; dy /= d;
+                    if (!a.fixed) { a.x -= dx * f; a.y -= dy * f; }
+                    if (!b.fixed) { b.x += dx * f; b.y += dy * f; }
+                }
+            }
+            g.edges.forEach(e => {
+                const a = g.nodes[idx[e.source]], b = g.nodes[idx[e.target]];
+                if (!a || !b) return;
+                const rest = (a.type === 'operator' || b.type === 'operator') ? 150 : 105;
+                const dx = b.x - a.x, dy = b.y - a.y;
+                const d  = Math.sqrt(dx * dx + dy * dy) || 1;
+                const f  = (d - rest) / d * 0.05;
+                if (!a.fixed) { a.x += dx * f; a.y += dy * f; }
+                if (!b.fixed) { b.x -= dx * f; b.y -= dy * f; }
+            });
+            g.nodes.forEach(nd => {
+                if (nd.fixed) return;
+                nd.x += (cx - nd.x) * 0.004;
+                nd.y += (cy - nd.y) * 0.004;
+                // ZIPs bought through several LLCs get spring-pulled onto the
+                // operator node; hold them outside a minimum ring so the
+                // center stays legible.
+                if (nd.type === 'zip') {
+                    const dx = nd.x - cx, dy = nd.y - cy;
+                    const d  = Math.sqrt(dx * dx + dy * dy) || 1;
+                    if (d < 120) {
+                        const push = (120 - d) * 0.35;
+                        nd.x += dx / d * push;
+                        nd.y += dy / d * push;
+                    }
+                }
+            });
+        }
+        g.nodes.forEach(nd => {
+            const pad = rOf(nd) + 16;
+            nd.x = Math.max(pad, Math.min(W - pad, nd.x));
+            nd.y = Math.max(pad, Math.min(H - pad, nd.y));
+        });
+
+        g.edges.forEach(e => {
+            const a = g.nodes[idx[e.source]], b = g.nodes[idx[e.target]];
+            if (!a || !b) return;
+            const ln = document.createElementNS(NS, 'line');
+            ln.setAttribute('x1', a.x); ln.setAttribute('y1', a.y);
+            ln.setAttribute('x2', b.x); ln.setAttribute('y2', b.y);
+            ln.setAttribute('stroke', 'rgba(148,163,184,' + Math.min(0.1 + e.weight * 0.05, 0.35) + ')');
+            ln.setAttribute('stroke-width', Math.min(0.7 + e.weight * 0.35, 2.6));
+            svg.appendChild(ln);
+        });
+
+        const tip     = document.getElementById('network-tip');
+        const wrap    = document.getElementById('network-wrap');
+        const showLlcLabels = llcs.length <= 14;
+
+        g.nodes.forEach(nd => {
+            const r = rOf(nd);
+            const c = document.createElementNS(NS, 'circle');
+            c.setAttribute('cx', nd.x); c.setAttribute('cy', nd.y); c.setAttribute('r', r);
+            if (nd.type === 'operator') {
+                c.setAttribute('fill', '#f97316');
+                c.setAttribute('fill-opacity', '0.9');
+            } else if (nd.type === 'llc') {
+                c.setAttribute('fill', 'rgba(148,163,184,0.18)');
+                c.setAttribute('stroke', 'rgba(148,163,184,0.6)');
+                c.setAttribute('stroke-width', '1');
+                c.style.cursor = 'pointer';
+            } else {
+                c.setAttribute('fill', nd.color || '#64748b');
+                c.setAttribute('fill-opacity', '0.85');
+                c.style.cursor = 'pointer';
+            }
+
+            c.addEventListener('mousemove', evt => {
+                const box = wrap.getBoundingClientRect();
+                let html = '<strong>' + esc(nd.label) + '</strong>';
+                if (nd.type === 'llc') {
+                    html += '<br>' + nd.parcels + ' ' + t('network_acq');
+                    if (nd.first_seen) html += '<br>' + nd.first_seen + ' → ' + (nd.last_seen || '');
+                } else if (nd.type === 'zip') {
+                    if (nd.name) html += '<br>' + esc(nd.name);
+                    if (nd.score !== null && nd.score !== undefined) html += '<br>' + t('network_score') + ' ' + nd.score.toFixed(1) + '/100';
+                } else {
+                    html += '<br>' + nd.parcels + ' ' + t('network_acq');
+                }
+                tip.innerHTML = html;
+                tip.style.display = 'block';
+                tip.style.left = Math.min(evt.clientX - box.left + 14, box.width - 240) + 'px';
+                tip.style.top  = (evt.clientY - box.top + 14) + 'px';
+            });
+            c.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+            if (nd.type === 'zip') {
+                c.addEventListener('click', () => {
+                    plausible('Network Graph Node Click');
+                    window.location.href = '/map?q=' + encodeURIComponent(nd.label);
+                });
+            } else if (nd.type === 'llc') {
+                c.addEventListener('click', () => {
+                    plausible('Network Graph Node Click');
+                    window.location.href = '/map?q=' + encodeURIComponent(nd.label);
+                });
+            }
+            svg.appendChild(c);
+
+            const wantLabel =
+                nd.type === 'operator' ||
+                nd.type === 'zip' ||
+                (nd.type === 'llc' && showLlcLabels);
+            if (wantLabel) {
+                const tx = document.createElementNS(NS, 'text');
+                tx.setAttribute('x', nd.x);
+                tx.setAttribute('y', nd.y + r + 11);
+                tx.setAttribute('text-anchor', 'middle');
+                tx.setAttribute('font-family', "'JetBrains Mono', monospace");
+                if (nd.type === 'operator') {
+                    tx.setAttribute('font-size', '12');
+                    tx.setAttribute('fill', '#f97316');
+                    tx.textContent = nd.label.toUpperCase();
+                } else if (nd.type === 'zip') {
+                    tx.setAttribute('font-size', '10');
+                    tx.setAttribute('fill', 'rgba(226,232,240,0.75)');
+                    tx.textContent = nd.label;
+                } else {
+                    tx.setAttribute('font-size', '9');
+                    tx.setAttribute('fill', 'rgba(148,163,184,0.55)');
+                    // Short form: drop the shared root token so labels stay readable
+                    tx.textContent = nd.label.replace(/\s+LLC\.?$/i, '');
+                }
+                svg.appendChild(tx);
+            }
+        });
+    }
+
     function render(data, zipNames) {
         _cachedData     = data;
         _cachedZipNames = zipNames || {};
@@ -583,6 +805,7 @@
             _briefBtn.href = '/brief/operator/' + encodeURIComponent(data.slug);
             _briefBtn.style.display = 'inline-flex';
         }
+        renderNetwork(data.slug);
         const _whyEl = document.getElementById('why-matters');
         if (_whyEl) _whyEl.textContent = _buildWhyMatters(data);
 
