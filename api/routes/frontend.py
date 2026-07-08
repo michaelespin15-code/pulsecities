@@ -1039,3 +1039,246 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 
     _operators_cache = (page, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page)
+
+
+_flips_cache: tuple[str, float] | None = None  # cleared on restart
+
+
+def _fmt_amount(v) -> str:
+    """Compact money label: $2.4M, $815K. Empty string when the deed had no price."""
+    if not v:
+        return ""
+    v = float(v)
+    if v >= 1_000_000:
+        return f"${v / 1_000_000:.1f}M".replace(".0M", "M")
+    if v >= 1_000:
+        return f"${round(v / 1_000)}K"
+    return f"${int(v)}"
+
+
+@router.get("/flips", include_in_schema=False)
+def flip_watch_page(db: Session = Depends(get_db)):
+    """Flip Watch — citywide renovation-flip feed, server-rendered.
+
+    Same content as /api/flips, rendered as a standing page so the pattern is
+    indexable and shareable rather than buried one ZIP at a time.
+    """
+    global _flips_cache
+    if _flips_cache and time.monotonic() < _flips_cache[1]:
+        return HTMLResponse(_flips_cache[0])
+
+    from api.routes.flips import query_flips, LOOKBACK_DAYS, FLIP_WINDOW_DAYS
+    flips = query_flips(db)
+
+    _MONTHS = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+    def _short_date(iso: str | None) -> str:
+        if not iso:
+            return ""
+        try:
+            y, m, d = iso.split("-")
+            return f"{_MONTHS[int(m)]} {int(d)}, {y}"
+        except (ValueError, IndexError):
+            return iso
+
+    rows_html = ""
+    list_items = []
+    for i, f in enumerate(flips, 1):
+        bbl = _html.escape(str(f["bbl"]))
+        addr = _html.escape(f["address"])
+        zip_code = _html.escape(str(f["zip_code"]))
+        hood = _html.escape(f["neighborhood"] or zip_code)
+        geo = f"{hood} &middot; {zip_code}" if f["neighborhood"] else zip_code
+        buyer = _html.escape(f["buyer"] or "")
+        amount = _fmt_amount(f["doc_amount"])
+        days = f["days_between"]
+        gap = f"+{days}d" if days is not None else ""
+        bought = _short_date(f["transfer_date"])
+        amount_html = f'<div class="flip-amount">{amount}</div>' if amount else ""
+        prop_link = f"/property/{bbl}"
+        rows_html += (
+            f'<li class="flip-row" onclick="location.href=\'{prop_link}\'">'
+            f'<a href="{prop_link}">'
+            f'<div class="flip-main">'
+            f'<div class="flip-addr">{addr}</div>'
+            f'<div class="flip-geo">{geo}</div>'
+            f'<div class="flip-buyer">{buyer}</div>'
+            f'<div class="flip-when"><span class="flip-when-label">Bought</span> {bought}</div>'
+            f'</div>'
+            f'<div class="flip-side">'
+            f'<div class="flip-gap">{gap}</div>'
+            f'<div class="flip-gap-label">buy &rarr; permit</div>'
+            f'{amount_html}'
+            f'</div>'
+            f'</a>'
+            f'</li>\n'
+        )
+        list_items.append({
+            "@type": "ListItem",
+            "position": i,
+            "name": f"{f['address']} renovation flip",
+            "url": f"https://pulsecities.com/property/{f['bbl']}",
+        })
+
+    n = len(flips)
+    if not rows_html:
+        rows_html = (
+            '<li class="flip-empty" id="flip-empty">No flips matched the pattern in the '
+            'current window. Check back after the next nightly refresh.</li>\n'
+        )
+
+    title = "Flip Watch | PulseCities"
+    desc = (
+        f"{n} NYC buildings where an LLC bought and filed a renovation permit within "
+        f"{FLIP_WINDOW_DAYS} days, sourced from ACRIS deeds and DOB permits. Updated nightly."
+    )
+    jsonld = json.dumps({
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "NYC Flip Watch",
+        "description": desc,
+        "url": "https://pulsecities.com/flips",
+        "numberOfItems": n,
+        "itemListElement": list_items,
+    }, indent=2)
+
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{_html.escape(title)}</title>
+<meta name="description" content="{_html.escape(desc)}">
+<link rel="canonical" href="https://pulsecities.com/flips">
+<meta property="og:title" content="Flip Watch | PulseCities">
+<meta property="og:description" content="{_html.escape(desc)}">
+<meta property="og:url" content="https://pulsecities.com/flips">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PulseCities">
+<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Flip Watch | PulseCities">
+<meta name="twitter:description" content="{_html.escape(desc)}">
+<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<script type="application/ld+json">{jsonld}</script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}}
+nav{{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0}}
+.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}}
+.container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
+a{{color:inherit;text-decoration:none}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b}}
+.footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
+@media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
+.flip-list{{list-style:none;padding:0;margin:0}}
+.flip-row{{border-bottom:1px solid rgba(148,163,184,0.07);cursor:pointer;}}
+.flip-row:hover{{background:rgba(148,163,184,0.04)}}
+.flip-row a{{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:16px 0;text-decoration:none;color:inherit;}}
+.flip-main{{display:flex;flex-direction:column;gap:3px;min-width:0;}}
+.flip-addr{{font-family:'JetBrains Mono',monospace;font-size:0.9rem;color:#e2e8f0;letter-spacing:0.03em;font-weight:500;}}
+.flip-row:hover .flip-addr{{color:#f97316;}}
+.flip-geo{{font-size:0.76rem;color:rgba(148,163,184,0.7);}}
+.flip-buyer{{font-family:'JetBrains Mono',monospace;font-size:0.74rem;color:#94a3b8;margin-top:2px;}}
+.flip-when{{font-size:0.72rem;color:rgba(148,163,184,0.55);margin-top:2px;}}
+.flip-when-label{{color:rgba(148,163,184,0.4);}}
+.flip-side{{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;text-align:right;}}
+.flip-gap{{font-family:'JetBrains Mono',monospace;font-size:1.05rem;font-weight:500;color:#f97316;line-height:1.1;}}
+.flip-gap-label{{font-size:0.62rem;color:rgba(148,163,184,0.5);text-transform:uppercase;letter-spacing:0.06em;margin-top:1px;}}
+.flip-amount{{font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:#cbd5e1;margin-top:8px;}}
+.flip-empty{{padding:24px 0;font-size:0.82rem;color:#94a3b8;}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="/" style="display:flex;align-items:center;gap:8px;color:#f1f5f9;">
+      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span>
+    </a>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Map</a>
+      <a href="/operators" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Operators</a>
+      <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Methodology</a>
+      <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
+    </div>
+  </div>
+</nav>
+<div class="container">
+  <div style="margin-bottom:8px;">
+    <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Home</a>
+  </div>
+  <h1 id="fw-heading" style="font-size:1.4rem;font-weight:600;margin-bottom:6px;">Flip Watch</h1>
+  <p id="fw-desc" style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px;line-height:1.6;">
+    Buildings where an LLC took the deed and filed a renovation permit within {FLIP_WINDOW_DAYS} days. That fast turn is one of the clearest early signals of a building being repositioned. Public records only.
+  </p>
+  <p id="fw-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.55);margin-bottom:28px;">{n} flips detected across NYC in the past 12 months.</p>
+  <ul class="flip-list">
+{rows_html}  </ul>
+  <p id="fw-note" style="font-size:0.72rem;color:rgba(148,163,184,0.45);margin-top:24px;line-height:1.6;">
+    A renovation permit alone is not wrongdoing. This page reports the public-record pattern, not a conclusion about any owner. <a href="/methodology" style="color:rgba(249,115,22,0.75);">How this is measured &rarr;</a>
+  </p>
+</div>
+<footer>
+  <div style="font-size:11px;color:#64748b;margin-bottom:8px;text-align:center;">Built by Michael Espin</div>
+  <div class="footer-links">
+    <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
+    <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
+    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
+    <a href="/status" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
+    <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
+    <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="color:#64748b;text-decoration:none;display:inline-flex;align-items:center;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+  </div>
+</footer>
+<script>
+(function() {{
+  var lang = localStorage.getItem('pc-lang') || 'en';
+  var i18n = {{
+    en: {{
+      heading: 'Flip Watch',
+      desc: 'Buildings where an LLC took the deed and filed a renovation permit within {FLIP_WINDOW_DAYS} days. That fast turn is one of the clearest early signals of a building being repositioned. Public records only.',
+      sub: '{n} flips detected across NYC in the past 12 months.',
+      note: 'A renovation permit alone is not wrongdoing. This page reports the public-record pattern, not a conclusion about any owner.',
+      bought: 'Bought',
+      gap: 'buy \\u2192 permit',
+      toggle: 'EN / ES'
+    }},
+    es: {{
+      heading: 'Vigilancia de reventas',
+      desc: 'Edificios donde una LLC tom\\u00f3 la escritura y solicit\\u00f3 un permiso de renovaci\\u00f3n en un plazo de {FLIP_WINDOW_DAYS} d\\u00edas. Ese giro r\\u00e1pido es una de las se\\u00f1ales tempranas m\\u00e1s claras de que un edificio est\\u00e1 siendo reposicionado. Solo registros p\\u00fablicos.',
+      sub: '{n} reventas detectadas en NYC en los \\u00faltimos 12 meses.',
+      note: 'Un permiso de renovaci\\u00f3n por s\\u00ed solo no es una infracci\\u00f3n. Esta p\\u00e1gina informa el patr\\u00f3n de registro p\\u00fablico, no una conclusi\\u00f3n sobre ning\\u00fan propietario.',
+      bought: 'Comprado',
+      gap: 'compra \\u2192 permiso',
+      toggle: 'ES / EN'
+    }}
+  }};
+  function applyLang(l) {{
+    var s = i18n[l] || i18n.en;
+    var set = function(id, val) {{ var el = document.getElementById(id); if (el) el.textContent = val; }};
+    set('fw-heading', s.heading);
+    set('fw-sub', s.sub);
+    var d = document.getElementById('fw-desc'); if (d) d.textContent = s.desc;
+    var note = document.getElementById('fw-note');
+    if (note) note.innerHTML = s.note + ' <a href="/methodology" style="color:rgba(249,115,22,0.75);">' + (l === 'es' ? 'C\\u00f3mo se mide \\u2192' : 'How this is measured \\u2192') + '</a>';
+    document.querySelectorAll('.flip-when-label').forEach(function(el) {{ el.textContent = s.bought; }});
+    document.querySelectorAll('.flip-gap-label').forEach(function(el) {{ el.textContent = s.gap; }});
+    var btn = document.getElementById('lang-toggle');
+    if (btn) btn.textContent = s.toggle;
+  }}
+  applyLang(lang);
+  var btn = document.getElementById('lang-toggle');
+  if (btn) btn.addEventListener('click', function() {{
+    lang = lang === 'en' ? 'es' : 'en';
+    localStorage.setItem('pc-lang', lang);
+    applyLang(lang);
+  }});
+}})();
+</script>
+</body>
+</html>"""
+
+    _flips_cache = (page, time.monotonic() + _PAGE_TTL)
+    return HTMLResponse(page)
