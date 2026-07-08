@@ -115,8 +115,21 @@
             50%       { opacity: 1.0; }
         }
         .pulse-dot { animation: pulse-dot 2.5s ease-in-out infinite; }
+
+        /* Hero pulse trace draws left to right once, then holds */
+        #hero-pulse polyline {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: hero-draw 1.4s ease-out 0.15s forwards;
+        }
+        @keyframes hero-draw {
+            to { stroke-dashoffset: 0; }
+        }
+        #nav-links a { white-space: nowrap; }
+
         @media (prefers-reduced-motion: reduce) {
             .pulse-dot { animation: none; opacity: 0.7; }
+            #hero-pulse polyline { animation: none; stroke-dashoffset: 0; }
         }
 
         .zip-card { transition: border-color 0.15s, background 0.15s; }
@@ -282,8 +295,14 @@
     <!-- Nav -->
     <header style="border-bottom:1px solid rgba(51,65,85,0.4);position:sticky;top:0;z-index:20;background:rgba(10,10,26,0.92);backdrop-filter:blur(8px);">
         <nav id="site-nav" style="max-width:680px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">
-            <div id="wordmark-group" style="display:flex;align-items:baseline;gap:10px;">
-                <a href="/" style="font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:600;color:#38bdf8;text-decoration:none;letter-spacing:-0.01em;">PulseCities</a>
+            <div id="wordmark-group" style="display:flex;align-items:center;gap:10px;">
+                <a href="/" style="display:inline-flex;align-items:center;gap:8px;font-size:1rem;font-weight:600;color:#e2e8f0;text-decoration:none;letter-spacing:-0.01em;">
+                    <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                        <rect width="32" height="32" rx="6" fill="#1a1a2e"/>
+                        <polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    PulseCities
+                </a>
                 <a id="byline-link" href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" aria-label="by Michael Espin on LinkedIn" style="font-size:11px;color:#94a3b8;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#cbd5e1'" onmouseout="this.style.color='#94a3b8'">by Michael Espin</a>
             </div>
             <div id="nav-links" style="display:flex;align-items:center;gap:20px;">
@@ -306,10 +325,14 @@
 
         <!-- Hero -->
         <section style="margin-bottom:48px;">
-            <h1 class="font-mono" style="font-size:2rem;font-weight:600;color:#38bdf8;letter-spacing:-0.02em;margin-bottom:10px;">PulseCities</h1>
+            <!-- Signature: the city's pulse, drawn once on load -->
+            <svg id="hero-pulse" viewBox="0 0 680 44" width="100%" height="44" preserveAspectRatio="none" aria-hidden="true" focusable="false" style="display:block;margin-bottom:18px;">
+                <polyline pathLength="1000"
+                          points="0,28 140,28 152,28 163,8 176,40 187,16 198,32 208,28 680,28"
+                          fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
 
-            <!-- Main tagline: primary subtitle -->
-            <p style="font-size:15px;color:#cbd5e1;margin-bottom:18px;line-height:1.5;" data-i18n="tagline">The displacement story NYC doesn't officially tell.</p>
+            <h1 data-i18n="tagline" style="font-size:clamp(1.5rem,4.5vw,2.1rem);font-weight:600;color:#e2e8f0;letter-spacing:-0.02em;line-height:1.3;margin-bottom:16px;">The displacement story NYC doesn't officially tell.</h1>
 
             <!-- Search support line -->
             <p style="font-size:13px;color:#94a3b8;margin-bottom:14px;line-height:1.55;" data-i18n="hero_subhead">Search any NYC address, ZIP, or neighborhood using public records.</p>
@@ -326,7 +349,7 @@
                            autocomplete="off" />
                     <button id="search-btn"
                             class="btn shrink-0"
-                            style="background-color:#f59e0b;border-color:#f59e0b;color:#1a1a2e;font-weight:600;padding:0 20px;"
+                            style="background-color:#f97316;border-color:#f97316;color:#1a1a2e;font-weight:600;padding:0 20px;"
                             data-i18n="search_btn">
                         Search
                     </button>
@@ -549,17 +572,17 @@
 
         function scoreColor(score) {
             if (score == null) return '#94a3b8';
-            if (score >= 70) return '#ef4444';
-            if (score >= 40) return '#f97316';
-            if (score >= 15) return '#eab308';
+            if (score >= 85) return '#ef4444';
+            if (score >= 67) return '#f97316';
+            if (score >= 34) return '#eab308';
             return '#22c55e';
         }
 
         function scoreBorder(score) {
             if (score == null) return 'rgba(51,65,85,0.8)';
-            if (score >= 70) return 'rgba(239,68,68,0.4)';
-            if (score >= 40) return 'rgba(249,115,22,0.3)';
-            if (score >= 15) return 'rgba(234,179,8,0.2)';
+            if (score >= 85) return 'rgba(239,68,68,0.4)';
+            if (score >= 67) return 'rgba(249,115,22,0.3)';
+            if (score >= 34) return 'rgba(234,179,8,0.2)';
             return 'rgba(51,65,85,0.8)';
         }
 
