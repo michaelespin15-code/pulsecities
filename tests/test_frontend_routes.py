@@ -340,3 +340,9 @@ class TestCanonicalTierBands:
         app = self._app()
         for canon in ("score >= 85", "score >= 67", "score >= 34"):
             assert canon in app, f"canonical threshold '{canon}' missing from app.html"
+
+    def test_landing_page_uses_canonical_thresholds(self):
+        idx = (Path(__file__).parent.parent / "frontend" / "index.html").read_text()
+        for legacy in ("score >= 70", "score >= 40) return", "score >= 15) return"):
+            assert legacy not in idx, f"legacy tier threshold '{legacy}' in index.html"
+        assert "score >= 85" in idx
