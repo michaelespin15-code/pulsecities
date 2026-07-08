@@ -36,7 +36,11 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["127.0.0.1"])
+# Gunicorn listens on a unix socket, so the peer has no IP address and an
+# IP allowlist can never match. Only nginx can reach the socket, so trusting
+# every peer is equivalent to trusting nginx. Without this, X-Forwarded-Proto
+# is ignored and trailing-slash redirects downgrade to http:// (mixed content).
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Tighten to specific origins before launch
