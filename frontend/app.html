@@ -549,6 +549,15 @@
                         </div>
                     </div>
                     <p id="detail-summary" class="hidden text-xs text-base-content/70 mt-3 leading-relaxed"></p>
+                    <!-- AI read: grounded model narration of the numbers in this panel -->
+                    <div id="ai-read" class="hidden mt-3 pt-3 border-t border-base-content/[0.07]">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <span id="ai-read-label" class="text-xs font-mono uppercase tracking-wider" style="font-size:10px;color:rgba(56,189,248,0.7);">AI read</span>
+                            <span id="ai-read-loading" class="hidden text-slate-500" style="font-size:10px;">generating&hellip;</span>
+                        </div>
+                        <p id="ai-read-text" class="text-xs text-base-content/70 leading-relaxed"></p>
+                        <p id="ai-read-note" class="text-slate-500 mt-1.5" style="font-size:10px;line-height:1.5;"></p>
+                    </div>
                     <!-- Actions -->
                     <div class="flex items-center justify-between mt-3 pt-3 border-t border-base-content/[0.07]">
                         <button id="watch-btn" onclick="toggleWatch()"
@@ -1208,6 +1217,44 @@
             });
         });
 
+        // AI read: server generates once per ZIP per score change and caches,
+        // so most visits get an instant cached response. Cold generation takes
+        // a few seconds; the section shows a generating note meanwhile and
+        // disappears entirely if the endpoint declines (cap reached, no key).
+        let _aiReadSeq = 0;
+
+        function renderAiRead(zip, score) {
+            const box     = document.getElementById('ai-read');
+            const txt     = document.getElementById('ai-read-text');
+            const note    = document.getElementById('ai-read-note');
+            const loading = document.getElementById('ai-read-loading');
+            const seq = ++_aiReadSeq;
+
+            if (score === null || score === undefined) {
+                box.classList.add('hidden');
+                return;
+            }
+
+            box.classList.remove('hidden');
+            txt.textContent  = '';
+            note.textContent = '';
+            loading.classList.remove('hidden');
+
+            fetch(`/api/neighborhoods/${zip}/summary`)
+                .then(r => { if (!r.ok) throw new Error('summary ' + r.status); return r.json(); })
+                .then(d => {
+                    if (seq !== _aiReadSeq) return;
+                    loading.classList.add('hidden');
+                    if (!d.summary) { box.classList.add('hidden'); return; }
+                    txt.textContent  = d.summary;
+                    note.textContent = t('ui', 'ai_read_note');
+                })
+                .catch(() => {
+                    if (seq !== _aiReadSeq) return;
+                    box.classList.add('hidden');
+                });
+        }
+
         // Least-squares fit over the trailing 30 days of snapshots, projected
         // `horizon` days forward and clamped to the score scale. Uses real day
         // offsets so gaps in the history do not skew the slope.
@@ -1306,6 +1353,9 @@
                     history_loading:     'Loading…',
                     projection_note:     'Dashed: 14-day trend projection from recent scores. A trend read, not a prediction.',
                     projected_score:     'Projected',
+                    ai_read_label:       'AI read',
+                    ai_read_generating:  'generating…',
+                    ai_read_note:        'Written by Claude from the exact counts in this panel. Check it against the signal breakdown below.',
                     recent_activity:     'Recent Activity',
                     reno_flip_title:     'Renovation-Flip Pattern Detected',
                     reno_flip_toggle:    'See addresses',
@@ -1527,6 +1577,9 @@
                     history_loading:     'Cargando…',
                     projection_note:     'Discontinua: proyección de tendencia a 14 días según puntuaciones recientes. Una lectura de tendencia, no una predicción.',
                     projected_score:     'Proyectado',
+                    ai_read_label:       'Lectura IA',
+                    ai_read_generating:  'generando…',
+                    ai_read_note:        'Escrito por Claude en inglés a partir de los conteos exactos de este panel. Verifícalo con el desglose de señales.',
                     recent_activity:     'Actividad Reciente',
                     reno_flip_title:     'Patrón de Renovación-Reventa Detectado',
                     reno_flip_toggle:    'Ver direcciones',
@@ -1732,6 +1785,8 @@
                 'history-loading':            t('ui', 'history_loading'),
                 'history-empty':              t('ui', 'history_empty'),
                 'history-projection-note':    t('ui', 'projection_note'),
+                'ai-read-label':              t('ui', 'ai_read_label'),
+                'ai-read-loading':            t('ui', 'ai_read_generating'),
                 'recent-activity-title':      t('ui', 'recent_activity'),
                 'reno-flip-title':            t('ui', 'reno_flip_title'),
                 'renovation-flip-toggle':     t('ui', 'reno_flip_toggle'),
@@ -3556,9 +3611,11 @@
                     renderRenovationFlip(zip, seq);
                     renderActiveBuyers(zip, seq);
                     renderScoreHistory(zip, _historyDays);
+                    renderAiRead(zip, data.score);
                 } else {
                     _scoreLoadEl.style.opacity = '';
                     showDetail(zip, null, null);
+                    renderAiRead(zip, null);
                     if (resp.status !== 404) console.error('Score fetch returned', resp.status);
                 }
             } catch (err) {
