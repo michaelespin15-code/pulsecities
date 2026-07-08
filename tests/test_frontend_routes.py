@@ -242,3 +242,72 @@ class TestNeighborhoodOGInjection:
         assert resp.status_code == 200
         assert "Chelsea" in resp.text
         assert "/map?q=10001" in resp.text
+
+
+class TestTierBands:
+    """
+    _tier_info must match the canonical bands used by the map legend,
+    the weekly digest, and _build_summary: Low 0-33, Moderate 34-66,
+    High 67-84, Critical 85+. A drifted copy here means the SSR meta
+    description names a different tier than the map colors show.
+    """
+
+    def test_band_boundaries(self):
+        from api.routes.frontend import _tier_info
+        assert _tier_info(0)[0] == "Low"
+        assert _tier_info(33)[0] == "Low"
+        assert _tier_info(34)[0] == "Moderate"
+        assert _tier_info(66)[0] == "Moderate"
+        assert _tier_info(67)[0] == "High"
+        assert _tier_info(84)[0] == "High"
+        assert _tier_info(85)[0] == "Critical"
+        assert _tier_info(100)[0] == "Critical"
+
+
+@pytest.mark.integration
+class TestPropertyPage:
+    """
+    /property/{bbl} SSR pages. Requires a live database. A scored parcel
+    must render, not 500: this route broke silently once when a helper
+    was renamed and only this call site kept the old name.
+    """
+
+    @pytest.fixture(scope="class")
+    def client(self):
+        from api.main import app
+        with TestClient(app, raise_server_exceptions=False) as c:
+            yield c
+
+    @pytest.fixture(scope="class")
+    def scored_bbl(self):
+        from models.database import SessionLocal
+        from sqlalchemy import text
+        db = SessionLocal()
+        try:
+            row = db.execute(text(
+                "SELECT p.bbl FROM parcels p "
+                "JOIN displacement_scores ds ON p.zip_code = ds.zip_code "
+                "WHERE ds.score IS NOT NULL LIMIT 1"
+            )).fetchone()
+        finally:
+            db.close()
+        if not row:
+            pytest.skip("no scored parcel in the database")
+        return row.bbl
+
+    def test_scored_property_returns_200(self, client, scored_bbl):
+        resp = client.get(f"/property/{scored_bbl}")
+        assert resp.status_code == 200, f"/property/{scored_bbl} returned {resp.status_code}"
+
+    def test_scored_property_has_og_description(self, client, scored_bbl):
+        resp = client.get(f"/property/{scored_bbl}")
+        line = next((l for l in resp.text.splitlines() if 'property="og:description"' in l), "")
+        assert "displacement" in line.lower(), f"og:description missing or generic: {line}"
+
+    def test_unknown_bbl_returns_200_shell(self, client):
+        resp = client.get("/property/9999999999")
+        assert resp.status_code == 200
+
+    def test_non_numeric_bbl_returns_200_shell(self, client):
+        resp = client.get("/property/not-a-bbl")
+        assert resp.status_code == 200

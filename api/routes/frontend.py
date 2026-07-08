@@ -87,9 +87,13 @@ _FAQ_A3 = (
 
 
 def _tier_info(score: float) -> tuple[str, str]:
-    """Returns (display_label, hex_color) for the score tier."""
-    if score >= 76: return "Critical", "#ef4444"
-    if score >= 56: return "High",     "#f97316"
+    """
+    Returns (display_label, hex_color) for the score tier.
+    Bands must match the map legend, weekly digest, and _build_summary:
+    Low 0-33, Moderate 34-66, High 67-84, Critical 85+.
+    """
+    if score >= 85: return "Critical", "#ef4444"
+    if score >= 67: return "High",     "#f97316"
     if score >= 34: return "Moderate", "#eab308"
     return "Low", "#64748b"
 
@@ -479,10 +483,11 @@ def property_page(bbl: str, db: Session = Depends(get_db)):
     title = f"{address}, {borough}{score_part} | PulseCities"
 
     if score is not None:
+        tier_label, _ = _tier_info(score)
         desc = (
-            f"{address} in {borough} shows {_risk_tier(score)} with a displacement score of "
-            f"{score:.1f}/100. View eviction filings, construction permits, and ownership "
-            f"transfers from NYC public records."
+            f"{address} in {borough} shows {tier_label.lower()} displacement pressure with a "
+            f"score of {score:.1f}/100. View eviction filings, construction permits, and "
+            f"ownership transfers from NYC public records."
         )
     else:
         desc = (
