@@ -127,6 +127,7 @@ Scoring methodology: each signal is normalized 0 to 100 relative to all NYC neig
 - `GET /api/neighborhoods/{{zip}}/score` - score and signal breakdown for a ZIP code
 - `GET /api/neighborhoods/top-risk` - top N neighborhoods by current score
 - `GET /api/neighborhoods/top-movers` - neighborhoods with largest week-over-week score increase
+- `GET /api/flips` - citywide renovation-flip feed (LLC deed plus renovation permit within 60 days)
 
 ## Key pages
 
@@ -134,6 +135,7 @@ Scoring methodology: each signal is normalized 0 to 100 relative to all NYC neig
 - https://pulsecities.com/map - interactive heatmap of all 178 neighborhoods
 - https://pulsecities.com/neighborhood/{{zip}} - per-neighborhood detail (e.g. /neighborhood/11216)
 - https://pulsecities.com/operator/{{name}} - LLC operator portfolio profiles
+- https://pulsecities.com/flips - Flip Watch, citywide feed of buildings bought by an LLC and filed for renovation within 60 days
 - https://pulsecities.com/methodology - full scoring methodology
 
 ## About
