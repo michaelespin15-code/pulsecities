@@ -60,7 +60,7 @@ def get_block_events(request: Request, response: Response, bbl: str, db: Session
         events.append({
             "type": "permit",
             "date": p.filing_date.isoformat() if p.filing_date else None,
-            "description": f"{p.permit_type or 'Permit'} — {p.work_type or 'Unknown work type'}",
+            "description": f"{p.permit_type or 'Permit'}: {p.work_type or 'Unknown work type'}",
             "detail": p.job_description,
             "raw_date": p.filing_date,  # for sorting — removed before response
         })
@@ -77,7 +77,7 @@ def get_block_events(request: Request, response: Response, bbl: str, db: Session
         events.append({
             "type": "eviction",
             "date": e.executed_date.isoformat() if e.executed_date else None,
-            "description": f"Eviction filed — {e.eviction_type or 'type unknown'}",
+            "description": f"Eviction filed: {e.eviction_type or 'type unknown'}",
             "detail": e.docket_number,
             "raw_date": e.executed_date,
         })
@@ -97,7 +97,7 @@ def get_block_events(request: Request, response: Response, bbl: str, db: Session
         events.append({
             "type": "ownership_transfer",
             "date": o.doc_date.isoformat() if o.doc_date else None,
-            "description": f"Transfer to {buyer} ({o.doc_type or 'deed'}) — {amount}",
+            "description": f"Transfer to {buyer} ({o.doc_type or 'deed'}), {amount}",
             "detail": None,
             "raw_date": o.doc_date,
         })
@@ -115,7 +115,7 @@ def get_block_events(request: Request, response: Response, bbl: str, db: Session
         events.append({
             "type": "complaint",
             "date": event_date.isoformat() if event_date else None,
-            "description": f"311: {c.complaint_type or 'complaint'} — {c.descriptor or ''}".strip(" —"),
+            "description": f"311: {c.complaint_type or 'complaint'}, {c.descriptor or ''}".strip(", "),
             "detail": c.status,
             "raw_date": event_date,  # normalized to date for consistent sorting
         })
