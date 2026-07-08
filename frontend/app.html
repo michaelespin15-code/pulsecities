@@ -1908,12 +1908,11 @@
                         'case',
                         ['==', ['get', 'score'], null], '#94a3b8',
                         [
-                            'interpolate', ['linear'], ['get', 'score'],
-                            0,   '#22c55e',
-                            30,  '#22c55e',
-                            45,  '#eab308',
-                            60,  '#f97316',
-                            100, '#ef4444'
+                            'step', ['get', 'score'],
+                            '#22c55e',
+                            34, '#eab308',
+                            67, '#f97316',
+                            85, '#ef4444'
                         ]
                     ],
                     'fill-opacity': 0.65
@@ -1990,9 +1989,9 @@
 
         function scoreColor(score) {
             if (score === null) return '#94a3b8';
-            if (score >= 70) return '#ef4444';
-            if (score >= 55) return '#f97316';
-            if (score >= 35) return '#eab308';
+            if (score >= 85) return '#ef4444';
+            if (score >= 67) return '#f97316';
+            if (score >= 34) return '#eab308';
             return '#22c55e';
         }
 
@@ -2005,9 +2004,9 @@
 
         function riskLabel(score) {
             if (score === null || score === undefined) return '';
-            if (score >= 70) return t('risk_level', 'critical');
-            if (score >= 55) return t('risk_level', 'high');
-            if (score >= 35) return t('risk_level', 'moderate');
+            if (score >= 85) return t('risk_level', 'critical');
+            if (score >= 67) return t('risk_level', 'high');
+            if (score >= 34) return t('risk_level', 'moderate');
             return t('risk_level', 'low');
         }
 
@@ -2025,8 +2024,8 @@
             if (score === null || score === undefined) return t('summary', 'no_data');
             const s = Math.round(score * 10) / 10;
             let opening;
-            if (s >= 76)      opening = t('summary', 'critical_opening').replace('{score}', s);
-            else if (s >= 56) opening = t('summary', 'high_opening').replace('{score}', s);
+            if (s >= 85)      opening = t('summary', 'critical_opening').replace('{score}', s);
+            else if (s >= 67) opening = t('summary', 'high_opening').replace('{score}', s);
             else if (s >= 34) opening = t('summary', 'moderate_opening').replace('{score}', s);
             else              opening = t('summary', 'low_opening').replace('{score}', s);
 
@@ -2041,6 +2040,7 @@
             else if (top.length === 1) detail = t('summary', 'primary_driver').replace('{signal}', top[0]);
             else detail = t('summary', 'two_drivers').replace('{signal1}', top[0]).replace('{signal2}', top[1]);
 
+            detail = detail.charAt(0).toUpperCase() + detail.slice(1);
             return opening + ' ' + detail;
         }
 
@@ -4002,7 +4002,7 @@
                     if (n.score !== null && n.score !== undefined) {
                         const score = document.createElement('span');
                         score.className = 'font-mono text-xs shrink-0';
-                        const c = n.score >= 70 ? '#ef4444' : n.score >= 40 ? '#f97316' : n.score >= 15 ? '#eab308' : '#22c55e';
+                        const c = n.score >= 85 ? '#ef4444' : n.score >= 67 ? '#f97316' : n.score >= 34 ? '#eab308' : '#22c55e';
                         score.style.color = c;
                         score.textContent = n.score.toFixed(1);
                         top.appendChild(score);
