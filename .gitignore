@@ -16,3 +16,4 @@ TODO.md
 CONTEXT_FOR_AI.md
 DONE.md
 audits/*.json
+.playwright-mcp/
