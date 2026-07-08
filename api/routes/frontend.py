@@ -267,7 +267,7 @@ def _build_neighborhood_page(
 <script type="application/ld+json">{faq_ld}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 :root{{--bg:#0f172a;--border:rgba(148,163,184,.1);--text:#f1f5f9;--muted:rgba(148,163,184,.65);--faint:rgba(148,163,184,.35);--accent:#f97316}}
@@ -281,7 +281,7 @@ nav{{border-bottom:1px solid var(--border);padding:12px 0}}
 .breadcrumb{{font-size:.78rem;color:var(--muted);margin-bottom:20px}}
 .breadcrumb a{{color:var(--muted)}}
 .breadcrumb a:hover{{color:var(--text)}}
-h1{{font-size:1.45rem;font-weight:600;line-height:1.3;margin-bottom:6px}}
+h1{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.45rem;font-weight:600;line-height:1.3;margin-bottom:6px}}
 .subline{{font-size:.82rem;color:var(--muted);margin-bottom:28px}}
 .score-block{{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;padding:20px 24px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;margin-bottom:20px}}
 .score-num{{font-size:2.8rem;font-weight:700;font-family:'JetBrains Mono',monospace;line-height:1}}
@@ -574,7 +574,7 @@ def _minimal_operator_page(display_name: str, operator_class: str) -> str:
 <title>{name} | PulseCities</title>
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://pulsecities.com/operators">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
   body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#e2e8f0;line-height:1.7;
@@ -585,7 +585,7 @@ def _minimal_operator_page(display_name: str, operator_class: str) -> str:
   .brand{{font-size:14px;font-weight:600;color:#f97316}}
   .wrap{{flex:1;max-width:620px;margin:0 auto;padding:72px 24px;width:100%}}
   .label{{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#94a3b8;margin-bottom:12px}}
-  h1{{font-size:clamp(22px,4vw,28px);font-weight:600;margin-bottom:10px}}
+  h1{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:clamp(22px,4vw,28px);font-weight:600;margin-bottom:10px}}
   .klass{{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;color:#cbd5e1;
          border:1px solid rgba(148,163,184,0.25);border-radius:6px;padding:4px 10px;margin-bottom:20px}}
   p{{color:#94a3b8;font-size:15px}}
@@ -621,7 +621,7 @@ def _operator_not_found_page(label: str) -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Operator not found | PulseCities</title>
 <meta name="robots" content="noindex">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
   body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#e2e8f0;line-height:1.7;
@@ -631,7 +631,7 @@ def _operator_not_found_page(label: str) -> str:
   nav{{border-bottom:1px solid rgba(148,163,184,0.12);padding:0 24px;height:52px;display:flex;align-items:center}}
   .brand{{font-size:14px;font-weight:600;color:#f97316}}
   .wrap{{flex:1;max-width:620px;margin:0 auto;padding:72px 24px;width:100%}}
-  h1{{font-size:clamp(22px,4vw,28px);font-weight:600;margin-bottom:10px}}
+  h1{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:clamp(22px,4vw,28px);font-weight:600;margin-bottom:10px}}
   p{{color:#94a3b8;font-size:15px}}
   .back{{display:inline-block;margin-top:28px;font-size:13px}}
   footer{{border-top:1px solid rgba(148,163,184,0.12);padding:24px;text-align:center;font-size:13px;color:#94a3b8}}
@@ -962,7 +962,7 @@ def operators_directory(db: Session = Depends(get_db)):
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <script type="application/ld+json">{jsonld}</script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}}
@@ -1191,7 +1191,7 @@ def flip_watch_page(db: Session = Depends(get_db)):
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <script type="application/ld+json">{jsonld}</script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}}
@@ -1239,7 +1239,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <div style="margin-bottom:8px;">
     <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Home</a>
   </div>
-  <h1 id="fw-heading" style="font-size:1.4rem;font-weight:600;margin-bottom:6px;">Flip Watch</h1>
+  <h1 id="fw-heading" style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.4rem;font-weight:600;margin-bottom:6px;">Flip Watch</h1>
   <p id="fw-desc" style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px;line-height:1.6;">
     Buildings where an LLC took the deed and filed a renovation permit within {FLIP_WINDOW_DAYS} days. That fast turn is one of the clearest early signals of a building being repositioned. Public records only.
   </p>
