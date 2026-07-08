@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Page not found | PulseCities</title>
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:      #0f172a;
+            --surface: #1e293b;
+            --border:  rgba(148, 163, 184, 0.12);
+            --text:    #e2e8f0;
+            --muted:   #94a3b8;
+            --orange:  #f97316;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            text-align: center;
+        }
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+        h1 { font-size: 22px; font-weight: 600; margin-bottom: 10px; }
+        p { color: var(--muted); font-size: 15px; max-width: 420px; line-height: 1.6; margin-bottom: 28px; }
+        .links { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+        .links a {
+            color: var(--text);
+            text-decoration: none;
+            font-size: 14px;
+            padding: 9px 18px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+        }
+        .links a:hover { border-color: rgba(148, 163, 184, 0.35); }
+        .links a.primary { background: var(--orange); border-color: var(--orange); color: #0f172a; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <a href="/" class="brand">
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <rect width="32" height="32" rx="6" fill="#1a1a2e"/>
+            <polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        PulseCities
+    </a>
+    <h1>Page not found</h1>
+    <p>This page does not exist. If you followed a link here, the address may have changed. Try the map or search for a neighborhood by ZIP code.</p>
+    <div class="links">
+        <a href="/map" class="primary">Open the map</a>
+        <a href="/">Home</a>
+        <a href="/operators">Operators</a>
+    </div>
+</body>
+</html>
