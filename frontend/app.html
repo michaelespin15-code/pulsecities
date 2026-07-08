@@ -587,6 +587,7 @@
                     <div id="history-chart-wrap" style="position:relative;height:110px;display:none;">
                         <canvas id="history-chart"></canvas>
                     </div>
+                    <p id="history-projection-note" class="hidden text-slate-500" style="font-size:10px;margin-top:6px;line-height:1.5;">Dashed: 14-day trend projection from recent scores. A trend read, not a prediction.</p>
                 </div>
 
                 <!-- Recent activity — 3 most recent events from pulse data, no extra fetch needed -->
@@ -1055,20 +1056,29 @@
                 btn.classList.toggle('active', parseInt(btn.dataset.days) === days);
             });
 
+            const projNote = document.getElementById('history-projection-note');
+
             fetch(`/api/score-history/${zip}?days=${days}`)
                 .then(r => r.ok ? r.json() : [])
-                .then(hist => {
+                .then(async hist => {
                     if (seq !== _historySeq) return;  // superseded by a newer fetch
                     loading.classList.add('hidden');
 
                     if (!hist || hist.length < 2) {
                         empty.classList.remove('hidden');
+                        projNote.classList.add('hidden');
                         return;
                     }
 
+                    // Chart.js is lazy-loaded; without this await the first
+                    // render hits `new Chart` before the script exists and
+                    // falls through to the empty state.
+                    await _loadChartJs();
+                    if (seq !== _historySeq) return;
+
                     wrap.style.display = 'block';
 
-                    const labels = hist.map(h => {
+                    let labels = hist.map(h => {
                         const d = new Date(h.date + 'T00:00:00');
                         return d.toLocaleDateString(_locale(), { month: 'short', day: 'numeric' });
                     });
@@ -1079,10 +1089,25 @@
                         i > 0 && Math.abs(s - scores[i - 1]) >= 4 ? 4 : 0
                     );
 
+                    // Trend projection: dashed extension anchored at the last
+                    // real point. Null-padded so Chart.js draws it only past
+                    // the end of the actual series.
+                    const proj = _trendProjection(hist, 14);
+                    let projData = [];
+                    if (proj) {
+                        labels = labels.concat(proj.labels);
+                        projData = Array(scores.length - 1).fill(null)
+                            .concat([scores[scores.length - 1]], proj.data);
+                        projNote.classList.remove('hidden');
+                    } else {
+                        projNote.classList.add('hidden');
+                    }
+
                     if (_historyChart) {
                         _historyChart.data.labels = labels;
                         _historyChart.data.datasets[0].data = scores;
                         _historyChart.data.datasets[0].pointRadius = radii;
+                        _historyChart.data.datasets[1].data = projData;
                         _historyChart.update('none');
                         return;
                     }
@@ -1106,6 +1131,16 @@
                                 pointBorderColor: '#1e293b',
                                 pointBorderWidth: 1.5,
                                 pointHitRadius: 10,
+                            }, {
+                                data: projData,
+                                borderColor: 'rgba(56,189,248,0.55)',
+                                borderWidth: 1.5,
+                                borderDash: [4, 4],
+                                fill: false,
+                                tension: 0,
+                                pointRadius: 0,
+                                pointHitRadius: 8,
+                                spanGaps: false,
                             }]
                         },
                         options: {
@@ -1117,7 +1152,9 @@
                                 tooltip: {
                                     callbacks: {
                                         title: items => items[0].label,
-                                        label: item => `Score: ${item.raw.toFixed(1)}`
+                                        label: item => item.datasetIndex === 1
+                                            ? `${t('ui', 'projected_score')}: ${item.raw.toFixed(1)}`
+                                            : `Score: ${item.raw.toFixed(1)}`
                                     },
                                     backgroundColor: '#1e293b',
                                     borderColor: 'rgba(148,163,184,0.15)',
@@ -1161,6 +1198,7 @@
                     if (seq !== _historySeq) return;
                     loading.classList.add('hidden');
                     empty.classList.remove('hidden');
+                    projNote.classList.add('hidden');
                 });
         }
 
@@ -1169,6 +1207,33 @@
                 if (_historyZip) renderScoreHistory(_historyZip, parseInt(btn.dataset.days));
             });
         });
+
+        // Least-squares fit over the trailing 30 days of snapshots, projected
+        // `horizon` days forward and clamped to the score scale. Uses real day
+        // offsets so gaps in the history do not skew the slope.
+        function _trendProjection(hist, horizon) {
+            if (!hist || hist.length < 14) return null;
+            const window = hist.slice(-30);
+            const t0 = new Date(window[0].date + 'T00:00:00').getTime();
+            let sx = 0, sy = 0, sxx = 0, sxy = 0;
+            const n = window.length;
+            window.forEach(h => {
+                const x = (new Date(h.date + 'T00:00:00').getTime() - t0) / 86400000;
+                sx += x; sy += h.score; sxx += x * x; sxy += x * h.score;
+            });
+            const denom = n * sxx - sx * sx;
+            if (!denom) return null;
+            const slope = (n * sxy - sx * sy) / denom;
+            const last      = hist[hist.length - 1];
+            const lastTime  = new Date(last.date + 'T00:00:00').getTime();
+            const labels = [], data = [];
+            for (let d = 1; d <= horizon; d++) {
+                const dt = new Date(lastTime + d * 86400000);
+                labels.push(dt.toLocaleDateString(_locale(), { month: 'short', day: 'numeric' }));
+                data.push(Math.max(0, Math.min(100, last.score + slope * d)));
+            }
+            return { labels, data };
+        }
 
         // --- End score history ---
 
@@ -1239,6 +1304,8 @@
                     score_history:       'Score History',
                     history_empty:       'No history yet for this ZIP.',
                     history_loading:     'Loading…',
+                    projection_note:     'Dashed: 14-day trend projection from recent scores. A trend read, not a prediction.',
+                    projected_score:     'Projected',
                     recent_activity:     'Recent Activity',
                     reno_flip_title:     'Renovation-Flip Pattern Detected',
                     reno_flip_toggle:    'See addresses',
@@ -1458,6 +1525,8 @@
                     score_history:       'Historial de Puntuación',
                     history_empty:       'Sin historial para este código postal.',
                     history_loading:     'Cargando…',
+                    projection_note:     'Discontinua: proyección de tendencia a 14 días según puntuaciones recientes. Una lectura de tendencia, no una predicción.',
+                    projected_score:     'Proyectado',
                     recent_activity:     'Actividad Reciente',
                     reno_flip_title:     'Patrón de Renovación-Reventa Detectado',
                     reno_flip_toggle:    'Ver direcciones',
@@ -1662,6 +1731,7 @@
                 'history-section-title':      t('ui', 'score_history'),
                 'history-loading':            t('ui', 'history_loading'),
                 'history-empty':              t('ui', 'history_empty'),
+                'history-projection-note':    t('ui', 'projection_note'),
                 'recent-activity-title':      t('ui', 'recent_activity'),
                 'reno-flip-title':            t('ui', 'reno_flip_title'),
                 'renovation-flip-toggle':     t('ui', 'reno_flip_toggle'),
