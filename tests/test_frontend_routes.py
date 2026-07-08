@@ -346,3 +346,38 @@ class TestCanonicalTierBands:
         for legacy in ("score >= 70", "score >= 40) return", "score >= 15) return"):
             assert legacy not in idx, f"legacy tier threshold '{legacy}' in index.html"
         assert "score >= 85" in idx
+
+
+@pytest.mark.integration
+class TestSearchResolvesDeedBbl:
+    """
+    Address search must land on the BBL that carries the deed record,
+    not an adjacent lot. The 2026-06-24 audit found '1130 Greene Ave'
+    resolving to a neighboring BBL with zero records, a dead end for a
+    journalist verifying an acquisition.
+    """
+
+    def test_operator_acquisition_address_resolves_to_its_bbl(self):
+        from api.main import app
+        from models.database import SessionLocal
+        from sqlalchemy import text as _text
+        db = SessionLocal()
+        try:
+            row = db.execute(_text(
+                "SELECT op.bbl, p.address FROM operator_parcels op "
+                "JOIN operators o ON o.id = op.operator_id AND o.operator_class = 'operator' "
+                "JOIN parcels p ON p.bbl = op.bbl "
+                "WHERE p.address IS NOT NULL ORDER BY op.acquisition_date DESC LIMIT 1"
+            )).fetchone()
+        finally:
+            db.close()
+        if not row:
+            pytest.skip("no operator acquisition with an address")
+        with TestClient(app, raise_server_exceptions=False) as client:
+            resp = client.get("/api/search/", params={"q": row.address})
+            assert resp.status_code == 200
+            props = resp.json()["groups"]["properties"]
+            bbls = [p["bbl"] for p in props]
+            assert row.bbl in bbls, (
+                f"search for '{row.address}' returned {bbls}, expected deed BBL {row.bbl}"
+            )
