@@ -125,7 +125,14 @@
         @keyframes hero-draw {
             to { stroke-dashoffset: 0; }
         }
-        #nav-links a { white-space: nowrap; }
+        #nav-links a, #nav-links button, #byline-link { white-space: nowrap; }
+        #nav-links {
+            flex-wrap: wrap;
+            row-gap: 4px;
+            justify-content: flex-end;
+            margin-left: auto;
+        }
+        #site-nav { flex-wrap: wrap; row-gap: 6px; }
 
         @media (prefers-reduced-motion: reduce) {
             .pulse-dot { animation: none; opacity: 0.7; }
@@ -153,7 +160,8 @@
             }
             #nav-links {
                 width: 100%;
-                gap: 16px;
+                gap: 12px 16px;
+                justify-content: flex-start;
             }
         }
 
@@ -229,7 +237,7 @@
 
         /* Mover rows */
         .mover-row {
-            padding: 12px 0;
+            padding: 10px 0;
             border-bottom: 1px solid rgba(51,65,85,0.5);
             display: block;
             text-decoration: none;
@@ -237,6 +245,41 @@
         }
         .mover-row:last-child { border-bottom: none; }
         .mover-row:hover { opacity: 0.8; }
+
+        /* Map teaser: static shot of the live map, links to the app */
+        .map-teaser {
+            display: block;
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(148,163,184,0.18);
+            transition: border-color 0.15s;
+        }
+        .map-teaser:hover { border-color: rgba(249,115,22,0.55); }
+        .map-teaser img { display: block; width: 100%; height: auto; }
+        .map-teaser-label {
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: #e2e8f0;
+            background: rgba(10,10,26,0.82);
+            border: 1px solid rgba(148,163,184,0.25);
+            border-radius: 6px;
+            padding: 6px 11px;
+        }
+        .map-teaser:hover .map-teaser-label { border-color: rgba(249,115,22,0.55); }
+
+        /* Score bar under each ranking row */
+        .score-track {
+            height: 3px;
+            border-radius: 2px;
+            background: rgba(148,163,184,0.1);
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .score-fill { height: 100%; border-radius: 2px; }
 
         /* Trust section */
         .trust-section {
@@ -374,13 +417,12 @@
             <!-- Live records line: appears after data loads -->
             <p id="stat-chips" style="margin-top:4px;margin-bottom:12px;font-size:11px;color:#94a3b8;font-family:'JetBrains Mono',monospace;"></p>
 
-            <!-- Explore map: secondary CTA -->
-            <div style="display:flex;gap:20px;flex-wrap:wrap;">
-                <a href="/map"
-                   id="cta-explore"
-                   style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;"
-                   onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'"
-                   data-i18n="explore_map">Explore the map &rarr;</a>
+            <!-- The map itself is the pitch: static shot, click through to the app -->
+            <a href="/map" id="cta-explore" class="map-teaser" aria-label="Explore the live displacement risk map">
+                <img src="/map-preview.jpg" width="1120" height="600" alt="Live displacement risk map of NYC. Low-pressure areas in cool blue, moderate in rust, high-pressure neighborhoods glowing orange." loading="eager" fetchpriority="high">
+                <span class="map-teaser-label" data-i18n="explore_map">Explore the map &rarr;</span>
+            </a>
+            <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:10px;">
                 <a href="/map?replay=1"
                    id="cta-replay"
                    style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#f97316;text-decoration:none;opacity:0.7;transition:opacity 0.15s;"
@@ -436,12 +478,23 @@
         </div>
 
         <!-- Flip Watch -->
-        <section style="margin-bottom:48px;">
+        <section style="margin-bottom:40px;">
             <div class="section-head">
                 <span class="section-label" data-i18n="flipwatch_label">Flip Watch</span>
                 <span class="section-helper" data-i18n="flipwatch_helper">An LLC buys, then files to renovate within 60 days.</span>
             </div>
-            <a href="/flips" class="font-mono" style="font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" data-i18n="flipwatch_cta">See recent flips &rarr;</a>
+            <div id="flip-cards"></div>
+            <a href="/flips" class="font-mono" style="display:inline-block;margin-top:12px;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" data-i18n="flipwatch_cta">See recent flips &rarr;</a>
+        </section>
+
+        <!-- Speculation Radar -->
+        <section style="margin-bottom:48px;">
+            <div class="section-head">
+                <span class="section-label" data-i18n="radar_label">Speculation Radar</span>
+                <span class="section-helper" data-i18n="radar_helper">One buyer, three or more buildings, one ZIP, within 90 days.</span>
+            </div>
+            <div id="radar-cards"></div>
+            <a href="/radar" class="font-mono" style="display:inline-block;margin-top:12px;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" data-i18n="radar_cta">Open the radar &rarr;</a>
         </section>
 
         <!-- Methodology trust section -->
@@ -515,6 +568,12 @@
                 flipwatch_label:      'Flip Watch',
                 flipwatch_helper:     'An LLC buys, then files to renovate within 60 days.',
                 flipwatch_cta:        'See recent flips →',
+                flip_days_label:      'deed to permit',
+                radar_label:          'Speculation Radar',
+                radar_helper:         'One buyer, three or more buildings, one ZIP, within 90 days.',
+                radar_cta:            'Open the radar →',
+                radar_bldgs:          'buildings',
+                radar_bldgs_s:        'building',
                 trust_body:           'Six public-record signals normalized across NYC ZIP codes.',
                 read_methodology:     'How scores work →',
                 stats_llc_unit:       'LLC transfers',
@@ -557,6 +616,12 @@
                 flipwatch_label:      'Vigilancia de reventas',
                 flipwatch_helper:     'Una LLC compra y solicita renovar en un plazo de 60 días.',
                 flipwatch_cta:        'Ver reventas recientes →',
+                flip_days_label:      'de escritura a permiso',
+                radar_label:          'Radar de especulación',
+                radar_helper:         'Un comprador, tres o más edificios, un mismo ZIP, en 90 días.',
+                radar_cta:            'Abrir el radar →',
+                radar_bldgs:          'edificios',
+                radar_bldgs_s:        'edificio',
                 trust_body:           'Seis señales de registros públicos normalizadas para los ZIP de NYC.',
                 read_methodology:     'Cómo funcionan las puntuaciones →',
                 stats_llc_unit:       'transferencias LLC',
@@ -603,7 +668,7 @@
             if (score >= 85) return '#ef4444';
             if (score >= 67) return '#f97316';
             if (score >= 34) return '#eab308';
-            return '#22c55e';
+            return '#94a3b8';
         }
 
         function scoreBorder(score) {
@@ -649,12 +714,13 @@
             list.forEach(n => {
                 const color    = scoreColor(n.score);
                 const scoreStr = n.score != null ? n.score.toFixed(1) : 'N/A';
+                const barPct   = n.score != null ? Math.max(2, Math.min(100, n.score)) : 0;
                 const nameLine = [n.name, n.borough].filter(Boolean).join(', ');
                 const row      = document.createElement('a');
                 row.href            = `/map?q=${encodeURIComponent(n.zip_code)}`;
-                row.style.cssText   = 'display:block;text-decoration:none;';
+                row.style.cssText   = 'display:block;text-decoration:none;border-bottom:1px solid rgba(51,65,85,0.4);';
                 row.innerHTML = `
-                    <div style="display:flex;align-items:baseline;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(51,65,85,0.4);">
+                    <div style="display:flex;align-items:baseline;justify-content:space-between;padding:10px 0 6px;">
                         <div style="display:flex;align-items:baseline;gap:8px;min-width:0;overflow:hidden;">
                             <span class="font-mono" style="font-size:11px;color:#64748b;flex-shrink:0;">${n.rank}.</span>
                             <span class="font-mono" style="font-size:14px;font-weight:700;color:#f1f5f9;flex-shrink:0;">${n.zip_code}</span>
@@ -662,6 +728,7 @@
                         </div>
                         <span class="font-mono" style="font-size:13px;font-weight:600;color:${color};flex-shrink:0;margin-left:12px;">${scoreStr}</span>
                     </div>
+                    <div class="score-track"><div class="score-fill" style="width:${barPct}%;background:${color};"></div></div>
                 `;
                 container.appendChild(row);
             });
@@ -695,17 +762,105 @@
                 const nameStr  = [n.name, n.borough].filter(Boolean).join(', ');
 
                 row.innerHTML = `
-                    <div style="display:flex;align-items:baseline;gap:10px;">
-                        <span class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;">${n.zip_code}</span>
-                        <span class="font-mono" style="font-size:11px;font-weight:600;color:#ef4444;">${deltaStr}</span>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                        <div style="min-width:0;">
+                            <div style="display:flex;align-items:baseline;gap:10px;">
+                                <span class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;">${n.zip_code}</span>
+                                <span class="font-mono" style="font-size:11px;font-weight:600;color:#ef4444;">${deltaStr}</span>
+                            </div>
+                            <div style="font-size:11px;color:#64748b;margin-top:2px;">${nameStr}</div>
+                            ${driver ? `<div style="font-size:11px;color:#94a3b8;margin-top:2px;" data-signal="${n.dominant_signal || ''}" data-count="${n.raw_count || 0}">${driver}</div>` : ''}
+                        </div>
+                        <span id="spark-${n.zip_code}" style="flex-shrink:0;display:inline-flex;align-items:center;"></span>
                     </div>
-                    <div style="font-size:11px;color:#64748b;margin-top:2px;">${nameStr}</div>
-                    ${driver ? `<div style="font-size:11px;color:#94a3b8;margin-top:2px;" data-signal="${n.dominant_signal || ''}" data-count="${n.raw_count || 0}">${driver}</div>` : ''}
                 `;
                 container.appendChild(row);
+                loadSpark(n.zip_code);
             });
 
             section.style.display = '';
+        }
+
+        // 90-day trace for a rising ZIP. Quiet neutral line with the brand dot
+        // at today: the red delta text already carries the direction.
+        function loadSpark(zip) {
+            fetch(`/api/score-history/${encodeURIComponent(zip)}?days=90`)
+                .then(r => r.ok ? r.json() : null)
+                .then(hist => {
+                    const holder = document.getElementById(`spark-${zip}`);
+                    if (!holder || !hist || hist.length < 7) return;
+                    const scores = hist.map(p => p.score).filter(s => s != null);
+                    if (scores.length < 7) return;
+                    const w = 72, h = 24, pad = 2;
+                    const min = Math.min(...scores), max = Math.max(...scores);
+                    const range = max - min || 1;
+                    const pts = scores.map((v, i) => {
+                        const x = pad + (i / (scores.length - 1)) * (w - pad * 2);
+                        const y = pad + (1 - (v - min) / range) * (h - pad * 2);
+                        return `${x.toFixed(1)},${y.toFixed(1)}`;
+                    });
+                    const last = pts[pts.length - 1].split(',');
+                    holder.innerHTML = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true" focusable="false"><polyline points="${pts.join(' ')}" fill="none" stroke="rgba(148,163,184,0.75)" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${last[0]}" cy="${last[1]}" r="2.2" fill="#f97316"/></svg>`;
+                })
+                .catch(() => {});
+        }
+
+        function money(n) {
+            if (n == null) return '';
+            if (n >= 1e6) return `$${(n / 1e6).toFixed(1).replace(/\.0$/, '')}M`;
+            if (n >= 1e3) return `$${Math.round(n / 1e3)}K`;
+            return `$${Math.round(n)}`;
+        }
+
+        function renderFlips(data) {
+            const container = document.getElementById('flip-cards');
+            if (!container || !data || !data.flips || !data.flips.length) return;
+            const s = i18n[getCurrentLanguage()] || i18n.en;
+            data.flips.slice(0, 2).forEach(f => {
+                const row = document.createElement('a');
+                row.href      = '/flips';
+                row.className = 'mover-row';
+                const place = [f.neighborhood, f.zip_code].filter(Boolean).join(' · ');
+                row.innerHTML = `
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                        <div style="min-width:0;">
+                            <div class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.address}</div>
+                            <div style="font-size:11px;color:#64748b;margin-top:2px;">${place}</div>
+                        </div>
+                        <div style="flex-shrink:0;text-align:right;">
+                            <div class="font-mono" style="font-size:12px;font-weight:600;color:#f97316;">+${f.days_between}d <span style="color:#64748b;font-weight:400;" data-i18n="flip_days_label">${s.flip_days_label}</span></div>
+                            <div class="font-mono" style="font-size:11px;color:#94a3b8;margin-top:2px;">${money(f.doc_amount)}</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function renderRadar(data) {
+            const container = document.getElementById('radar-cards');
+            if (!container || !data || !data.clusters || !data.clusters.length) return;
+            const s = i18n[getCurrentLanguage()] || i18n.en;
+            data.clusters.slice(0, 2).forEach(c => {
+                const row = document.createElement('a');
+                row.href      = '/radar';
+                row.className = 'mover-row';
+                const place = [c.neighborhood, c.zip_code].filter(Boolean).join(' · ');
+                const bldgs = c.building_count === 1 ? s.radar_bldgs_s : s.radar_bldgs;
+                row.innerHTML = `
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                        <div style="min-width:0;">
+                            <div class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.buyer}</div>
+                            <div style="font-size:11px;color:#64748b;margin-top:2px;">${place}</div>
+                        </div>
+                        <div style="flex-shrink:0;text-align:right;">
+                            <div class="font-mono" style="font-size:12px;font-weight:600;color:#f97316;">${c.building_count} <span style="color:#64748b;font-weight:400;">${bldgs}</span></div>
+                            <div class="font-mono" style="font-size:11px;color:#94a3b8;margin-top:2px;">${money(c.total_amount)}</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
         }
 
         function renderOperators(ops) {
@@ -786,6 +941,18 @@
         fetch('/api/neighborhoods/top-movers?limit=8')
             .then(r => r.ok ? r.json() : null)
             .then(data => { if (data) { _cachedMovers = data.neighborhoods || []; renderMovers(_cachedMovers); } })
+            .catch(() => {});
+
+        // Fetch recent flips and radar clusters. Sections keep their CTA links
+        // even when these fail, so nothing on the page dead-ends.
+        fetch('/api/flips')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => { if (data) renderFlips(data); })
+            .catch(() => {});
+
+        fetch('/api/radar')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => { if (data) renderRadar(data); })
             .catch(() => {});
 
         // Fetch top operators
@@ -950,7 +1117,6 @@
         if (window.innerWidth >= 768) { document.getElementById('search-input').focus(); }
 
         document.getElementById('cta-explore').addEventListener('click', function() {
-            this.textContent = 'Loading map...';
             plausible('Explore Map');
         });
 

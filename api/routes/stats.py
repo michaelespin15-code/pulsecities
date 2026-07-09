@@ -243,7 +243,7 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
                     if row.cache_generated_at else None
                 ),
             }
-        if len(top_risk_list) >= 3:
+        if len(top_risk_list) >= 5:
             break
 
     result = {
