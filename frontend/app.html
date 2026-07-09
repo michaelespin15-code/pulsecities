@@ -3664,13 +3664,20 @@
                 return;
             }
 
-            // /property/{bbl} deep links (shared building URLs)
+            // /property/{bbl} deep links (shared building URLs). Unlike ZIP
+            // links, which land on the map, a property link promises one
+            // building, so the sheet must open on mobile or the visitor sees
+            // a citywide map and no property at all.
             const propMatch = window.location.pathname.match(/^\/property\/(\d+)$/);
             if (propMatch) {
                 const bbl = propMatch[1];
                 fetch(`/api/blocks/${bbl}`)
                     .then(r => r.ok ? r.json() : null)
-                    .then(data => { if (data) showBlockPanel(bbl, data); })
+                    .then(data => {
+                        if (!data) return;
+                        showBlockPanel(bbl, data);
+                        if (window.innerWidth < 768) showMobileSidebar();
+                    })
                     .catch(() => {});
                 return;
             }
@@ -3688,7 +3695,11 @@
             else if (pp) {
                 fetch(`/api/blocks/${pp[1]}`)
                     .then(r => r.ok ? r.json() : null)
-                    .then(data => { if (data) showBlockPanel(pp[1], data); })
+                    .then(data => {
+                        if (!data) return;
+                        showBlockPanel(pp[1], data);
+                        if (window.innerWidth < 768) showMobileSidebar();
+                    })
                     .catch(() => {});
             }
             else if (window.innerWidth < 768) showMobileMap();
