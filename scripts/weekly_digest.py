@@ -476,34 +476,73 @@ def _delta_color(delta: float) -> str:
     return "#94a3b8"
 
 
+# --- Paper tokens for the ZIP email ------------------------------------------
+# The site is the dark instrument; the email is the printed record it produces.
+# Set on paper in email-safe system faces: a serif for prose, a monospace for
+# figures and record entries. Web fonts don't load in most clients anyway.
+_MONO  = "Menlo,Consolas,'Courier New',monospace"
+_SERIF = "Georgia,'Times New Roman',serif"
+_INK   = "#1C2430"
+_BODY  = "#3A4352"
+_MUTED = "#6D7480"
+_FAINT = "#9A948A"
+_RULE  = "#D9D4C9"
+_PULSE = "#E4590F"
+
+
+def _tier_ink(value: float) -> str:
+    """Canonical bands (85/67/34) in ink weights that hold contrast on paper."""
+    if value >= 85: return "#B3261E"
+    if value >= 67: return "#C2410C"
+    if value >= 34: return "#966A08"
+    return "#1F7A44"
+
+
+def _delta_ink(delta: float) -> str:
+    if delta >= SCORE_DELTA_MIN:  return "#B3261E"
+    if delta <= -SCORE_DELTA_MIN: return "#1F7A44"
+    return _MUTED
+
+
+def _stamp_date(v) -> str:
+    try:
+        return v.strftime("%b %-d")
+    except (AttributeError, ValueError):
+        return str(v)
+
+
+def _field_label(label: str) -> str:
+    return (
+        f'<div style="font-family:{_MONO};font-size:10px;font-weight:700;color:{_FAINT};'
+        f'text-transform:uppercase;letter-spacing:0.18em;margin-bottom:12px;">{label}</div>'
+    )
+
+
 def _bullet_html(reasons: list[str]) -> str:
-    items = "".join(
-        f'<li style="margin:0 0 6px;font-size:13px;color:#cbd5e1;">{r.capitalize()}</li>'
+    rows = "".join(
+        f'<tr>'
+        f'<td style="padding:0 10px 7px 0;font-family:{_MONO};font-size:12px;color:{_PULSE};vertical-align:top;">+</td>'
+        f'<td width="100%" style="padding:0 0 7px;font-size:13px;color:{_BODY};line-height:1.55;">{r.capitalize()}</td>'
+        f'</tr>'
         for r in reasons[:5]
     )
-    return f'<ul style="margin:0;padding:0 0 0 18px;list-style:disc;">{items}</ul>'
+    return f'<table width="100%" cellpadding="0" cellspacing="0">{rows}</table>'
 
 
 def _signal_bars_html(elevated: list[tuple[str, float]]) -> str:
     if not elevated:
         return (
-            '<p style="margin:0;font-size:12px;color:rgba(148,163,184,0.4);'
-            'font-style:italic;">No signals above baseline.</p>'
+            f'<p style="margin:0;font-family:{_SERIF};font-size:13px;color:{_FAINT};'
+            f'font-style:italic;">No signals above baseline this week.</p>'
         )
     rows = ""
     for key, val in elevated[:5]:
         label = SIGNAL_LABELS.get(key, key)
-        color = _score_color(val)
-        pct   = min(100, int(val))
         rows += (
-            f'<tr style="vertical-align:middle;">'
-            f'<td style="font-size:11px;color:#94a3b8;padding:4px 0;width:130px;">{label}</td>'
-            f'<td style="padding:4px 8px;">'
-            f'<div style="background:rgba(148,163,184,0.1);border-radius:2px;height:4px;width:100%;">'
-            f'<div style="background:{color};height:4px;border-radius:2px;width:{pct}%;"></div>'
-            f'</div></td>'
-            f'<td style="font-size:12px;color:{color};font-family:\'JetBrains Mono\',monospace;'
-            f'text-align:right;padding:4px 0;white-space:nowrap;">{val:.0f}</td>'
+            f'<tr>'
+            f'<td style="padding:6px 8px 0 0;font-family:{_MONO};font-size:12px;color:{_BODY};white-space:nowrap;">{label}</td>'
+            f'<td width="100%" style="border-bottom:1px dotted #B9B2A4;"></td>'
+            f'<td style="padding:6px 0 0 10px;font-family:{_MONO};font-size:12px;font-weight:700;color:{_tier_ink(val)};white-space:nowrap;">{val:.0f}</td>'
             f'</tr>'
         )
     return f'<table width="100%" cellpadding="0" cellspacing="0">{rows}</table>'
@@ -518,70 +557,56 @@ def _events_section_html(event_detail: dict) -> str:
     if not any([llc_rows, eviction_rows, permit_rows, hpd_rows]):
         return ""
 
-    def _addr_table(rows, date_idx, label_fn):
-        html = ""
+    def _entries(rows, date_idx, label_fn):
+        # Identical (date, address, label) lines collapse to one entry with a
+        # count, so three same-day violations at one building read as a fact,
+        # not a copy-paste mistake.
+        collapsed: dict[tuple, int] = {}
         for row in rows:
-            addr  = str(row[0] or "").title()
-            dt    = row[date_idx]
-            label = label_fn(row)
+            key = (_stamp_date(row[date_idx]), str(row[0] or "").title(), label_fn(row))
+            collapsed[key] = collapsed.get(key, 0) + 1
+        html = ""
+        for (stamp, addr, label), count in collapsed.items():
+            shown = f"{addr} &times;{count}" if count > 1 else addr
             html += (
                 f'<tr>'
-                f'<td style="padding:5px 0;font-size:12px;color:#cbd5e1;'
-                f'font-family:\'JetBrains Mono\',monospace;">{addr}</td>'
-                f'<td style="padding:5px 0 5px 16px;font-size:11px;color:#94a3b8;white-space:nowrap;">{dt}</td>'
-                f'<td style="padding:5px 0 5px 16px;font-size:11px;color:#94a3b8;white-space:nowrap;">{label}</td>'
+                f'<td style="padding:5px 12px 5px 0;font-family:{_MONO};font-size:10px;color:{_FAINT};'
+                f'white-space:nowrap;text-transform:uppercase;vertical-align:top;">{stamp}</td>'
+                f'<td width="100%" style="padding:5px 12px 5px 0;font-family:{_MONO};font-size:12px;color:{_INK};">{shown}</td>'
+                f'<td style="padding:5px 0;font-size:11px;color:{_MUTED};white-space:nowrap;text-align:right;vertical-align:top;">{label}</td>'
                 f'</tr>'
             )
         return f'<table width="100%" cellpadding="0" cellspacing="0">{html}</table>'
 
-    sections = ""
-    if llc_rows:
-        sections += (
-            '<tr><td style="padding-bottom:16px;">'
-            '<span style="font-size:10px;color:#f59e0b;font-weight:600;'
-            'text-transform:uppercase;letter-spacing:0.08em;">LLC Acquisitions</span>'
-            '<div style="margin-top:8px;">'
-            + _addr_table(llc_rows, 2, lambda r: str(r[1]).title().replace(" Llc", " LLC"))
-            + '</div></td></tr>'
-        )
-    if eviction_rows:
-        sections += (
-            '<tr><td style="padding-bottom:16px;">'
-            '<span style="font-size:10px;color:#ef4444;font-weight:600;'
-            'text-transform:uppercase;letter-spacing:0.08em;">Eviction Filings</span>'
-            '<div style="margin-top:8px;">'
-            + _addr_table(eviction_rows, 1, lambda _: "Residential eviction")
-            + '</div></td></tr>'
-        )
-    if permit_rows:
-        sections += (
-            '<tr><td style="padding-bottom:16px;">'
-            '<span style="font-size:10px;color:#38bdf8;font-weight:600;'
-            'text-transform:uppercase;letter-spacing:0.08em;">Permit Filings</span>'
-            '<div style="margin-top:8px;">'
-            + _addr_table(permit_rows, 1, lambda r: f"Alteration{(' ' + str(r[2])) if r[2] else ''}")
-            + '</div></td></tr>'
-        )
-    if hpd_rows:
-        sections += (
-            '<tr><td>'
-            '<span style="font-size:10px;color:#a78bfa;font-weight:600;'
-            'text-transform:uppercase;letter-spacing:0.08em;">HPD Violations</span>'
-            '<div style="margin-top:8px;">'
-            + _addr_table(hpd_rows, 1, lambda r: f"Class {r[2] or '?'}")
-            + '</div></td></tr>'
+    def _group(color, label, table):
+        return (
+            '<tr><td style="padding-bottom:14px;">'
+            f'<span style="font-family:{_MONO};font-size:10px;color:{color};font-weight:700;'
+            f'text-transform:uppercase;letter-spacing:0.14em;">{label}</span>'
+            '<div style="margin-top:6px;">' + table + '</div></td></tr>'
         )
 
+    sections = ""
+    if llc_rows:
+        sections += _group("#C2410C", "LLC Acquisitions",
+                           _entries(llc_rows, 2, lambda r: str(r[1]).title().replace(" Llc", " LLC")))
+    if eviction_rows:
+        sections += _group("#B3261E", "Eviction Filings",
+                           _entries(eviction_rows, 1, lambda _: "Residential eviction"))
+    if permit_rows:
+        sections += _group("#1F5D8A", "Permit Filings",
+                           _entries(permit_rows, 1, lambda r: f"Alteration{(' ' + str(r[2])) if r[2] else ''}"))
+    if hpd_rows:
+        sections += _group("#6B4FA1", "HPD Violations",
+                           _entries(hpd_rows, 1, lambda r: f"Class {r[2] or '?'}"))
+
     return (
-        '<tr><td style="padding-top:24px;">'
-        '<table width="100%" cellpadding="0" cellspacing="0" '
-        'style="background:#0f172a;border-radius:8px;padding:20px;border:1px solid rgba(148,163,184,0.08);">'
-        '<tr><td style="padding-bottom:16px;">'
-        '<span style="font-size:10px;font-weight:600;color:rgba(148,163,184,0.5);'
-        'text-transform:uppercase;letter-spacing:0.1em;">This Week</span>'
-        '</td></tr>'
-        + sections
-        + '</table></td></tr>'
+        f'<tr><td style="padding:22px 0 2px;border-top:1px solid {_RULE};">'
+        + _field_label("The Record")
+        + '<table width="100%" cellpadding="0" cellspacing="0">' + sections + '</table>'
+        + f'<p style="margin:4px 0 0;font-family:{_MONO};font-size:10px;color:{_FAINT};">'
+        + 'Up to five most recent entries per category, past 7 days.</p>'
+        + '</td></tr>'
     )
 
 
@@ -600,24 +625,28 @@ def render_zip_digest(
     elevated = summary["elevated"]
     token    = subscription["unsubscribe_token"]
 
-    risk_label, risk_color = _display_risk(score)
-    score_color     = _score_color(score)
-    delta_text      = _delta_text(delta)
-    delta_color_val = _delta_color(delta)
-    driver          = _driver_sentence(reasons, name)
-    area            = _area_label(zip_code, name)
+    tier_label = ("CRITICAL" if score >= 85 else "HIGH" if score >= 67
+                  else "MODERATE" if score >= 34 else "LOW")
+    tier_color = _tier_ink(score)
+    delta_text = _delta_text(delta)
+    delta_ink  = _delta_ink(delta)
+    driver     = _driver_sentence(reasons, name)
+    area       = _area_label(zip_code, name)
+    filed      = date.today().strftime("%b %-d, %Y")
+    issue_no   = date.today().isocalendar()[1]
 
     narrative_html = ""
     if narrative:
         narrative_html = f"""
             <!-- Plain-English read -->
-            <tr><td style="padding-top:20px;padding-bottom:20px;border-bottom:1px solid rgba(148,163,184,0.08);">
-              <div style="font-size:10px;font-weight:600;color:rgba(148,163,184,0.5);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;">The Week, In Plain English</div>
-              <p style="margin:0;font-size:13px;color:#cbd5e1;line-height:1.7;">{_html_escape(narrative)}</p>
-              <p style="margin:8px 0 0;font-size:10px;color:rgba(148,163,184,0.35);">Written by AI from this week's exact counts. The numbers below are the record.</p>
+            <tr><td style="padding:22px 0;border-top:1px solid {_RULE};">
+              {_field_label("The Week, In Plain English")}
+              <p style="margin:0;font-family:{_SERIF};font-size:15px;color:{_INK};line-height:1.75;">{_html_escape(narrative)}</p>
+              <p style="margin:10px 0 0;font-family:{_MONO};font-size:10px;color:{_FAINT};">Written by AI from this week's exact counts. The numbers below are the record.</p>
             </td></tr>"""
 
     subject = f"PulseCities Weekly Watch: {area} update"
+    preheader = f"{name} is at {score:.1f}, {delta_text.lower()}. This week's public record, one page."
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -626,74 +655,71 @@ def render_zip_digest(
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PulseCities Weekly Watch: {name}</title>
 </head>
-<body style="margin:0;padding:0;background:#0f172a;font-family:'Inter',system-ui,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:48px 24px;">
+<body style="margin:0;padding:0;background:#EFEBE2;">
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">{preheader}</div>
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#EFEBE2;padding:36px 16px;">
     <tr><td align="center">
-      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
 
-        <!-- Header -->
-        <tr><td style="padding-bottom:28px;">
-          <span style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:#38bdf8;">PulseCities</span>
-          <span style="font-size:12px;color:rgba(148,163,184,0.4);margin-left:10px;">Weekly Watch</span>
-        </td></tr>
+        <!-- The sheet -->
+        <tr><td style="background:#FBFAF7;border:1px solid {_RULE};padding:30px 28px 26px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
 
-        <!-- Lede -->
-        <tr><td style="padding-bottom:20px;">
-          <p style="margin:0;font-size:14px;color:#94a3b8;line-height:1.6;">
-            Public-record changes for <strong style="color:#f1f5f9;">{name}</strong> this week.
-          </p>
-        </td></tr>
-
-        <!-- Score card -->
-        <tr><td>
-          <table width="100%" cellpadding="0" cellspacing="0"
-                 style="background:#1e293b;border-radius:12px;padding:28px;border:1px solid rgba(148,163,184,0.1);">
-
-            <!-- Neighborhood header -->
-            <tr><td style="padding-bottom:20px;border-bottom:1px solid rgba(148,163,184,0.08);">
-              <div style="font-size:20px;font-weight:700;color:#f1f5f9;">{name}</div>
-              <div style="font-size:12px;color:#94a3b8;margin-top:2px;font-family:'JetBrains Mono',monospace;">{zip_code} &middot; NYC</div>
+            <!-- Masthead -->
+            <tr><td style="padding-bottom:10px;border-bottom:2px solid {_INK};">
+              <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                <td style="font-family:{_MONO};font-size:14px;font-weight:700;color:{_INK};letter-spacing:0.2em;">PULSECITIES</td>
+                <td align="right" style="font-family:{_MONO};font-size:10px;color:{_MUTED};letter-spacing:0.14em;">WEEKLY WATCH &middot; NO. {issue_no}</td>
+              </tr></table>
             </td></tr>
 
-            <!-- Score row -->
-            <tr><td style="padding-top:20px;padding-bottom:20px;border-bottom:1px solid rgba(148,163,184,0.08);">
-              <table cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="padding-right:20px;">
-                    <div style="font-family:'JetBrains Mono',monospace;font-size:48px;font-weight:700;color:{score_color};letter-spacing:-0.02em;line-height:1;">{score:.1f}</div>
-                    <div style="font-size:10px;font-weight:600;color:{risk_color};text-transform:uppercase;letter-spacing:0.1em;margin-top:4px;">{risk_label}</div>
-                  </td>
-                  <td style="vertical-align:bottom;padding-bottom:8px;">
-                    <div style="font-size:13px;color:{delta_color_val};font-weight:500;">{delta_text}</div>
-                    <div style="font-size:11px;color:rgba(148,163,184,0.4);margin-top:4px;">vs. last week: {summary['score_prev']:.1f}</div>
-                  </td>
-                </tr>
-              </table>
+            <!-- File line -->
+            <tr><td style="padding:10px 0 22px;">
+              <span style="font-family:{_MONO};font-size:10px;color:{_FAINT};letter-spacing:0.14em;text-transform:uppercase;">Filed {filed} &middot; {area} &middot; NYC public records</span>
             </td></tr>
 
-            <!-- What changed -->
-            <tr><td style="padding-top:20px;padding-bottom:20px;border-bottom:1px solid rgba(148,163,184,0.08);">
-              <div style="font-size:10px;font-weight:600;color:rgba(148,163,184,0.5);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">What Changed</div>
-              {_bullet_html(reasons)}
-              {f'<p style="margin:12px 0 0;font-size:12px;color:#94a3b8;line-height:1.6;">{driver}</p>' if driver else ''}
+            <!-- Area name -->
+            <tr><td style="padding-bottom:18px;">
+              <div style="font-family:{_SERIF};font-size:27px;color:{_INK};line-height:1.15;">{name}</div>
+            </td></tr>
+
+            <!-- Pressure reading -->
+            <tr><td style="padding:0 0 22px;">
+              {_field_label("Displacement pressure")}
+              <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                <td style="font-family:{_MONO};font-size:42px;font-weight:700;color:{tier_color};letter-spacing:-0.02em;line-height:1;white-space:nowrap;">{score:.1f}</td>
+                <td width="100%" style="padding-left:14px;vertical-align:bottom;">
+                  <span style="display:inline-block;font-family:{_MONO};font-size:10px;font-weight:700;color:{tier_color};border:1px solid {tier_color};padding:3px 7px;letter-spacing:0.14em;">{tier_label}</span>
+                  <div style="font-family:{_MONO};font-size:11px;color:{delta_ink};margin-top:6px;white-space:nowrap;">{delta_text} &middot; last week {summary['score_prev']:.1f}</div>
+                </td>
+              </tr></table>
+              <img src="https://pulsecities.com/og/spark/{zip_code}.png" width="504" alt="90-day pressure trace for {zip_code}" style="display:block;width:100%;height:auto;margin-top:14px;border:0;">
+              <p style="margin:6px 0 0;font-family:{_MONO};font-size:10px;color:{_FAINT};letter-spacing:0.1em;text-transform:uppercase;">Pressure score, past 90 days</p>
             </td></tr>
 {narrative_html}
-            <!-- Signal breakdown -->
-            <tr><td style="padding-top:20px;">
-              <div style="font-size:10px;font-weight:600;color:rgba(148,163,184,0.5);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Signal Breakdown</div>
+            <!-- What changed -->
+            <tr><td style="padding:22px 0;border-top:1px solid {_RULE};">
+              {_field_label("What Changed")}
+              {_bullet_html(reasons)}
+              {f'<p style="margin:10px 0 0;font-family:{_SERIF};font-size:13px;color:{_MUTED};font-style:italic;line-height:1.6;">{driver}</p>' if driver else ''}
+            </td></tr>
+
+            <!-- Signal levels -->
+            <tr><td style="padding:22px 0;border-top:1px solid {_RULE};">
+              {_field_label("Signal Levels")}
               {_signal_bars_html(elevated)}
             </td></tr>
 
             {_events_section_html(event_detail)}
 
             <!-- CTA -->
-            <tr><td style="padding-top:24px;">
+            <tr><td style="padding-top:26px;">
               <a href="https://pulsecities.com/neighborhood/{zip_code}"
-                 style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:11px 22px;border-radius:6px;text-decoration:none;margin-right:12px;">
-                View full data for {zip_code}
+                 style="display:inline-block;background:{_INK};color:#FBFAF7;font-family:{_MONO};font-size:12px;font-weight:700;letter-spacing:0.06em;padding:12px 20px;text-decoration:none;">
+                Open the full file for {zip_code} &rarr;
               </a>
               <a href="https://pulsecities.com/methodology.html"
-                 style="display:inline-block;font-size:12px;color:#94a3b8;text-decoration:underline;vertical-align:middle;">
+                 style="display:inline-block;font-family:{_MONO};font-size:11px;color:{_MUTED};text-decoration:underline;vertical-align:middle;margin-left:14px;">
                 Methodology
               </a>
             </td></tr>
@@ -701,18 +727,16 @@ def render_zip_digest(
           </table>
         </td></tr>
 
-        <!-- Footer -->
-        <tr><td style="padding-top:24px;">
-          <p style="margin:0 0 10px;font-size:11px;color:rgba(148,163,184,0.5);line-height:1.7;border-top:1px solid rgba(148,163,184,0.08);padding-top:16px;">
-            <strong style="color:rgba(148,163,184,0.6);">Why you're getting this:</strong>
-            You're watching {area}. Public records changed enough this week to trigger an update.
+        <!-- Footer, off the sheet -->
+        <tr><td style="padding:18px 6px 0;">
+          <p style="margin:0 0 8px;font-family:{_MONO};font-size:10px;color:#8A8578;line-height:1.7;">
+            Why you're getting this: you're watching {area}. Public records changed enough this week to trigger an update.
           </p>
-          <p style="margin:0 0 8px;font-size:11px;color:rgba(148,163,184,0.35);line-height:1.7;">
-            PulseCities uses public records. Scores are risk indicators, not claims of wrongdoing.
+          <p style="margin:0 0 8px;font-family:{_MONO};font-size:10px;color:#8A8578;line-height:1.7;">
+            PulseCities reads NYC public records. Scores are risk indicators, not claims of wrongdoing.
           </p>
-          <p style="margin:0;font-size:11px;color:rgba(148,163,184,0.35);line-height:1.7;">
-            <a href="https://pulsecities.com/api/unsubscribe?token={token}"
-               style="color:rgba(148,163,184,0.5);">Unsubscribe</a>
+          <p style="margin:0;font-family:{_MONO};font-size:10px;line-height:1.7;">
+            <a href="https://pulsecities.com/api/unsubscribe?token={token}" style="color:#8A8578;">Unsubscribe</a>
           </p>
         </td></tr>
 
