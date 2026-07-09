@@ -153,6 +153,54 @@ PulseCities
 You subscribed at pulsecities.com. Unsubscribe: https://pulsecities.com/api/unsubscribe?token={token}
 """.strip()
 
+_UNSUBSCRIBE_CONFIRM_HTML = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Unsubscribe from PulseCities</title>
+</head>
+<body style="margin:0;padding:0;background:#0f172a;font-family:'Inter',system-ui,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:48px 24px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
+          <tr>
+            <td style="padding-bottom:32px;">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#38bdf8;letter-spacing:-0.01em;">PulseCities</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#1e293b;border-radius:12px;padding:32px;border:1px solid rgba(148,163,184,0.1);">
+              <p style="margin:0 0 8px;font-size:20px;font-weight:600;color:#f1f5f9;">Unsubscribe from the weekly digest?</p>
+              <p style="margin:0 0 24px;font-size:14px;color:#94a3b8;line-height:1.6;">
+                One click below and you're off the list. No more emails after that.
+              </p>
+              <form method="post" action="/api/unsubscribe?token={token}" style="margin:0;">
+                <button type="submit"
+                        style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;border:none;cursor:pointer;font-family:inherit;">
+                  Unsubscribe
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top:24px;">
+              <p style="margin:0;font-size:11px;color:rgba(148,163,184,0.4);line-height:1.6;">
+                Changed your mind? Just close this page. Your subscription stays active.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+""".strip()
+
 _UNSUBSCRIBE_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -282,7 +330,10 @@ def _send_confirmation(
             "subject": subject,
             "html": _fill(html, values),
             "text": _fill(text_body, values),
-            "headers": {"List-Unsubscribe": f"<{unsub_url}>"},
+            "headers": {
+                "List-Unsubscribe": f"<{unsub_url}>",
+                "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+            },
         })
         logger.info(*log_line)
     except Exception:
@@ -367,8 +418,28 @@ def subscribe(
 
 
 @router.get('/unsubscribe', response_class=HTMLResponse)
+def unsubscribe_confirm(token: str, db: Session = Depends(get_db)):
+    """Confirmation page, no state change. Mail scanners (SafeLinks,
+    Proofpoint) prefetch GET links from email bodies; if this deleted, a
+    subscriber could be silently removed before ever seeing the digest.
+    The delete happens on POST, which scanners don't issue."""
+    sub = db.execute(
+        select(Subscriber).where(Subscriber.unsubscribe_token == token)
+    ).scalar_one_or_none()
+
+    if not sub:
+        raise HTTPException(status_code=404, detail='Invalid or expired unsubscribe link.')
+
+    from urllib.parse import quote
+    page = _UNSUBSCRIBE_CONFIRM_HTML.replace('{token}', quote(token))
+    return HTMLResponse(content=page, status_code=200)
+
+
+@router.post('/unsubscribe', response_class=HTMLResponse)
 def unsubscribe(token: str, db: Session = Depends(get_db)):
-    """One-click unsubscribe — linked from every digest email footer."""
+    """Performs the unsubscribe. Reached two ways: the confirmation page's
+    button, and RFC 8058 one-click POSTs that Gmail/Yahoo send to the
+    List-Unsubscribe URL (their form body is ignored; token is in the query)."""
     sub = db.execute(
         select(Subscriber).where(Subscriber.unsubscribe_token == token)
     ).scalar_one_or_none()

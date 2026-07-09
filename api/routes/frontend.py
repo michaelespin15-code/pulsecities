@@ -323,6 +323,19 @@ def _build_neighborhood_page(
         }} if score is not None else {}),
     })
 
+    _bslug = (borough_disp or "").lower().replace(" ", "-")
+    breadcrumb_ld = _jsonld({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://pulsecities.com/"},
+            *([{"@type": "ListItem", "position": 2, "name": borough_disp,
+                "item": f"https://pulsecities.com/{_bslug}"}]
+              if _bslug in ("brooklyn", "manhattan", "queens", "bronx", "staten-island") else []),
+            {"@type": "ListItem", "position": 3, "name": f"{name} ({zip_code})", "item": canonical},
+        ],
+    })
+
     faq_ld = _jsonld({
         "@context": "https://schema.org",
         "@type": "FAQPage",
@@ -332,6 +345,11 @@ def _build_neighborhood_page(
             {"@type": "Question", "name": _FAQ_Q3, "acceptedAnswer": {"@type": "Answer", "text": _FAQ_A3}},
         ],
     })
+
+    breadcrumb_borough = (
+        f' &middot; <a href="/{_bslug}">All {e(borough_disp)} ZIPs</a>'
+        if _bslug in ("brooklyn", "manhattan", "queens", "bronx", "staten-island") else ""
+    )
 
     embed_code = (
         f'<a href="https://pulsecities.com/neighborhood/{zip_code}">'
@@ -363,6 +381,7 @@ def _build_neighborhood_page(
 <meta name="twitter:image" content="{e(og_image)}">
 <script type="application/ld+json">{dataset_ld}</script>
 <script type="application/ld+json">{faq_ld}</script>
+<script type="application/ld+json">{breadcrumb_ld}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&family=JetBrains+Mono:wght@400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -426,7 +445,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
   <div class="nav-links"><a href="/map">Map</a><a href="/methodology">Methodology</a><a href="/about">About</a></div>
 </div></nav>
 <main><div class="container">
-  <p class="breadcrumb"><a href="/map">&#8592; Back to map</a></p>
+  <p class="breadcrumb"><a href="/map">&#8592; Back to map</a>{breadcrumb_borough}</p>
   <h1>Displacement Signals | {e(name)} ({zip_code})</h1>
   <p class="subline">{e(borough_disp)}. Updated {e(updated_disp)}.</p>
   {score_block}
@@ -1255,9 +1274,14 @@ def neighborhoods_directory(db: Session = Depends(get_db)):
                 "name": f"{r.name or r.zip_code} ({r.zip_code}) displacement score",
                 "url": f"https://pulsecities.com/neighborhood/{r.zip_code}",
             })
+        slug = borough.lower().replace(" ", "-")
+        heading = (
+            f'<a href="/{slug}" style="color:inherit;">{borough}</a>'
+            if borough != "Other" else borough
+        )
         sections_html += (
             f'<section class="nb-borough">'
-            f'<h2>{borough}</h2>'
+            f'<h2>{heading}</h2>'
             f'<ul class="nb-list">\n{rows_html}</ul>'
             f'</section>\n'
         )
@@ -1364,6 +1388,204 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 </html>"""
 
     _nbhd_index_cache = (page, time.monotonic() + _PAGE_TTL)
+    return HTMLResponse(page)
+
+
+_BOROUGH_SLUGS = {
+    "brooklyn":      "Brooklyn",
+    "manhattan":     "Manhattan",
+    "queens":        "Queens",
+    "bronx":         "Bronx",
+    "staten-island": "Staten Island",
+}
+
+_borough_page_cache: dict[str, tuple[str, float]] = {}  # slug -> (html, expires)
+
+
+@router.get("/borough/{slug}", include_in_schema=False)
+def borough_page(slug: str, db: Session = Depends(get_db)):
+    """Borough-level ranking page, served at /brooklyn etc. via nginx.
+
+    Matches how people actually search ("brooklyn displacement data") and
+    gives every neighborhood page a mid-tier parent in the link graph.
+    """
+    borough = _BOROUGH_SLUGS.get(slug)
+    if not borough:
+        return _not_found()
+
+    cached = _borough_page_cache.get(slug)
+    if cached and time.monotonic() < cached[1]:
+        return HTMLResponse(cached[0])
+
+    from api.routes.neighborhoods import _borough_from_zip
+
+    rows = [
+        r for r in db.execute(text("""
+            SELECT n.zip_code, n.name, ds.score
+            FROM neighborhoods n
+            JOIN displacement_scores ds ON ds.zip_code = n.zip_code
+            WHERE ds.score IS NOT NULL
+            ORDER BY ds.score DESC
+        """)).fetchall()
+        if _borough_from_zip(r.zip_code) == borough
+    ]
+    if not rows:
+        return _not_found()
+
+    n = len(rows)
+    avg = sum(float(r.score) for r in rows) / n
+    top = rows[0]
+    canonical = f"https://pulsecities.com/{slug}"
+
+    rows_html = ""
+    list_items = []
+    for i, r in enumerate(rows, 1):
+        score = float(r.score)
+        _, color = _tier_info(score)
+        name = _html.escape(r.name or r.zip_code)
+        width = max(2, min(100, score))
+        rows_html += (
+            f'<li class="nb-row"><a href="/neighborhood/{r.zip_code}">'
+            f'<span class="nb-zip">{r.zip_code}</span>'
+            f'<span class="nb-name">{name}</span>'
+            f'<span class="nb-score" style="color:{color};">{score:.1f}</span>'
+            f'<span class="nb-track"><span class="nb-fill" style="width:{width}%;background:{color};"></span></span>'
+            f'</a></li>\n'
+        )
+        list_items.append({
+            "@type": "ListItem",
+            "position": i,
+            "name": f"{r.name or r.zip_code} ({r.zip_code}) displacement score",
+            "url": f"https://pulsecities.com/neighborhood/{r.zip_code}",
+        })
+
+    title = f"{borough} Displacement Risk by ZIP Code | PulseCities"
+    desc = (
+        f"Displacement-pressure scores for all {n} scored ZIP codes in {borough}, "
+        f"ranked by current score. Highest right now: {top.name or top.zip_code} "
+        f"({top.zip_code}) at {float(top.score):.1f}/100. Public records, refreshed nightly."
+    )
+    jsonld = _jsonld({
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "ItemList",
+                "name": f"{borough} neighborhoods by displacement score",
+                "description": desc,
+                "url": canonical,
+                "numberOfItems": n,
+                "itemListElement": list_items,
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://pulsecities.com/"},
+                    {"@type": "ListItem", "position": 2, "name": "Neighborhoods", "item": "https://pulsecities.com/neighborhoods"},
+                    {"@type": "ListItem", "position": 3, "name": borough, "item": canonical},
+                ],
+            },
+        ],
+    })
+
+    others = " · ".join(
+        f'<a href="/{s}" style="color:rgba(148,163,184,0.6);">{b}</a>'
+        for s, b in _BOROUGH_SLUGS.items() if s != slug
+    )
+
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{_html.escape(title)}</title>
+<meta name="description" content="{_html.escape(desc)}">
+<link rel="canonical" href="{canonical}">
+<meta property="og:title" content="{_html.escape(title)}">
+<meta property="og:description" content="{_html.escape(desc)}">
+<meta property="og:url" content="{canonical}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PulseCities">
+<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{_html.escape(title)}">
+<meta name="twitter:description" content="{_html.escape(desc)}">
+<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<script type="application/ld+json">{jsonld}</script>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+<style>
+*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}}
+nav{{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0}}
+.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}}
+.container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
+a{{color:inherit;text-decoration:none}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b}}
+.footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
+@media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
+.stat-row{{display:flex;gap:28px;flex-wrap:wrap;margin-bottom:28px}}
+.stat{{display:flex;flex-direction:column;gap:2px}}
+.stat-num{{font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:600;color:#e2e8f0}}
+.stat-label{{font-size:0.68rem;color:rgba(148,163,184,0.55);text-transform:uppercase;letter-spacing:0.06em}}
+.nb-list{{list-style:none;padding:0;margin:0}}
+.nb-row{{border-bottom:1px solid rgba(148,163,184,0.07)}}
+.nb-row:hover{{background:rgba(148,163,184,0.04)}}
+.nb-row a{{display:grid;grid-template-columns:56px 1fr 52px;grid-template-rows:auto auto;column-gap:14px;row-gap:5px;align-items:baseline;padding:10px 0}}
+.nb-zip{{font-family:'JetBrains Mono',monospace;font-size:0.85rem;font-weight:500;color:#e2e8f0}}
+.nb-row:hover .nb-zip{{color:#f97316}}
+.nb-name{{font-size:0.82rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+.nb-score{{font-family:'JetBrains Mono',monospace;font-size:0.85rem;font-weight:600;text-align:right}}
+.nb-track{{grid-column:1 / -1;display:block;height:3px;border-radius:2px;background:rgba(148,163,184,0.1);overflow:hidden}}
+.nb-fill{{display:block;height:100%;border-radius:2px}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="/" style="display:flex;align-items:center;gap:8px;color:#f1f5f9;">
+      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span>
+    </a>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Map</a>
+      <a href="/neighborhoods" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Neighborhoods</a>
+      <a href="/flips" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Flips</a>
+      <a href="/radar" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Radar</a>
+      <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Methodology</a>
+    </div>
+  </div>
+</nav>
+<div class="container">
+  <div style="margin-bottom:8px;">
+    <a href="/neighborhoods" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; All neighborhoods</a>
+  </div>
+  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.4rem;font-weight:600;margin-bottom:6px;">{borough} displacement risk by ZIP</h1>
+  <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:20px;line-height:1.6;">
+    Every scored ZIP in {borough}, ranked by current displacement pressure. Scores come from six public-record signals and refresh nightly. Open any ZIP for its signal breakdown and six-month trend.
+  </p>
+  <div class="stat-row">
+    <div class="stat"><span class="stat-num">{n}</span><span class="stat-label">ZIPs scored</span></div>
+    <div class="stat"><span class="stat-num">{avg:.1f}</span><span class="stat-label">Borough average</span></div>
+    <div class="stat"><span class="stat-num">{float(top.score):.1f}</span><span class="stat-label">Highest: {_html.escape(top.name or top.zip_code)}</span></div>
+  </div>
+  <ul class="nb-list">
+{rows_html}  </ul>
+  <p style="font-size:0.75rem;color:rgba(148,163,184,0.5);margin-top:24px;">Other boroughs: {others}</p>
+</div>
+<footer>
+  <div style="font-size:11px;color:#64748b;margin-bottom:8px;text-align:center;">Built by Michael Espin</div>
+  <div class="footer-links">
+    <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
+    <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
+    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
+    <a href="/status" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
+    <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
+  </div>
+</footer>
+</body>
+</html>"""
+
+    _borough_page_cache[slug] = (page, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page)
 
 

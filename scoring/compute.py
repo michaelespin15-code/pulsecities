@@ -107,7 +107,7 @@ def _assert_score_valid(zip_code: str, score: float, breakdown: dict) -> None:
 # All filter zip_code IS NOT NULL to prevent NULL grouping artifacts.
 # ---------------------------------------------------------------------------
 
-def _aggregate_permits(db: Session, cutoff: date | None = None) -> List[Tuple[str, int]]:
+def _aggregate_permits(db: Session, cutoff: date | None = None, until: date | None = None) -> List[Tuple[str, int]]:
     """
     Return (zip_code, count) for alteration permits filed in the past 365 days,
     restricted to residential parcels (parcels.units_res > 0).
@@ -130,18 +130,19 @@ def _aggregate_permits(db: Session, cutoff: date | None = None) -> List[Tuple[st
             WHERE pr.zip_code IS NOT NULL
               AND pr.bbl IS NOT NULL
               AND pr.filing_date >= :cutoff
+              AND pr.filing_date <= :until
               AND p.units_res >= 3
               AND pr.permit_type = 'AL'
             GROUP BY pr.zip_code
             ORDER BY permit_count DESC
             """
         ),
-        {"cutoff": effective},
+        {"cutoff": effective, "until": until if until is not None else date.today()},
     ).fetchall()
     return [(str(r[0]), int(r[1])) for r in rows]
 
 
-def _aggregate_evictions(db: Session, cutoff: date | None = None) -> List[Tuple[str, int]]:
+def _aggregate_evictions(db: Session, cutoff: date | None = None, until: date | None = None) -> List[Tuple[str, int]]:
     """
     Return (zip_code, count) for residential evictions executed in the past 365 days.
     Note: OCA data lags executed_date by 2–4 weeks (documented in evictions_raw model).
@@ -157,17 +158,18 @@ def _aggregate_evictions(db: Session, cutoff: date | None = None) -> List[Tuple[
             FROM evictions_raw
             WHERE zip_code IS NOT NULL
               AND executed_date >= :cutoff
+              AND executed_date <= :until
               AND eviction_type ILIKE 'R%'
             GROUP BY zip_code
             ORDER BY eviction_count DESC
             """
         ),
-        {"cutoff": effective},
+        {"cutoff": effective, "until": until if until is not None else date.today()},
     ).fetchall()
     return [(str(r[0]), int(r[1])) for r in rows]
 
 
-def _aggregate_llc_acquisitions(db: Session, cutoff: date | None = None) -> List[Tuple[str, int]]:
+def _aggregate_llc_acquisitions(db: Session, cutoff: date | None = None, until: date | None = None) -> List[Tuple[str, int]]:
     """
     Return (zip_code, count) of LLC acquisitions (GRANTEE with LLC in normalized name)
     in the past 365 days, restricted to residential parcels (units_res > 0).
@@ -195,6 +197,7 @@ def _aggregate_llc_acquisitions(db: Session, cutoff: date | None = None) -> List
               AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
               AND o.party_name_normalized LIKE '%LLC%'
               AND o.doc_date >= :cutoff
+              AND o.doc_date <= :until
               AND p.zip_code IS NOT NULL
               AND p.units_res > 0
               AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
@@ -218,12 +221,12 @@ def _aggregate_llc_acquisitions(db: Session, cutoff: date | None = None) -> List
             ORDER BY llc_count DESC
             """
         ),
-        {"cutoff": effective},
+        {"cutoff": effective, "until": until if until is not None else date.today()},
     ).fetchall()
     return [(str(r[0]), int(r[1])) for r in rows]
 
 
-def _aggregate_complaints(db: Session, cutoff: date | None = None) -> List[Tuple[str, int]]:
+def _aggregate_complaints(db: Session, cutoff: date | None = None, until: date | None = None) -> List[Tuple[str, int]]:
     """
     Return (zip_code, count) for displacement-relevant 311 complaints
     (filtered to DISPLACEMENT_COMPLAINT_TYPES at query time) in the past 365 days.
@@ -241,18 +244,20 @@ def _aggregate_complaints(db: Session, cutoff: date | None = None) -> List[Tuple
             WHERE zip_code IS NOT NULL
               AND complaint_type = ANY(:types)
               AND created_date >= :cutoff
+              AND created_date <= :until
             GROUP BY zip_code
             ORDER BY complaint_count DESC
             """
         ),
-        {"types": list(DISPLACEMENT_COMPLAINT_TYPES), "cutoff": effective},
+        {"types": list(DISPLACEMENT_COMPLAINT_TYPES), "cutoff": effective,
+         "until": until if until is not None else date.today()},
     ).fetchall()
     return [(str(r[0]), int(r[1])) for r in rows]
 
 
 
 
-def _aggregate_violations(db: Session, cutoff: date | None = None) -> List[Tuple[str, int]]:
+def _aggregate_violations(db: Session, cutoff: date | None = None, until: date | None = None) -> List[Tuple[str, int]]:
     """
     Return (zip_code, count) of Class B and C HPD violations filed in the past
     90 days on 3+ unit residential parcels.
@@ -284,13 +289,14 @@ def _aggregate_violations(db: Session, cutoff: date | None = None) -> List[Tuple
             JOIN parcels p ON v.bbl = p.bbl
             WHERE v.violation_class IN ('B', 'C')
               AND v.inspection_date >= :cutoff
+              AND v.inspection_date <= :until
               AND p.units_res >= 3
               AND p.zip_code IS NOT NULL
             GROUP BY p.zip_code
             ORDER BY violation_count DESC
             """
         ),
-        {"cutoff": recent_cutoff},
+        {"cutoff": recent_cutoff, "until": until if until is not None else date.today()},
     ).fetchall()
     return [(str(r[0]), int(r[1])) for r in rows]
 
@@ -689,13 +695,16 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
     for the API response and score panel).
     """
     cutoff = (as_of_date - timedelta(days=365)) if as_of_date is not None else None
+    # Upper bound of the window. Without this every backfilled snapshot counted
+    # events recorded after its own date, so history drifted toward the present.
+    until = as_of_date
 
     # --- Step 1: Aggregate all signals ---
-    permit_rows = _aggregate_permits(db, cutoff=cutoff)
-    eviction_rows = _aggregate_evictions(db, cutoff=cutoff)
-    llc_rows = _aggregate_llc_acquisitions(db, cutoff=cutoff)
-    complaint_rows = _aggregate_complaints(db, cutoff=cutoff)
-    violation_rows        = _aggregate_violations(db, cutoff=cutoff)
+    permit_rows = _aggregate_permits(db, cutoff=cutoff, until=until)
+    eviction_rows = _aggregate_evictions(db, cutoff=cutoff, until=until)
+    llc_rows = _aggregate_llc_acquisitions(db, cutoff=cutoff, until=until)
+    complaint_rows = _aggregate_complaints(db, cutoff=cutoff, until=until)
+    violation_rows        = _aggregate_violations(db, cutoff=cutoff, until=until)
     assessment_spike_rows = _aggregate_assessment_spike(db)
     rs_loss_rows          = _aggregate_rs_unit_loss(db)
     # Dormancy check: warn when assessment spike has fewer than 2 tax years.
