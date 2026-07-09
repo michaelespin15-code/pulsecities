@@ -91,11 +91,44 @@
         plausible.init()
     </script>
 
-    <link rel="stylesheet" href="/tailwind.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Bricolage+Grotesque:opsz,wght@12..96,600&display=swap" rel="stylesheet">
+    <!-- Both stylesheets load async: neither is needed for first paint. The
+         critical rules for the search row are inlined below, and every font
+         has display=swap, so the page renders on system faces immediately. -->
+    <link rel="preload" href="/tailwind.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Bricolage+Grotesque:opsz,wght@12..96,600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="/tailwind.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Bricolage+Grotesque:opsz,wght@12..96,600&display=swap">
+    </noscript>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* Critical styles for the search row so it looks finished before
+           tailwind.min.css arrives. Kept in sync with the daisyUI look. */
+        #search-row .input {
+            border-radius: 8px;
+            border: 1px solid rgba(148,163,184,0.25);
+            color: #e2e8f0;
+            width: 100%;
+            min-width: 0;
+        }
+        #search-row .input:focus {
+            outline: 2px solid rgba(56,189,248,0.4);
+            outline-offset: 2px;
+        }
+        #search-row .btn {
+            border-radius: 8px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            min-height: 3rem;
+        }
+        .flex-1 { flex: 1 1 0%; }
+        .shrink-0 { flex-shrink: 0; }
 
         body {
             font-family: 'DM Sans', sans-serif;
@@ -419,7 +452,10 @@
 
             <!-- The map itself is the pitch: static shot, click through to the app -->
             <a href="/map" id="cta-explore" class="map-teaser" aria-label="Explore the live displacement risk map">
-                <img src="/map-preview.jpg" width="1120" height="600" alt="Live displacement risk map of NYC. Low-pressure areas in cool blue, moderate in rust, high-pressure neighborhoods glowing orange." loading="eager" fetchpriority="high">
+                <picture>
+                    <source srcset="/map-preview-560.webp 560w, /map-preview.webp 1120w" sizes="(max-width: 680px) calc(100vw - 40px), 640px" type="image/webp">
+                    <img src="/map-preview.jpg" srcset="/map-preview-560.jpg 560w, /map-preview.jpg 1120w" sizes="(max-width: 680px) calc(100vw - 40px), 640px" width="1120" height="600" alt="Live displacement risk map of NYC. Low-pressure areas in cool blue, moderate in bronze, high-pressure neighborhoods glowing orange." loading="eager" fetchpriority="high" decoding="async">
+                </picture>
                 <span class="map-teaser-label" data-i18n="explore_map">Explore the map &rarr;</span>
             </a>
             <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:10px;">

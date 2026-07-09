@@ -70,7 +70,8 @@
     <link href="https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.css" rel="stylesheet" />
 
     <!-- Google Fonts: DM Sans + JetBrains Mono -->
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap"></noscript>
 
     <style>
         * {
@@ -436,8 +437,8 @@
             <!-- Map legend — bottom-left, always visible -->
             <div id="map-legend" class="absolute bottom-9 left-4 z-10 rounded-lg px-3 py-2 flex flex-col gap-1" style="background:rgba(15,23,42,0.88);backdrop-filter:blur(6px);border:1px solid rgba(148,163,184,0.15);font-size:11px;">
                 <div class="text-slate-400 font-mono uppercase tracking-wider mb-0.5" style="font-size:10px;letter-spacing:0.08em;"><span id="legend-header">displacement risk</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#56688c;display:inline-block;flex-shrink:0;"></span><span id="legend-low" class="text-slate-300">Low 0-33</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#92400e;display:inline-block;flex-shrink:0;"></span><span id="legend-moderate" class="text-slate-300">Moderate 34-66</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#8da2c0;display:inline-block;flex-shrink:0;"></span><span id="legend-low" class="text-slate-300">Low 0-33</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#c2661b;display:inline-block;flex-shrink:0;"></span><span id="legend-moderate" class="text-slate-300">Moderate 34-66</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#f97316;display:inline-block;flex-shrink:0;"></span><span id="legend-high" class="text-slate-300">High 67-84</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block;flex-shrink:0;"></span><span id="legend-critical" class="text-slate-300">Critical 85+</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#334155;display:inline-block;flex-shrink:0;"></span><span id="legend-no-data" class="text-slate-300">No data</span></div>
@@ -2120,20 +2121,20 @@
                         ['==', ['coalesce', ['feature-state', 'score'], ['get', 'score']], null], '#334155',
                         [
                             'step', ['coalesce', ['feature-state', 'score'], ['get', 'score']],
-                            '#56688c',
-                            34, '#92400e',
+                            '#8da2c0',
+                            34, '#c2661b',
                             67, '#f97316',
                             85, '#ef4444'
                         ]
                     ],
                     'fill-opacity': [
                         'case',
-                        ['==', ['coalesce', ['feature-state', 'score'], ['get', 'score']], null], 0.5,
+                        ['==', ['coalesce', ['feature-state', 'score'], ['get', 'score']], null], 0.45,
                         [
                             'step', ['coalesce', ['feature-state', 'score'], ['get', 'score']],
-                            0.55,
-                            34, 0.6,
-                            67, 0.8,
+                            0.5,
+                            34, 0.62,
+                            67, 0.82,
                             85, 0.9
                         ]
                     ]
