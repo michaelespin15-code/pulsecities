@@ -56,19 +56,25 @@ class TestPipelineFailureTracking:
 
 
 class TestSchedulerMain:
-    def test_main_exits_nonzero_on_pipeline_failure(self):
+    # _LOCK_FILE is patched to a per-test path: the real one is live state,
+    # and these tests fail spuriously whenever the nightly pipeline is
+    # actually running on the box.
+
+    def test_main_exits_nonzero_on_pipeline_failure(self, tmp_path):
         """main() calls sys.exit(1) when run_nightly_pipeline returns False."""
         with patch("scheduler.main.run_nightly_pipeline", return_value=False), \
-             patch("scheduler.main.configure_logging"):
+             patch("scheduler.main.configure_logging"), \
+             patch("scheduler.main._LOCK_FILE", str(tmp_path / "pipeline.lock")):
             from scheduler.main import main
             with pytest.raises(SystemExit) as exc_info:
                 main()
             assert exc_info.value.code == 1
 
-    def test_main_exits_zero_on_success(self):
+    def test_main_exits_zero_on_success(self, tmp_path):
         """main() does not call sys.exit when run_nightly_pipeline returns True."""
         with patch("scheduler.main.run_nightly_pipeline", return_value=True), \
-             patch("scheduler.main.configure_logging"):
+             patch("scheduler.main.configure_logging"), \
+             patch("scheduler.main._LOCK_FILE", str(tmp_path / "pipeline.lock")):
             from scheduler.main import main
             # Should complete without raising SystemExit
             main()
