@@ -227,9 +227,11 @@
                 min-width: 0;
             }
             #mobile-bottom-nav a.active { color: #38bdf8; }
-            /* Lift the drawer and legend above nav + safe area */
+            /* Lift the drawer, legend, and map attribution above nav + safe area */
             #mobile-drawer { bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important; }
             #map-legend { bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important; }
+            .maplibregl-ctrl-bottom-right,
+            .maplibregl-ctrl-bottom-left { bottom: calc(116px + env(safe-area-inset-bottom, 0px)); }
         }
         /* Mobile bottom drawer */
         #mobile-drawer {
@@ -434,11 +436,11 @@
             <!-- Map legend — bottom-left, always visible -->
             <div id="map-legend" class="absolute bottom-9 left-4 z-10 rounded-lg px-3 py-2 flex flex-col gap-1" style="background:rgba(15,23,42,0.88);backdrop-filter:blur(6px);border:1px solid rgba(148,163,184,0.15);font-size:11px;">
                 <div class="text-slate-400 font-mono uppercase tracking-wider mb-0.5" style="font-size:10px;letter-spacing:0.08em;"><span id="legend-header">displacement risk</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#22c55e;display:inline-block;flex-shrink:0;"></span><span id="legend-low" class="text-slate-300">Low 0-33</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#eab308;display:inline-block;flex-shrink:0;"></span><span id="legend-moderate" class="text-slate-300">Moderate 34-66</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#56688c;display:inline-block;flex-shrink:0;"></span><span id="legend-low" class="text-slate-300">Low 0-33</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#92400e;display:inline-block;flex-shrink:0;"></span><span id="legend-moderate" class="text-slate-300">Moderate 34-66</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#f97316;display:inline-block;flex-shrink:0;"></span><span id="legend-high" class="text-slate-300">High 67-84</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block;flex-shrink:0;"></span><span id="legend-critical" class="text-slate-300">Critical 85+</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#94a3b8;display:inline-block;flex-shrink:0;"></span><span id="legend-no-data" class="text-slate-300">No data</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#334155;display:inline-block;flex-shrink:0;"></span><span id="legend-no-data" class="text-slate-300">No data</span></div>
                 <div id="map-data-updated" class="text-slate-500 mt-1" style="font-size:10px;"></div>
                 <div id="replay-row" class="mt-1 pt-1.5" style="border-top:1px solid rgba(148,163,184,0.12);">
                     <button id="replay-open" class="font-mono text-slate-400 hover:text-slate-200" style="font-size:10px;letter-spacing:0.06em;background:none;border:none;cursor:pointer;padding:2px 0;min-height:24px;">
@@ -913,7 +915,7 @@
                 <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#38bdf8;flex-shrink:0;display:inline-block;"></span>311 complaints</li>
                 <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#f87171;flex-shrink:0;display:inline-block;"></span>Evictions</li>
                 <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#f87171;flex-shrink:0;display:inline-block;"></span>HPD violations</li>
-                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#4ade80;flex-shrink:0;display:inline-block;"></span>Rent-stabilized unit loss</li>
+                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#94a3b8;flex-shrink:0;display:inline-block;"></span>Rent-stabilized unit loss</li>
             </ul>
             <p class="text-xs text-slate-500 mb-3">Higher scores mean more displacement-pressure signals. They are not predictions about any individual tenant or building.</p>
             <p class="text-xs text-slate-500 mb-5">Sources include NYC DOB, HPD, ACRIS, 311, eviction records, DHCR, and MapPLUTO.</p>
@@ -1007,7 +1009,7 @@
             const earlyAvg  = scores.slice(0, win).reduce((a, b) => a + b, 0) / win;
             const color = scores.length < 7 ? '#94a3b8'
                         : recentAvg > earlyAvg + 2 ? '#f97316'
-                        : recentAvg < earlyAvg - 2 ? '#22c55e'
+                        : recentAvg < earlyAvg - 2 ? '#38bdf8'
                         : '#94a3b8';
             const dashAttr = scores.length < 7 ? 'stroke-dasharray="3,3"' : '';
             return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" class="sparkline" data-scores='${JSON.stringify(scores)}' style="vertical-align:middle;margin-right:6px;" ${scores.length < 7 ? 'data-sparse="true"' : ''}><polyline points="${points}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linejoin="round" stroke-linecap="round" ${dashAttr}/></svg>`;
@@ -2106,7 +2108,8 @@
                 console.debug('[perf] GeoJSON source loaded', Math.round(performance.now() - _perfGeoJsonStart) + 'ms');
             });
 
-            // Choropleth fill layer — green to red by displacement score
+            // Choropleth fill layer. Low-pressure ZIPs sit quiet in cool steel;
+            // the ramp only warms where the score does, so heat is the signal.
             map.addLayer({
                 id: 'neighborhood-fill',
                 type: 'fill',
@@ -2114,16 +2117,26 @@
                 paint: {
                     'fill-color': [
                         'case',
-                        ['==', ['coalesce', ['feature-state', 'score'], ['get', 'score']], null], '#94a3b8',
+                        ['==', ['coalesce', ['feature-state', 'score'], ['get', 'score']], null], '#334155',
                         [
                             'step', ['coalesce', ['feature-state', 'score'], ['get', 'score']],
-                            '#22c55e',
-                            34, '#eab308',
+                            '#56688c',
+                            34, '#92400e',
                             67, '#f97316',
                             85, '#ef4444'
                         ]
                     ],
-                    'fill-opacity': 0.65
+                    'fill-opacity': [
+                        'case',
+                        ['==', ['coalesce', ['feature-state', 'score'], ['get', 'score']], null], 0.5,
+                        [
+                            'step', ['coalesce', ['feature-state', 'score'], ['get', 'score']],
+                            0.55,
+                            34, 0.6,
+                            67, 0.8,
+                            85, 0.9
+                        ]
+                    ]
                 }
             });
 
@@ -2200,7 +2213,7 @@
             if (score >= 85) return '#ef4444';
             if (score >= 67) return '#f97316';
             if (score >= 34) return '#eab308';
-            return '#22c55e';
+            return '#94a3b8';
         }
 
         // Citywide score distribution for the percentile badge. One fetch per
@@ -2225,7 +2238,7 @@
             if (v >= 70) return '#ef4444';
             if (v >= 55) return '#f97316';
             if (v >= 35) return '#eab308';
-            return '#22c55e';
+            return '#64748b';
         }
 
         function riskLabel(score) {
@@ -4267,7 +4280,7 @@
                     if (n.score !== null && n.score !== undefined) {
                         const score = document.createElement('span');
                         score.className = 'font-mono text-xs shrink-0';
-                        const c = n.score >= 85 ? '#ef4444' : n.score >= 67 ? '#f97316' : n.score >= 34 ? '#eab308' : '#22c55e';
+                        const c = n.score >= 85 ? '#ef4444' : n.score >= 67 ? '#f97316' : n.score >= 34 ? '#eab308' : '#94a3b8';
                         score.style.color = c;
                         score.textContent = n.score.toFixed(1);
                         top.appendChild(score);

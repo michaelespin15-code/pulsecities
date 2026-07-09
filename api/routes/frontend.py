@@ -104,6 +104,69 @@ def _idx_color(v: float) -> str:
     return "rgba(148,163,184,0.55)"
 
 
+def _trend_svg(history: list[tuple[str, float]]) -> str:
+    """
+    Inline SVG of the daily composite score. Server-rendered so the page
+    stays static and the trace shows up in reader modes and print.
+    Returns "" when there is not enough history to draw an honest line.
+    """
+    if not history or len(history) < 7:
+        return ""
+
+    scores = [s for _, s in history]
+    lo = max(0.0, min(scores) - 2.0)
+    hi = min(100.0, max(scores) + 2.0)
+    rng = (hi - lo) or 1.0
+
+    w, h = 640.0, 150.0
+    px_l, px_r, py_t, py_b = 6.0, 6.0, 18.0, 26.0
+    plot_w, plot_h = w - px_l - px_r, h - py_t - py_b
+
+    n = len(scores)
+    pts = []
+    for i, s in enumerate(scores):
+        x = px_l + (i / (n - 1)) * plot_w
+        y = py_t + (1 - (s - lo) / rng) * plot_h
+        pts.append(f"{x:.1f},{y:.1f}")
+    line = " ".join(pts)
+    area = f"{px_l:.1f},{py_t + plot_h:.1f} {line} {px_l + plot_w:.1f},{py_t + plot_h:.1f}"
+    last_x, last_y = pts[-1].split(",")
+
+    grid = ""
+    for frac, val in ((0.0, hi), (0.5, lo + rng / 2), (1.0, lo)):
+        gy = py_t + frac * plot_h
+        grid += (
+            f'<line x1="{px_l}" y1="{gy:.1f}" x2="{px_l + plot_w}" y2="{gy:.1f}" '
+            f'stroke="rgba(148,163,184,.12)" stroke-width="1"/>'
+            f'<text x="{px_l + 2}" y="{gy - 4:.1f}" font-size="10" '
+            f'font-family="JetBrains Mono,monospace" fill="rgba(148,163,184,.45)">{val:.0f}</text>'
+        )
+
+    def _md(iso: str) -> str:
+        try:
+            return date.fromisoformat(iso).strftime("%b %-d")
+        except ValueError:
+            return iso
+
+    first_lbl, last_lbl = _md(history[0][0]), _md(history[-1][0])
+
+    return (
+        f'<svg viewBox="0 0 {w:.0f} {h:.0f}" role="img" '
+        f'aria-label="Daily displacement score from {first_lbl} to {last_lbl}" '
+        f'style="width:100%;height:auto;display:block;">'
+        f'{grid}'
+        f'<polygon points="{area}" fill="rgba(249,115,22,.07)"/>'
+        f'<polyline points="{line}" fill="none" stroke="#f97316" stroke-width="1.6" '
+        f'stroke-linejoin="round" stroke-linecap="round"/>'
+        f'<circle cx="{last_x}" cy="{last_y}" r="3" fill="#f97316"/>'
+        f'<text x="{px_l}" y="{h - 6:.0f}" font-size="10" font-family="JetBrains Mono,monospace" '
+        f'fill="rgba(148,163,184,.45)">{first_lbl}</text>'
+        f'<text x="{px_l + plot_w:.1f}" y="{h - 6:.0f}" font-size="10" text-anchor="end" '
+        f'font-family="JetBrains Mono,monospace" fill="rgba(148,163,184,.45)">{last_lbl}</text>'
+        f'</svg>'
+    )
+
+
 def _build_neighborhood_page(
     zip_code: str,
     name: str,
@@ -114,6 +177,7 @@ def _build_neighborhood_page(
     raw_hpd: int,
     summary: str | None,
     last_updated: str | None,
+    history: list[tuple[str, float]] | None = None,
 ) -> str:
     e = _html.escape
 
@@ -191,6 +255,21 @@ def _build_neighborhood_page(
         else '<div class="score-block"><p style="color:rgba(148,163,184,0.5);font-size:0.9rem;">Score data not yet available.</p></div>'
     )
     summary_html = f'<p class="summary">{e(summary)}</p>' if summary else ""
+
+    trend_section = ""
+    svg = _trend_svg(history or [])
+    if svg:
+        n_days = len(history)
+        delta = history[-1][1] - history[0][1]
+        delta_s = f"{delta:+.1f}" if abs(delta) >= 0.05 else "flat"
+        trend_section = (
+            f'<section style="margin-bottom:32px;">'
+            f'<h2>Score trend</h2>'
+            f'<p class="section-sub">Daily composite score, past {n_days} days. '
+            f'Change over the window: <span style="font-family:\'JetBrains Mono\',monospace;color:#f1f5f9;">{delta_s}</span></p>'
+            f'<div style="border:1px solid var(--border);border-radius:8px;padding:14px 12px 8px;background:rgba(255,255,255,.02);">{svg}</div>'
+            f'</section>'
+        )
 
     dataset_ld = json.dumps({
         "@context": "https://schema.org",
@@ -332,6 +411,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
   <p class="subline">{e(borough_disp)}. Updated {e(updated_disp)}.</p>
   {score_block}
   {summary_html}
+  {trend_section}
   <section style="margin-bottom:32px;">
     <h2>Signal breakdown</h2>
     <p class="section-sub">Public-record signals used in the neighborhood score.</p>
@@ -464,8 +544,17 @@ def neighborhood_page(zip_code: str, db: Session = Depends(get_db)):
 
     summary = _build_summary(score, breakdown, raw_counts)
 
+    history_rows = db.execute(text("""
+        SELECT scored_at, composite_score
+        FROM score_history
+        WHERE zip_code = :zip
+          AND scored_at >= CURRENT_DATE - INTERVAL '180 days'
+        ORDER BY scored_at ASC
+    """), {"zip": zip_code}).fetchall()
+    history = [(r.scored_at.isoformat(), round(float(r.composite_score), 1)) for r in history_rows]
+
     page_html = _build_neighborhood_page(
-        zip_code, name, borough, score, breakdown, raw_counts, raw_hpd, summary, last_updated,
+        zip_code, name, borough, score, breakdown, raw_counts, raw_hpd, summary, last_updated, history,
     )
     _page_cache[zip_code] = (page_html, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page_html)
