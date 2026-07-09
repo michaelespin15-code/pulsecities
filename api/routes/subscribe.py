@@ -34,50 +34,41 @@ _EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 _ZIP_RE   = re.compile(r'^\d{5}$')
 _SLUG_RE  = re.compile(r'^[a-z0-9-]+$')
 
+# Welcome notes are transactional mail and read like it: a short note from a
+# person, no images, no buttons, serif on white. That plainness is deliberate;
+# card layouts with CTA buttons are what Gmail files under Promotions.
 _CONFIRMATION_HTML = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>You're subscribed to PulseCities</title>
+<title>You're watching {zip_code}</title>
 </head>
-<body style="margin:0;padding:0;background:#0f172a;font-family:'Inter',system-ui,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:48px 24px;">
-    <tr>
-      <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
-          <tr>
-            <td style="padding-bottom:32px;">
-              <span style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#38bdf8;letter-spacing:-0.01em;">PulseCities</span>
-            </td>
-          </tr>
-          <tr>
-            <td style="background:#1e293b;border-radius:12px;padding:32px;border:1px solid rgba(148,163,184,0.1);">
-              <p style="margin:0 0 8px;font-size:20px;font-weight:600;color:#f1f5f9;">You're watching {zip_code}.</p>
-              <p style="margin:0 0 24px;font-size:14px;color:#94a3b8;line-height:1.6;">
-                You'll get a weekly digest of displacement activity in <strong style="color:#cbd5e1;">{zip_code}</strong>. First one goes out {send_day}.
-              </p>
-              <a href="https://pulsecities.com/neighborhood/{zip_code}"
-                 style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;text-decoration:none;">
-                View {zip_code} now
-              </a>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding-top:24px;">
-              <p style="margin:0;font-size:11px;color:rgba(148,163,184,0.4);line-height:1.6;">
-                PulseCities tracks displacement pressure across all NYC neighborhoods using public records.<br>
-                You subscribed at pulsecities.com. To unsubscribe, reply with "unsubscribe".
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
+<body style="margin:0;padding:0;background:#ffffff;">
+  <div style="max-width:540px;margin:0 auto;padding:36px 24px;">
+    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">You're watching {zip_code}.</p>
+    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">Every {send_day} you'll get a one-page read of what changed in the public record for your neighborhood: deeds, evictions, permits, violations. Quiet weeks send nothing, so when an email arrives it means something moved.</p>
+    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">The current reading is here:<br>
+      <a href="https://pulsecities.com/neighborhood/{zip_code}" style="color:#C2410C;">pulsecities.com/neighborhood/{zip_code}</a></p>
+    <p style="margin:0 0 28px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">Michael<br>PulseCities</p>
+    <p style="margin:0;padding-top:14px;border-top:1px solid #E5E1D8;font-family:Menlo,Consolas,'Courier New',monospace;font-size:11px;color:#8A8578;line-height:1.7;">You subscribed at pulsecities.com. <a href="https://pulsecities.com/api/unsubscribe?token={token}" style="color:#8A8578;">Unsubscribe</a> anytime, one click.</p>
+  </div>
 </body>
 </html>
+""".strip()
+
+_CONFIRMATION_TEXT = """
+You're watching {zip_code}.
+
+Every {send_day} you'll get a one-page read of what changed in the public record for your neighborhood: deeds, evictions, permits, violations. Quiet weeks send nothing, so when an email arrives it means something moved.
+
+The current reading: https://pulsecities.com/neighborhood/{zip_code}
+
+Michael
+PulseCities
+
+You subscribed at pulsecities.com. Unsubscribe: https://pulsecities.com/api/unsubscribe?token={token}
 """.strip()
 
 _CITYWIDE_CONFIRMATION_HTML = """
@@ -86,44 +77,32 @@ _CITYWIDE_CONFIRMATION_HTML = """
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>You're subscribed to PulseCities</title>
+<title>You're watching NYC</title>
 </head>
-<body style="margin:0;padding:0;background:#0f172a;font-family:'Inter',system-ui,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:48px 24px;">
-    <tr>
-      <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
-          <tr>
-            <td style="padding-bottom:32px;">
-              <span style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#38bdf8;letter-spacing:-0.01em;">PulseCities</span>
-            </td>
-          </tr>
-          <tr>
-            <td style="background:#1e293b;border-radius:12px;padding:32px;border:1px solid rgba(148,163,184,0.1);">
-              <p style="margin:0 0 8px;font-size:20px;font-weight:600;color:#f1f5f9;">You're watching NYC.</p>
-              <p style="margin:0 0 24px;font-size:14px;color:#94a3b8;line-height:1.6;">
-                You'll get a weekly overview of displacement activity across all NYC neighborhoods. First one goes out {send_day}.
-              </p>
-              <a href="https://pulsecities.com"
-                 style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;text-decoration:none;">
-                Explore the map
-              </a>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding-top:24px;">
-              <p style="margin:0;font-size:11px;color:rgba(148,163,184,0.4);line-height:1.6;">
-                PulseCities tracks displacement pressure across all NYC neighborhoods using public records.<br>
-                You subscribed at pulsecities.com. To unsubscribe, reply with "unsubscribe".
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
+<body style="margin:0;padding:0;background:#ffffff;">
+  <div style="max-width:540px;margin:0 auto;padding:36px 24px;">
+    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">You're watching NYC.</p>
+    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">Every {send_day} you'll get a citywide read of where displacement pressure moved in the public record: the neighborhoods at the top of the risk list and the week's notable deeds, evictions, and permits. Quiet weeks send nothing.</p>
+    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">The live map is here:<br>
+      <a href="https://pulsecities.com/map" style="color:#C2410C;">pulsecities.com/map</a></p>
+    <p style="margin:0 0 28px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">Michael<br>PulseCities</p>
+    <p style="margin:0;padding-top:14px;border-top:1px solid #E5E1D8;font-family:Menlo,Consolas,'Courier New',monospace;font-size:11px;color:#8A8578;line-height:1.7;">You subscribed at pulsecities.com. <a href="https://pulsecities.com/api/unsubscribe?token={token}" style="color:#8A8578;">Unsubscribe</a> anytime, one click.</p>
+  </div>
 </body>
 </html>
+""".strip()
+
+_CITYWIDE_CONFIRMATION_TEXT = """
+You're watching NYC.
+
+Every {send_day} you'll get a citywide read of where displacement pressure moved in the public record: the neighborhoods at the top of the risk list and the week's notable deeds, evictions, and permits. Quiet weeks send nothing.
+
+The live map: https://pulsecities.com/map
+
+Michael
+PulseCities
+
+You subscribed at pulsecities.com. Unsubscribe: https://pulsecities.com/api/unsubscribe?token={token}
 """.strip()
 
 _OPERATOR_CONFIRMATION_HTML = """
@@ -132,45 +111,32 @@ _OPERATOR_CONFIRMATION_HTML = """
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>You're following {operator_name} on PulseCities</title>
+<title>You're following {operator_name}</title>
 </head>
-<body style="margin:0;padding:0;background:#0f172a;font-family:'Inter',system-ui,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:48px 24px;">
-    <tr>
-      <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
-          <tr>
-            <td style="padding-bottom:32px;">
-              <span style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#38bdf8;letter-spacing:-0.01em;">PulseCities</span>
-            </td>
-          </tr>
-          <tr>
-            <td style="background:#1e293b;border-radius:12px;padding:32px;border:1px solid rgba(148,163,184,0.1);">
-              <p style="margin:0 0 8px;font-size:20px;font-weight:600;color:#f1f5f9;">You're following {operator_name}.</p>
-              <p style="margin:0 0 24px;font-size:14px;color:#94a3b8;line-height:1.6;">
-                When <strong style="color:#cbd5e1;">{operator_name}</strong> records new property acquisitions
-                in NYC public records, you'll hear about it in the weekly digest. Quiet weeks send nothing.
-              </p>
-              <a href="https://pulsecities.com/operator/{operator_slug}"
-                 style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;text-decoration:none;">
-                View the operator profile
-              </a>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding-top:24px;">
-              <p style="margin:0;font-size:11px;color:rgba(148,163,184,0.4);line-height:1.6;">
-                PulseCities tracks displacement pressure across all NYC neighborhoods using public records.<br>
-                You subscribed at pulsecities.com. To unsubscribe, reply with "unsubscribe".
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
+<body style="margin:0;padding:0;background:#ffffff;">
+  <div style="max-width:540px;margin:0 auto;padding:36px 24px;">
+    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">You're following {operator_name}.</p>
+    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">When this operator's cluster records new property acquisitions in NYC public records, it shows up in your {send_day} email. Quiet weeks send nothing.</p>
+    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">The operator's profile is here:<br>
+      <a href="https://pulsecities.com/operator/{operator_slug}" style="color:#C2410C;">pulsecities.com/operator/{operator_slug}</a></p>
+    <p style="margin:0 0 28px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">Michael<br>PulseCities</p>
+    <p style="margin:0;padding-top:14px;border-top:1px solid #E5E1D8;font-family:Menlo,Consolas,'Courier New',monospace;font-size:11px;color:#8A8578;line-height:1.7;">You subscribed at pulsecities.com. <a href="https://pulsecities.com/api/unsubscribe?token={token}" style="color:#8A8578;">Unsubscribe</a> anytime, one click.</p>
+  </div>
 </body>
 </html>
+""".strip()
+
+_OPERATOR_CONFIRMATION_TEXT = """
+You're following {operator_name}.
+
+When this operator's cluster records new property acquisitions in NYC public records, it shows up in your {send_day} email. Quiet weeks send nothing.
+
+The operator's profile: https://pulsecities.com/operator/{operator_slug}
+
+Michael
+PulseCities
+
+You subscribed at pulsecities.com. Unsubscribe: https://pulsecities.com/api/unsubscribe?token={token}
 """.strip()
 
 _UNSUBSCRIBE_HTML = """
@@ -254,43 +220,53 @@ class SubscribeRequest(BaseModel):
         return self
 
 
+def _fill(template: str, values: dict) -> str:
+    for key, val in values.items():
+        template = template.replace("{" + key + "}", str(val))
+    return template
+
+
 def _send_confirmation(
     email: str,
     zip_code: str | None,
     is_citywide: bool,
     operator_slug: str | None = None,
     operator_name: str | None = None,
+    unsubscribe_token: str | None = None,
 ) -> None:
     if not resend.api_key:
         logger.warning("RESEND_API_KEY not set — skipping confirmation email")
         return
+
+    unsub_url = f"https://pulsecities.com/api/unsubscribe?token={unsubscribe_token or ''}"
+    values = {"send_day": DIGEST_SEND_DAY, "token": unsubscribe_token or ""}
+
+    if operator_slug:
+        name = operator_name or operator_slug
+        values.update({"operator_name": name, "operator_slug": operator_slug})
+        subject = f"You're following {name}"
+        html, text_body = _OPERATOR_CONFIRMATION_HTML, _OPERATOR_CONFIRMATION_TEXT
+        log_line = ("Operator-follow confirmation sent to %s for %s", email, operator_slug)
+    elif is_citywide:
+        subject = "You're watching NYC"
+        html, text_body = _CITYWIDE_CONFIRMATION_HTML, _CITYWIDE_CONFIRMATION_TEXT
+        log_line = ("Citywide confirmation sent to %s", email)
+    else:
+        values["zip_code"] = zip_code
+        subject = f"You're watching {zip_code}"
+        html, text_body = _CONFIRMATION_HTML, _CONFIRMATION_TEXT
+        log_line = ("Confirmation sent to %s for zip %s", email, zip_code)
+
     try:
-        if operator_slug:
-            resend.Emails.send({
-                "from": "PulseCities <alerts@pulsecities.com>",
-                "to": [email],
-                "subject": f"You're following {operator_name} — PulseCities",
-                "html": _OPERATOR_CONFIRMATION_HTML
-                    .replace("{operator_name}", operator_name or operator_slug)
-                    .replace("{operator_slug}", operator_slug),
-            })
-            logger.info("Operator-follow confirmation sent to %s for %s", email, operator_slug)
-        elif is_citywide:
-            resend.Emails.send({
-                "from": "PulseCities <alerts@pulsecities.com>",
-                "to": [email],
-                "subject": "You're watching NYC — PulseCities",
-                "html": _CITYWIDE_CONFIRMATION_HTML.replace("{send_day}", DIGEST_SEND_DAY),
-            })
-            logger.info("Citywide confirmation sent to %s", email)
-        else:
-            resend.Emails.send({
-                "from": "PulseCities <alerts@pulsecities.com>",
-                "to": [email],
-                "subject": f"You're watching {zip_code} — PulseCities",
-                "html": _CONFIRMATION_HTML.replace("{zip_code}", zip_code).replace("{send_day}", DIGEST_SEND_DAY),
-            })
-            logger.info("Confirmation sent to %s for zip %s", email, zip_code)
+        resend.Emails.send({
+            "from": "PulseCities <alerts@pulsecities.com>",
+            "to": [email],
+            "subject": subject,
+            "html": _fill(html, values),
+            "text": _fill(text_body, values),
+            "headers": {"List-Unsubscribe": f"<{unsub_url}>"},
+        })
+        logger.info(*log_line)
     except Exception:
         logger.exception("Failed to send confirmation email to %s", email)
 
@@ -367,7 +343,8 @@ def subscribe(
     logger.info('New subscriber email=%s zip=%s citywide=%s operator=%s',
                 body.email, body.zip_code, body.is_citywide, body.operator_slug)
     _send_confirmation(body.email, body.zip_code, body.is_citywide,
-                       operator_slug=body.operator_slug, operator_name=operator_name)
+                       operator_slug=body.operator_slug, operator_name=operator_name,
+                       unsubscribe_token=sub.unsubscribe_token)
     return {'status': 'ok'}
 
 
