@@ -1114,7 +1114,8 @@ def operators_directory(db: Session = Depends(get_db)):
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0}}
-.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}}
+.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
 footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b}}
@@ -1327,7 +1328,8 @@ def neighborhoods_directory(db: Session = Depends(get_db)):
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0}}
-.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}}
+.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
 footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b}}
@@ -1517,7 +1519,8 @@ def borough_page(slug: str, db: Session = Depends(get_db)):
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0}}
-.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}}
+.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
 footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b}}
@@ -1716,7 +1719,8 @@ def flip_watch_page(db: Session = Depends(get_db)):
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0}}
-.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}}
+.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
 footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b}}
@@ -1957,7 +1961,8 @@ def speculation_radar_page(db: Session = Depends(get_db)):
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0}}
-.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}}
+.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
 footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b}}
@@ -2214,7 +2219,8 @@ def this_week_page(db: Session = Depends(get_db)):
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0}}
-.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}}
+.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
 h2{{font-size:0.78rem;font-weight:600;color:rgba(148,163,184,0.75);text-transform:uppercase;letter-spacing:0.1em;margin:32px 0 4px}}
