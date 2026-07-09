@@ -18,7 +18,11 @@ from sqlalchemy import text
 
 from config.logging_config import configure_logging
 from config.schedule import DIGEST_SEND_DAY
-from models.database import SessionLocal
+from models.database import SessionLocal  # imports load_dotenv() as a side effect
+
+# The API process sets this in api/routes/subscribe.py; this script runs
+# standalone from cron and must set it itself or every send aborts.
+resend.api_key = os.getenv("RESEND_API_KEY", "")
 
 configure_logging()
 logger = logging.getLogger(__name__)
