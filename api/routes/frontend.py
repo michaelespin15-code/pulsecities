@@ -98,6 +98,13 @@ _FAQ_A3 = (
 )
 
 
+
+def _jsonld(obj) -> str:
+    """JSON for a <script type="application/ld+json"> block. Escapes < so a
+    public-record string containing </script> can't break out of the element."""
+    return json.dumps(obj, indent=2).replace("<", "\\u003c")
+
+
 def _tier_info(score: float) -> tuple[str, str]:
     """
     Returns (display_label, hex_color) for the score tier.
@@ -283,7 +290,7 @@ def _build_neighborhood_page(
             f'</section>'
         )
 
-    dataset_ld = json.dumps({
+    dataset_ld = _jsonld({
         "@context": "https://schema.org",
         "@type": "Dataset",
         "name": f"Displacement Signals -- {name} ({zip_code}), {borough_disp}, NYC",
@@ -314,9 +321,9 @@ def _build_neighborhood_page(
             "minValue": 0,
             "maxValue": 100,
         }} if score is not None else {}),
-    }, indent=2)
+    })
 
-    faq_ld = json.dumps({
+    faq_ld = _jsonld({
         "@context": "https://schema.org",
         "@type": "FAQPage",
         "mainEntity": [
@@ -324,7 +331,7 @@ def _build_neighborhood_page(
             {"@type": "Question", "name": _FAQ_Q2, "acceptedAnswer": {"@type": "Answer", "text": _FAQ_A2}},
             {"@type": "Question", "name": _FAQ_Q3, "acceptedAnswer": {"@type": "Answer", "text": _FAQ_A3}},
         ],
-    }, indent=2)
+    })
 
     embed_code = (
         f'<a href="https://pulsecities.com/neighborhood/{zip_code}">'
@@ -639,7 +646,7 @@ def property_page(bbl: str, db: Session = Depends(get_db)):
     e_og_image = _html.escape(og_image_url, quote=True)
 
     html = _template()
-    html = html.replace('<title>Explore | PulseCities</title>', f'<title>{title}</title>', 1)
+    html = html.replace('<title>Explore | PulseCities</title>', f'<title>{e_title}</title>', 1)
     html = html.replace('<link rel="canonical" href="https://pulsecities.com/map">', f'<link rel="canonical" href="{e_url}">', 1)
     html = _set_meta(html, "name",     "description",          e_desc)
     html = _set_meta(html, "property", "og:title",             e_title)
@@ -650,6 +657,15 @@ def property_page(bbl: str, db: Session = Depends(get_db)):
     html = _set_meta(html, "name",     "twitter:description",  e_desc)
     html = _set_meta(html, "name",     "twitter:image",        e_og_image)
 
+    # Parcels number in the hundreds of thousands; without a cap a crawler
+    # walking /property/ URLs grows this dict until the box runs out of memory.
+    if len(_prop_page_cache) >= 512:
+        now = time.monotonic()
+        expired = [k for k, v in _prop_page_cache.items() if now >= v[1]]
+        for k in expired:
+            del _prop_page_cache[k]
+        if len(_prop_page_cache) >= 512:
+            _prop_page_cache.clear()
     _prop_page_cache[clean] = (html, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(html)
 
@@ -888,7 +904,7 @@ def operator_page(root: str, db: Session = Depends(get_db)):
         )
 
     html = _operator_template()
-    html = html.replace('<title>Operator Profile | PulseCities</title>', f'<title>{title}</title>', 1)
+    html = html.replace('<title>Operator Profile | PulseCities</title>', f'<title>{e_title}</title>', 1)
     html = html.replace(
         'content="LLC portfolio and affiliated operator network for a NYC acquisition cluster, sourced from ACRIS public records."',
         f'content="{e_desc}"',
@@ -1044,7 +1060,7 @@ def operators_directory(db: Session = Depends(get_db)):
         f"{n_visible} public-record operator clusters with measurable NYC acquisition activity, "
         "sourced from ACRIS deed records."
     )
-    jsonld = json.dumps({
+    jsonld = _jsonld({
         "@context": "https://schema.org",
         "@type": "ItemList",
         "name": "NYC Operator Networks",
@@ -1052,7 +1068,7 @@ def operators_directory(db: Session = Depends(get_db)):
         "url": "https://pulsecities.com/operators",
         "numberOfItems": n_visible,
         "itemListElement": list_items,
-    }, indent=2)
+    })
 
     page = f"""<!DOCTYPE html>
 <html lang="en">
@@ -1252,7 +1268,7 @@ def neighborhoods_directory(db: Session = Depends(get_db)):
         f"Displacement-pressure scores for all {n} scored NYC ZIP codes, grouped by borough "
         f"and ranked by current score. Built from public records, refreshed nightly."
     )
-    jsonld = json.dumps({
+    jsonld = _jsonld({
         "@context": "https://schema.org",
         "@type": "ItemList",
         "name": "NYC neighborhoods by displacement score",
@@ -1260,7 +1276,7 @@ def neighborhoods_directory(db: Session = Depends(get_db)):
         "url": "https://pulsecities.com/neighborhoods",
         "numberOfItems": n,
         "itemListElement": list_items,
-    }, indent=2)
+    })
 
     page = f"""<!DOCTYPE html>
 <html lang="en">
@@ -1443,7 +1459,7 @@ def flip_watch_page(db: Session = Depends(get_db)):
         f"{n} NYC buildings where an LLC bought and filed a renovation permit within "
         f"{FLIP_WINDOW_DAYS} days, sourced from ACRIS deeds and DOB permits. Updated nightly."
     )
-    jsonld = json.dumps({
+    jsonld = _jsonld({
         "@context": "https://schema.org",
         "@type": "ItemList",
         "name": "NYC Flip Watch",
@@ -1451,7 +1467,7 @@ def flip_watch_page(db: Session = Depends(get_db)):
         "url": "https://pulsecities.com/flips",
         "numberOfItems": n,
         "itemListElement": list_items,
-    }, indent=2)
+    })
 
     page = f"""<!DOCTYPE html>
 <html lang="en">
@@ -1684,7 +1700,7 @@ def speculation_radar_page(db: Session = Depends(get_db)):
         f"buildings in the same ZIP within {RADAR_WINDOW_DAYS} days, sourced from ACRIS "
         f"deeds. Updated nightly."
     )
-    jsonld = json.dumps({
+    jsonld = _jsonld({
         "@context": "https://schema.org",
         "@type": "ItemList",
         "name": "NYC Speculation Radar",
@@ -1692,7 +1708,7 @@ def speculation_radar_page(db: Session = Depends(get_db)):
         "url": "https://pulsecities.com/radar",
         "numberOfItems": n,
         "itemListElement": list_items,
-    }, indent=2)
+    })
 
     page = f"""<!DOCTYPE html>
 <html lang="en">
@@ -1875,7 +1891,7 @@ def this_week_page(db: Session = Depends(get_db)):
         JOIN then_s ON then_s.zip_code = now_s.zip_code
         JOIN neighborhoods nb ON nb.zip_code = now_s.zip_code
         CROSS JOIN LATERAL (SELECT now_s.zip_code) n
-        WHERE ABS(now_s.s - then_s.s) >= 0.5
+        WHERE now_s.s - then_s.s >= 0.5
         ORDER BY (now_s.s - then_s.s) DESC
         LIMIT 5
     """), {"week_ago": week_ago}).fetchall()
@@ -1909,7 +1925,7 @@ def this_week_page(db: Session = Depends(get_db)):
             f'<a href="/neighborhood/{e(m.zip_code)}">'
             f'<div class="tw-main"><div class="tw-name">{e(m.zip_code)} '
             f'<span class="tw-sub">{e(m.name or "")}{", " + e(m.borough) if m.borough else ""}</span></div></div>'
-            f'<div class="tw-side"><span class="tw-delta" style="color:{color};">+{m.delta}</span>'
+            f'<div class="tw-side"><span class="tw-delta" style="color:{color};">{float(m.delta):+.1f}</span>'
             f'<span class="tw-score">now {m.score}</span></div>'
             f'</a></li>\n'
         )
