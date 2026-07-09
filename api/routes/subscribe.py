@@ -8,6 +8,7 @@ Citywide:  { email, is_citywide: true } — watches all of NYC.
 import logging
 import os
 import re
+from datetime import datetime, timezone
 
 import resend
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -15,7 +16,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, field_validator, model_validator
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -31,6 +32,7 @@ resend.api_key = os.getenv("RESEND_API_KEY", "")
 
 _EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 _ZIP_RE   = re.compile(r'^\d{5}$')
+_SLUG_RE  = re.compile(r'^[a-z0-9-]+$')
 
 _CONFIRMATION_HTML = """
 <!DOCTYPE html>
@@ -124,6 +126,53 @@ _CITYWIDE_CONFIRMATION_HTML = """
 </html>
 """.strip()
 
+_OPERATOR_CONFIRMATION_HTML = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>You're following {operator_name} on PulseCities</title>
+</head>
+<body style="margin:0;padding:0;background:#0f172a;font-family:'Inter',system-ui,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:48px 24px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
+          <tr>
+            <td style="padding-bottom:32px;">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#38bdf8;letter-spacing:-0.01em;">PulseCities</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#1e293b;border-radius:12px;padding:32px;border:1px solid rgba(148,163,184,0.1);">
+              <p style="margin:0 0 8px;font-size:20px;font-weight:600;color:#f1f5f9;">You're following {operator_name}.</p>
+              <p style="margin:0 0 24px;font-size:14px;color:#94a3b8;line-height:1.6;">
+                When <strong style="color:#cbd5e1;">{operator_name}</strong> records new property acquisitions
+                in NYC public records, you'll hear about it in the weekly digest. Quiet weeks send nothing.
+              </p>
+              <a href="https://pulsecities.com/operator/{operator_slug}"
+                 style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;text-decoration:none;">
+                View the operator profile
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top:24px;">
+              <p style="margin:0;font-size:11px;color:rgba(148,163,184,0.4);line-height:1.6;">
+                PulseCities tracks displacement pressure across all NYC neighborhoods using public records.<br>
+                You subscribed at pulsecities.com. To unsubscribe, reply with "unsubscribe".
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+""".strip()
+
 _UNSUBSCRIBE_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -174,6 +223,7 @@ class SubscribeRequest(BaseModel):
     email: str
     zip_code: str | None = None
     is_citywide: bool = False
+    operator_slug: str | None = None
 
     @field_validator('email')
     @classmethod
@@ -184,7 +234,15 @@ class SubscribeRequest(BaseModel):
         return v
 
     @model_validator(mode='after')
-    def validate_zip_or_citywide(self) -> 'SubscribeRequest':
+    def validate_single_target(self) -> 'SubscribeRequest':
+        """A subscription watches exactly one of: a ZIP, the city, an operator."""
+        if self.operator_slug is not None:
+            if self.is_citywide or self.zip_code:
+                raise ValueError('operator_slug cannot combine with zip_code or is_citywide')
+            self.operator_slug = self.operator_slug.strip().lower()
+            if not _SLUG_RE.match(self.operator_slug) or len(self.operator_slug) > 120:
+                raise ValueError('invalid operator_slug')
+            return self
         if self.is_citywide:
             self.zip_code = None
             return self
@@ -196,12 +254,28 @@ class SubscribeRequest(BaseModel):
         return self
 
 
-def _send_confirmation(email: str, zip_code: str | None, is_citywide: bool) -> None:
+def _send_confirmation(
+    email: str,
+    zip_code: str | None,
+    is_citywide: bool,
+    operator_slug: str | None = None,
+    operator_name: str | None = None,
+) -> None:
     if not resend.api_key:
         logger.warning("RESEND_API_KEY not set — skipping confirmation email")
         return
     try:
-        if is_citywide:
+        if operator_slug:
+            resend.Emails.send({
+                "from": "PulseCities <alerts@pulsecities.com>",
+                "to": [email],
+                "subject": f"You're following {operator_name} — PulseCities",
+                "html": _OPERATOR_CONFIRMATION_HTML
+                    .replace("{operator_name}", operator_name or operator_slug)
+                    .replace("{operator_slug}", operator_slug),
+            })
+            logger.info("Operator-follow confirmation sent to %s for %s", email, operator_slug)
+        elif is_citywide:
             resend.Emails.send({
                 "from": "PulseCities <alerts@pulsecities.com>",
                 "to": [email],
@@ -229,7 +303,29 @@ def subscribe(
     body: SubscribeRequest,
     db: Session = Depends(get_db),
 ):
-    if body.is_citywide:
+    operator_name = None
+    if body.operator_slug:
+        # Same classification gate as every other operator surface: only
+        # rows classed 'operator' are followable; lenders and GSEs 404.
+        op_row = db.execute(
+            text("SELECT display_name, operator_root, operator_class FROM operators WHERE slug = :slug"),
+            {"slug": body.operator_slug},
+        ).fetchone()
+        if op_row is None or op_row.operator_class != 'operator':
+            raise HTTPException(status_code=404, detail='Operator not found')
+        operator_name = op_row.display_name or op_row.operator_root
+
+        existing = db.execute(
+            select(Subscriber).where(
+                Subscriber.email == body.email,
+                Subscriber.operator_slug == body.operator_slug,
+            )
+        ).scalar_one_or_none()
+        if existing:
+            raise HTTPException(status_code=409, detail='Already following this operator.')
+        sub = Subscriber(email=body.email, zip_code=None, is_citywide=False,
+                         operator_slug=body.operator_slug)
+    elif body.is_citywide:
         existing = db.execute(
             select(Subscriber).where(
                 Subscriber.email == body.email,
@@ -251,17 +347,27 @@ def subscribe(
             raise HTTPException(status_code=409, detail='Already watching this area.')
         sub = Subscriber(email=body.email, zip_code=body.zip_code, is_citywide=False)
 
+    # Single opt-in: the welcome email promises a digest and there is no
+    # confirm-link flow, so rows must be born confirmed or the digest's
+    # confirmed=true filter silently drops every new subscriber.
+    sub.confirmed = True
+    sub.confirmed_at = datetime.now(timezone.utc)
+
     db.add(sub)
     try:
         db.commit()
     except IntegrityError:
         db.rollback()
+        if body.operator_slug:
+            raise HTTPException(status_code=409, detail='Already following this operator.')
         if body.is_citywide:
             raise HTTPException(status_code=409, detail='Already watching NYC-wide.')
         raise HTTPException(status_code=409, detail='Already watching this area.')
 
-    logger.info('New subscriber email=%s zip=%s citywide=%s', body.email, body.zip_code, body.is_citywide)
-    _send_confirmation(body.email, body.zip_code, body.is_citywide)
+    logger.info('New subscriber email=%s zip=%s citywide=%s operator=%s',
+                body.email, body.zip_code, body.is_citywide, body.operator_slug)
+    _send_confirmation(body.email, body.zip_code, body.is_citywide,
+                       operator_slug=body.operator_slug, operator_name=operator_name)
     return {'status': 'ok'}
 
 

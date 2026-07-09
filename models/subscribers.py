@@ -24,7 +24,12 @@ class Subscriber(TimestampMixin, Base):
     zip_code: Mapped[str | None] = mapped_column(String(5), nullable=True)
     is_citywide: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, server_default="false")
 
-    # False until user clicks confirmation link
+    # Operator follow: weekly alert when this cluster records new acquisitions.
+    # A row watches exactly one of: a ZIP, the city, or an operator.
+    operator_slug: Mapped[str | None] = mapped_column(String(120), nullable=True)
+
+    # Single opt-in: set True at creation. The digest sends only to
+    # confirmed rows, so an unconfirmed row never receives anything.
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Random token for one-click unsubscribe — required by CAN-SPAM
@@ -38,11 +43,13 @@ class Subscriber(TimestampMixin, Base):
 
     __table_args__ = (
         UniqueConstraint("email", "zip_code", name="uq_subscribers_email_zip"),
-        # Partial unique index for citywide — enforced in migration 6aa0c3e6ef29.
-        # Not declared here because SQLAlchemy can't express partial indexes inline.
+        # Partial unique indexes for citywide (migration 6aa0c3e6ef29) and
+        # operator follows (migration a9c4d2e7b8f1). Not declared here because
+        # SQLAlchemy can't express partial indexes inline.
         Index("idx_subscribers_email", "email"),
         Index("idx_subscribers_zip_code", "zip_code"),
         Index("idx_subscribers_confirmed", "confirmed"),
+        Index("idx_subscribers_operator_slug", "operator_slug"),
     )
 
     def __repr__(self) -> str:

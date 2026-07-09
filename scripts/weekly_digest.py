@@ -964,6 +964,163 @@ def render_citywide_digest(subscription: dict, summary: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Operator follows
+# ---------------------------------------------------------------------------
+
+def load_operator_follows(db) -> list[dict]:
+    """Return confirmed operator-follow subscribers."""
+    rows = db.execute(text("""
+        SELECT email, operator_slug, unsubscribe_token
+        FROM subscribers
+        WHERE confirmed = true AND operator_slug IS NOT NULL
+        ORDER BY operator_slug, email
+    """)).fetchall()
+    return [{"email": r[0], "operator_slug": r[1], "unsubscribe_token": r[2]} for r in rows]
+
+
+def build_operator_updates(db, slugs: set[str]) -> dict[str, dict]:
+    """New acquisitions per followed operator, keyed on ingest time.
+
+    created_at, not doc date: ACRIS publishes with a lag, so "new this
+    week" means "newly on the record", same as everywhere on the site.
+    Operators with nothing new are absent, which skips their send.
+    """
+    if not slugs:
+        return {}
+    rows = db.execute(text("""
+        SELECT o.slug, o.display_name, o.operator_root,
+               op.bbl, op.acquisition_date, op.acquisition_price,
+               p.address, p.zip_code
+        FROM operators o
+        JOIN operator_parcels op ON op.operator_id = o.id
+        LEFT JOIN parcels p ON p.bbl = op.bbl
+        WHERE o.slug = ANY(:slugs)
+          AND o.operator_class = 'operator'
+          AND op.created_at >= NOW() - INTERVAL '7 days'
+        ORDER BY o.slug, op.acquisition_date DESC NULLS LAST
+    """), {"slugs": list(slugs)}).fetchall()
+
+    updates: dict[str, dict] = {}
+    for r in rows:
+        u = updates.setdefault(r.slug, {
+            "slug":         r.slug,
+            "display_name": r.display_name or r.operator_root,
+            "acquisitions": [],
+        })
+        u["acquisitions"].append({
+            "address": (r.address or f"BBL {r.bbl}").title(),
+            "zip":     r.zip_code or "",
+            "date":    r.acquisition_date.isoformat() if r.acquisition_date else "",
+            "price":   float(r.acquisition_price) if r.acquisition_price else None,
+        })
+    return updates
+
+
+def render_operator_digest(subscription: dict, update: dict) -> dict:
+    """Subject and HTML for one operator-follow alert."""
+    token = subscription["unsubscribe_token"]
+    name  = update["display_name"]
+    slug  = update["slug"]
+    acqs  = update["acquisitions"]
+    n     = len(acqs)
+
+    rows_html = ""
+    for a in acqs[:15]:
+        price = f"${a['price']:,.0f}" if a["price"] else ""
+        place = f"{a['address']}" + (f" ({a['zip']})" if a["zip"] else "")
+        rows_html += (
+            f'<tr>'
+            f'<td style="padding:8px 0;font-size:13px;color:#cbd5e1;">{place}</td>'
+            f'<td style="padding:8px 0 8px 16px;font-family:\'JetBrains Mono\',monospace;'
+            f'font-size:12px;color:#94a3b8;text-align:right;white-space:nowrap;">{a["date"]}</td>'
+            f'<td style="padding:8px 0 8px 16px;font-family:\'JetBrains Mono\',monospace;'
+            f'font-size:12px;color:#f97316;text-align:right;white-space:nowrap;">{price}</td>'
+            f'</tr>'
+        )
+    more_html = ""
+    if n > 15:
+        more_html = (
+            f'<p style="margin:12px 0 0;font-size:12px;color:rgba(148,163,184,0.6);">'
+            f'And {n - 15} more on the profile page.</p>'
+        )
+
+    plural = "acquisitions" if n != 1 else "acquisition"
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulseCities: {name} update</title>
+</head>
+<body style="margin:0;padding:0;background:#0f172a;font-family:'Inter',system-ui,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:48px 24px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;">
+
+        <tr><td style="padding-bottom:28px;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:#38bdf8;">PulseCities</span>
+          <span style="font-size:12px;color:rgba(148,163,184,0.4);margin-left:10px;">Operator Watch</span>
+        </td></tr>
+
+        <tr><td style="padding-bottom:20px;">
+          <p style="margin:0;font-size:14px;color:#94a3b8;line-height:1.6;">
+            <strong style="color:#f1f5f9;">{name}</strong> recorded {n} new {plural} in NYC public records this week.
+          </p>
+        </td></tr>
+
+        <tr><td>
+          <table width="100%" cellpadding="0" cellspacing="0"
+                 style="background:#1e293b;border-radius:12px;padding:28px;border:1px solid rgba(148,163,184,0.1);">
+
+            <tr><td style="padding-bottom:20px;border-bottom:1px solid rgba(148,163,184,0.08);">
+              <div style="font-size:10px;font-weight:600;color:rgba(148,163,184,0.5);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Newly Recorded Acquisitions</div>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                {rows_html}
+              </table>
+              {more_html}
+            </td></tr>
+
+            <tr><td style="padding-top:24px;">
+              <a href="https://pulsecities.com/operator/{slug}"
+                 style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:11px 22px;border-radius:6px;text-decoration:none;margin-right:12px;">
+                View the full profile
+              </a>
+              <a href="https://pulsecities.com/brief/operator/{slug}"
+                 style="display:inline-block;font-size:12px;color:#94a3b8;text-decoration:underline;vertical-align:middle;">
+                Evidence brief
+              </a>
+            </td></tr>
+
+          </table>
+        </td></tr>
+
+        <tr><td style="padding-top:24px;">
+          <p style="margin:0 0 10px;font-size:11px;color:rgba(148,163,184,0.5);line-height:1.7;border-top:1px solid rgba(148,163,184,0.08);padding-top:16px;">
+            <strong style="color:rgba(148,163,184,0.6);">Why you're getting this:</strong>
+            You follow {name} on PulseCities. Quiet weeks send nothing.
+          </p>
+          <p style="margin:0 0 8px;font-size:11px;color:rgba(148,163,184,0.35);line-height:1.7;">
+            PulseCities uses public records. Grouping reflects LLC naming patterns, not claims of wrongdoing.
+          </p>
+          <p style="margin:0;font-size:11px;color:rgba(148,163,184,0.35);line-height:1.7;">
+            <a href="https://pulsecities.com/api/unsubscribe?token={token}"
+               style="color:rgba(148,163,184,0.5);">Unsubscribe</a>
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+    return {
+        "subject": f"{name} recorded {n} new {plural} this week",
+        "html":    html,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Orchestration
 # ---------------------------------------------------------------------------
 
@@ -981,9 +1138,10 @@ def run(dry_run: bool = False, limit: int | None = None, email_filter: str | Non
         if limit is not None:
             subscriptions = subscriptions[:limit]
 
+        # No early return here: citywide and operator sends below must still
+        # run when there are zero ZIP subscribers.
         if not subscriptions:
-            logger.info("No active subscriptions. Nothing to send.")
-            return
+            logger.info("No active ZIP subscriptions.")
 
         logger.info(
             "Digest run: %d confirmed subscriber(s)%s%s",
@@ -1056,6 +1214,33 @@ def run(dry_run: bool = False, limit: int | None = None, email_filter: str | Non
                     else:
                         c_failed += 1
                 logger.info("Citywide digest complete. sent=%d failed=%d", c_sent, c_failed)
+
+        # --- Operator follows ---
+        follows = load_operator_follows(db)
+        if email_filter:
+            follows = [s for s in follows if s["email"] == email_filter]
+        if limit is not None:
+            remaining = max(0, limit - len(subscriptions) - len(citywide_subs))
+            follows = follows[:remaining]
+
+        if follows:
+            updates = build_operator_updates(db, {s["operator_slug"] for s in follows})
+            o_sent = o_skipped = o_failed = 0
+            for sub in follows:
+                update = updates.get(sub["operator_slug"])
+                if not update:
+                    logger.info("SKIP operator %s (%s): nothing newly recorded",
+                                sub["operator_slug"], sub["email"])
+                    o_skipped += 1
+                    continue
+                rendered = render_operator_digest(sub, update)
+                if send_digest_email(sub, rendered, dry_run=dry_run):
+                    logger.info("SENT operator %s -> %s", sub["operator_slug"], sub["email"])
+                    o_sent += 1
+                else:
+                    o_failed += 1
+            logger.info("Operator digest complete. sent=%d skipped=%d failed=%d",
+                        o_sent, o_skipped, o_failed)
     finally:
         db.close()
 
