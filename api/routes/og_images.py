@@ -268,6 +268,89 @@ def _render_operator(
     return buf.getvalue()
 
 
+# --- Digest sparkline -------------------------------------------------------
+# The weekly email is set on paper, so the trace is drawn on the email's paper
+# tokens rather than the site-dark OG palette above.
+
+_SPARK_PAPER = (251, 250, 247)
+_SPARK_RULE  = (217, 212, 201)
+_SPARK_PULSE = (228, 89, 15)
+
+
+def _render_spark(scores: list[float]) -> bytes:
+    """90-day score trace, 1120x160 (rendered 2x for a 560x80 slot)."""
+    W, H = 1120, 160
+    PAD_X, PAD_Y = 10, 16
+    img  = Image.new("RGB", (W, H), _SPARK_PAPER)
+    draw = ImageDraw.Draw(img)
+
+    if not scores:
+        scores = [50.0, 50.0]
+    if len(scores) == 1:
+        scores = scores * 2
+
+    lo, hi = min(scores), max(scores)
+    if hi - lo < 1.0:
+        # A flat run still deserves a visible line, not a degenerate scale.
+        mid = (hi + lo) / 2
+        lo, hi = mid - 1.0, mid + 1.0
+
+    n = len(scores)
+    pts = [
+        (
+            PAD_X + (W - 2 * PAD_X) * i / (n - 1),
+            PAD_Y + (H - 2 * PAD_Y) * (1 - (s - lo) / (hi - lo)),
+        )
+        for i, s in enumerate(scores)
+    ]
+
+    draw.line([(0, H - 1), (W, H - 1)], fill=_SPARK_RULE, width=2)
+    draw.line(pts, fill=_SPARK_PULSE, width=5, joint="curve")
+    ex, ey = pts[-1]
+    r = 9
+    draw.ellipse([ex - r, ey - r, ex + r, ey + r], fill=_SPARK_PULSE)
+
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    return buf.getvalue()
+
+
+@router.get("/og/spark/{zip_code}.png", include_in_schema=False)
+def spark_image(zip_code: str, db: Session = Depends(get_db)):
+    """Personal 90-day pulse trace for the weekly email. Never 404s: a ZIP
+    without history gets a flat placeholder so no client renders a broken box."""
+    if not (len(zip_code) == 5 and zip_code.isdigit()):
+        png = _render_spark([])
+        return Response(content=png, media_type="image/png",
+                        headers={"Cache-Control": "public, max-age=86400"})
+
+    today      = date.today()
+    cache_key  = f"spark-{zip_code}_{today.strftime('%Y%m%d')}"
+    cache_path = _CACHE_DIR / f"{cache_key}.png"
+
+    if cache_path.exists():
+        return Response(content=cache_path.read_bytes(), media_type="image/png",
+                        headers={"Cache-Control": "public, max-age=3600"})
+
+    rows = db.execute(text("""
+        SELECT scored_at::date AS d, AVG(composite_score) AS s
+        FROM score_history
+        WHERE zip_code = :zip
+          AND scored_at >= CURRENT_DATE - INTERVAL '90 days'
+        GROUP BY scored_at::date
+        ORDER BY d
+    """), {"zip": zip_code}).fetchall()
+
+    scores = [float(r.s) for r in rows if r.s is not None]
+    png = _render_spark(scores)
+
+    cache_path.write_bytes(png)
+    _clean_old_cache(f"spark-{zip_code}", cache_key)
+
+    return Response(content=png, media_type="image/png",
+                    headers={"Cache-Control": "public, max-age=3600"})
+
+
 @router.get("/og/operator/{slug}.png", include_in_schema=False)
 def operator_og_image(slug: str, db: Session = Depends(get_db)):
     if not re.match(r"^[a-z0-9-]+$", slug):
