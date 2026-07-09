@@ -759,12 +759,18 @@ def send_digest_email(subscription: dict, rendered: dict, dry_run: bool = False)
         logger.info("[DRY RUN] Would send '%s' to %s", rendered["subject"], subscription["email"])
         return True
     try:
-        resend.Emails.send({
+        payload = {
             "from":    "PulseCities <alerts@pulsecities.com>",
             "to":      [subscription["email"]],
             "subject": rendered["subject"],
             "html":    rendered["html"],
-        })
+        }
+        token = subscription.get("unsubscribe_token")
+        if token:
+            payload["headers"] = {
+                "List-Unsubscribe": f"<https://pulsecities.com/api/unsubscribe?token={token}>",
+            }
+        resend.Emails.send(payload)
         return True
     except Exception:
         logger.exception("Resend failed for %s", subscription["email"])
