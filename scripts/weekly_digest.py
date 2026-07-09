@@ -20,7 +20,7 @@ from sqlalchemy import text
 from config.logging_config import configure_logging
 from config.schedule import DIGEST_SEND_DAY
 from models.database import SessionLocal  # imports load_dotenv() as a side effect
-from scripts.digest_narrative import generate_narrative
+from scripts.digest_narrative import generate_narrative, generate_citywide_narrative
 
 # The API process sets this in api/routes/subscribe.py; this script runs
 # standalone from cron and must set it itself or every send aborts.
@@ -145,10 +145,14 @@ def build_weekly_zip_summaries(db, zip_codes: set[str]) -> dict[str, dict]:
     ), {"zips": zips}).fetchall())
 
     # -- Current-week event counts (batch, one query per signal) -------------
+    # Windows key on created_at (ingest time), not event dates: the city feeds
+    # publish with a lag, so "this week" by event date always undercounts and
+    # would read as a fake quiet week. "This week" means newly on the record,
+    # the same convention the operator digest uses.
     hpd_counts = dict(db.execute(text("""
         SELECT zip_code, COUNT(*) FROM violations_raw
         WHERE zip_code = ANY(:zips)
-          AND inspection_date >= :cutoff
+          AND created_at >= :cutoff
           AND violation_class IN ('B', 'C')
         GROUP BY zip_code
     """), {"zips": zips, "cutoff": week_ago}).fetchall())
@@ -156,7 +160,7 @@ def build_weekly_zip_summaries(db, zip_codes: set[str]) -> dict[str, dict]:
     eviction_counts = dict(db.execute(text("""
         SELECT zip_code, COUNT(*) FROM evictions_raw
         WHERE zip_code = ANY(:zips)
-          AND executed_date >= :cutoff
+          AND created_at >= :cutoff
           AND eviction_type ILIKE 'R%'
         GROUP BY zip_code
     """), {"zips": zips, "cutoff": week_ago}).fetchall())
@@ -165,7 +169,7 @@ def build_weekly_zip_summaries(db, zip_codes: set[str]) -> dict[str, dict]:
         SELECT p.zip_code, COUNT(*) FROM permits_raw pr
         JOIN parcels p ON pr.bbl = p.bbl
         WHERE p.zip_code = ANY(:zips)
-          AND pr.filing_date >= :cutoff
+          AND pr.created_at >= :cutoff
           AND pr.permit_type = 'AL'
           AND p.units_res >= 3
         GROUP BY p.zip_code
@@ -175,7 +179,7 @@ def build_weekly_zip_summaries(db, zip_codes: set[str]) -> dict[str, dict]:
         SELECT p.zip_code, COUNT(DISTINCT o.bbl) FROM ownership_raw o
         JOIN parcels p ON o.bbl = p.bbl
         WHERE p.zip_code = ANY(:zips)
-          AND o.doc_date >= :cutoff
+          AND o.created_at >= :cutoff
           AND o.party_type = '2'
           AND o.doc_type IN ('DEED','DEEDP','ASST')
           AND o.party_name_normalized LIKE '%LLC%'
@@ -188,7 +192,7 @@ def build_weekly_zip_summaries(db, zip_codes: set[str]) -> dict[str, dict]:
     complaint_counts = dict(db.execute(text("""
         SELECT zip_code, COUNT(*) FROM complaints_raw
         WHERE zip_code = ANY(:zips)
-          AND created_date >= :cutoff
+          AND created_at >= :cutoff
           AND (
               complaint_type ILIKE '%HEAT%'
            OR complaint_type ILIKE '%PLUMBING%'
@@ -210,11 +214,11 @@ def build_weekly_zip_summaries(db, zip_codes: set[str]) -> dict[str, dict]:
         hpd_baselines = dict(db.execute(text("""
             SELECT zip_code, AVG(weekly_cnt) FROM (
                 SELECT zip_code,
-                       date_trunc('week', inspection_date) AS wk,
+                       date_trunc('week', created_at) AS wk,
                        COUNT(*) AS weekly_cnt
                 FROM violations_raw
                 WHERE zip_code = ANY(:zips)
-                  AND inspection_date >= :start AND inspection_date < :end
+                  AND created_at >= :start AND created_at < :end
                   AND violation_class IN ('B', 'C')
                 GROUP BY zip_code, wk
             ) sub GROUP BY zip_code
@@ -223,11 +227,11 @@ def build_weekly_zip_summaries(db, zip_codes: set[str]) -> dict[str, dict]:
         eviction_baselines = dict(db.execute(text("""
             SELECT zip_code, AVG(weekly_cnt) FROM (
                 SELECT zip_code,
-                       date_trunc('week', executed_date) AS wk,
+                       date_trunc('week', created_at) AS wk,
                        COUNT(*) AS weekly_cnt
                 FROM evictions_raw
                 WHERE zip_code = ANY(:zips)
-                  AND executed_date >= :start AND executed_date < :end
+                  AND created_at >= :start AND created_at < :end
                   AND eviction_type ILIKE 'R%'
                 GROUP BY zip_code, wk
             ) sub GROUP BY zip_code
@@ -236,11 +240,11 @@ def build_weekly_zip_summaries(db, zip_codes: set[str]) -> dict[str, dict]:
         permit_baselines = dict(db.execute(text("""
             SELECT zip_code, AVG(weekly_cnt) FROM (
                 SELECT p.zip_code,
-                       date_trunc('week', pr.filing_date) AS wk,
+                       date_trunc('week', pr.created_at) AS wk,
                        COUNT(*) AS weekly_cnt
                 FROM permits_raw pr JOIN parcels p ON pr.bbl = p.bbl
                 WHERE p.zip_code = ANY(:zips)
-                  AND pr.filing_date >= :start AND pr.filing_date < :end
+                  AND pr.created_at >= :start AND pr.created_at < :end
                   AND pr.permit_type = 'AL' AND p.units_res >= 3
                 GROUP BY p.zip_code, wk
             ) sub GROUP BY zip_code
@@ -249,11 +253,11 @@ def build_weekly_zip_summaries(db, zip_codes: set[str]) -> dict[str, dict]:
         complaint_baselines = dict(db.execute(text("""
             SELECT zip_code, AVG(weekly_cnt) FROM (
                 SELECT zip_code,
-                       date_trunc('week', created_date) AS wk,
+                       date_trunc('week', created_at) AS wk,
                        COUNT(*) AS weekly_cnt
                 FROM complaints_raw
                 WHERE zip_code = ANY(:zips)
-                  AND created_date >= :start AND created_date < :end
+                  AND created_at >= :start AND created_at < :end
                   AND (
                       complaint_type ILIKE '%HEAT%'
                    OR complaint_type ILIKE '%PLUMBING%'
@@ -328,7 +332,9 @@ def build_weekly_zip_summaries(db, zip_codes: set[str]) -> dict[str, dict]:
 
 
 def _fetch_event_detail(db, zip_code: str) -> dict:
-    """Address-level event rows for the email body — only called for ZIPs that pass threshold."""
+    """Address-level event rows for the email body — only called for ZIPs that
+    pass threshold. Windows key on created_at (newly on the record this week);
+    displayed dates remain the event dates from the records themselves."""
     cutoff = date.today() - timedelta(days=7)
 
     llc_rows = db.execute(text("""
@@ -338,7 +344,7 @@ def _fetch_event_detail(db, zip_code: str) -> dict:
         JOIN parcels par ON o.bbl = par.bbl
         JOIN parcels p   ON o.bbl = p.bbl
         WHERE p.zip_code = :zip
-          AND o.doc_date >= :cutoff
+          AND o.created_at >= :cutoff
           AND o.party_type = '2'
           AND o.doc_type IN ('DEED','DEEDP','ASST')
           AND o.party_name_normalized LIKE '%LLC%'
@@ -352,7 +358,7 @@ def _fetch_event_detail(db, zip_code: str) -> dict:
     eviction_rows = db.execute(text("""
         SELECT address, executed_date FROM evictions_raw
         WHERE zip_code = :zip
-          AND executed_date >= :cutoff
+          AND created_at >= :cutoff
           AND eviction_type ILIKE 'R%'
         ORDER BY executed_date DESC
         LIMIT 5
@@ -363,7 +369,7 @@ def _fetch_event_detail(db, zip_code: str) -> dict:
         FROM permits_raw pr
         JOIN parcels p ON pr.bbl = p.bbl
         WHERE p.zip_code = :zip
-          AND pr.filing_date >= :cutoff
+          AND pr.created_at >= :cutoff
           AND pr.permit_type = 'AL'
           AND p.units_res >= 3
         ORDER BY pr.filing_date DESC
@@ -374,7 +380,7 @@ def _fetch_event_detail(db, zip_code: str) -> dict:
         SELECT address, inspection_date, violation_class, description
         FROM violations_raw
         WHERE zip_code = :zip
-          AND inspection_date >= :cutoff
+          AND created_at >= :cutoff
           AND violation_class IN ('B', 'C')
         ORDER BY inspection_date DESC
         LIMIT 5
@@ -605,7 +611,7 @@ def _events_section_html(event_detail: dict) -> str:
         + _field_label("The Record")
         + '<table width="100%" cellpadding="0" cellspacing="0">' + sections + '</table>'
         + f'<p style="margin:4px 0 0;font-family:{_MONO};font-size:10px;color:{_FAINT};">'
-        + 'Up to five most recent entries per category, past 7 days.</p>'
+        + 'Up to five entries per category, newly on record this week. Dates shown are from the records themselves.</p>'
         + '</td></tr>'
     )
 
@@ -853,7 +859,7 @@ def is_meaningful_citywide_update(db) -> tuple[bool, list[str]]:
             SELECT COUNT(DISTINCT o.bbl)
             FROM ownership_raw o
             JOIN parcels p ON o.bbl = p.bbl
-            WHERE o.doc_date >= :cutoff
+            WHERE o.created_at >= :cutoff
               AND o.party_type = '2'
               AND o.doc_type IN ('DEED','DEEDP','ASST')
               AND o.party_name_normalized LIKE '%LLC%'
@@ -864,7 +870,7 @@ def is_meaningful_citywide_update(db) -> tuple[bool, list[str]]:
 
         eviction_count = db.execute(text("""
             SELECT COUNT(*) FROM evictions_raw
-            WHERE executed_date >= :cutoff AND eviction_type ILIKE 'R%'
+            WHERE created_at >= :cutoff AND eviction_type ILIKE 'R%'
         """), {"cutoff": week_ago}).scalar() or 0
 
         total_events = int(llc_count) + int(eviction_count)
@@ -884,11 +890,47 @@ def is_meaningful_citywide_update(db) -> tuple[bool, list[str]]:
 # ---------------------------------------------------------------------------
 
 def build_citywide_summary(db) -> dict:
-    """Top-risk ZIPs and citywide signal snapshot for the citywide digest."""
+    """The city's week: movers, counts vs baselines, fresh buying clusters,
+    and the standings, for the citywide digest."""
+    today          = date.today()
+    week_ago       = today - timedelta(days=7)
+    baseline_start = today - timedelta(days=64)
+
+    # 7-day score deltas per ZIP — the movement layer under both the movers
+    # section and the standings.
+    delta_rows = db.execute(text("""
+        SELECT cur.zip_code, n.name,
+               cur.composite_score  AS score_now,
+               prev.composite_score AS score_prev
+        FROM score_history cur
+        JOIN score_history prev ON prev.zip_code = cur.zip_code
+        LEFT JOIN neighborhoods n ON n.zip_code = cur.zip_code
+        WHERE cur.scored_at = (SELECT MAX(scored_at) FROM score_history)
+          AND prev.scored_at = (
+              SELECT MAX(scored_at) FROM score_history s
+              WHERE s.zip_code = cur.zip_code
+                AND s.scored_at <= (SELECT MAX(scored_at) FROM score_history) - INTERVAL '6 days'
+          )
+    """)).fetchall()
+
+    deltas: dict[str, float] = {}
+    movers = []
+    for r in delta_rows:
+        if r.score_now is None or r.score_prev is None:
+            continue
+        delta = round(float(r.score_now) - float(r.score_prev), 1)
+        deltas[r.zip_code] = delta
+        movers.append({
+            "zip":   r.zip_code,
+            "name":  (r.name if r.name and r.name != r.zip_code else r.zip_code),
+            "score": round(float(r.score_now), 1),
+            "delta": delta,
+        })
+    movers = sorted((m for m in movers if abs(m["delta"]) >= 1.0),
+                    key=lambda m: -abs(m["delta"]))[:5]
+
     top_rows = db.execute(text("""
-        SELECT ds.zip_code, n.name, ds.score,
-               ds.permit_intensity, ds.eviction_rate,
-               ds.llc_acquisition_rate, ds.complaint_rate
+        SELECT ds.zip_code, n.name, ds.score
         FROM displacement_scores ds
         LEFT JOIN neighborhoods n ON ds.zip_code = n.zip_code
         WHERE ds.score IS NOT NULL
@@ -901,6 +943,7 @@ def build_citywide_summary(db) -> dict:
             "zip":   r[0],
             "name":  (r[1] if r[1] and r[1] != r[0] else r[0]),
             "score": float(r[2]),
+            "delta": deltas.get(r[0], 0.0),
         }
         for r in top_rows
     ]
@@ -909,30 +952,185 @@ def build_citywide_summary(db) -> dict:
         "SELECT AVG(score), MAX(score), COUNT(*) FROM displacement_scores WHERE score IS NOT NULL"
     )).fetchone()
 
+    # This week's citywide counts against the 8-week average week. Same signal
+    # definitions as the per-ZIP queries in build_weekly_zip_summaries.
+    week_row = db.execute(text("""
+        SELECT
+            (SELECT COUNT(*) FROM evictions_raw
+             WHERE created_at >= :week_ago AND eviction_type ILIKE 'R%')                          AS ev,
+            (SELECT COALESCE(AVG(c), 0) FROM (
+                SELECT COUNT(*) AS c FROM evictions_raw
+                WHERE created_at >= :baseline_start AND created_at < :week_ago
+                  AND eviction_type ILIKE 'R%'
+                GROUP BY date_trunc('week', created_at)) s)                                       AS ev_avg,
+            (SELECT COUNT(DISTINCT o.bbl) FROM ownership_raw o
+             WHERE o.created_at >= :week_ago AND o.party_type = '2'
+               AND o.doc_type IN ('DEED','DEEDP','ASST')
+               AND o.party_name_normalized LIKE '%LLC%'
+               AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
+               AND o.party_name_normalized NOT ILIKE '%LENDING%'
+               AND o.party_name_normalized NOT ILIKE '%FINANCIAL %')                              AS llc,
+            (SELECT COALESCE(AVG(c), 0) FROM (
+                SELECT COUNT(DISTINCT o.bbl) AS c FROM ownership_raw o
+                WHERE o.created_at >= :baseline_start AND o.created_at < :week_ago
+                  AND o.party_type = '2' AND o.doc_type IN ('DEED','DEEDP','ASST')
+                  AND o.party_name_normalized LIKE '%LLC%'
+                  AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
+                  AND o.party_name_normalized NOT ILIKE '%LENDING%'
+                  AND o.party_name_normalized NOT ILIKE '%FINANCIAL %'
+                GROUP BY date_trunc('week', o.created_at)) s)                                      AS llc_avg,
+            (SELECT COUNT(*) FROM permits_raw pr JOIN parcels p ON pr.bbl = p.bbl
+             WHERE pr.created_at >= :week_ago AND pr.permit_type = 'AL' AND p.units_res >= 3)     AS pm,
+            (SELECT COALESCE(AVG(c), 0) FROM (
+                SELECT COUNT(*) AS c FROM permits_raw pr JOIN parcels p ON pr.bbl = p.bbl
+                WHERE pr.created_at >= :baseline_start AND pr.created_at < :week_ago
+                  AND pr.permit_type = 'AL' AND p.units_res >= 3
+                GROUP BY date_trunc('week', pr.created_at)) s)                                    AS pm_avg,
+            (SELECT COUNT(*) FROM violations_raw
+             WHERE created_at >= :week_ago AND violation_class IN ('B','C'))                      AS hpd,
+            (SELECT COALESCE(AVG(c), 0) FROM (
+                SELECT COUNT(*) AS c FROM violations_raw
+                WHERE created_at >= :baseline_start AND created_at < :week_ago
+                  AND violation_class IN ('B','C')
+                GROUP BY date_trunc('week', created_at)) s)                                       AS hpd_avg
+    """), {"week_ago": week_ago, "baseline_start": baseline_start}).fetchone()
+
+    week = {
+        "evictions":      int(week_row.ev or 0),
+        "evictions_avg":  float(week_row.ev_avg or 0),
+        "llc":            int(week_row.llc or 0),
+        "llc_avg":        float(week_row.llc_avg or 0),
+        "permits":        int(week_row.pm or 0),
+        "permits_avg":    float(week_row.pm_avg or 0),
+        "violations":     int(week_row.hpd or 0),
+        "violations_avg": float(week_row.hpd_avg or 0),
+    }
+
+    # Speculation Radar clusters whose most recent deed landed this week —
+    # concentrated buying is citywide news, and the radar already computes it.
+    try:
+        from api.routes.radar import query_radar
+        week_ago_iso = week_ago.isoformat()
+        clusters = [
+            c for c in query_radar(db)
+            if c["last_deed"] and c["last_deed"] >= week_ago_iso
+        ][:3]
+    except Exception:
+        logger.warning("Radar clusters unavailable for citywide digest", exc_info=True)
+        clusters = []
+
     return {
         "top_zips":  top_zips,
+        "movers":    movers,
+        "week":      week,
+        "clusters":  clusters,
         "avg_score": round(float(avg_row[0] or 0), 1),
         "max_score": round(float(avg_row[1] or 0), 1),
         "zip_count": int(avg_row[2] or 0),
     }
 
 
-def render_citywide_digest(subscription: dict, summary: dict) -> dict:
-    """Subject and HTML for a citywide subscriber."""
-    token    = subscription["unsubscribe_token"]
-    top_zips = summary["top_zips"]
-    max_score = summary["max_score"]
-    risk_label, risk_color = _display_risk(max_score)
+def _money(v) -> str:
+    if not v:
+        return ""
+    v = float(v)
+    if v >= 1_000_000:
+        return f"${v / 1_000_000:.1f}M".replace(".0M", "M")
+    if v >= 1_000:
+        return f"${round(v / 1_000)}K"
+    return f"${int(v)}"
 
-    rows_html = ""
-    for z in top_zips:
-        color = _score_color(z["score"])
-        label = f"{z['name']} / {z['zip']}" if z["name"] != z["zip"] else z["zip"]
-        rows_html += (
+
+def render_citywide_digest(subscription: dict, summary: dict, narrative: str | None = None) -> dict:
+    """Subject and HTML for a citywide subscriber — the city's week on paper."""
+    token     = subscription["unsubscribe_token"]
+    week      = summary.get("week") or {}
+    movers    = summary.get("movers") or []
+    clusters  = summary.get("clusters") or []
+    avg_score = summary["avg_score"]
+    filed     = date.today().strftime("%b %-d, %Y")
+    issue_no  = date.today().isocalendar()[1]
+
+    narrative_html = ""
+    if narrative:
+        narrative_html = f"""
+            <tr><td style="padding:22px 0;border-top:1px solid {_RULE};">
+              {_field_label("The Week, In Plain English")}
+              <p style="margin:0;font-family:{_SERIF};font-size:15px;color:{_INK};line-height:1.75;">{_html_escape(narrative)}</p>
+              <p style="margin:10px 0 0;font-family:{_MONO};font-size:10px;color:{_FAINT};">Written by AI from this week's exact counts. The numbers below are the record.</p>
+            </td></tr>"""
+
+    if movers:
+        mover_rows = ""
+        for m in movers:
+            label = f"{m['name']} / {m['zip']}" if m["name"] != m["zip"] else m["zip"]
+            mover_rows += (
+                f'<tr>'
+                f'<td style="padding:6px 8px 0 0;font-family:{_MONO};font-size:12px;color:{_BODY};white-space:nowrap;">{label}</td>'
+                f'<td width="100%" style="border-bottom:1px dotted #B9B2A4;"></td>'
+                f'<td style="padding:6px 0 0 10px;font-family:{_MONO};font-size:12px;font-weight:700;color:{_delta_ink(m["delta"])};white-space:nowrap;">{m["delta"]:+.1f}</td>'
+                f'<td style="padding:6px 0 0 10px;font-family:{_MONO};font-size:11px;color:{_MUTED};white-space:nowrap;">now {m["score"]:.1f}</td>'
+                f'</tr>'
+            )
+        movers_html = f'<table width="100%" cellpadding="0" cellspacing="0">{mover_rows}</table>'
+    else:
+        movers_html = (
+            f'<p style="margin:0;font-family:{_SERIF};font-size:13px;color:{_FAINT};'
+            f'font-style:italic;">No neighborhood moved by more than a point this week.</p>'
+        )
+
+    number_rows = ""
+    for label, val, avg in (
+        ("Eviction records added",      week.get("evictions"),  week.get("evictions_avg")),
+        ("LLC acquisitions recorded",   week.get("llc"),        week.get("llc_avg")),
+        ("Permit filings, 3+ units",    week.get("permits"),    week.get("permits_avg")),
+        ("B/C violations recorded",     week.get("violations"), week.get("violations_avg")),
+    ):
+        if val is None:
+            continue
+        number_rows += (
             f'<tr>'
-            f'<td style="padding:8px 0;font-size:13px;color:#cbd5e1;">{label}</td>'
-            f'<td style="padding:8px 0 8px 16px;font-family:\'JetBrains Mono\',monospace;'
-            f'font-size:13px;color:{color};text-align:right;">{z["score"]:.1f}</td>'
+            f'<td style="padding:6px 8px 0 0;font-family:{_MONO};font-size:12px;color:{_BODY};white-space:nowrap;">{label}</td>'
+            f'<td width="100%" style="border-bottom:1px dotted #B9B2A4;"></td>'
+            f'<td style="padding:6px 0 0 10px;font-family:{_MONO};font-size:12px;font-weight:700;color:{_INK};white-space:nowrap;">{val:,}</td>'
+            f'<td style="padding:6px 0 0 10px;font-family:{_MONO};font-size:11px;color:{_MUTED};white-space:nowrap;">typical {(avg or 0):,.0f}</td>'
+            f'</tr>'
+        )
+    numbers_html = f'<table width="100%" cellpadding="0" cellspacing="0">{number_rows}</table>'
+
+    clusters_html = ""
+    if clusters:
+        entries = ""
+        for c in clusters:
+            where = c.get("neighborhood") or c.get("zip_code")
+            amount = _money(c.get("total_amount"))
+            detail = f"{c['building_count']} buildings &middot; {where}"
+            if amount:
+                detail += f" &middot; {amount}"
+            entries += (
+                f'<tr><td style="padding-bottom:10px;">'
+                f'<div style="font-family:{_MONO};font-size:12px;color:{_INK};">{_html_escape(str(c["buyer"]))}</div>'
+                f'<div style="font-family:{_MONO};font-size:11px;color:{_MUTED};margin-top:2px;">{detail}</div>'
+                f'</td></tr>'
+            )
+        clusters_html = f"""
+            <tr><td style="padding:22px 0;border-top:1px solid {_RULE};">
+              {_field_label("Concentrated Buying")}
+              <table width="100%" cellpadding="0" cellspacing="0">{entries}</table>
+              <p style="margin:4px 0 0;font-family:{_MONO};font-size:10px;color:{_FAINT};">One buyer, 3 or more buildings, one ZIP, with deed activity this week. <a href="https://pulsecities.com/radar" style="color:{_FAINT};">Full radar &rarr;</a></p>
+            </td></tr>"""
+
+    standings_rows = ""
+    for z in summary["top_zips"]:
+        label = f"{z['name']} / {z['zip']}" if z["name"] != z["zip"] else z["zip"]
+        delta = z.get("delta") or 0.0
+        delta_txt = f"{delta:+.1f}" if abs(delta) >= 0.1 else "flat"
+        standings_rows += (
+            f'<tr>'
+            f'<td style="padding:6px 8px 0 0;font-family:{_MONO};font-size:12px;color:{_BODY};white-space:nowrap;">{label}</td>'
+            f'<td width="100%" style="border-bottom:1px dotted #B9B2A4;"></td>'
+            f'<td style="padding:6px 0 0 10px;font-family:{_MONO};font-size:12px;font-weight:700;color:{_tier_ink(z["score"])};white-space:nowrap;">{z["score"]:.1f}</td>'
+            f'<td style="padding:6px 0 0 10px;font-family:{_MONO};font-size:11px;color:{_MUTED};white-space:nowrap;">{delta_txt}</td>'
             f'</tr>'
         )
 
@@ -943,40 +1141,66 @@ def render_citywide_digest(subscription: dict, summary: dict) -> dict:
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PulseCities Weekly Watch: NYC</title>
 </head>
-<body style="margin:0;padding:0;background:#0f172a;font-family:'Inter',system-ui,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:48px 24px;">
+<body style="margin:0;padding:0;background:#EFEBE2;">
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">The city's week in the public record: what moved, this week's counts, and who's buying in bulk.</div>
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#EFEBE2;padding:36px 16px;">
     <tr><td align="center">
-      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
 
-        <tr><td style="padding-bottom:28px;">
-          <span style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:#38bdf8;">PulseCities</span>
-          <span style="font-size:12px;color:rgba(148,163,184,0.4);margin-left:10px;">Weekly Watch</span>
-        </td></tr>
+        <tr><td style="background:#FBFAF7;border:1px solid {_RULE};padding:30px 28px 26px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
 
-        <tr><td style="padding-bottom:20px;">
-          <p style="margin:0;font-size:14px;color:#94a3b8;line-height:1.6;">
-            NYC displacement overview for this week.
-          </p>
-        </td></tr>
-
-        <tr><td>
-          <table width="100%" cellpadding="0" cellspacing="0"
-                 style="background:#1e293b;border-radius:12px;padding:28px;border:1px solid rgba(148,163,184,0.1);">
-
-            <tr><td style="padding-bottom:20px;border-bottom:1px solid rgba(148,163,184,0.08);">
-              <div style="font-size:10px;font-weight:600;color:rgba(148,163,184,0.5);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Highest Risk This Week</div>
-              <table width="100%" cellpadding="0" cellspacing="0">
-                {rows_html}
-              </table>
+            <tr><td style="padding-bottom:10px;border-bottom:2px solid {_INK};">
+              <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                <td style="font-family:{_MONO};font-size:14px;font-weight:700;color:{_INK};letter-spacing:0.2em;">PULSECITIES</td>
+                <td align="right" style="font-family:{_MONO};font-size:10px;color:{_MUTED};letter-spacing:0.14em;">WEEKLY WATCH &middot; NO. {issue_no}</td>
+              </tr></table>
             </td></tr>
 
-            <tr><td style="padding-top:24px;">
-              <a href="https://pulsecities.com"
-                 style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:11px 22px;border-radius:6px;text-decoration:none;margin-right:12px;">
-                Explore the map
+            <tr><td style="padding:10px 0 22px;">
+              <span style="font-family:{_MONO};font-size:10px;color:{_FAINT};letter-spacing:0.14em;text-transform:uppercase;">Filed {filed} &middot; Citywide &middot; NYC public records</span>
+            </td></tr>
+
+            <tr><td style="padding-bottom:18px;">
+              <div style="font-family:{_SERIF};font-size:27px;color:{_INK};line-height:1.15;">New York City</div>
+            </td></tr>
+
+            <tr><td style="padding:0 0 22px;">
+              {_field_label("City pressure")}
+              <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                <td style="font-family:{_MONO};font-size:42px;font-weight:700;color:{_tier_ink(avg_score)};letter-spacing:-0.02em;line-height:1;white-space:nowrap;">{avg_score:.1f}</td>
+                <td width="100%" style="padding-left:14px;vertical-align:bottom;">
+                  <div style="font-family:{_MONO};font-size:11px;color:{_MUTED};white-space:nowrap;">average across {summary['zip_count']} neighborhoods</div>
+                  <div style="font-family:{_MONO};font-size:11px;color:{_MUTED};margin-top:4px;white-space:nowrap;">highest {summary['max_score']:.1f}</div>
+                </td>
+              </tr></table>
+              <img src="https://pulsecities.com/og/spark/nyc.png" width="504" alt="90-day citywide pressure trace" style="display:block;width:100%;height:auto;margin-top:14px;border:0;">
+              <p style="margin:6px 0 0;font-family:{_MONO};font-size:10px;color:{_FAINT};letter-spacing:0.1em;text-transform:uppercase;">Citywide average, past 90 days</p>
+            </td></tr>
+{narrative_html}
+            <tr><td style="padding:22px 0;border-top:1px solid {_RULE};">
+              {_field_label("The Week's Movers")}
+              {movers_html}
+            </td></tr>
+
+            <tr><td style="padding:22px 0;border-top:1px solid {_RULE};">
+              {_field_label("The Week's Numbers")}
+              {numbers_html}
+              <p style="margin:8px 0 0;font-family:{_MONO};font-size:10px;color:{_FAINT};">Records newly published this week. City feeds lag event dates.</p>
+            </td></tr>
+{clusters_html}
+            <tr><td style="padding:22px 0;border-top:1px solid {_RULE};">
+              {_field_label("Highest Pressure")}
+              <table width="100%" cellpadding="0" cellspacing="0">{standings_rows}</table>
+            </td></tr>
+
+            <tr><td style="padding-top:26px;">
+              <a href="https://pulsecities.com/this-week"
+                 style="display:inline-block;background:{_INK};color:#FBFAF7;font-family:{_MONO};font-size:12px;font-weight:700;letter-spacing:0.06em;padding:12px 20px;text-decoration:none;">
+                Read this week's full report &rarr;
               </a>
               <a href="https://pulsecities.com/methodology.html"
-                 style="display:inline-block;font-size:12px;color:#94a3b8;text-decoration:underline;vertical-align:middle;">
+                 style="display:inline-block;font-family:{_MONO};font-size:11px;color:{_MUTED};text-decoration:underline;vertical-align:middle;margin-left:14px;">
                 Methodology
               </a>
             </td></tr>
@@ -984,17 +1208,15 @@ def render_citywide_digest(subscription: dict, summary: dict) -> dict:
           </table>
         </td></tr>
 
-        <tr><td style="padding-top:24px;">
-          <p style="margin:0 0 10px;font-size:11px;color:rgba(148,163,184,0.5);line-height:1.7;border-top:1px solid rgba(148,163,184,0.08);padding-top:16px;">
-            <strong style="color:rgba(148,163,184,0.6);">Why you're getting this:</strong>
-            You're watching NYC-wide displacement activity.
+        <tr><td style="padding:18px 6px 0;">
+          <p style="margin:0 0 8px;font-family:{_MONO};font-size:10px;color:#8A8578;line-height:1.7;">
+            Why you're getting this: you're watching NYC-wide displacement activity. Public records changed enough this week to trigger an update.
           </p>
-          <p style="margin:0 0 8px;font-size:11px;color:rgba(148,163,184,0.35);line-height:1.7;">
-            PulseCities uses public records. Scores are risk indicators, not claims of wrongdoing.
+          <p style="margin:0 0 8px;font-family:{_MONO};font-size:10px;color:#8A8578;line-height:1.7;">
+            PulseCities reads NYC public records. Scores are risk indicators, not claims of wrongdoing.
           </p>
-          <p style="margin:0;font-size:11px;color:rgba(148,163,184,0.35);line-height:1.7;">
-            <a href="https://pulsecities.com/api/unsubscribe?token={token}"
-               style="color:rgba(148,163,184,0.5);">Unsubscribe</a>
+          <p style="margin:0;font-family:{_MONO};font-size:10px;line-height:1.7;">
+            <a href="https://pulsecities.com/api/unsubscribe?token={token}" style="color:#8A8578;">Unsubscribe</a>
           </p>
         </td></tr>
 
@@ -1252,10 +1474,11 @@ def run(dry_run: bool = False, limit: int | None = None, email_filter: str | Non
                 )
             else:
                 logger.info("Citywide threshold met: %s", "; ".join(citywide_reasons))
-                citywide_summary = build_citywide_summary(db)
+                citywide_summary   = build_citywide_summary(db)
+                citywide_narrative = generate_citywide_narrative(citywide_summary)
                 c_sent = c_failed = 0
                 for sub in citywide_subs:
-                    rendered = render_citywide_digest(sub, citywide_summary)
+                    rendered = render_citywide_digest(sub, citywide_summary, narrative=citywide_narrative)
                     if send_digest_email(sub, rendered, dry_run=dry_run):
                         logger.info("SENT citywide -> %s", sub["email"])
                         c_sent += 1

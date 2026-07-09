@@ -318,8 +318,9 @@ def _render_spark(scores: list[float]) -> bytes:
 @router.get("/og/spark/{zip_code}.png", include_in_schema=False)
 def spark_image(zip_code: str, db: Session = Depends(get_db)):
     """Personal 90-day pulse trace for the weekly email. Never 404s: a ZIP
-    without history gets a flat placeholder so no client renders a broken box."""
-    if not (len(zip_code) == 5 and zip_code.isdigit()):
+    without history gets a flat placeholder so no client renders a broken box.
+    The special key 'nyc' traces the citywide average for the citywide digest."""
+    if zip_code != "nyc" and not (len(zip_code) == 5 and zip_code.isdigit()):
         png = _render_spark([])
         return Response(content=png, media_type="image/png",
                         headers={"Cache-Control": "public, max-age=86400"})
@@ -332,14 +333,23 @@ def spark_image(zip_code: str, db: Session = Depends(get_db)):
         return Response(content=cache_path.read_bytes(), media_type="image/png",
                         headers={"Cache-Control": "public, max-age=3600"})
 
-    rows = db.execute(text("""
-        SELECT scored_at::date AS d, AVG(composite_score) AS s
-        FROM score_history
-        WHERE zip_code = :zip
-          AND scored_at >= CURRENT_DATE - INTERVAL '90 days'
-        GROUP BY scored_at::date
-        ORDER BY d
-    """), {"zip": zip_code}).fetchall()
+    if zip_code == "nyc":
+        rows = db.execute(text("""
+            SELECT scored_at::date AS d, AVG(composite_score) AS s
+            FROM score_history
+            WHERE scored_at >= CURRENT_DATE - INTERVAL '90 days'
+            GROUP BY scored_at::date
+            ORDER BY d
+        """)).fetchall()
+    else:
+        rows = db.execute(text("""
+            SELECT scored_at::date AS d, AVG(composite_score) AS s
+            FROM score_history
+            WHERE zip_code = :zip
+              AND scored_at >= CURRENT_DATE - INTERVAL '90 days'
+            GROUP BY scored_at::date
+            ORDER BY d
+        """), {"zip": zip_code}).fetchall()
 
     scores = [float(r.s) for r in rows if r.s is not None]
     png = _render_spark(scores)
