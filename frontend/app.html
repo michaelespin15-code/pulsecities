@@ -440,6 +440,17 @@
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block;flex-shrink:0;"></span><span id="legend-critical" class="text-slate-300">Critical 85+</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#94a3b8;display:inline-block;flex-shrink:0;"></span><span id="legend-no-data" class="text-slate-300">No data</span></div>
                 <div id="map-data-updated" class="text-slate-500 mt-1" style="font-size:10px;"></div>
+                <div id="replay-row" class="mt-1 pt-1.5" style="border-top:1px solid rgba(148,163,184,0.12);">
+                    <button id="replay-open" class="font-mono text-slate-400 hover:text-slate-200" style="font-size:10px;letter-spacing:0.06em;background:none;border:none;cursor:pointer;padding:2px 0;min-height:24px;">
+                        <span id="replay-open-label">&#9654; 6-month replay</span>
+                    </button>
+                    <div id="replay-controls" style="display:none;align-items:center;gap:8px;">
+                        <button id="replay-play" aria-label="Play" class="text-slate-300 hover:text-white" style="font-size:12px;background:none;border:none;cursor:pointer;min-height:24px;min-width:18px;padding:0;">&#9654;</button>
+                        <input id="replay-slider" type="range" min="0" max="0" value="0" aria-label="Score history timeline" style="width:120px;accent-color:#f97316;height:14px;">
+                        <span id="replay-date" class="font-mono text-slate-300" style="font-size:10px;min-width:66px;"></span>
+                        <button id="replay-exit" aria-label="Back to live scores" class="text-slate-500 hover:text-slate-200" style="font-size:11px;background:none;border:none;cursor:pointer;min-height:24px;padding:0 2px;">&#x2715;</button>
+                    </div>
+                </div>
                 <div style="margin-top:8px;padding-top:7px;border-top:1px solid rgba(148,163,184,0.1);">
                     <button id="operator-layer-btn" type="button" onclick="toggleOperatorLayer()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:3px 0;min-height:28px;color:rgba(148,163,184,0.55);font-size:11px;" aria-pressed="false">
                         <span id="operator-layer-dot" style="width:9px;height:9px;border-radius:50%;background:rgba(249,115,22,0.3);border:1px solid rgba(249,115,22,0.4);flex-shrink:0;display:inline-block;transition:background 0.15s;"></span>
@@ -1229,6 +1240,92 @@
             });
         });
 
+        // --- Score replay ------------------------------------------------
+        // Scrubs six months of nightly scores across the choropleth. Frames
+        // come from one cached fetch; each frame writes feature-state, which
+        // the fill expression reads ahead of the live GeoJSON score, so
+        // scrubbing never re-parses geometry. Exit clears the state.
+        let _replayFrames = null;
+        let _replayTimer  = null;
+
+        function _replayApply(i) {
+            const f = _replayFrames;
+            if (!f) return;
+            Object.keys(f.scores).forEach(zip => {
+                map.setFeatureState(
+                    { source: 'neighborhoods', id: zip },
+                    { score: f.scores[zip][i] }
+                );
+            });
+            const d = new Date(f.dates[i] + 'T00:00:00');
+            document.getElementById('replay-date').textContent =
+                d.toLocaleDateString(_locale(), { month: 'short', day: 'numeric' });
+            document.getElementById('replay-slider').value = i;
+        }
+
+        function _replayStop() {
+            if (_replayTimer) { clearInterval(_replayTimer); _replayTimer = null; }
+            document.getElementById('replay-play').innerHTML = '&#9654;';
+        }
+
+        function _replayExit() {
+            _replayStop();
+            if (_replayFrames) {
+                Object.keys(_replayFrames.scores).forEach(zip => {
+                    map.removeFeatureState({ source: 'neighborhoods', id: zip });
+                });
+            }
+            document.getElementById('replay-controls').style.display = 'none';
+            document.getElementById('replay-open').style.display = 'block';
+        }
+
+        function _replayPlayPause() {
+            if (_replayTimer) { _replayStop(); return; }
+            const slider = document.getElementById('replay-slider');
+            let i = parseInt(slider.value, 10);
+            if (i >= _replayFrames.dates.length - 1) i = -1;  // replay from the start
+            document.getElementById('replay-play').innerHTML = '&#10073;&#10073;';
+            _replayTimer = setInterval(() => {
+                i += 1;
+                if (i >= _replayFrames.dates.length) { _replayStop(); return; }
+                _replayApply(i);
+            }, 450);
+        }
+
+        function _replayOpen() {
+            plausible('Score Replay Open');
+            const openBtn  = document.getElementById('replay-open');
+            const controls = document.getElementById('replay-controls');
+            const start = () => {
+                openBtn.style.display = 'none';
+                controls.style.display = 'flex';
+                const slider = document.getElementById('replay-slider');
+                slider.max = _replayFrames.dates.length - 1;
+                slider.oninput = () => { _replayStop(); _replayApply(parseInt(slider.value, 10)); };
+                _replayApply(0);
+                // Play is user-initiated, but a reduced-motion preference
+                // still means scrub-only
+                if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    _replayPlayPause();
+                }
+            };
+            if (_replayFrames) { start(); return; }
+            openBtn.disabled = true;
+            fetch('/api/score-history/frames?days=180&step=7')
+                .then(r => r.ok ? r.json() : null)
+                .then(f => {
+                    openBtn.disabled = false;
+                    if (!f || !f.dates || f.dates.length < 2) return;
+                    _replayFrames = f;
+                    start();
+                })
+                .catch(() => { openBtn.disabled = false; });
+        }
+
+        document.getElementById('replay-open').addEventListener('click', _replayOpen);
+        document.getElementById('replay-play').addEventListener('click', _replayPlayPause);
+        document.getElementById('replay-exit').addEventListener('click', _replayExit);
+
         // --- Since your last visit --------------------------------------
         // Diffs against the scores this browser actually saw, never against
         // a timestamp, so the banner cannot claim a change we didn't show.
@@ -1453,6 +1550,7 @@
                     app_subtitle:        'NYC Displacement Risk',
                     pct_highest:         'highest citywide',
                     pct_top:             'top {pct}% citywide',
+                    replay_open:         '\u25B6 6-month replay',
                     recent_activity:     'Recent Activity',
                     reno_flip_title:     'Renovation-Flip Pattern Detected',
                     reno_flip_toggle:    'See addresses',
@@ -1682,6 +1780,7 @@
                     app_subtitle:        'Riesgo de Desplazamiento NYC',
                     pct_highest:         'el más alto de la ciudad',
                     pct_top:             'top {pct}% en la ciudad',
+                    replay_open:         '\u25B6 Repetición de 6 meses',
                     recent_activity:     'Actividad Reciente',
                     reno_flip_title:     'Patrón de Renovación-Reventa Detectado',
                     reno_flip_toggle:    'Ver direcciones',
@@ -1891,6 +1990,7 @@
                 'ai-read-loading':            t('ui', 'ai_read_generating'),
                 'operator-layer-label':       t('ui', 'operator_layer'),
                 'app-subtitle':               t('ui', 'app_subtitle'),
+                'replay-open-label':          t('ui', 'replay_open'),
                 'recent-activity-title':      t('ui', 'recent_activity'),
                 'reno-flip-title':            t('ui', 'reno_flip_title'),
                 'renovation-flip-toggle':     t('ui', 'reno_flip_toggle'),
@@ -1992,7 +2092,8 @@
             // content (top-risk list) is independent and already loading in parallel.
             map.addSource('neighborhoods', {
                 type: 'geojson',
-                data: '/api/neighborhoods'
+                data: '/api/neighborhoods',
+                promoteId: 'zip_code'
             });
 
             // Track when GeoJSON finishes loading
@@ -2010,9 +2111,9 @@
                 paint: {
                     'fill-color': [
                         'case',
-                        ['==', ['get', 'score'], null], '#94a3b8',
+                        ['==', ['coalesce', ['feature-state', 'score'], ['get', 'score']], null], '#94a3b8',
                         [
-                            'step', ['get', 'score'],
+                            'step', ['coalesce', ['feature-state', 'score'], ['get', 'score']],
                             '#22c55e',
                             34, '#eab308',
                             67, '#f97316',
@@ -3616,12 +3717,26 @@
             function _armDismiss() {
                 clearTimeout(_hideTimer);
                 _hideTimer = setTimeout(_hideLegend, 8000);
-                _mapEl.addEventListener('click', _hideLegend, { once: true });
-                _drawerHandle.addEventListener('click', _hideLegend, { once: true });
+                _mapEl.addEventListener('click', _maybeHide, { once: true });
+                _drawerHandle.addEventListener('click', _maybeHide, { once: true });
+            }
+
+            function _replayActive() {
+                const rc = document.getElementById('replay-controls');
+                return rc && rc.style.display === 'flex';
+            }
+
+            function _maybeHide(e) {
+                // The legend lives inside the map container, so without this
+                // guard a tap on the legend itself (including the replay
+                // controls) counts as a map interaction and dismisses it.
+                if (e && _legend.contains(e.target)) { _armDismiss(); return; }
+                _hideLegend();
             }
 
             function _hideLegend() {
                 if (_legendGone || !_legend) return;
+                if (_replayActive()) { _armDismiss(); return; }
                 _legendGone = true;
                 clearTimeout(_hideTimer);
                 _legend.style.transition = 'opacity 0.4s ease';

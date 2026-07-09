@@ -327,7 +327,8 @@ class TestCanonicalTierBands:
 
     def test_choropleth_uses_canonical_steps(self):
         app = self._app()
-        assert "'step', ['get', 'score']" in app, "choropleth no longer uses discrete steps"
+        assert "'step', ['coalesce', ['feature-state', 'score'], ['get', 'score']]" in app, \
+            "choropleth no longer uses discrete steps over the replay-aware score"
         assert "interpolate', ['linear'], ['get', 'score']" not in app, \
             "choropleth reverted to a continuous ramp; legend bands no longer match the map"
 
