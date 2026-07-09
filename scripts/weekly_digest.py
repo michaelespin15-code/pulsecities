@@ -779,6 +779,7 @@ def send_digest_email(subscription: dict, rendered: dict, dry_run: bool = False)
         if token:
             payload["headers"] = {
                 "List-Unsubscribe": f"<https://pulsecities.com/api/unsubscribe?token={token}>",
+                "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
             }
         resend.Emails.send(payload)
         return True

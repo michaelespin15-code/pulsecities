@@ -76,6 +76,7 @@ class TestZipWelcome:
         assert unsub in p["html"]
         assert unsub in p["text"]
         assert unsub in p["headers"]["List-Unsubscribe"]
+        assert p["headers"]["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
 
     def test_no_images_and_no_em_dash_in_body(self, sub_capture):
         p = self._send(sub_capture)
@@ -120,3 +121,45 @@ class TestDigestSendHygiene:
         assert ok
         p = _sent(digest_capture)
         assert "token=tok-d" in p["headers"]["List-Unsubscribe"]
+
+
+class TestUnsubscribeIsPostOnly:
+    """GET must never change state: corporate mail scanners prefetch GET links
+    from email bodies, and a deleting GET silently unsubscribes those readers.
+    The delete lives on POST, which is also what RFC 8058 one-click sends."""
+
+    def _client(self):
+        from unittest.mock import MagicMock
+        from fastapi.testclient import TestClient
+        from api.main import app
+        from models.database import get_db
+        self._get_db = get_db
+
+        fake_sub = MagicMock()
+        fake_sub.email       = "reader@example.com"
+        fake_sub.zip_code    = "11216"
+        fake_sub.is_citywide = False
+        db = MagicMock()
+        db.execute.return_value.scalar_one_or_none.return_value = fake_sub
+        app.dependency_overrides[self._get_db] = lambda: db
+        return TestClient(app), db, app
+
+    def test_get_renders_confirmation_and_does_not_delete(self):
+        client, db, app = self._client()
+        try:
+            resp = client.get("/api/unsubscribe?token=tok-1")
+            assert resp.status_code == 200
+            assert 'method="post"' in resp.text
+            db.delete.assert_not_called()
+        finally:
+            app.dependency_overrides.pop(self._get_db, None)
+
+    def test_post_performs_the_delete(self):
+        client, db, app = self._client()
+        try:
+            resp = client.post("/api/unsubscribe?token=tok-1")
+            assert resp.status_code == 200
+            assert "unsubscribed" in resp.text.lower()
+            db.delete.assert_called_once()
+        finally:
+            app.dependency_overrides.pop(self._get_db, None)

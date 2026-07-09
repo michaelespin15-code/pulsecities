@@ -33,19 +33,34 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def backfill(days: int = 180) -> None:
+def backfill(days: int = 180, replace: bool = False) -> None:
     today = date.today()
     # oldest first so score_history grows in chronological order
     dates = [today - timedelta(days=i) for i in range(days, 0, -1)]
 
     logger.info(
-        "Backfilling score_history for %d dates (%s → %s)",
+        "Backfilling score_history for %d dates (%s → %s)%s",
         len(dates),
         dates[0].isoformat(),
         dates[-1].isoformat(),
+        " [replace]" if replace else "",
     )
 
     with get_scraper_db() as db:
+        if replace:
+            # Recompute mode: drop the snapshots in range so compute_scores'
+            # ON CONFLICT DO NOTHING can't silently keep the old rows. Today's
+            # nightly snapshot is never in `dates` and stays untouched.
+            deleted = db.execute(
+                text(
+                    "DELETE FROM score_history"
+                    " WHERE scored_at >= :start AND scored_at <= :end"
+                ),
+                {"start": dates[0], "end": dates[-1]},
+            ).rowcount
+            db.commit()
+            logger.info("Deleted %d existing snapshot rows in range", deleted)
+
         existing = {
             r[0]
             for r in db.execute(
@@ -85,11 +100,16 @@ if __name__ == "__main__":
         default=180,
         help="Number of calendar days to backfill (default: 180)",
     )
+    parser.add_argument(
+        "--replace",
+        action="store_true",
+        help="Delete existing snapshots in range and recompute them",
+    )
     args = parser.parse_args()
 
     if args.days < 1 or args.days > 730:
         print("--days must be between 1 and 730", file=sys.stderr)
         sys.exit(1)
 
-    backfill(args.days)
+    backfill(args.days, replace=args.replace)
     sys.exit(0)

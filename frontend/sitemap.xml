@@ -37,6 +37,36 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://pulsecities.com/brooklyn</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://pulsecities.com/manhattan</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://pulsecities.com/queens</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://pulsecities.com/bronx</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://pulsecities.com/staten-island</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://pulsecities.com/this-week</loc>
     <lastmod>2026-07-09</lastmod>
     <changefreq>daily</changefreq>
