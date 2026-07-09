@@ -48,6 +48,18 @@ def _operator_template() -> str:
     return _operator_html
 
 
+_not_found_html: str | None = None
+
+
+def _not_found() -> HTMLResponse:
+    """Real 404 for unknown neighborhood/property paths. Serving the app
+    shell with a 200 here reads as a soft 404 to crawlers."""
+    global _not_found_html
+    if _not_found_html is None:
+        _not_found_html = (_FRONTEND / "404.html").read_text()
+    return HTMLResponse(_not_found_html, status_code=404)
+
+
 def _set_meta(html: str, attr: str, attr_val: str, new_content: str) -> str:
     """Replace content="..." on the meta tag identified by attr=attr_val.
 
@@ -509,7 +521,7 @@ def about_page():
 @router.get("/neighborhood/{zip_code}", include_in_schema=False)
 def neighborhood_page(zip_code: str, db: Session = Depends(get_db)):
     if not (len(zip_code) == 5 and zip_code.isdigit()):
-        return HTMLResponse(_template(), status_code=200)
+        return _not_found()
 
     cached = _page_cache.get(zip_code)
     if cached and time.monotonic() < cached[1]:
@@ -522,8 +534,10 @@ def neighborhood_page(zip_code: str, db: Session = Depends(get_db)):
         WHERE n.zip_code = :zip
     """), {"zip": zip_code}).fetchone()
 
-    if not row:
-        return HTMLResponse(_template(), status_code=200)
+    # No row, or a placeholder row with neither name nor score (the table
+    # carries at least one junk entry): nothing to render, real 404.
+    if not row or (row.name is None and row.score is None):
+        return _not_found()
 
     from api.routes.neighborhoods import _borough_from_zip, _build_summary, _fetch_raw_counts
 
@@ -565,7 +579,7 @@ def neighborhood_page(zip_code: str, db: Session = Depends(get_db)):
 def property_page(bbl: str, db: Session = Depends(get_db)):
     clean = bbl.strip()
     if not clean.isdigit():
-        return HTMLResponse(_template(), status_code=200)
+        return _not_found()
 
     cached = _prop_page_cache.get(clean)
     if cached and time.monotonic() < cached[1]:
@@ -590,7 +604,7 @@ def property_page(bbl: str, db: Session = Depends(get_db)):
     """), {"bbl": clean}).fetchone()
 
     if not row:
-        return HTMLResponse(_template(), status_code=200)
+        return _not_found()
 
     address  = row.address.title() if row.address else clean
     zip_code = row.zip_code or ""
@@ -1165,6 +1179,175 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 </html>"""
 
     _operators_cache = (page, time.monotonic() + _PAGE_TTL)
+    return HTMLResponse(page)
+
+
+_nbhd_index_cache: tuple[str, float] | None = None  # cleared on restart
+
+
+@router.get("/neighborhoods", include_in_schema=False)
+def neighborhoods_directory(db: Session = Depends(get_db)):
+    """Every scored ZIP page, grouped by borough, ranked by score.
+
+    One crawlable hop from the homepage to all 177 neighborhood pages, and a
+    scannable answer to "how does my area compare" without opening the map.
+    """
+    global _nbhd_index_cache
+    if _nbhd_index_cache and time.monotonic() < _nbhd_index_cache[1]:
+        return HTMLResponse(_nbhd_index_cache[0])
+
+    from api.routes.neighborhoods import _borough_from_zip
+
+    rows = db.execute(text("""
+        SELECT n.zip_code, n.name, ds.score
+        FROM neighborhoods n
+        JOIN displacement_scores ds ON ds.zip_code = n.zip_code
+        WHERE ds.score IS NOT NULL
+        ORDER BY ds.score DESC
+    """)).fetchall()
+
+    boroughs: dict[str, list] = {}
+    for r in rows:
+        b = _borough_from_zip(r.zip_code) or "Other"
+        boroughs.setdefault(b, []).append(r)
+
+    sections_html = ""
+    list_items = []
+    pos = 0
+    for borough in ("Manhattan", "Brooklyn", "Queens", "Bronx", "Staten Island", "Other"):
+        entries = boroughs.get(borough)
+        if not entries:
+            continue
+        rows_html = ""
+        for r in entries:
+            score = float(r.score)
+            _, color = _tier_info(score)
+            name = _html.escape(r.name or r.zip_code)
+            width = max(2, min(100, score))
+            pos += 1
+            rows_html += (
+                f'<li class="nb-row"><a href="/neighborhood/{r.zip_code}">'
+                f'<span class="nb-zip">{r.zip_code}</span>'
+                f'<span class="nb-name">{name}</span>'
+                f'<span class="nb-score" style="color:{color};">{score:.1f}</span>'
+                f'<span class="nb-track"><span class="nb-fill" style="width:{width}%;background:{color};"></span></span>'
+                f'</a></li>\n'
+            )
+            list_items.append({
+                "@type": "ListItem",
+                "position": pos,
+                "name": f"{r.name or r.zip_code} ({r.zip_code}) displacement score",
+                "url": f"https://pulsecities.com/neighborhood/{r.zip_code}",
+            })
+        sections_html += (
+            f'<section class="nb-borough">'
+            f'<h2>{borough}</h2>'
+            f'<ul class="nb-list">\n{rows_html}</ul>'
+            f'</section>\n'
+        )
+
+    n = len(rows)
+    title = "NYC Neighborhoods by Displacement Score | PulseCities"
+    desc = (
+        f"Displacement-pressure scores for all {n} scored NYC ZIP codes, grouped by borough "
+        f"and ranked by current score. Built from public records, refreshed nightly."
+    )
+    jsonld = json.dumps({
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "NYC neighborhoods by displacement score",
+        "description": desc,
+        "url": "https://pulsecities.com/neighborhoods",
+        "numberOfItems": n,
+        "itemListElement": list_items,
+    }, indent=2)
+
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{_html.escape(title)}</title>
+<meta name="description" content="{_html.escape(desc)}">
+<link rel="canonical" href="https://pulsecities.com/neighborhoods">
+<meta property="og:title" content="{_html.escape(title)}">
+<meta property="og:description" content="{_html.escape(desc)}">
+<meta property="og:url" content="https://pulsecities.com/neighborhoods">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PulseCities">
+<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{_html.escape(title)}">
+<meta name="twitter:description" content="{_html.escape(desc)}">
+<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<script type="application/ld+json">{jsonld}</script>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+<style>
+*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}}
+nav{{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0}}
+.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}}
+.container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
+a{{color:inherit;text-decoration:none}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b}}
+.footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
+@media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
+.nb-borough{{margin-bottom:36px}}
+.nb-borough h2{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.05rem;font-weight:600;margin-bottom:10px;color:#e2e8f0}}
+.nb-list{{list-style:none;padding:0;margin:0}}
+.nb-row{{border-bottom:1px solid rgba(148,163,184,0.07)}}
+.nb-row:hover{{background:rgba(148,163,184,0.04)}}
+.nb-row a{{display:grid;grid-template-columns:56px 1fr 52px;grid-template-rows:auto auto;column-gap:14px;row-gap:5px;align-items:baseline;padding:10px 0}}
+.nb-zip{{font-family:'JetBrains Mono',monospace;font-size:0.85rem;font-weight:500;color:#e2e8f0}}
+.nb-row:hover .nb-zip{{color:#f97316}}
+.nb-name{{font-size:0.82rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+.nb-score{{font-family:'JetBrains Mono',monospace;font-size:0.85rem;font-weight:600;text-align:right}}
+.nb-track{{grid-column:1 / -1;display:block;height:3px;border-radius:2px;background:rgba(148,163,184,0.1);overflow:hidden}}
+.nb-fill{{display:block;height:100%;border-radius:2px}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="/" style="display:flex;align-items:center;gap:8px;color:#f1f5f9;">
+      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span>
+    </a>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Map</a>
+      <a href="/operators" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Operators</a>
+      <a href="/flips" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Flips</a>
+      <a href="/radar" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Radar</a>
+      <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Methodology</a>
+    </div>
+  </div>
+</nav>
+<div class="container">
+  <div style="margin-bottom:8px;">
+    <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Home</a>
+  </div>
+  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.4rem;font-weight:600;margin-bottom:6px;">NYC neighborhoods by displacement score</h1>
+  <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px;line-height:1.6;">
+    Every scored ZIP in the city, grouped by borough and ranked by current displacement pressure. Each page shows the signal breakdown, the six-month trend, and an embeddable score badge.
+  </p>
+  <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.55);margin-bottom:28px;">{n} ZIP codes scored nightly from public records.</p>
+  {sections_html}
+</div>
+<footer>
+  <div style="font-size:11px;color:#64748b;margin-bottom:8px;text-align:center;">Built by Michael Espin</div>
+  <div class="footer-links">
+    <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
+    <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
+    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
+    <a href="/status" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
+    <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
+  </div>
+</footer>
+</body>
+</html>"""
+
+    _nbhd_index_cache = (page, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page)
 
 

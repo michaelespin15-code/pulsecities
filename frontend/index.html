@@ -370,16 +370,16 @@
 
     <!-- Nav -->
     <header style="border-bottom:1px solid rgba(51,65,85,0.4);position:sticky;top:0;z-index:20;background:rgba(10,10,26,0.92);backdrop-filter:blur(8px);">
-        <nav id="site-nav" style="max-width:680px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">
+        <nav id="site-nav" style="max-width:1200px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;">
             <div id="wordmark-group" style="display:flex;align-items:center;gap:10px;">
-                <a href="/" style="display:inline-flex;align-items:center;gap:8px;font-size:1rem;font-weight:600;color:#e2e8f0;text-decoration:none;letter-spacing:-0.01em;">
-                    <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                <a href="/" style="display:inline-flex;align-items:center;gap:9px;font-size:1.25rem;font-weight:600;color:#e2e8f0;text-decoration:none;letter-spacing:-0.01em;">
+                    <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
                         <rect width="32" height="32" rx="6" fill="#1a1a2e"/>
                         <polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     PulseCities
                 </a>
-                <a id="byline-link" href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" aria-label="by Michael Espin on LinkedIn" style="font-size:11px;color:#94a3b8;text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#cbd5e1'" onmouseout="this.style.color='#94a3b8'">by Michael Espin</a>
+                <a id="byline-link" href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" aria-label="by Michael Espin on LinkedIn" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;align-self:flex-end;padding-bottom:3px;" onmouseover="this.style.color='#cbd5e1'" onmouseout="this.style.color='#94a3b8'">by Michael Espin</a>
             </div>
             <div id="nav-links" style="display:flex;align-items:center;gap:20px;">
                 <a href="/map" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;">Map</a>
@@ -453,8 +453,8 @@
             <!-- The map itself is the pitch: static shot, click through to the app -->
             <a href="/map" id="cta-explore" class="map-teaser" aria-label="Explore the live displacement risk map">
                 <picture>
-                    <source srcset="/map-preview-560.webp 560w, /map-preview.webp 1120w" sizes="(max-width: 680px) calc(100vw - 40px), 640px" type="image/webp">
-                    <img src="/map-preview.jpg" srcset="/map-preview-560.jpg 560w, /map-preview.jpg 1120w" sizes="(max-width: 680px) calc(100vw - 40px), 640px" width="1120" height="600" alt="Live displacement risk map of NYC. Low-pressure areas in cool blue, moderate in bronze, high-pressure neighborhoods glowing orange." loading="eager" fetchpriority="high" decoding="async">
+                    <source srcset="/map-preview-560.webp?v=2 560w, /map-preview.webp?v=2 1120w" sizes="(max-width: 680px) calc(100vw - 40px), 640px" type="image/webp">
+                    <img src="/map-preview.jpg?v=2" srcset="/map-preview-560.jpg?v=2 560w, /map-preview.jpg?v=2 1120w" sizes="(max-width: 680px) calc(100vw - 40px), 640px" width="1120" height="600" alt="Live displacement risk map of NYC. Stable areas in green, moderate pressure in gold, high-pressure neighborhoods glowing orange." loading="eager" fetchpriority="high" decoding="async">
                 </picture>
                 <span class="map-teaser-label" data-i18n="explore_map">Explore the map &rarr;</span>
             </a>
@@ -549,6 +549,7 @@
                 <a href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Built by Michael Espin</a>
             </div>
             <div id="footer-nav" style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;align-items:center;">
+                <a href="/neighborhoods" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Neighborhoods</a>
                 <a href="/methodology" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
                 <a href="/about" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
                 <a href="/status" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
@@ -770,7 +771,7 @@
             });
 
             const cta = document.createElement('a');
-            cta.href      = '/map';
+            cta.href      = '/neighborhoods';
             cta.className = 'font-mono';
             cta.style.cssText = 'display:inline-block;margin-top:12px;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;';
             cta.textContent = 'View full rankings →';
