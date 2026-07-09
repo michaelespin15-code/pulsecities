@@ -66,3 +66,32 @@ def send_alert(subject: str, body: str) -> None:
             "Failed to send webhook alert (non-fatal): %s",
             exc,
         )
+
+
+def send_ops_email(subject: str, body: str) -> None:
+    """Email an operator when the nightly pipeline fails, using the same Resend
+    account the digest already uses. This is the self-monitoring hook: without
+    it, a broken pipeline only leaves a log line no one reads.
+
+    Recipient is ALERT_EMAIL (defaults to the ops inbox). No-ops quietly when
+    Resend is not configured. Never raises.
+    """
+    recipient = os.getenv("ALERT_EMAIL", "nycdisplacement@gmail.com")
+    api_key = os.getenv("RESEND_API_KEY", "")
+    if not api_key or not recipient:
+        logger.warning("ops-email skipped (no RESEND_API_KEY or ALERT_EMAIL): %s", subject)
+        return
+
+    try:
+        import resend
+
+        resend.api_key = api_key
+        resend.Emails.send({
+            "from": "PulseCities Ops <alerts@pulsecities.com>",
+            "to": [recipient],
+            "subject": f"[PulseCities] {subject}",
+            "text": body,
+        })
+        logger.info("ops-email sent to %s: %s", recipient, subject)
+    except Exception as exc:
+        logger.warning("Failed to send ops email (non-fatal): %s", exc)
