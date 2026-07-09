@@ -793,19 +793,24 @@ def operator_page(root: str, db: Session = Depends(get_db)):
         1,
     )
 
+    op_og_image = (
+        f"https://pulsecities.com/og/operator/{canonical_id}.png"
+        f"?d={date.today().strftime('%Y%m%d')}"
+    )
+    e_op_og = _e(op_og_image)
     og_block = (
         f'    <meta property="og:title" content="{e_title}">\n'
         f'    <meta property="og:description" content="{e_desc}">\n'
         f'    <meta property="og:url" content="{e_url}">\n'
         f'    <meta property="og:type" content="website">\n'
         f'    <meta property="og:site_name" content="PulseCities">\n'
-        f'    <meta property="og:image" content="https://pulsecities.com/og-image.png">\n'
+        f'    <meta property="og:image" content="{e_op_og}">\n'
         f'    <meta property="og:image:width" content="1200">\n'
         f'    <meta property="og:image:height" content="630">\n'
         f'    <meta name="twitter:card" content="summary_large_image">\n'
         f'    <meta name="twitter:title" content="{e_title}">\n'
         f'    <meta name="twitter:description" content="{e_desc}">\n'
-        f'    <meta name="twitter:image" content="https://pulsecities.com/og-image.png">'
+        f'    <meta name="twitter:image" content="{e_op_og}">'
     )
     html = html.replace('</head>', f'{og_block}\n</head>', 1)
 
