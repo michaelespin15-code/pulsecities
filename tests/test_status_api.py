@@ -140,3 +140,33 @@ def test_status_endpoint_dcwp_delayed_with_pause_note(status_payload):
 def test_status_endpoint_dhcr_not_falsely_delayed(status_payload):
     by = {s["key"]: s for s in status_payload["sources"]}
     assert by["dhcr_rs"]["state"] == "ok", "Annual rent-stabilization source must not read delayed"
+
+
+@pytest.mark.integration
+class TestAcrisWatermarkHonesty:
+    """
+    The ACRIS data_through on /status must never claim a date past the
+    newest doc_date actually persisted. The feed watermark ran 2 days
+    ahead of the table in the 2026-06-24 audit.
+    """
+
+    def test_acris_data_through_matches_table(self):
+        from api.main import app
+        from fastapi.testclient import TestClient
+        from models.database import SessionLocal
+        from sqlalchemy import text as _text
+
+        db = SessionLocal()
+        try:
+            max_doc = db.execute(_text("SELECT MAX(doc_date) FROM ownership_raw")).scalar()
+        finally:
+            db.close()
+        if max_doc is None:
+            pytest.skip("no ACRIS rows in the database")
+
+        with TestClient(app, raise_server_exceptions=False) as client:
+            data = client.get("/api/status").json()
+        acris = next(s for s in data["sources"] if s["key"] == "acris_ownership")
+        assert acris["data_through"] == max_doc.isoformat(), (
+            f"status claims {acris['data_through']}, table holds {max_doc}"
+        )

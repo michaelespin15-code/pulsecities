@@ -118,6 +118,14 @@ def get_status(request: Request, response: Response, db: Session = Depends(get_d
         last_success = run.started_at if run else None
         watermark = run.watermark_timestamp if run else None
 
+        # ACRIS watermarks come from the feed's recorded_datetime, which can
+        # run days ahead of the doc dates that actually persisted. Freshness
+        # must describe what the site serves, so anchor to the table.
+        if key == "acris_ownership":
+            max_doc = db.execute(text("SELECT MAX(doc_date) FROM ownership_raw")).scalar()
+            if max_doc is not None:
+                watermark = datetime.combine(max_doc, datetime.min.time(), tzinfo=timezone.utc)
+
         state = _source_state(key, watermark, last_success, now)
 
         if watermark and (most_recent is None or watermark > most_recent):
