@@ -10,6 +10,7 @@ import logging
 import os
 import sys
 from datetime import date, timedelta
+from html import escape as _html_escape
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
@@ -19,6 +20,7 @@ from sqlalchemy import text
 from config.logging_config import configure_logging
 from config.schedule import DIGEST_SEND_DAY
 from models.database import SessionLocal  # imports load_dotenv() as a side effect
+from scripts.digest_narrative import generate_narrative
 
 # The API process sets this in api/routes/subscribe.py; this script runs
 # standalone from cron and must set it itself or every send aborts.
@@ -588,6 +590,7 @@ def render_zip_digest(
     summary: dict,
     reasons: list[str],
     event_detail: dict,
+    narrative: str | None = None,
 ) -> dict:
     """Return {'subject': str, 'html': str}."""
     zip_code = summary["zip"]
@@ -603,6 +606,16 @@ def render_zip_digest(
     delta_color_val = _delta_color(delta)
     driver          = _driver_sentence(reasons, name)
     area            = _area_label(zip_code, name)
+
+    narrative_html = ""
+    if narrative:
+        narrative_html = f"""
+            <!-- Plain-English read -->
+            <tr><td style="padding-top:20px;padding-bottom:20px;border-bottom:1px solid rgba(148,163,184,0.08);">
+              <div style="font-size:10px;font-weight:600;color:rgba(148,163,184,0.5);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;">The Week, In Plain English</div>
+              <p style="margin:0;font-size:13px;color:#cbd5e1;line-height:1.7;">{_html_escape(narrative)}</p>
+              <p style="margin:8px 0 0;font-size:10px;color:rgba(148,163,184,0.35);">Written by AI from this week's exact counts. The numbers below are the record.</p>
+            </td></tr>"""
 
     subject = f"PulseCities Weekly Watch: {area} update"
 
@@ -664,7 +677,7 @@ def render_zip_digest(
               {_bullet_html(reasons)}
               {f'<p style="margin:12px 0 0;font-size:12px;color:#94a3b8;line-height:1.6;">{driver}</p>' if driver else ''}
             </td></tr>
-
+{narrative_html}
             <!-- Signal breakdown -->
             <tr><td style="padding-top:20px;">
               <div style="font-size:10px;font-weight:600;color:rgba(148,163,184,0.5);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Signal Breakdown</div>
@@ -1180,7 +1193,8 @@ def run(dry_run: bool = False, limit: int | None = None, email_filter: str | Non
                 continue
 
             event_detail = _fetch_event_detail(db, zip_code)
-            rendered     = render_zip_digest(sub, summary, reasons, event_detail)
+            narrative    = generate_narrative(summary, reasons)
+            rendered     = render_zip_digest(sub, summary, reasons, event_detail, narrative=narrative)
 
             if send_digest_email(sub, rendered, dry_run=dry_run):
                 logger.info("SENT %s -> %s", zip_code, sub["email"])
