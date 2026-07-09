@@ -31,10 +31,38 @@ _CORE = [
     ("/queens",        "daily", "0.8",  None),
     ("/bronx",         "daily", "0.8",  None),
     ("/staten-island", "daily", "0.8",  None),
-    ("/this-week",   "daily",   "0.75", None),
+    ("/this-week",         "daily",  "0.75", None),
+    ("/this-week/archive", "weekly", "0.65", None),
     ("/flips",       "daily",   "0.75", None),
     ("/radar",       "daily",   "0.75", None),
 ]
+
+
+def _completed_week_slugs(db) -> list[tuple[str, str]]:
+    """(slug, sunday_iso) for every fully-elapsed ISO week we can score, matching
+    the /week/{slug} route's availability. One week after history begins so a
+    prior-week baseline exists; up to the last week whose Sunday is already past."""
+    from datetime import timedelta
+
+    row = db.execute(text("SELECT MIN(scored_at), MAX(scored_at) FROM score_history")).fetchone()
+    if not row or not row[0]:
+        return []
+    hist_min = row[0]
+    today = date.today()
+
+    anchor = hist_min + timedelta(days=7)
+    y, w, _ = anchor.isocalendar()
+    monday = date.fromisocalendar(y, w, 1)
+
+    out: list[tuple[str, str]] = []
+    while True:
+        sunday = monday + timedelta(days=6)
+        if sunday >= today:
+            break
+        iy, iw, _ = monday.isocalendar()
+        out.append((f"{iy}-W{iw:02d}", sunday.isoformat()))
+        monday += timedelta(days=7)
+    return out
 
 # Canonical operator slugs (the /operator/{ROOT} form redirects its meta here)
 _OPERATORS = ["mtek-nyc", "phantom-capital", "bredif"]
@@ -51,6 +79,8 @@ def build() -> str:
             WHERE ds.score IS NOT NULL
             ORDER BY n.zip_code
         """)).fetchall()]
+
+        week_slugs = _completed_week_slugs(db)
 
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
@@ -73,6 +103,9 @@ def build() -> str:
         entry(f"/operator/{slug}", "weekly", "0.6", today)
     for z in zips:
         entry(f"/neighborhood/{z}", "daily", "0.7", today)
+    # Historical weekly editions never change once past; lastmod = their Sunday.
+    for slug, sunday_iso in week_slugs:
+        entry(f"/week/{slug}", "monthly", "0.5", sunday_iso)
 
     lines.append("</urlset>")
     return "\n".join(lines) + "\n"

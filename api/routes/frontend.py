@@ -791,8 +791,11 @@ def _operator_not_found_page(label: str) -> str:
 
 
 @router.head("/operator/{root}", include_in_schema=False)
-def operator_page_head(root: str):
-    return Response(status_code=200)
+def operator_page_head(root: str, db: Session = Depends(get_db)):
+    # Mirror the GET status so a HEAD probe sees dead and noise slugs as 404,
+    # not a live 200. Body is discarded; the page is cached for the GET anyway.
+    resp = operator_page(root, db)
+    return Response(status_code=resp.status_code)
 
 
 @router.get("/operator/{root}", include_in_schema=False)
@@ -2083,6 +2086,407 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 
 _this_week_cache: tuple[str, float] | None = None  # cleared on restart
 
+# --- Weekly review: shared history queries + the completed-week archive -------
+
+_WEEK_SLUG_RE = re.compile(r"^(\d{4})-W(\d{2})$")
+_week_page_cache: dict[str, tuple[str, float]] = {}   # slug -> (html, expires)
+_week_index_cache: tuple[str, float] | None = None
+
+
+def _movers_between(db, as_of: date, prior: date, limit: int = 8):
+    """Top risers comparing the latest score on/before `as_of` to the latest on
+    or before `prior`. DISTINCT ON walks back to the nearest earlier snapshot, so
+    a missing exact date still resolves. Powers both /this-week and the archive."""
+    return db.execute(text("""
+        WITH now_s AS (
+            SELECT DISTINCT ON (zip_code) zip_code, composite_score AS s
+            FROM score_history WHERE scored_at <= :as_of
+            ORDER BY zip_code, scored_at DESC
+        ),
+        then_s AS (
+            SELECT DISTINCT ON (zip_code) zip_code, composite_score AS s
+            FROM score_history WHERE scored_at <= :prior
+            ORDER BY zip_code, scored_at DESC
+        )
+        SELECT n.zip_code, nb.name, nb.borough,
+               ROUND(now_s.s::numeric, 1) AS score,
+               ROUND((now_s.s - then_s.s)::numeric, 1) AS delta
+        FROM now_s
+        JOIN then_s ON then_s.zip_code = now_s.zip_code
+        JOIN neighborhoods nb ON nb.zip_code = now_s.zip_code
+        CROSS JOIN LATERAL (SELECT now_s.zip_code) n
+        WHERE now_s.s - then_s.s >= 0.5
+        ORDER BY (now_s.s - then_s.s) DESC
+        LIMIT :limit
+    """), {"as_of": as_of, "prior": prior, "limit": limit}).fetchall()
+
+
+def _counts_between(db, start: date, end_exclusive: date):
+    """Public-record filings dated within [start, end_exclusive). Event-dated, so
+    a past week reconstructs exactly from the retained raw tables."""
+    return db.execute(text("""
+        SELECT
+            (SELECT COUNT(*) FROM evictions_raw  WHERE executed_date   >= :s AND executed_date   < :e) AS evictions,
+            (SELECT COUNT(*) FROM permits_raw    WHERE filing_date     >= :s AND filing_date     < :e) AS permits,
+            (SELECT COUNT(*) FROM complaints_raw WHERE created_date    >= :s AND created_date    < :e) AS complaints,
+            (SELECT COUNT(*) FROM violations_raw WHERE inspection_date >= :s AND inspection_date < :e) AS violations
+    """), {"s": start, "e": end_exclusive}).fetchone()
+
+
+def _completed_weeks(db) -> list[tuple[date, date]]:
+    """(monday, sunday) for every fully-elapsed ISO week we can score week-over-
+    week, newest first. Starts one week after history begins so a prior-week
+    baseline exists; ends at the last week whose Sunday is already past."""
+    row = db.execute(text("SELECT MIN(scored_at), MAX(scored_at) FROM score_history")).fetchone()
+    if not row or not row[0]:
+        return []
+    hist_min = row[0]
+    today = date.today()
+
+    anchor = hist_min + timedelta(days=7)
+    y, w, _ = anchor.isocalendar()
+    monday = date.fromisocalendar(y, w, 1)
+
+    weeks: list[tuple[date, date]] = []
+    while True:
+        sunday = monday + timedelta(days=6)
+        if sunday >= today:
+            break
+        weeks.append((monday, sunday))
+        monday += timedelta(days=7)
+    weeks.reverse()
+    return weeks
+
+
+def _week_slug(monday: date) -> str:
+    y, w, _ = monday.isocalendar()
+    return f"{y}-W{w:02d}"
+
+
+def _week_range_label(monday: date, sunday: date) -> str:
+    # House style uses "to" for ranges, matching /this-week (no dash connectors).
+    if monday.year == sunday.year and monday.month == sunday.month:
+        return f"{monday.strftime('%b %-d')} to {sunday.strftime('%-d, %Y')}"
+    if monday.year == sunday.year:
+        return f"{monday.strftime('%b %-d')} to {sunday.strftime('%b %-d, %Y')}"
+    return f"{monday.strftime('%b %-d, %Y')} to {sunday.strftime('%b %-d, %Y')}"
+
+
+def _movers_rows_html(movers, e) -> str:
+    out = ""
+    for m in movers:
+        color = "#ef4444" if m.delta >= 5 else "#f97316"
+        out += (
+            f'<li class="tw-row" onclick="location.href=\'/neighborhood/{e(m.zip_code)}\'">'
+            f'<a href="/neighborhood/{e(m.zip_code)}">'
+            f'<div class="tw-main"><div class="tw-name">{e(m.zip_code)} '
+            f'<span class="tw-sub">{e(m.name or "")}{", " + e(m.borough) if m.borough else ""}</span></div></div>'
+            f'<div class="tw-side"><span class="tw-delta" style="color:{color};">{float(m.delta):+.1f}</span>'
+            f'<span class="tw-score">to {m.score}</span></div>'
+            f'</a></li>\n'
+        )
+    return out or '<li class="tw-empty">No neighborhood moved a half point or more this week.</li>'
+
+
+def _stat_cells_html(counts) -> str:
+    return "".join(
+        f'<div class="tw-stat"><div class="tw-stat-n">{v:,}</div><div class="tw-stat-l">{label}</div></div>'
+        for v, label in [
+            (counts.evictions,  "eviction filings"),
+            (counts.permits,    "construction permits"),
+            (counts.violations, "HPD violations"),
+            (counts.complaints, "311 housing complaints"),
+        ]
+    )
+
+
+_WEEK_CSS = """*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}
+nav{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0}
+.nav-inner{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+@media(max-width:600px){.nav-inner{flex-wrap:wrap;row-gap:4px}.nav-inner>div{flex-wrap:wrap;row-gap:4px}}
+.container{max-width:860px;margin:0 auto;padding:32px 20px 80px}
+a{color:inherit;text-decoration:none}
+h2{font-size:0.78rem;font-weight:600;color:rgba(148,163,184,0.75);text-transform:uppercase;letter-spacing:0.1em;margin:32px 0 4px}
+.tw-list{list-style:none;padding:0;margin:0}
+.tw-row{border-bottom:1px solid rgba(148,163,184,0.07);cursor:pointer}
+.tw-row:hover{background:rgba(148,163,184,0.04)}
+.tw-row a{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 0}
+.tw-name{font-family:'JetBrains Mono',monospace;font-size:0.88rem;color:#e2e8f0;font-weight:500}
+.tw-row:hover .tw-name{color:#f97316}
+.tw-sub{font-family:'DM Sans',sans-serif;font-size:0.76rem;color:rgba(148,163,184,0.7);font-weight:400;margin-left:6px}
+.tw-side{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0}
+.tw-delta{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:500;line-height:1.1}
+.tw-score{font-size:0.68rem;color:rgba(148,163,184,0.55)}
+.tw-empty{padding:18px 0;font-size:0.8rem;color:#94a3b8}
+.tw-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px}
+.tw-stat{background:rgba(30,41,59,0.5);border:1px solid rgba(148,163,184,0.1);border-radius:10px;padding:16px}
+.tw-stat-n{font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:600;color:#f1f5f9}
+.tw-stat-l{font-size:0.72rem;color:#94a3b8;margin-top:4px}
+.wk-nav{display:flex;justify-content:space-between;gap:12px;margin-top:36px;font-family:'JetBrains Mono',monospace;font-size:0.75rem}
+.wk-nav a{color:rgba(249,115,22,0.8)}
+.wk-idx{list-style:none;padding:0;margin:0}
+.wk-idx-row{border-bottom:1px solid rgba(148,163,184,0.07)}
+.wk-idx-row a{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:14px 0}
+.wk-idx-row:hover{background:rgba(148,163,184,0.04)}
+.wk-idx-range{font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:#e2e8f0}
+.wk-idx-row:hover .wk-idx-range{color:#f97316}
+.wk-idx-top{font-size:0.76rem;color:rgba(148,163,184,0.7);text-align:right}
+footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b}
+.footer-links{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
+@media(max-width:767px){.container{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}"""
+
+
+def _week_nav_html() -> str:
+    return (
+        '<nav>\n  <div class="nav-inner">\n'
+        '    <a href="/" style="display:flex;align-items:center;gap:8px;color:#f1f5f9;">'
+        '<svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        '<span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span></a>\n'
+        '    <div style="display:flex;align-items:center;gap:16px;">'
+        '<a href="/this-week" style="font-size:0.78rem;color:rgba(148,163,184,0.5);">This week</a>'
+        '<a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);">Map</a>'
+        '<a href="/neighborhoods" style="font-size:0.78rem;color:rgba(148,163,184,0.5);">Neighborhoods</a>'
+        '<a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);">Methodology</a>'
+        '</div>\n  </div>\n</nav>'
+    )
+
+
+_WEEK_FOOTER_HTML = (
+    '<footer>\n'
+    '  <div style="font-size:11px;color:#64748b;margin-bottom:8px;text-align:center;">Built by Michael Espin</div>\n'
+    '  <div class="footer-links">'
+    '<a href="/" style="color:#64748b;">Home</a>'
+    '<a href="/this-week" style="color:#64748b;">This week</a>'
+    '<a href="/methodology" style="color:#64748b;">Methodology</a>'
+    '<a href="/about" style="color:#64748b;">About</a>'
+    '<a href="/status" style="color:#64748b;">Status</a>'
+    '</div>\n</footer>'
+)
+
+
+@router.get("/week/{slug}", include_in_schema=False)
+def week_edition_page(slug: str, db: Session = Depends(get_db)):
+    """A single completed week, reconstructed from history and event-dated
+    records. Stable URL so each edition accumulates as indexable content."""
+    m = _WEEK_SLUG_RE.match(slug)
+    if not m:
+        return _not_found()
+    iso_year, iso_week = int(m.group(1)), int(m.group(2))
+    try:
+        monday = date.fromisocalendar(iso_year, iso_week, 1)
+    except ValueError:
+        return _not_found()
+    sunday = monday + timedelta(days=6)
+
+    weeks = _completed_weeks(db)
+    if (monday, sunday) not in weeks:
+        return _not_found()
+
+    cached = _week_page_cache.get(slug)
+    if cached and time.monotonic() < cached[1]:
+        return HTMLResponse(cached[0])
+
+    e = _html.escape
+    movers = _movers_between(db, sunday, sunday - timedelta(days=7))
+    counts = _counts_between(db, monday, sunday + timedelta(days=1))
+    range_label = _week_range_label(monday, sunday)
+    canonical = f"https://pulsecities.com/week/{slug}"
+
+    # prev/next completed weeks for on-page navigation
+    idx = weeks.index((monday, sunday))
+    newer = weeks[idx - 1] if idx > 0 else None          # weeks is newest-first
+    older = weeks[idx + 1] if idx + 1 < len(weeks) else None
+    nav_bits = []
+    if older:
+        nav_bits.append(f'<a href="/week/{_week_slug(older[0])}">&#8592; {_week_range_label(*older)}</a>')
+    else:
+        nav_bits.append("<span></span>")
+    if newer:
+        nav_bits.append(f'<a href="/week/{_week_slug(newer[0])}">{_week_range_label(*newer)} &#8594;</a>')
+    else:
+        nav_bits.append('<a href="/this-week">This week &#8594;</a>')
+    wk_nav = f'<div class="wk-nav">{nav_bits[0]}{nav_bits[1]}</div>'
+
+    top_line = (
+        f"{movers[0].name or movers[0].zip_code} rose {float(movers[0].delta):+.1f} points"
+        if movers else "no neighborhood moved a half point or more"
+    )
+    title = f"NYC displacement, week of {range_label} | PulseCities"
+    desc = (
+        f"NYC displacement week in review, {range_label}: {top_line}, "
+        f"{counts.evictions:,} eviction filings, {counts.permits:,} construction permits. Public records only."
+    )
+    jsonld = _jsonld({
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "ItemList",
+                "name": f"NYC displacement score movers, {range_label}",
+                "description": desc,
+                "url": canonical,
+                "numberOfItems": len(movers),
+                "itemListElement": [
+                    {"@type": "ListItem", "position": i,
+                     "name": f"{mv.name or mv.zip_code} ({mv.zip_code}) rose {float(mv.delta):+.1f}",
+                     "url": f"https://pulsecities.com/neighborhood/{mv.zip_code}"}
+                    for i, mv in enumerate(movers, 1)
+                ],
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://pulsecities.com/"},
+                    {"@type": "ListItem", "position": 2, "name": "Weekly review", "item": "https://pulsecities.com/this-week/archive"},
+                    {"@type": "ListItem", "position": 3, "name": range_label, "item": canonical},
+                ],
+            },
+        ],
+    })
+
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{e(title)}</title>
+<meta name="description" content="{e(desc)}">
+<link rel="canonical" href="{canonical}">
+<meta property="og:title" content="{e(title)}">
+<meta property="og:description" content="{e(desc)}">
+<meta property="og:url" content="{canonical}">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="PulseCities">
+<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{e(title)}">
+<meta name="twitter:description" content="{e(desc)}">
+<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<script type="application/ld+json">{jsonld}</script>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+<style>{_WEEK_CSS}</style>
+</head>
+<body>
+{_week_nav_html()}
+<div class="container">
+  <div style="margin-bottom:8px;">
+    <a href="/this-week/archive" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Weekly review archive</a>
+  </div>
+  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;font-weight:600;margin-bottom:6px;">NYC displacement, week of {e(range_label)}</h1>
+  <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px;line-height:1.6;">
+    Where displacement pressure moved that week, from the public records behind the map. Reconstructed from the score history and agency filings dated in this window.
+  </p>
+
+  <h2>Score movers</h2>
+  <p style="font-size:0.75rem;color:rgba(148,163,184,0.6);margin-bottom:4px;">Largest displacement-pressure increases over the week.</p>
+  <ul class="tw-list">
+{_movers_rows_html(movers, e)}  </ul>
+
+  <h2>New on the record</h2>
+  <p style="font-size:0.75rem;color:rgba(148,163,184,0.6);">Citywide filings dated within this week.</p>
+  <div class="tw-stats">{_stat_cells_html(counts)}</div>
+
+  {wk_nav}
+
+  <p style="font-size:0.72rem;color:rgba(148,163,184,0.45);margin-top:28px;line-height:1.6;">
+    Counts reflect records published by NYC agencies, which can lag the events they describe. Scores are risk indicators, not claims of wrongdoing. <a href="/methodology" style="color:rgba(249,115,22,0.75);">How scores work &rarr;</a>
+  </p>
+</div>
+{_WEEK_FOOTER_HTML}
+</body>
+</html>"""
+
+    _week_page_cache[slug] = (page, time.monotonic() + _PAGE_TTL)
+    return HTMLResponse(page)
+
+
+@router.get("/this-week/archive", include_in_schema=False)
+def week_archive_index(db: Session = Depends(get_db)):
+    """Index of every completed weekly edition, newest first."""
+    global _week_index_cache
+    if _week_index_cache and time.monotonic() < _week_index_cache[1]:
+        return HTMLResponse(_week_index_cache[0])
+
+    e = _html.escape
+    weeks = _completed_weeks(db)[:52]  # cap the visible index at a year
+
+    rows_html = ""
+    for monday, sunday in weeks:
+        slug = _week_slug(monday)
+        movers = _movers_between(db, sunday, sunday - timedelta(days=7), limit=1)
+        top = (
+            f"{e(movers[0].name or movers[0].zip_code)} {float(movers[0].delta):+.1f}"
+            if movers else "quiet week"
+        )
+        rows_html += (
+            f'<li class="wk-idx-row"><a href="/week/{slug}">'
+            f'<span class="wk-idx-range">{e(_week_range_label(monday, sunday))}</span>'
+            f'<span class="wk-idx-top">{top}</span>'
+            f'</a></li>\n'
+        )
+    if not rows_html:
+        rows_html = '<li class="tw-empty">The first weekly edition publishes once a full week of history is on record.</li>'
+
+    canonical = "https://pulsecities.com/this-week/archive"
+    title = "Weekly review archive | PulseCities"
+    desc = (
+        "Every week of NYC displacement pressure since PulseCities began tracking: "
+        "which neighborhoods rose, and what the public record showed. One page per week."
+    )
+    jsonld = _jsonld({
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "PulseCities weekly review archive",
+        "description": desc,
+        "url": canonical,
+    })
+
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{e(title)}</title>
+<meta name="description" content="{e(desc)}">
+<link rel="canonical" href="{canonical}">
+<meta property="og:title" content="{e(title)}">
+<meta property="og:description" content="{e(desc)}">
+<meta property="og:url" content="{canonical}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PulseCities">
+<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{e(title)}">
+<meta name="twitter:description" content="{e(desc)}">
+<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<script type="application/ld+json">{jsonld}</script>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+<style>{_WEEK_CSS}</style>
+</head>
+<body>
+{_week_nav_html()}
+<div class="container">
+  <div style="margin-bottom:8px;">
+    <a href="/this-week" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; This week</a>
+  </div>
+  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;font-weight:600;margin-bottom:6px;">Weekly review archive</h1>
+  <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:20px;line-height:1.6;">
+    Every week since tracking began. Each edition captures where displacement pressure moved and what the public record showed, reconstructed from the score history.
+  </p>
+  <ul class="wk-idx">
+{rows_html}  </ul>
+</div>
+{_WEEK_FOOTER_HTML}
+</body>
+</html>"""
+
+    _week_index_cache = (page, time.monotonic() + _PAGE_TTL)
+    return HTMLResponse(page)
+
 
 @router.get("/this-week", include_in_schema=False)
 def this_week_page(db: Session = Depends(get_db)):
@@ -2265,7 +2669,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <h1 id="tw-heading" style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;font-weight:600;margin-bottom:6px;">This week in NYC displacement</h1>
   <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.55);margin-bottom:4px;">{e(range_label)}</p>
   <p id="tw-intro" style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px;line-height:1.6;">
-    The week's movement across all NYC neighborhoods, from the same public records that drive the map. This page always shows the current week.
+    The week's movement across all NYC neighborhoods, from the same public records that drive the map. This page always shows the current week. <a href="/this-week/archive" style="color:rgba(249,115,22,0.8);">Past weeks &rarr;</a>
   </p>
 
   <h2 id="tw-movers-h">Score movers</h2>

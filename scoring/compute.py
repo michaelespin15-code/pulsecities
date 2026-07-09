@@ -680,7 +680,7 @@ def _batch_sanity_check(
 # Main entry point
 # ---------------------------------------------------------------------------
 
-def compute_scores(db: Session, as_of_date: date | None = None, force: bool = False) -> int:
+def compute_scores(db: Session, as_of_date: date | None = None, force: bool = False, dry_run: bool = False) -> int:
     """
     Compute full six-signal composite displacement scores for all zip codes.
     Returns the number of zip codes scored and upserted.
@@ -698,6 +698,10 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
     # Upper bound of the window. Without this every backfilled snapshot counted
     # events recorded after its own date, so history drifted toward the present.
     until = as_of_date
+
+    # dry_run keeps every write inside the transaction (flush, not commit) so the
+    # sanity guard still reads its own writes, then the caller rolls back cleanly.
+    _persist = db.flush if dry_run else db.commit
 
     # --- Step 1: Aggregate all signals ---
     permit_rows = _aggregate_permits(db, cutoff=cutoff, until=until)
@@ -1042,7 +1046,7 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
                 },
             )
 
-    db.commit()
+    _persist()
 
     if skipped_zips:
         logger.warning(
@@ -1095,7 +1099,7 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
                 "now": now,
             },
         )
-    db.commit()
+    _persist()
 
     # --- Step 8: Propagate scores to neighborhoods.current_score ---
     # Skipped during backfill — historical scores must not overwrite live data.
@@ -1110,7 +1114,7 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
                 """
             )
         )
-        db.commit()
+        _persist()
 
     # --- Step 9: Remove orphan ZIPs from displacement_scores ---
     # ZIPs that appear in raw data but have no ZCTA geometry in neighborhoods
@@ -1123,7 +1127,7 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
             DELETE FROM displacement_scores
             WHERE zip_code NOT IN (SELECT zip_code FROM neighborhoods)
         """))
-        db.commit()
+        _persist()
         if result.rowcount:
             logger.info(
                 "Removed %d orphan ZIP(s) from displacement_scores "
@@ -1206,8 +1210,9 @@ if __name__ == "__main__":
     try:
         with get_scraper_db() as db:
             if args.dry_run:
-                # Run computation and guard check, then rollback all writes.
-                n = compute_scores(db, force=args.force)
+                # dry_run flushes instead of committing, so this rollback truly
+                # discards every write instead of being a no-op after commits.
+                n = compute_scores(db, force=args.force, dry_run=True)
                 db.rollback()
                 print(f"DRY RUN complete. Would have scored {n} zip codes.")
             else:

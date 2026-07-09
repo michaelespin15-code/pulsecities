@@ -41,14 +41,21 @@ Scoring methodology: each signal is normalized 0 to 100 relative to all NYC neig
 - `GET /api/neighborhoods/top-risk` - top N neighborhoods by current score
 - `GET /api/neighborhoods/top-movers` - neighborhoods with largest week-over-week score increase
 - `GET /api/flips` - citywide renovation-flip feed (LLC deed plus renovation permit within 60 days)
+- `GET /api/radar` - concentrated-buying clusters (one LLC, 3+ buildings, one ZIP, within 90 days)
+- `GET /api/score-history/{zip}` - daily composite score snapshots for a ZIP code
 
 ## Key pages
 
 - https://pulsecities.com/ - landing page with live stats and top-risk neighborhoods
-- https://pulsecities.com/map - interactive heatmap of all 178 neighborhoods
-- https://pulsecities.com/neighborhood/{zip} - per-neighborhood detail (e.g. /neighborhood/11216)
+- https://pulsecities.com/map - interactive heatmap of all NYC neighborhoods
+- https://pulsecities.com/neighborhoods - directory of every scored ZIP, grouped by borough and ranked
+- https://pulsecities.com/brooklyn (also /manhattan, /queens, /bronx, /staten-island) - borough-level ranked ZIP lists
+- https://pulsecities.com/neighborhood/{zip} - per-neighborhood detail with signal breakdown and six-month score trend (e.g. /neighborhood/11216)
 - https://pulsecities.com/operator/{name} - LLC operator portfolio profiles
 - https://pulsecities.com/flips - Flip Watch, citywide feed of buildings bought by an LLC and filed for renovation within 60 days
+- https://pulsecities.com/radar - Speculation Radar, one LLC taking 3+ buildings in one ZIP within 90 days
+- https://pulsecities.com/this-week - current week in NYC displacement (score movers, new filings, newest flips)
+- https://pulsecities.com/this-week/archive - every past weekly edition at /week/{YYYY-Www}
 - https://pulsecities.com/methodology - full scoring methodology
 
 ## About
