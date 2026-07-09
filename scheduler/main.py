@@ -12,7 +12,10 @@ import logging
 import os
 import sys
 
+import socket
+
 from config.logging_config import configure_logging
+from scheduler.alerts import send_ops_email
 from scheduler.pipeline import run_nightly_pipeline
 
 _LOCK_FILE = "/tmp/pulsecities_pipeline.lock"
@@ -67,10 +70,24 @@ def main() -> None:
         ok = run_nightly_pipeline()
         if not ok:
             logger.error("Pipeline completed with one or more scraper failures — exiting 1")
+            send_ops_email(
+                "Nightly pipeline reported failures",
+                f"The nightly data pipeline on {socket.gethostname()} finished with one or "
+                f"more scraper failures. The site keeps serving the last good scores.\n\n"
+                f"Check the per-scraper errors:\n"
+                f"  tail -100 /var/log/pulsecities/scraper.log\n"
+                f"  https://pulsecities.com/status\n",
+            )
             sys.exit(1)
         logger.info("Pipeline completed successfully — exiting 0")
     except Exception as exc:
         logger.error("Pipeline raised uncaught exception: %s", exc, exc_info=True)
+        send_ops_email(
+            "Nightly pipeline crashed",
+            f"The nightly data pipeline on {socket.gethostname()} raised an uncaught "
+            f"exception and did not complete:\n\n{exc}\n\n"
+            f"  tail -200 /var/log/pulsecities/scraper.log\n",
+        )
         sys.exit(1)
     finally:
         _release_lock()
