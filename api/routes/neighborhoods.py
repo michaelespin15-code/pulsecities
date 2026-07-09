@@ -495,10 +495,14 @@ def get_top_movers(
             ORDER BY zip_code, scored_at DESC
         ),
         week_ago AS (
+            -- Latest snapshot at least 7 days old. DISTINCT ON walks back to the
+            -- nearest earlier day, so a missing exact date still resolves; this
+            -- is a true week-over-week now that history is dense (was 13d, which
+            -- overstated the window the "this week" framing promised).
             SELECT DISTINCT ON (zip_code)
                 zip_code, composite_score AS prev_score
             FROM score_history
-            WHERE scored_at <= CURRENT_DATE - INTERVAL '13 days'
+            WHERE scored_at <= CURRENT_DATE - INTERVAL '7 days'
             ORDER BY zip_code, scored_at DESC
         ),
         llc_counts AS (

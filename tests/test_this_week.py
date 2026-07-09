@@ -38,3 +38,39 @@ class TestThisWeekPage:
         body = client.get("/this-week").text
         assert "eviction filings" in body
         assert "311 housing complaints" in body
+
+
+@pytest.mark.integration
+class TestWeeklyArchive:
+
+    def test_archive_index_200(self, client):
+        resp = client.get("/this-week/archive")
+        assert resp.status_code == 200
+        assert "Weekly review archive" in resp.text
+
+    def test_this_week_links_to_archive(self, client):
+        assert "/this-week/archive" in client.get("/this-week").text
+
+    def test_a_real_week_edition_renders(self, client):
+        # Pull a live edition slug from the archive rather than hardcoding a date.
+        import re
+        body = client.get("/this-week/archive").text
+        m = re.search(r"/week/(\d{4}-W\d{2})", body)
+        if not m:
+            pytest.skip("no completed weeks in this environment yet")
+        slug = m.group(1)
+        resp = client.get(f"/week/{slug}")
+        assert resp.status_code == 200
+        assert "Score movers" in resp.text
+        assert "New on the record" in resp.text
+        assert f'rel="canonical" href="https://pulsecities.com/week/{slug}"' in resp.text
+        assert "BreadcrumbList" in resp.text
+
+    def test_out_of_range_week_404(self, client):
+        assert client.get("/week/2020-W01").status_code == 404
+
+    def test_malformed_week_404(self, client):
+        assert client.get("/week/not-a-week").status_code == 404
+
+    def test_no_em_dash_in_week_pages(self, client):
+        assert "—" not in client.get("/this-week/archive").text
