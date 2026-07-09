@@ -158,7 +158,7 @@ class DOFScraper(BaseScraper):
         # all columns on every row, and the NOT NULL watch-list flag explicitly.
         now = datetime.now(timezone.utc)
         parcel_rows = []
-        for row in batch:
+        for row in _dedupe_by_bbl(batch):
             parcel_rows.append({
                 "bbl": row["bbl"],
                 "borough": row.get("borough"),
@@ -187,6 +187,19 @@ class DOFScraper(BaseScraper):
         result = db.execute(stmt)
         db.commit()
         return result.rowcount
+
+
+def _dedupe_by_bbl(batch: list[dict]) -> list[dict]:
+    """Last occurrence per BBL wins.
+
+    The DOF feed repeats a BBL within one page (easement and condo rows
+    share the parcel key), and two rows with the same conflict key in a
+    single INSERT ... ON CONFLICT is a CardinalityViolation.
+    """
+    deduped: dict[str, dict] = {}
+    for row in batch:
+        deduped[row["bbl"]] = row
+    return list(deduped.values())
 
 
 def _safe_int(value) -> int | None:
