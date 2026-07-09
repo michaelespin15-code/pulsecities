@@ -223,6 +223,8 @@
                 color: rgba(148,163,184,0.7);
                 text-decoration: none;
                 height: 56px;
+                white-space: nowrap;
+                min-width: 0;
             }
             #mobile-bottom-nav a.active { color: #38bdf8; }
             /* Lift the drawer and legend above nav + safe area */
@@ -932,7 +934,9 @@
         <a href="/">Home</a>
         <a href="/map">Map</a>
         <a href="/operators">Operators</a>
-        <a href="/about">About</a>
+        <a href="/flips">Flips</a>
+        <a href="/methodology" id="mnav-methodology">Methods</a>
+        <a href="/status" id="mnav-status">Status</a>
     </nav>
 
     <div id="mobile-drawer" aria-label="Most at-risk neighborhoods">
@@ -1445,6 +1449,10 @@
                     ai_read_generating:  'generating…',
                     ai_read_note:        'Written by Claude from the exact counts in this panel. Check it against the signal breakdown below.',
                     last_visit_prefix:   'Since your last visit ({date}):',
+                    operator_layer:      'Operator portfolios',
+                    app_subtitle:        'NYC Displacement Risk',
+                    pct_highest:         'highest citywide',
+                    pct_top:             'top {pct}% citywide',
                     recent_activity:     'Recent Activity',
                     reno_flip_title:     'Renovation-Flip Pattern Detected',
                     reno_flip_toggle:    'See addresses',
@@ -1670,6 +1678,10 @@
                     ai_read_generating:  'generando…',
                     ai_read_note:        'Escrito por Claude en inglés a partir de los conteos exactos de este panel. Verifícalo con el desglose de señales.',
                     last_visit_prefix:   'Desde tu última visita ({date}):',
+                    operator_layer:      'Portafolios de operadores',
+                    app_subtitle:        'Riesgo de Desplazamiento NYC',
+                    pct_highest:         'el más alto de la ciudad',
+                    pct_top:             'top {pct}% en la ciudad',
                     recent_activity:     'Actividad Reciente',
                     reno_flip_title:     'Patrón de Renovación-Reventa Detectado',
                     reno_flip_toggle:    'Ver direcciones',
@@ -1877,6 +1889,8 @@
                 'history-projection-note':    t('ui', 'projection_note'),
                 'ai-read-label':              t('ui', 'ai_read_label'),
                 'ai-read-loading':            t('ui', 'ai_read_generating'),
+                'operator-layer-label':       t('ui', 'operator_layer'),
+                'app-subtitle':               t('ui', 'app_subtitle'),
                 'recent-activity-title':      t('ui', 'recent_activity'),
                 'reno-flip-title':            t('ui', 'reno_flip_title'),
                 'renovation-flip-toggle':     t('ui', 'reno_flip_toggle'),
@@ -2083,6 +2097,24 @@
             if (score >= 67) return '#f97316';
             if (score >= 34) return '#eab308';
             return '#22c55e';
+        }
+
+        // Citywide score distribution for the percentile badge. One fetch per
+        // session; the browser cache dedupes it against the map source, which
+        // loads the same URL. querySourceFeatures was the old source and only
+        // saw tiles in the viewport, so the badge appeared inconsistently.
+        let _pctSeq = 0;
+        let _allScoresPromise = null;
+        function _fetchAllScores() {
+            if (_allScoresPromise) return _allScoresPromise;
+            _allScoresPromise = fetch('/api/neighborhoods')
+                .then(r => r.ok ? r.json() : null)
+                .then(geo => (geo && geo.features)
+                    ? geo.features.map(f => (f.properties || {}).score)
+                        .filter(s => s !== null && s !== undefined)
+                    : [])
+                .catch(() => { _allScoresPromise = null; return []; });
+            return _allScoresPromise;
         }
 
         function signalBarColor(v) {
@@ -2434,19 +2466,25 @@
                     riskLabelEl.style.color = scoreColor(score);
                     riskLabelEl.style.opacity = '0.8';
                 }
-                try {
-                    const features = map.querySourceFeatures('neighborhoods');
-                    const allScores = features.map(f => f.properties.score).filter(s => s !== null && s !== undefined);
-                    if (allScores.length > 1) {
+                const pctSeq = ++_pctSeq;
+                _fetchAllScores().then(allScores => {
+                    if (pctSeq !== _pctSeq) return;  // a newer ZIP is showing
+                    if (allScores.length > 1 && pctEl && pctBadgeEl) {
                         const below = allScores.filter(s => s < score).length;
                         const pct = Math.round((below / allScores.length) * 100);
-                        if (pct >= 50 && pctEl && pctBadgeEl) {
+                        // Only the top quartile: "top 47% citywide" reads as
+                        // noise and dilutes the badge where it matters
+                        if (pct >= 75) {
                             const topPct = 100 - pct;
-                            pctBadgeEl.textContent = topPct === 0 ? 'highest citywide' : `top ${topPct}% citywide`;
+                            pctBadgeEl.textContent = topPct === 0
+                                ? t('ui', 'pct_highest')
+                                : t('ui', 'pct_top').replace('{pct}', topPct);
                             pctEl.classList.remove('hidden');
-                        } else if (pctEl) { pctEl.classList.add('hidden'); }
+                            return;
+                        }
                     }
-                } catch (_) { if (pctEl) pctEl.classList.add('hidden'); }
+                    if (pctEl) pctEl.classList.add('hidden');
+                });
             } else {
                 scoreEl.textContent = '\u2014';
                 scoreEl.style.color = '#94a3b8';
