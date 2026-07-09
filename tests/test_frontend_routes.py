@@ -304,13 +304,15 @@ class TestPropertyPage:
         line = next((l for l in resp.text.splitlines() if 'property="og:description"' in l), "")
         assert "displacement" in line.lower(), f"og:description missing or generic: {line}"
 
-    def test_unknown_bbl_returns_200_shell(self, client):
+    def test_unknown_bbl_returns_404(self, client):
+        """A 200 app shell here is a soft 404; crawlers must see a real one."""
         resp = client.get("/property/9999999999")
-        assert resp.status_code == 200
+        assert resp.status_code == 404
+        assert 'name="robots" content="noindex"' in resp.text
 
-    def test_non_numeric_bbl_returns_200_shell(self, client):
+    def test_non_numeric_bbl_returns_404(self, client):
         resp = client.get("/property/not-a-bbl")
-        assert resp.status_code == 200
+        assert resp.status_code == 404
 
 
 class TestCanonicalTierBands:
