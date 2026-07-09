@@ -438,7 +438,7 @@
             <div id="map-legend" class="absolute bottom-9 left-4 z-10 rounded-lg px-3 py-2 flex flex-col gap-1" style="background:rgba(15,23,42,0.88);backdrop-filter:blur(6px);border:1px solid rgba(148,163,184,0.15);font-size:11px;">
                 <div class="text-slate-400 font-mono uppercase tracking-wider mb-0.5" style="font-size:10px;letter-spacing:0.08em;"><span id="legend-header">displacement risk</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#8da2c0;display:inline-block;flex-shrink:0;"></span><span id="legend-low" class="text-slate-300">Low 0-33</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#c2661b;display:inline-block;flex-shrink:0;"></span><span id="legend-moderate" class="text-slate-300">Moderate 34-66</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#eab308;display:inline-block;flex-shrink:0;"></span><span id="legend-moderate" class="text-slate-300">Moderate 34-66</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#f97316;display:inline-block;flex-shrink:0;"></span><span id="legend-high" class="text-slate-300">High 67-84</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block;flex-shrink:0;"></span><span id="legend-critical" class="text-slate-300">Critical 85+</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#334155;display:inline-block;flex-shrink:0;"></span><span id="legend-no-data" class="text-slate-300">No data</span></div>
@@ -2122,7 +2122,7 @@
                         [
                             'step', ['coalesce', ['feature-state', 'score'], ['get', 'score']],
                             '#8da2c0',
-                            34, '#c2661b',
+                            34, '#eab308',
                             67, '#f97316',
                             85, '#ef4444'
                         ]
@@ -2133,7 +2133,7 @@
                         [
                             'step', ['coalesce', ['feature-state', 'score'], ['get', 'score']],
                             0.5,
-                            34, 0.62,
+                            34, 0.55,
                             67, 0.82,
                             85, 0.9
                         ]
