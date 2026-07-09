@@ -336,6 +336,12 @@ class TestCanonicalTierBands:
         for legacy in ("score >= 70", "score >= 76", "score >= 55", "score >= 56", "s >= 76", "s >= 56"):
             assert legacy not in app, f"legacy tier threshold '{legacy}' is back in app.html"
 
+    def test_og_images_use_canonical_thresholds(self):
+        og = (Path(__file__).parent.parent / "api" / "routes" / "og_images.py").read_text()
+        for legacy in ("score >= 70", "score >= 55", "score >= 35"):
+            assert legacy not in og, f"legacy tier threshold '{legacy}' in og_images.py"
+        assert "score >= 85" in og
+
     def test_canonical_thresholds_present(self):
         app = self._app()
         for canon in ("score >= 85", "score >= 67", "score >= 34"):

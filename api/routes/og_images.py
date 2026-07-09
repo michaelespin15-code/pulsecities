@@ -9,6 +9,8 @@ on subsequent scrapes.
 
 import io
 import logging
+import math
+import re
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -39,17 +41,19 @@ _MUTED  = (100, 116, 139)
 _DIM    = (20, 32, 56)
 
 
+# Canonical bands: Low 0-33, Moderate 34-66, High 67-84, Critical 85+.
+# Must match the map legend, panel, summaries, and digest.
 def _score_color(score: float) -> tuple:
-    if score >= 70: return (220, 60, 60)
-    if score >= 55: return (249, 115, 22)
-    if score >= 35: return (210, 160, 10)
+    if score >= 85: return (220, 60, 60)
+    if score >= 67: return (249, 115, 22)
+    if score >= 34: return (210, 160, 10)
     return (30, 170, 80)
 
 
 def _score_tier(score: float) -> str:
-    if score >= 70: return "CRITICAL"
-    if score >= 55: return "HIGH"
-    if score >= 35: return "MODERATE"
+    if score >= 85: return "CRITICAL"
+    if score >= 67: return "HIGH"
+    if score >= 34: return "MODERATE"
     return "LOW"
 
 
@@ -202,3 +206,110 @@ def og_image(zip_code: str, db: Session = Depends(get_db)):
         media_type="image/png",
         headers={"Cache-Control": "public, max-age=3600"},
     )
+
+
+def _render_operator(
+    display_name: str,
+    acquisitions: int,
+    llc_count: int,
+    zip_count: int,
+    today_label: str,
+) -> bytes:
+    W, H = 1200, 630
+    img  = Image.new("RGB", (W, H), _BG)
+    draw = ImageDraw.Draw(img)
+
+    for x in range(0, W, 60):
+        draw.line([(x, 0), (x, H)], fill=_DIM, width=1)
+    for y in range(0, H, 60):
+        draw.line([(0, y), (W, y)], fill=_DIM, width=1)
+
+    f_name  = ImageFont.truetype(_FONTS_BOLD,    64)
+    f_sub   = ImageFont.truetype(_FONTS_REGULAR, 22)
+    f_date  = ImageFont.truetype(_FONTS_MONO,    17)
+    f_count = ImageFont.truetype(_FONTS_BOLD,    44)
+    f_label = ImageFont.truetype(_FONTS_REGULAR, 19)
+    f_brand = ImageFont.truetype(_FONTS_MONO,    16)
+
+    # Left — cluster identity
+    draw.text((80, 90),  display_name.upper(), font=f_name, fill=_ORANGE)
+    draw.text((80, 172), "LLC network in NYC property records", font=f_sub, fill=_MUTED)
+
+    draw.line([(80, 214), (640, 214)], fill=(35, 50, 75), width=1)
+    draw.text((80, 228), f"As of {today_label}", font=f_date, fill=_MUTED)
+
+    stats = [
+        (str(acquisitions), "recorded acquisitions"),
+        (str(llc_count),    "LLC entities"),
+        (str(zip_count),    "ZIP codes"),
+    ]
+    y = 280
+    for value, label in stats:
+        draw.text((80, y),      value, font=f_count, fill=_WHITE)
+        draw.text((80, y + 56), label, font=f_label, fill=_MUTED)
+        y += 100
+
+    # Right — the shell constellation: one node per LLC around the operator
+    cx, cy = W - 300, 300
+    spokes = max(3, min(llc_count, 12))
+    for i in range(spokes):
+        a = (i / spokes) * 2 * math.pi - math.pi / 2
+        x = cx + math.cos(a) * 150
+        yy = cy + math.sin(a) * 130
+        draw.line([(cx, cy), (x, yy)], fill=(55, 70, 95), width=2)
+        draw.ellipse([x - 11, yy - 11, x + 11, yy + 11], fill=(100, 116, 139))
+    draw.ellipse([cx - 22, cy - 22, cx + 22, cy + 22], fill=_ORANGE)
+
+    draw.text((82, H - 50), "pulsecities.com", font=f_brand, fill=(60, 75, 100))
+    draw.rectangle([0, H - 5, W, H], fill=_ORANGE)
+
+    buf = io.BytesIO()
+    img.save(buf, "PNG", optimize=True)
+    return buf.getvalue()
+
+
+@router.get("/og/operator/{slug}.png", include_in_schema=False)
+def operator_og_image(slug: str, db: Session = Depends(get_db)):
+    if not re.match(r"^[a-z0-9-]+$", slug):
+        return Response(content=_DEFAULT_IMAGE.read_bytes(), media_type="image/png",
+                        headers={"Cache-Control": "public, max-age=86400"})
+
+    today      = date.today()
+    cache_key  = f"op_{slug}_{today.strftime('%Y%m%d')}"
+    cache_path = _CACHE_DIR / f"{cache_key}.png"
+
+    if cache_path.exists():
+        return Response(content=cache_path.read_bytes(), media_type="image/png",
+                        headers={"Cache-Control": "public, max-age=3600"})
+
+    row = db.execute(text("""
+        SELECT o.display_name, o.operator_root, o.operator_class,
+               o.total_acquisitions, o.llc_entities,
+               (SELECT COUNT(DISTINCT p.zip_code)
+                FROM operator_parcels op JOIN parcels p ON p.bbl = op.bbl
+                WHERE op.operator_id = o.id) AS zip_count,
+               (SELECT COUNT(DISTINCT op.acquiring_entity)
+                FROM operator_parcels op
+                WHERE op.operator_id = o.id) AS llc_count
+        FROM operators o
+        WHERE o.slug = :slug
+    """), {"slug": slug}).fetchone()
+
+    # Classification gate: no branded card for lenders, GSEs, or HDFCs
+    if not row or row.operator_class != "operator":
+        return Response(content=_DEFAULT_IMAGE.read_bytes(), media_type="image/png",
+                        headers={"Cache-Control": "public, max-age=3600"})
+
+    png = _render_operator(
+        display_name = row.display_name or row.operator_root,
+        acquisitions = int(row.total_acquisitions or 0),
+        llc_count    = int(row.llc_count or 0),
+        zip_count    = int(row.zip_count or 0),
+        today_label  = today.strftime("%b %-d, %Y"),
+    )
+
+    cache_path.write_bytes(png)
+    _clean_old_cache(f"op_{slug}", cache_key)
+
+    return Response(content=png, media_type="image/png",
+                    headers={"Cache-Control": "public, max-age=3600"})
