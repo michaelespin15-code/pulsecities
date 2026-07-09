@@ -34,29 +34,69 @@ _EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 _ZIP_RE   = re.compile(r'^\d{5}$')
 _SLUG_RE  = re.compile(r'^[a-z0-9-]+$')
 
-# Welcome notes are transactional mail and read like it: a short note from a
-# person, no images, no buttons, serif on white. That plainness is deliberate;
-# card layouts with CTA buttons are what Gmail files under Promotions.
-_CONFIRMATION_HTML = """
+# Welcome notes wear the same paper case-file system as the weekly digest, but
+# stay transactional where it counts for Gmail's tab classifier: no images, no
+# CTA buttons, a plain-text part, low link count, one-click unsubscribe. The
+# sheet, masthead, and file line are just inline CSS; classifiers don't weigh
+# background colors, they weigh campaign apparatus.
+_WELCOME_SHELL = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>You're watching {zip_code}</title>
+<title>{title}</title>
 </head>
-<body style="margin:0;padding:0;background:#ffffff;">
-  <div style="max-width:540px;margin:0 auto;padding:36px 24px;">
-    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">You're watching {zip_code}.</p>
-    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">Every {send_day} you'll get a one-page read of what changed in the public record for your neighborhood: deeds, evictions, permits, violations. Quiet weeks send nothing, so when an email arrives it means something moved.</p>
-    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">The current reading is here:<br>
-      <a href="https://pulsecities.com/neighborhood/{zip_code}" style="color:#C2410C;">pulsecities.com/neighborhood/{zip_code}</a></p>
-    <p style="margin:0 0 28px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">Michael<br>PulseCities</p>
-    <p style="margin:0;padding-top:14px;border-top:1px solid #E5E1D8;font-family:Menlo,Consolas,'Courier New',monospace;font-size:11px;color:#8A8578;line-height:1.7;">You subscribed at pulsecities.com. <a href="https://pulsecities.com/api/unsubscribe?token={token}" style="color:#8A8578;">Unsubscribe</a> anytime, one click.</p>
-  </div>
+<body style="margin:0;padding:0;background:#EFEBE2;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#EFEBE2;padding:36px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;">
+
+        <tr><td style="background:#FBFAF7;border:1px solid #D9D4C9;border-top:3px solid #E4590F;padding:28px 28px 26px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+
+            <tr><td style="padding-bottom:10px;border-bottom:2px solid #1C2430;">
+              <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                <td style="font-family:Menlo,Consolas,'Courier New',monospace;font-size:14px;font-weight:700;color:#1C2430;letter-spacing:0.2em;">PULSECITIES</td>
+                <td align="right" style="font-family:Menlo,Consolas,'Courier New',monospace;font-size:10px;color:#6D7480;letter-spacing:0.14em;">WEEKLY WATCH</td>
+              </tr></table>
+            </td></tr>
+
+            <tr><td style="padding:10px 0 22px;">
+              <span style="font-family:Menlo,Consolas,'Courier New',monospace;font-size:10px;color:#9A948A;letter-spacing:0.14em;text-transform:uppercase;">{file_line}</span>
+            </td></tr>
+
+            {note_body}
+
+            <tr><td style="padding-top:6px;">
+              <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">Michael<br><span style="font-family:Menlo,Consolas,'Courier New',monospace;font-size:11px;color:#6D7480;letter-spacing:0.08em;">PULSECITIES</span></p>
+            </td></tr>
+
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:16px 6px 0;">
+          <p style="margin:0;font-family:Menlo,Consolas,'Courier New',monospace;font-size:10px;color:#8A8578;line-height:1.7;">You subscribed at pulsecities.com. <a href="https://pulsecities.com/api/unsubscribe?token={token}" style="color:#8A8578;">Unsubscribe</a> anytime, one click.</p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
 </body>
 </html>
 """.strip()
+
+_NOTE_P = ('<tr><td style="padding-bottom:18px;"><p style="margin:0;'
+           "font-family:Georgia,'Times New Roman',serif;font-size:16px;"
+           'color:#1C2430;line-height:1.7;">{}</p></td></tr>')
+
+_CONFIRMATION_HTML = _WELCOME_SHELL.replace("{title}", "You're watching {zip_code}").replace(
+    "{file_line}", "Watch opened {opened} &middot; {zip_code} &middot; NYC public records"
+).replace("{note_body}", "".join([
+    _NOTE_P.format("You're watching {zip_code}."),
+    _NOTE_P.format("Every {send_day} you'll get a one-page read of what changed in the public record for your neighborhood: deeds, evictions, permits, violations. Quiet weeks send nothing, so when an email arrives it means something moved."),
+    _NOTE_P.format('The current reading is here:<br><a href="https://pulsecities.com/neighborhood/{zip_code}" style="color:#C2410C;">pulsecities.com/neighborhood/{zip_code}</a>'),
+]))
 
 _CONFIRMATION_TEXT = """
 You're watching {zip_code}.
@@ -71,26 +111,13 @@ PulseCities
 You subscribed at pulsecities.com. Unsubscribe: https://pulsecities.com/api/unsubscribe?token={token}
 """.strip()
 
-_CITYWIDE_CONFIRMATION_HTML = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>You're watching NYC</title>
-</head>
-<body style="margin:0;padding:0;background:#ffffff;">
-  <div style="max-width:540px;margin:0 auto;padding:36px 24px;">
-    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">You're watching NYC.</p>
-    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">Every {send_day} you'll get a citywide read of where displacement pressure moved in the public record: the neighborhoods at the top of the risk list and the week's notable deeds, evictions, and permits. Quiet weeks send nothing.</p>
-    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">The live map is here:<br>
-      <a href="https://pulsecities.com/map" style="color:#C2410C;">pulsecities.com/map</a></p>
-    <p style="margin:0 0 28px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">Michael<br>PulseCities</p>
-    <p style="margin:0;padding-top:14px;border-top:1px solid #E5E1D8;font-family:Menlo,Consolas,'Courier New',monospace;font-size:11px;color:#8A8578;line-height:1.7;">You subscribed at pulsecities.com. <a href="https://pulsecities.com/api/unsubscribe?token={token}" style="color:#8A8578;">Unsubscribe</a> anytime, one click.</p>
-  </div>
-</body>
-</html>
-""".strip()
+_CITYWIDE_CONFIRMATION_HTML = _WELCOME_SHELL.replace("{title}", "You're watching NYC").replace(
+    "{file_line}", "Watch opened {opened} &middot; citywide &middot; NYC public records"
+).replace("{note_body}", "".join([
+    _NOTE_P.format("You're watching NYC."),
+    _NOTE_P.format("Every {send_day} you'll get a citywide read of where displacement pressure moved in the public record: the neighborhoods at the top of the risk list and the week's notable deeds, evictions, and permits. Quiet weeks send nothing."),
+    _NOTE_P.format('The live map is here:<br><a href="https://pulsecities.com/map" style="color:#C2410C;">pulsecities.com/map</a>'),
+]))
 
 _CITYWIDE_CONFIRMATION_TEXT = """
 You're watching NYC.
@@ -105,26 +132,13 @@ PulseCities
 You subscribed at pulsecities.com. Unsubscribe: https://pulsecities.com/api/unsubscribe?token={token}
 """.strip()
 
-_OPERATOR_CONFIRMATION_HTML = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>You're following {operator_name}</title>
-</head>
-<body style="margin:0;padding:0;background:#ffffff;">
-  <div style="max-width:540px;margin:0 auto;padding:36px 24px;">
-    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">You're following {operator_name}.</p>
-    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">When this operator's cluster records new property acquisitions in NYC public records, it shows up in your {send_day} email. Quiet weeks send nothing.</p>
-    <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">The operator's profile is here:<br>
-      <a href="https://pulsecities.com/operator/{operator_slug}" style="color:#C2410C;">pulsecities.com/operator/{operator_slug}</a></p>
-    <p style="margin:0 0 28px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#1C2430;line-height:1.7;">Michael<br>PulseCities</p>
-    <p style="margin:0;padding-top:14px;border-top:1px solid #E5E1D8;font-family:Menlo,Consolas,'Courier New',monospace;font-size:11px;color:#8A8578;line-height:1.7;">You subscribed at pulsecities.com. <a href="https://pulsecities.com/api/unsubscribe?token={token}" style="color:#8A8578;">Unsubscribe</a> anytime, one click.</p>
-  </div>
-</body>
-</html>
-""".strip()
+_OPERATOR_CONFIRMATION_HTML = _WELCOME_SHELL.replace("{title}", "You're following {operator_name}").replace(
+    "{file_line}", "Follow opened {opened} &middot; {operator_name} &middot; NYC public records"
+).replace("{note_body}", "".join([
+    _NOTE_P.format("You're following {operator_name}."),
+    _NOTE_P.format("When this operator's cluster records new property acquisitions in NYC public records, it shows up in your {send_day} email. Quiet weeks send nothing."),
+    _NOTE_P.format('The operator\'s profile is here:<br><a href="https://pulsecities.com/operator/{operator_slug}" style="color:#C2410C;">pulsecities.com/operator/{operator_slug}</a>'),
+]))
 
 _OPERATOR_CONFIRMATION_TEXT = """
 You're following {operator_name}.
@@ -239,7 +253,11 @@ def _send_confirmation(
         return
 
     unsub_url = f"https://pulsecities.com/api/unsubscribe?token={unsubscribe_token or ''}"
-    values = {"send_day": DIGEST_SEND_DAY, "token": unsubscribe_token or ""}
+    values = {
+        "send_day": DIGEST_SEND_DAY,
+        "token": unsubscribe_token or "",
+        "opened": datetime.now(timezone.utc).strftime("%b %-d, %Y"),
+    }
 
     if operator_slug:
         name = operator_name or operator_slug
