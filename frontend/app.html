@@ -2406,10 +2406,10 @@
                             const dateStr = item.doc_date ? new Date(item.doc_date + 'T00:00:00').toLocaleDateString(_locale(), {month:'short',day:'numeric'}) : '';
                             el.innerHTML = `
                                 <div class="flex justify-between items-baseline gap-2">
-                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${titleCase(item.address) || item.bbl}</span>
+                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${esc(titleCase(item.address) || item.bbl)}</span>
                                     ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
                                 </div>
-                                <div class="text-xs text-slate-400 mt-0.5">${t('pulse', 'acquired_by')} ${titleCase(item.buyer_name) || ''}</div>
+                                <div class="text-xs text-slate-400 mt-0.5">${t('pulse', 'acquired_by')} ${esc(titleCase(item.buyer_name) || '')}</div>
                             `;
                             return el;
                         }, 5);
@@ -2425,7 +2425,7 @@
                             const dateStr = item.filing_date ? new Date(item.filing_date + 'T00:00:00').toLocaleDateString(_locale(), {month:'short',day:'numeric'}) : '';
                             el.innerHTML = `
                                 <div class="flex justify-between items-baseline gap-2">
-                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${titleCase(item.address) || item.bbl}</span>
+                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${esc(titleCase(item.address) || item.bbl)}</span>
                                     ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
                                 </div>
                                 <div class="text-xs text-slate-400 mt-0.5">${translatePermitLabel(item.permit_type_label || item.permit_type)} ${t('pulse', 'filed')}</div>
@@ -2448,7 +2448,7 @@
                             el.setAttribute('aria-label', `Eviction at ${item.address || 'unknown address'}${dateStr ? ', ' + dateStr : ''}, ${typeStr}`);
                             el.innerHTML = `
                                 <div class="flex justify-between items-baseline gap-2">
-                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${titleCase(item.address) || t('civic', 'unknown_address')}</span>
+                                    <span class="text-xs font-medium text-base-content/90 leading-snug">${esc(titleCase(item.address) || t('civic', 'unknown_address'))}</span>
                                     ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
                                 </div>
                                 <div class="text-xs text-slate-400 mt-0.5">${typeStr}</div>
@@ -4509,7 +4509,7 @@
                 el.className = 'py-1.5 border-b border-base-content/10 last:border-0';
                 el.innerHTML = `
                     <div class="flex justify-between items-baseline gap-2">
-                        <span class="text-xs font-medium text-base-content/90 leading-snug">${ev.addr}</span>
+                        <span class="text-xs font-medium text-base-content/90 leading-snug">${esc(ev.addr)}</span>
                         <span class="text-xs text-slate-500 shrink-0">${ev.dateStr}</span>
                     </div>
                     <div class="text-xs ${meta.color} mt-0.5">${ev.sublabel}</div>

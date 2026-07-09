@@ -563,7 +563,7 @@
     <script>
         let _lang = localStorage.getItem('pc-lang') || 'en';
         let _liveLlc = 0, _liveEvictions = 0;
-        let _cachedStats = null, _cachedMovers = null, _cachedOperators = null;
+        let _cachedStats = null, _cachedMovers = null, _cachedOperators = null, _cachedFlips = null, _cachedRadar = null;
 
         function getCurrentLanguage() {
             return localStorage.getItem('pc-lang') || 'en';
@@ -685,6 +685,14 @@
             if (inp) inp.placeholder = s.search_placeholder;
         }
 
+        // ACRIS buyer names and addresses are free text anyone can put on a
+        // deed. Everything API-sourced goes through here before innerHTML.
+        function esc(v) {
+            return String(v == null ? '' : v)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
         // One dot per LLC shell around the operator, capped where it stops
         // reading at this size. Mirrors the full network graph on the profile.
         function miniNetworkGlyph(llcCount) {
@@ -752,7 +760,7 @@
                 const color    = scoreColor(n.score);
                 const scoreStr = n.score != null ? n.score.toFixed(1) : 'N/A';
                 const barPct   = n.score != null ? Math.max(2, Math.min(100, n.score)) : 0;
-                const nameLine = [n.name, n.borough].filter(Boolean).join(', ');
+                const nameLine = esc([n.name, n.borough].filter(Boolean).join(', '));
                 const row      = document.createElement('a');
                 row.href            = `/map?q=${encodeURIComponent(n.zip_code)}`;
                 row.style.cssText   = 'display:block;text-decoration:none;border-bottom:1px solid rgba(51,65,85,0.4);';
@@ -796,7 +804,7 @@
                 const deltaStr = n.delta > 0 ? `+${n.delta.toFixed(1)} pts` : `${n.delta.toFixed(1)} pts`;
                 const label    = moverSignalLabel(n.dominant_signal, n.raw_count);
                 const driver   = n.raw_count && label ? `${n.raw_count.toLocaleString()} ${label}` : '';
-                const nameStr  = [n.name, n.borough].filter(Boolean).join(', ');
+                const nameStr  = esc([n.name, n.borough].filter(Boolean).join(', '));
 
                 row.innerHTML = `
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
@@ -852,16 +860,17 @@
         function renderFlips(data) {
             const container = document.getElementById('flip-cards');
             if (!container || !data || !data.flips || !data.flips.length) return;
+            container.innerHTML = '';
             const s = i18n[getCurrentLanguage()] || i18n.en;
             data.flips.slice(0, 2).forEach(f => {
                 const row = document.createElement('a');
                 row.href      = '/flips';
                 row.className = 'mover-row';
-                const place = [f.neighborhood, f.zip_code].filter(Boolean).join(' · ');
+                const place = esc([f.neighborhood, f.zip_code].filter(Boolean).join(' · '));
                 row.innerHTML = `
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
                         <div style="min-width:0;">
-                            <div class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.address}</div>
+                            <div class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(f.address)}</div>
                             <div style="font-size:11px;color:#64748b;margin-top:2px;">${place}</div>
                         </div>
                         <div style="flex-shrink:0;text-align:right;">
@@ -877,17 +886,18 @@
         function renderRadar(data) {
             const container = document.getElementById('radar-cards');
             if (!container || !data || !data.clusters || !data.clusters.length) return;
+            container.innerHTML = '';
             const s = i18n[getCurrentLanguage()] || i18n.en;
             data.clusters.slice(0, 2).forEach(c => {
                 const row = document.createElement('a');
                 row.href      = '/radar';
                 row.className = 'mover-row';
-                const place = [c.neighborhood, c.zip_code].filter(Boolean).join(' · ');
+                const place = esc([c.neighborhood, c.zip_code].filter(Boolean).join(' · '));
                 const bldgs = c.building_count === 1 ? s.radar_bldgs_s : s.radar_bldgs;
                 row.innerHTML = `
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
                         <div style="min-width:0;">
-                            <div class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.buyer}</div>
+                            <div class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(c.buyer)}</div>
                             <div style="font-size:11px;color:#64748b;margin-top:2px;">${place}</div>
                         </div>
                         <div style="flex-shrink:0;text-align:right;">
@@ -984,12 +994,12 @@
         // even when these fail, so nothing on the page dead-ends.
         fetch('/api/flips')
             .then(r => r.ok ? r.json() : null)
-            .then(data => { if (data) renderFlips(data); })
+            .then(data => { if (data) { _cachedFlips = data; renderFlips(data); } })
             .catch(() => {});
 
         fetch('/api/radar')
             .then(r => r.ok ? r.json() : null)
-            .then(data => { if (data) renderRadar(data); })
+            .then(data => { if (data) { _cachedRadar = data; renderRadar(data); } })
             .catch(() => {});
 
         // Fetch top operators
@@ -1016,7 +1026,7 @@
                 results.forEach((data, i) => {
                     const zip   = zips[i];
                     const score = data ? data.score : null;
-                    const name  = data ? (data.name || zip) : zip;
+                    const name  = esc(data ? (data.name || zip) : zip);
                     const color = scoreColor(score);
                     const card  = document.createElement('a');
                     card.href   = `/map?q=${encodeURIComponent(zip)}`;
@@ -1088,10 +1098,10 @@
                 html += '<div style="padding:6px 12px 2px;font-size:10px;color:rgba(148,163,184,0.45);text-transform:uppercase;letter-spacing:0.08em;">Neighborhoods</div>';
                 nbhds.forEach(function(n) {
                     items.push(n);
-                    var score = n.score != null ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:#38bdf8;">' + n.score + '</span>' : '';
-                    html += '<a class="dd-row" href="' + n.href + '" style="padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(148,163,184,0.05);text-decoration:none;">'
-                        + '<span style="font-size:13px;color:#e2e8f0;"><span style="font-family:\'JetBrains Mono\',monospace;">' + n.zip + '</span>'
-                        + (n.name ? ' <span style="color:#94a3b8;font-size:12px;">' + n.name + (n.borough ? ', ' + n.borough : '') + '</span>' : '')
+                    var score = n.score != null ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:#38bdf8;">' + esc(n.score) + '</span>' : '';
+                    html += '<a class="dd-row" href="' + esc(n.href) + '" style="padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(148,163,184,0.05);text-decoration:none;">'
+                        + '<span style="font-size:13px;color:#e2e8f0;"><span style="font-family:\'JetBrains Mono\',monospace;">' + esc(n.zip) + '</span>'
+                        + (n.name ? ' <span style="color:#94a3b8;font-size:12px;">' + esc(n.name) + (n.borough ? ', ' + esc(n.borough) : '') + '</span>' : '')
                         + '</span>' + score + '</a>';
                 });
             }
@@ -1099,9 +1109,9 @@
                 html += '<div style="padding:6px 12px 2px;font-size:10px;color:rgba(148,163,184,0.45);text-transform:uppercase;letter-spacing:0.08em;">Operators</div>';
                 ops.forEach(function(o) {
                     items.push(o);
-                    html += '<a class="dd-row" href="' + o.href + '" style="padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(148,163,184,0.05);text-decoration:none;">'
-                        + '<span style="font-size:13px;color:#e2e8f0;">' + o.name + '</span>'
-                        + '<span style="font-size:11px;color:#94a3b8;">' + (o.portfolio_size || '') + (o.portfolio_size ? ' props' : '') + '</span></a>';
+                    html += '<a class="dd-row" href="' + esc(o.href) + '" style="padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(148,163,184,0.05);text-decoration:none;">'
+                        + '<span style="font-size:13px;color:#e2e8f0;">' + esc(o.name) + '</span>'
+                        + '<span style="font-size:11px;color:#94a3b8;">' + esc(o.portfolio_size || '') + (o.portfolio_size ? ' props' : '') + '</span></a>';
                 });
             }
             _ddItems = items; _ddIdx = -1;
@@ -1169,6 +1179,8 @@
             applyTranslations(_lang);
             if (_cachedStats) populateStats(_cachedStats);
             if (_cachedOperators) renderOperators(_cachedOperators);
+            if (_cachedFlips) renderFlips(_cachedFlips);
+            if (_cachedRadar) renderRadar(_cachedRadar);
         });
 
         applyTranslations(_lang);

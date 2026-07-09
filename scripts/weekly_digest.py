@@ -573,6 +573,10 @@ def _events_section_html(event_detail: dict) -> str:
             collapsed[key] = collapsed.get(key, 0) + 1
         html = ""
         for (stamp, addr, label), count in collapsed.items():
+            # Addresses and labels come from ACRIS/DOB free text; escape them
+            # like the citywide section already does.
+            addr = _html_escape(addr)
+            label = _html_escape(label)
             shown = f"{addr} &times;{count}" if count > 1 else addr
             html += (
                 f'<tr>'
@@ -1296,7 +1300,7 @@ def render_operator_digest(subscription: dict, update: dict) -> dict:
     rows_html = ""
     for a in acqs[:15]:
         price = f"${a['price']:,.0f}" if a["price"] else ""
-        place = f"{a['address']}" + (f" ({a['zip']})" if a["zip"] else "")
+        place = _html_escape(f"{a['address']}" + (f" ({a['zip']})" if a["zip"] else ""))
         rows_html += (
             f'<tr>'
             f'<td style="padding:8px 0;font-size:13px;color:#cbd5e1;">{place}</td>'
