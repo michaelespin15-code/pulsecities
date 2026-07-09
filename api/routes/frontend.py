@@ -1316,3 +1316,223 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 
     _flips_cache = (page, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page)
+
+
+_this_week_cache: tuple[str, float] | None = None  # cleared on restart
+
+
+@router.get("/this-week", include_in_schema=False)
+def this_week_page(db: Session = Depends(get_db)):
+    """This week in NYC displacement — a standing weekly review.
+
+    One canonical URL that always shows the current week: score movers,
+    fresh public-record counts, and the newest flips. Computed from the
+    same queries as the map and digest, cached for an hour.
+    """
+    global _this_week_cache
+    if _this_week_cache and time.monotonic() < _this_week_cache[1]:
+        return HTMLResponse(_this_week_cache[0])
+
+    today = date.today()
+    week_ago = today - timedelta(days=7)
+    range_label = f"{week_ago.strftime('%b %-d')} to {today.strftime('%b %-d, %Y')}"
+
+    movers = db.execute(text("""
+        WITH now_s AS (
+            SELECT DISTINCT ON (zip_code) zip_code, composite_score AS s
+            FROM score_history ORDER BY zip_code, scored_at DESC
+        ),
+        then_s AS (
+            SELECT DISTINCT ON (zip_code) zip_code, composite_score AS s
+            FROM score_history
+            WHERE scored_at <= :week_ago
+            ORDER BY zip_code, scored_at DESC
+        )
+        SELECT n.zip_code, nb.name, nb.borough,
+               ROUND(now_s.s::numeric, 1) AS score,
+               ROUND((now_s.s - then_s.s)::numeric, 1) AS delta
+        FROM now_s
+        JOIN then_s ON then_s.zip_code = now_s.zip_code
+        JOIN neighborhoods nb ON nb.zip_code = now_s.zip_code
+        CROSS JOIN LATERAL (SELECT now_s.zip_code) n
+        WHERE ABS(now_s.s - then_s.s) >= 0.5
+        ORDER BY (now_s.s - then_s.s) DESC
+        LIMIT 5
+    """), {"week_ago": week_ago}).fetchall()
+
+    counts = db.execute(text("""
+        SELECT
+            (SELECT COUNT(*) FROM evictions_raw
+             WHERE executed_date >= CURRENT_DATE - INTERVAL '7 days')  AS evictions,
+            (SELECT COUNT(*) FROM permits_raw
+             WHERE filing_date >= CURRENT_DATE - INTERVAL '7 days')    AS permits,
+            (SELECT COUNT(*) FROM complaints_raw
+             WHERE created_date >= CURRENT_DATE - INTERVAL '7 days')   AS complaints,
+            (SELECT COUNT(*) FROM violations_raw
+             WHERE inspection_date >= CURRENT_DATE - INTERVAL '7 days') AS violations
+    """)).fetchone()
+
+    from api.routes.flips import query_flips
+    flips = sorted(
+        query_flips(db),
+        key=lambda f: f.get("transfer_date") or "",
+        reverse=True,
+    )[:3]
+
+    e = _html.escape
+
+    movers_html = ""
+    for m in movers:
+        color = "#ef4444" if m.delta >= 5 else "#f97316"
+        movers_html += (
+            f'<li class="tw-row" onclick="location.href=\'/neighborhood/{e(m.zip_code)}\'">'
+            f'<a href="/neighborhood/{e(m.zip_code)}">'
+            f'<div class="tw-main"><div class="tw-name">{e(m.zip_code)} '
+            f'<span class="tw-sub">{e(m.name or "")}{", " + e(m.borough) if m.borough else ""}</span></div></div>'
+            f'<div class="tw-side"><span class="tw-delta" style="color:{color};">+{m.delta}</span>'
+            f'<span class="tw-score">now {m.score}</span></div>'
+            f'</a></li>\n'
+        )
+    if not movers_html:
+        movers_html = '<li class="tw-empty">No neighborhood moved a half point or more this week.</li>'
+
+    flips_html = ""
+    for f in flips:
+        addr = e(f["address"])
+        flips_html += (
+            f'<li class="tw-row" onclick="location.href=\'/property/{e(str(f["bbl"]))}\'">'
+            f'<a href="/property/{e(str(f["bbl"]))}">'
+            f'<div class="tw-main"><div class="tw-name">{addr} '
+            f'<span class="tw-sub">{e(f["neighborhood"] or str(f["zip_code"]))}</span></div></div>'
+            f'<div class="tw-side"><span class="tw-delta" style="color:#f97316;">+{f["days_between"]}d</span>'
+            f'<span class="tw-score">buy &rarr; permit</span></div>'
+            f'</a></li>\n'
+        )
+    if not flips_html:
+        flips_html = '<li class="tw-empty">No new flips matched the pattern this week.</li>'
+
+    stat_cells = "".join(
+        f'<div class="tw-stat"><div class="tw-stat-n">{v:,}</div><div class="tw-stat-l">{label}</div></div>'
+        for v, label in [
+            (counts.evictions,  "eviction filings"),
+            (counts.permits,    "construction permits"),
+            (counts.violations, "HPD violations"),
+            (counts.complaints, "311 housing complaints"),
+        ]
+    )
+
+    top_line = (
+        f"{movers[0].name or movers[0].zip_code} rose {movers[0].delta} points"
+        if movers else "No major score moves"
+    )
+    title = "This week in NYC displacement | PulseCities"
+    desc = (
+        f"NYC displacement week in review, {range_label}: {top_line}, "
+        f"{counts.evictions:,} eviction filings, {counts.permits:,} construction permits. Public records only."
+    )
+
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{e(title)}</title>
+<meta name="description" content="{e(desc)}">
+<link rel="canonical" href="https://pulsecities.com/this-week">
+<meta property="og:title" content="{e(title)}">
+<meta property="og:description" content="{e(desc)}">
+<meta property="og:url" content="https://pulsecities.com/this-week">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PulseCities">
+<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{e(title)}">
+<meta name="twitter:description" content="{e(desc)}">
+<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}}
+nav{{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0}}
+.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}}
+.container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
+a{{color:inherit;text-decoration:none}}
+h2{{font-size:0.78rem;font-weight:600;color:rgba(148,163,184,0.75);text-transform:uppercase;letter-spacing:0.1em;margin:32px 0 4px}}
+.tw-list{{list-style:none;padding:0;margin:0}}
+.tw-row{{border-bottom:1px solid rgba(148,163,184,0.07);cursor:pointer}}
+.tw-row:hover{{background:rgba(148,163,184,0.04)}}
+.tw-row a{{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 0}}
+.tw-name{{font-family:'JetBrains Mono',monospace;font-size:0.88rem;color:#e2e8f0;font-weight:500}}
+.tw-row:hover .tw-name{{color:#f97316}}
+.tw-sub{{font-family:'DM Sans',sans-serif;font-size:0.76rem;color:rgba(148,163,184,0.7);font-weight:400;margin-left:6px}}
+.tw-side{{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0}}
+.tw-delta{{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:500;line-height:1.1}}
+.tw-score{{font-size:0.68rem;color:rgba(148,163,184,0.55)}}
+.tw-empty{{padding:18px 0;font-size:0.8rem;color:#94a3b8}}
+.tw-stats{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px}}
+.tw-stat{{background:rgba(30,41,59,0.5);border:1px solid rgba(148,163,184,0.1);border-radius:10px;padding:16px}}
+.tw-stat-n{{font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:600;color:#f1f5f9}}
+.tw-stat-l{{font-size:0.72rem;color:#94a3b8;margin-top:4px}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b}}
+.footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
+@media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="/" style="display:flex;align-items:center;gap:8px;color:#f1f5f9;">
+      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span>
+    </a>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);">Map</a>
+      <a href="/flips" style="font-size:0.78rem;color:rgba(148,163,184,0.5);">Flip Watch</a>
+      <a href="/operators" style="font-size:0.78rem;color:rgba(148,163,184,0.5);">Operators</a>
+    </div>
+  </div>
+</nav>
+<div class="container">
+  <div style="margin-bottom:8px;">
+    <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Home</a>
+  </div>
+  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;font-weight:600;margin-bottom:6px;">This week in NYC displacement</h1>
+  <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.55);margin-bottom:4px;">{e(range_label)}</p>
+  <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px;line-height:1.6;">
+    The week's movement across all NYC neighborhoods, from the same public records that drive the map. This page always shows the current week.
+  </p>
+
+  <h2>Score movers</h2>
+  <p style="font-size:0.75rem;color:rgba(148,163,184,0.6);margin-bottom:4px;">Largest displacement-pressure increases over the past 7 days.</p>
+  <ul class="tw-list">
+{movers_html}  </ul>
+
+  <h2>New on the record</h2>
+  <p style="font-size:0.75rem;color:rgba(148,163,184,0.6);">Citywide filings dated within the past 7 days.</p>
+  <div class="tw-stats">{stat_cells}</div>
+
+  <h2>Newest flips</h2>
+  <p style="font-size:0.75rem;color:rgba(148,163,184,0.6);margin-bottom:4px;">LLC bought, then filed to renovate. <a href="/flips" style="color:rgba(249,115,22,0.75);">Full feed &rarr;</a></p>
+  <ul class="tw-list">
+{flips_html}  </ul>
+
+  <p style="font-size:0.72rem;color:rgba(148,163,184,0.45);margin-top:28px;line-height:1.6;">
+    Counts reflect records published by NYC agencies, which can lag the events they describe. Scores are risk indicators, not claims of wrongdoing. <a href="/methodology" style="color:rgba(249,115,22,0.75);">How scores work &rarr;</a>
+  </p>
+</div>
+<footer>
+  <div style="font-size:11px;color:#64748b;margin-bottom:8px;text-align:center;">Built by Michael Espin</div>
+  <div class="footer-links">
+    <a href="/" style="color:#64748b;">Home</a>
+    <a href="/methodology" style="color:#64748b;">Methodology</a>
+    <a href="/about" style="color:#64748b;">About</a>
+    <a href="/status" style="color:#64748b;">Status</a>
+    <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;">Contact</a>
+  </div>
+</footer>
+</body>
+</html>"""
+
+    _this_week_cache = (page, time.monotonic() + _PAGE_TTL)
+    return HTMLResponse(page)
