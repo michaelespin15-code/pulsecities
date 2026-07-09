@@ -374,11 +374,18 @@
             <p id="stat-chips" style="margin-top:4px;margin-bottom:12px;font-size:11px;color:#94a3b8;font-family:'JetBrains Mono',monospace;"></p>
 
             <!-- Explore map: secondary CTA -->
-            <a href="/map"
-               id="cta-explore"
-               style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;"
-               onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'"
-               data-i18n="explore_map">Explore the map &rarr;</a>
+            <div style="display:flex;gap:20px;flex-wrap:wrap;">
+                <a href="/map"
+                   id="cta-explore"
+                   style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;"
+                   onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'"
+                   data-i18n="explore_map">Explore the map &rarr;</a>
+                <a href="/map?replay=1"
+                   id="cta-replay"
+                   style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#f97316;text-decoration:none;opacity:0.7;transition:opacity 0.15s;"
+                   onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'"
+                   data-i18n="watch_replay">&#9654; Watch 6 months of movement</a>
+            </div>
         </section>
 
         <!-- Watchlist: returning users only -->
@@ -483,6 +490,7 @@
                 search_placeholder:   'Enter an address, ZIP, or neighborhood',
                 search_btn:           'Search',
                 explore_map:          'Explore the map →',
+                watch_replay:         '\u25B6 Watch 6 months of movement',
                 recent_findings:      'Operators',
                 operator_profile:     'View operator profile →',
                 op_acquisitions:      'acquisitions',
@@ -524,6 +532,7 @@
                 search_placeholder:   'Dirección, código postal o vecindario',
                 search_btn:           'Buscar',
                 explore_map:          'Explorar el mapa →',
+                watch_replay:         '\u25B6 Mira 6 meses de movimiento',
                 recent_findings:      'Operadores',
                 operator_profile:     'Ver perfil del operador →',
                 op_acquisitions:      'adquisiciones',

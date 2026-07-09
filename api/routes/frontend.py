@@ -1412,12 +1412,12 @@ def this_week_page(db: Session = Depends(get_db)):
         flips_html = '<li class="tw-empty">No new flips matched the pattern this week.</li>'
 
     stat_cells = "".join(
-        f'<div class="tw-stat"><div class="tw-stat-n">{v:,}</div><div class="tw-stat-l">{label}</div></div>'
-        for v, label in [
-            (counts.evictions,  "eviction filings"),
-            (counts.permits,    "construction permits"),
-            (counts.violations, "HPD violations"),
-            (counts.complaints, "311 housing complaints"),
+        f'<div class="tw-stat"><div class="tw-stat-n">{v:,}</div><div class="tw-stat-l" id="tw-stat-{key}">{label}</div></div>'
+        for v, label, key in [
+            (counts.evictions,  "eviction filings",       "evictions"),
+            (counts.permits,    "construction permits",   "permits"),
+            (counts.violations, "HPD violations",         "violations"),
+            (counts.complaints, "311 housing complaints", "complaints"),
         ]
     )
 
@@ -1497,28 +1497,28 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <div style="margin-bottom:8px;">
     <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Home</a>
   </div>
-  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;font-weight:600;margin-bottom:6px;">This week in NYC displacement</h1>
+  <h1 id="tw-heading" style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;font-weight:600;margin-bottom:6px;">This week in NYC displacement</h1>
   <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.55);margin-bottom:4px;">{e(range_label)}</p>
-  <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px;line-height:1.6;">
+  <p id="tw-intro" style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px;line-height:1.6;">
     The week's movement across all NYC neighborhoods, from the same public records that drive the map. This page always shows the current week.
   </p>
 
-  <h2>Score movers</h2>
-  <p style="font-size:0.75rem;color:rgba(148,163,184,0.6);margin-bottom:4px;">Largest displacement-pressure increases over the past 7 days.</p>
+  <h2 id="tw-movers-h">Score movers</h2>
+  <p id="tw-movers-sub" style="font-size:0.75rem;color:rgba(148,163,184,0.6);margin-bottom:4px;">Largest displacement-pressure increases over the past 7 days.</p>
   <ul class="tw-list">
 {movers_html}  </ul>
 
-  <h2>New on the record</h2>
-  <p style="font-size:0.75rem;color:rgba(148,163,184,0.6);">Citywide filings dated within the past 7 days.</p>
+  <h2 id="tw-records-h">New on the record</h2>
+  <p id="tw-records-sub" style="font-size:0.75rem;color:rgba(148,163,184,0.6);">Citywide filings dated within the past 7 days.</p>
   <div class="tw-stats">{stat_cells}</div>
 
-  <h2>Newest flips</h2>
+  <h2 id="tw-flips-h">Newest flips</h2>
   <p style="font-size:0.75rem;color:rgba(148,163,184,0.6);margin-bottom:4px;">LLC bought, then filed to renovate. <a href="/flips" style="color:rgba(249,115,22,0.75);">Full feed &rarr;</a></p>
   <ul class="tw-list">
 {flips_html}  </ul>
 
   <p style="font-size:0.72rem;color:rgba(148,163,184,0.45);margin-top:28px;line-height:1.6;">
-    Counts reflect records published by NYC agencies, which can lag the events they describe. Scores are risk indicators, not claims of wrongdoing. <a href="/methodology" style="color:rgba(249,115,22,0.75);">How scores work &rarr;</a>
+    <span id="tw-note">Counts reflect records published by NYC agencies, which can lag the events they describe. Scores are risk indicators, not claims of wrongdoing.</span> <a id="tw-meth-link" href="/methodology" style="color:rgba(249,115,22,0.75);">How scores work &rarr;</a>
   </p>
 </div>
 <footer>
@@ -1531,6 +1531,32 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;">Contact</a>
   </div>
 </footer>
+<script>
+(function() {{
+  var lang = localStorage.getItem('pc-lang') || 'en';
+  if (lang !== 'es') return;
+  var es = {{
+    'tw-heading':     'Esta semana en el desplazamiento de NYC',
+    'tw-intro':       'El movimiento de la semana en todos los vecindarios de NYC, con los mismos registros p\u00fablicos que alimentan el mapa. Esta p\u00e1gina siempre muestra la semana actual.',
+    'tw-movers-h':    'Cambios de puntuaci\u00f3n',
+    'tw-movers-sub':  'Mayores aumentos de presi\u00f3n de desplazamiento en los \u00faltimos 7 d\u00edas.',
+    'tw-records-h':   'Nuevo en el registro',
+    'tw-records-sub': 'Registros de toda la ciudad con fecha en los \u00faltimos 7 d\u00edas.',
+    'tw-flips-h':     'Flips m\u00e1s recientes',
+    'tw-note':        'Los conteos reflejan registros publicados por agencias de NYC, que pueden retrasarse respecto a los hechos. Las puntuaciones son indicadores de riesgo, no acusaciones.',
+    'tw-meth-link':   'C\u00f3mo funcionan las puntuaciones \u2192',
+    'tw-stat-evictions':  'desalojos presentados',
+    'tw-stat-permits':    'permisos de construcci\u00f3n',
+    'tw-stat-violations': 'violaciones HPD',
+    'tw-stat-complaints': 'quejas de vivienda al 311'
+  }};
+  Object.keys(es).forEach(function(id) {{
+    var el = document.getElementById(id);
+    if (el) el.textContent = es[id];
+  }});
+  document.documentElement.lang = 'es';
+}})();
+</script>
 </body>
 </html>"""
 
