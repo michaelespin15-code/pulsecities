@@ -76,9 +76,12 @@ def send_ops_email(subject: str, body: str) -> None:
     Recipient is ALERT_EMAIL (defaults to the ops inbox). No-ops quietly when
     Resend is not configured. Never raises.
     """
-    recipient = os.getenv("ALERT_EMAIL", "nycdisplacement@gmail.com")
+    # Comma-separated recipients; defaults to the ops inbox plus Michael's
+    # personal address. Override with ALERT_EMAIL.
+    raw = os.getenv("ALERT_EMAIL", "nycdisplacement@gmail.com,michaelespin15@gmail.com")
+    recipients = [addr.strip() for addr in raw.split(",") if addr.strip()]
     api_key = os.getenv("RESEND_API_KEY", "")
-    if not api_key or not recipient:
+    if not api_key or not recipients:
         logger.warning("ops-email skipped (no RESEND_API_KEY or ALERT_EMAIL): %s", subject)
         return
 
@@ -88,10 +91,10 @@ def send_ops_email(subject: str, body: str) -> None:
         resend.api_key = api_key
         resend.Emails.send({
             "from": "PulseCities Ops <alerts@pulsecities.com>",
-            "to": [recipient],
+            "to": recipients,
             "subject": f"[PulseCities] {subject}",
             "text": body,
         })
-        logger.info("ops-email sent to %s: %s", recipient, subject)
+        logger.info("ops-email sent to %s: %s", ", ".join(recipients), subject)
     except Exception as exc:
         logger.warning("Failed to send ops email (non-fatal): %s", exc)
