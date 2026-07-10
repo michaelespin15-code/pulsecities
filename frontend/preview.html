@@ -491,7 +491,88 @@
     });
     I18N_EN.search_ph = document.getElementById('search-input').placeholder;
 
+    // Strings for content rendered from the API. Same vocabulary as the
+    // live homepage dict so the two pages read identically per language.
+    const I18N_DYN = {
+        en: {
+            data_through: 'Data through', through: 'through',
+            llc_on_record: 'LLC transfers on record', status: 'Status',
+            acquisitions: 'acquisitions', llc_entities: 'LLC entities',
+            sig_flips: 'buy-then-renovate flips flagged',
+            sig_clusters: 'multi-building buying clusters',
+            sig_nightly: 'neighborhoods scored nightly',
+        },
+        es: {
+            data_through: 'Datos hasta', through: 'hasta',
+            llc_on_record: 'transferencias LLC registradas', status: 'Estado',
+            acquisitions: 'adquisiciones', llc_entities: 'entidades LLC',
+            sig_flips: 'reventas de compra y renovación detectadas',
+            sig_clusters: 'grupos de compra de varios edificios',
+            sig_nightly: 'vecindarios puntuados cada noche',
+        },
+    };
+
+    let _lang = localStorage.getItem('pc-lang') || 'en';
+    let _stats = null, _flipCount = null, _radarCount = null, _ops = null;
+
+    function fmtDate(iso, opts) {
+        return new Date(iso + 'T00:00:00Z').toLocaleDateString(
+            _lang === 'es' ? 'es' : 'en-US', Object.assign({ timeZone: 'UTC' }, opts));
+    }
+
+    // Hero meta: real freshness, honestly windowed. Deed watermark is named
+    // whenever the upstream feed is paused.
+    function renderMeta() {
+        if (!_stats) return;
+        const d = I18N_DYN[_lang] || I18N_DYN.en;
+        const parts = [];
+        const fresh = _stats.data_freshness || {};
+        const latest = Object.values(fresh).map(f => f.through).filter(Boolean).sort().pop();
+        if (latest) parts.push(d.data_through + ' ' + fmtDate(latest, { month: 'short', day: 'numeric', year: 'numeric' }));
+        if (_stats.llc_transfers_recent) {
+            let s = _stats.llc_transfers_recent.toLocaleString() + ' ' + d.llc_on_record;
+            if (fresh.acris && fresh.acris.stale && fresh.acris.through) {
+                s += ' ' + d.through + ' ' + fmtDate(fresh.acris.through, { month: 'short', day: 'numeric' });
+            }
+            parts.push(s);
+        }
+        document.getElementById('hero-meta').innerHTML =
+            esc(parts.join(' · ')) + ' · <a href="/status">' + esc(d.status) + '</a>';
+    }
+
+    function renderRankings() {
+        if (!_stats) return;
+        const list = (_stats.top_risk_list || []).slice(0, 4);
+        document.getElementById('mod-rankings').innerHTML = list.map(n => `
+            <a class="rank-row" href="/neighborhood/${esc(n.zip_code)}" style="text-decoration:none;">
+                <span class="rank-zip">${esc(n.zip_code)}</span>
+                <span class="rank-name">${esc(n.name || '')}</span>
+                <span class="rank-score">${n.score != null ? Number(n.score).toFixed(1) : ''}</span>
+            </a>`).join('');
+    }
+
+    function renderOperators() {
+        if (!Array.isArray(_ops)) return;
+        const d = I18N_DYN[_lang] || I18N_DYN.en;
+        document.getElementById('mod-operators').innerHTML = _ops.map(o => `
+            <div class="op-row">
+                <div class="op-name">${esc(o.operator_root)}</div>
+                <div class="op-meta">${o.total_acquisitions} ${d.acquisitions} · ${o.llc_count} ${d.llc_entities}</div>
+            </div>`).join('');
+    }
+
+    function renderSignals() {
+        const d = I18N_DYN[_lang] || I18N_DYN.en;
+        const rows = [];
+        if (_flipCount != null) rows.push({ n: _flipCount, d: d.sig_flips });
+        if (_radarCount != null) rows.push({ n: _radarCount, d: d.sig_clusters });
+        rows.push({ n: 177, d: d.sig_nightly });
+        document.getElementById('mod-signals').innerHTML = rows.map(r => `
+            <div class="sig-stat"><div class="sig-num">${r.n}</div><div class="sig-desc">${esc(r.d)}</div></div>`).join('');
+    }
+
     function applyLang(lang) {
+        _lang = lang;
         const dict = lang === 'es' ? I18N_ES : I18N_EN;
         document.documentElement.lang = lang;
         document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -505,62 +586,35 @@
         document.getElementById('search-input').placeholder = dict.search_ph || I18N_EN.search_ph;
         const t = document.getElementById('lang-toggle');
         t.textContent = lang === 'es' ? 'ES / EN' : 'EN / ES';
+        renderMeta(); renderOperators(); renderSignals();
     }
     document.getElementById('lang-toggle').addEventListener('click', () => {
         const next = (localStorage.getItem('pc-lang') || 'en') === 'es' ? 'en' : 'es';
         localStorage.setItem('pc-lang', next);
         applyLang(next);
     });
-    applyLang(localStorage.getItem('pc-lang') || 'en');
+    applyLang(_lang);
 
-    // Hero meta: real freshness, honestly windowed. Deed watermark is named
-    // whenever the upstream feed is paused.
     fetch('/api/stats').then(r => r.ok ? r.json() : null).then(data => {
         if (!data) return;
-        const parts = [];
-        const fresh = data.data_freshness || {};
-        const latest = Object.values(fresh).map(f => f.through).filter(Boolean).sort().pop();
-        if (latest) parts.push('Data through ' + new Date(latest + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }));
-        if (data.llc_transfers_recent) {
-            let s = data.llc_transfers_recent.toLocaleString() + ' LLC transfers on record';
-            if (fresh.acris && fresh.acris.stale && fresh.acris.through) {
-                s += ' through ' + new Date(fresh.acris.through + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
-            }
-            parts.push(s);
-        }
-        const meta = document.getElementById('hero-meta');
-        meta.innerHTML = esc(parts.join(' · ')) + ' · <a href="/status">Status</a>';
-
-        // Rankings module
-        const list = (data.top_risk_list || []).slice(0, 4);
-        const mr = document.getElementById('mod-rankings');
-        mr.innerHTML = list.map(n => `
-            <a class="rank-row" href="/neighborhood/${esc(n.zip_code)}" style="text-decoration:none;">
-                <span class="rank-zip">${esc(n.zip_code)}</span>
-                <span class="rank-name">${esc(n.name || '')}</span>
-                <span class="rank-score">${n.score != null ? Number(n.score).toFixed(1) : ''}</span>
-            </a>`).join('');
+        _stats = data;
+        renderMeta();
+        renderRankings();
     }).catch(() => {});
 
     fetch('/api/operators/top?limit=3').then(r => r.ok ? r.json() : null).then(ops => {
         if (!Array.isArray(ops)) return;
-        document.getElementById('mod-operators').innerHTML = ops.map(o => `
-            <div class="op-row">
-                <div class="op-name">${esc(o.operator_root)}</div>
-                <div class="op-meta">${o.total_acquisitions} acquisitions · ${o.llc_count} LLC entities</div>
-            </div>`).join('');
+        _ops = ops;
+        renderOperators();
     }).catch(() => {});
 
     Promise.all([
         fetch('/api/flips').then(r => r.ok ? r.json() : null).catch(() => null),
         fetch('/api/radar').then(r => r.ok ? r.json() : null).catch(() => null),
     ]).then(([flips, radar]) => {
-        const rows = [];
-        if (flips && flips.count != null) rows.push({ n: flips.count, d: 'buy-then-renovate flips flagged' });
-        if (radar && radar.count != null) rows.push({ n: radar.count, d: 'multi-building buying clusters' });
-        rows.push({ n: 177, d: 'neighborhoods scored nightly' });
-        document.getElementById('mod-signals').innerHTML = rows.map(r => `
-            <div class="sig-stat"><div class="sig-num">${r.n}</div><div class="sig-desc">${r.d}</div></div>`).join('');
+        if (flips && flips.count != null) _flipCount = flips.count;
+        if (radar && radar.count != null) _radarCount = radar.count;
+        renderSignals();
     });
 
     // Docket arc reveal
