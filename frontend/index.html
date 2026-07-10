@@ -333,6 +333,7 @@
         }
         .module-body { flex: 1; }
         .module-cta { font-size: 12.5px; margin-top: 12px; }
+        div.module-cta { display: flex; gap: 16px; }
 
         .rank-row { display: flex; align-items: baseline; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(148,163,184,0.07); }
         .rank-zip { font-family: var(--mono); font-size: 13px; font-weight: 600; }
@@ -460,7 +461,7 @@
     </header>
 
     <section aria-labelledby="finding-label">
-        <p class="eyebrow" id="finding-label" data-i18n="finding_eyebrow">This week's finding</p>
+        <p class="eyebrow" id="finding-label" data-i18n="finding_eyebrow">Featured finding</p>
 
         <!-- Signature element: a real paper trail, rendered as the docket it is.
              Fed by the newest approved weekly eviction-flip edition; the arc
@@ -514,7 +515,7 @@
             <div class="module">
                 <p class="module-label" data-i18n="mod_signals">Live signals</p>
                 <div class="module-body" id="mod-signals"></div>
-                <div class="module-cta"><a href="/flips" data-i18n="mod_flips_cta">Flip watch &rarr;</a> &middot; <a href="/radar" data-i18n="mod_radar_cta">Radar &rarr;</a></div>
+                <div class="module-cta"><a href="/flips" data-i18n="mod_flips_cta">Flip watch &rarr;</a><a href="/radar" data-i18n="mod_radar_cta">Radar &rarr;</a></div>
             </div>
         </div>
     </section>
@@ -555,7 +556,8 @@
             search_ph: 'Enter an address, ZIP, or neighborhood',
             explore_map: 'Explore the map →',
             legend_low: 'Low', legend_moderate: 'Moderate', legend_high: 'High', legend_critical: 'Critical',
-            finding_eyebrow: "This week's finding",
+            finding_eyebrow: 'Featured finding',
+            finding_eyebrow_week: "This week's finding",
             docket_head: 'Eviction → purchase → resale',
             docket_gain: '+100% in 84 days',
             docket_sub: 'BBL 2050840054 · ZIP 10470 · every step below is a public record',
@@ -594,7 +596,8 @@
             search_ph: 'Escribe una dirección, código postal o vecindario',
             explore_map: 'Explorar el mapa →',
             legend_low: 'Bajo', legend_moderate: 'Moderado', legend_high: 'Alto', legend_critical: 'Crítico',
-            finding_eyebrow: 'El hallazgo de la semana',
+            finding_eyebrow: 'Hallazgo destacado',
+            finding_eyebrow_week: 'El hallazgo de la semana',
             docket_head: 'Desalojo → compra → reventa',
             docket_gain: '+100% en 84 días',
             docket_sub: 'BBL 2050840054 · ZIP 10470 · cada paso es un registro público',
@@ -698,6 +701,8 @@
 
     function renderDocket() {
         if (!_arc) return;
+        // A live edition earns the weekly label; the fallback arc stays "Featured".
+        document.getElementById('finding-label').textContent = t('finding_eyebrow_week');
         const a = _arc;
         const days = Math.round((new Date(a.sell_date) - new Date(a.buy_date)) / 86400000);
         const place = [titleCase(a.address), a.neighborhood, a.borough].filter(Boolean).join(', ');
