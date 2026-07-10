@@ -2265,10 +2265,16 @@
             if (_allScoresPromise) return _allScoresPromise;
             _allScoresPromise = fetch('/api/neighborhoods')
                 .then(r => r.ok ? r.json() : null)
-                .then(geo => (geo && geo.features)
-                    ? geo.features.map(f => (f.properties || {}).score)
-                        .filter(s => s !== null && s !== undefined)
-                    : [])
+                .then(geo => {
+                    if (!(geo && geo.features)) {
+                        // A non-OK response must not memoize an empty list for
+                        // the whole session; let the next caller retry.
+                        _allScoresPromise = null;
+                        return [];
+                    }
+                    return geo.features.map(f => (f.properties || {}).score)
+                        .filter(s => s !== null && s !== undefined);
+                })
                 .catch(() => { _allScoresPromise = null; return []; });
             return _allScoresPromise;
         }
@@ -3875,6 +3881,9 @@
 
         // Sync UI to browser back/forward navigation
         window.addEventListener('popstate', function() {
+            // A running score replay must not keep painting frames over
+            // whatever view back/forward navigation lands on.
+            if (_replayTimer) _replayStop();
             const np = window.location.pathname.match(/^\/neighborhood\/(\d{5})$/);
             const pp = window.location.pathname.match(/^\/property\/(\d+)$/);
             if (np) { _navFromList = false; selectNeighborhood(np[1]); }
