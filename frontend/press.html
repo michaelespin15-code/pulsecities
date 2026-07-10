@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Press and Verified Findings | PulseCities</title>
+    <meta name="description" content="Verified NYC displacement findings with ACRIS document IDs, method notes, and data currency. Built for reporters covering housing.">
+    <link rel="canonical" href="https://pulsecities.com/press">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Press and Verified Findings | PulseCities">
+    <meta property="og:description" content="Verified NYC displacement findings with ACRIS document IDs, method notes, and data currency. Built for reporters covering housing.">
+    <meta property="og:url" content="https://pulsecities.com/press">
+    <meta property="og:image" content="https://pulsecities.com/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Press and Verified Findings | PulseCities">
+    <meta name="twitter:description" content="Verified NYC displacement findings with ACRIS document IDs, method notes, and data currency.">
+    <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap"></noscript>
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Press and Verified Findings",
+        "description": "Verified NYC displacement findings with ACRIS document IDs, method notes, and data currency.",
+        "url": "https://pulsecities.com/press",
+        "dateModified": "2026-07-10",
+        "author": { "@type": "Person", "name": "Michael Espin" },
+        "publisher": { "@type": "Organization", "name": "PulseCities", "alternateName": "Pulse Cities" }
+    }
+    </script>
+
+    <script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>
+    <script>
+        window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+        plausible.init()
+    </script>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:      #0f172a;
+            --surface: #1e293b;
+            --border:  rgba(148, 163, 184, 0.12);
+            --text:    #e2e8f0;
+            --muted:   #94a3b8;
+            --faint:   rgba(148, 163, 184, 0.45);
+            --orange:  #f97316;
+            --sky:     #38bdf8;
+            --mono:    'JetBrains Mono', monospace;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        a { color: var(--sky); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .nav-brand {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--orange);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .nav-brand:hover { text-decoration: none; opacity: 0.85; }
+
+        .nav-breadcrumb {
+            font-size: 12px;
+            color: var(--faint);
+            font-family: var(--mono);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 13px;
+        }
+        .nav-right a { color: var(--muted); }
+        .nav-right a:hover { color: var(--text); text-decoration: none; }
+
+        .container {
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 56px 24px 80px;
+        }
+
+        .page-header { margin-bottom: 56px; }
+
+        .page-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--orange);
+            font-family: var(--mono);
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-family: 'Bricolage Grotesque', 'DM Sans', sans-serif;
+            font-size: clamp(22px, 4vw, 30px);
+            font-weight: 600;
+            line-height: 1.25;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .page-subhead {
+            font-size: 17px;
+            color: var(--text);
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .page-intro {
+            font-size: 15px;
+            color: var(--muted);
+            line-height: 1.65;
+            margin-bottom: 28px;
+        }
+
+        .cta-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+        .btn-primary {
+            display: inline-block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a;
+            background: var(--orange);
+            border: 1px solid var(--orange);
+            border-radius: 6px;
+            padding: 8px 18px;
+            text-decoration: none;
+            transition: opacity 0.15s;
+        }
+        .btn-primary:hover { opacity: 0.88; text-decoration: none; color: #0f172a; }
+
+        .btn-secondary {
+            display: inline-block;
+            font-size: 13px;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 18px;
+            text-decoration: none;
+            transition: border-color 0.15s, color 0.15s;
+        }
+        .btn-secondary:hover { color: var(--text); border-color: rgba(148,163,184,0.35); text-decoration: none; }
+
+        section { margin-bottom: 52px; }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        p { margin-bottom: 14px; color: var(--text); }
+        p:last-child { margin-bottom: 0; }
+
+        /* Finding cards */
+        .finding {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--orange);
+            border-radius: 10px;
+            padding: 20px 22px;
+            margin-bottom: 18px;
+        }
+
+        .finding-place {
+            font-family: 'Bricolage Grotesque', 'DM Sans', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+
+        .finding-kicker {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--faint);
+            margin-bottom: 12px;
+        }
+
+        .finding-arc { display: flex; flex-direction: column; gap: 0; margin-bottom: 14px; }
+
+        .arc-step {
+            display: grid;
+            grid-template-columns: 92px 1fr;
+            gap: 14px;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--border);
+            align-items: baseline;
+        }
+        .arc-step:first-child { border-top: 1px solid var(--border); }
+
+        .arc-date {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .arc-event { font-size: 14px; color: var(--text); line-height: 1.55; }
+        .arc-event .amt { font-family: var(--mono); color: var(--orange); }
+
+        .finding-context { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
+        .finding-context:empty { display: none; }
+
+        .finding-verify {
+            font-family: var(--mono);
+            font-size: 11.5px;
+            color: var(--faint);
+            line-height: 1.7;
+            word-break: break-word;
+        }
+        .finding-verify a { color: var(--sky); }
+
+        .finding-links { margin-top: 10px; font-size: 13px; display: flex; flex-wrap: wrap; gap: 14px; }
+
+        /* Source rows */
+        .source-list { display: flex; flex-direction: column; }
+
+        .source-row {
+            display: grid;
+            grid-template-columns: 170px 1fr;
+            gap: 16px;
+            padding: 13px 0;
+            border-bottom: 1px solid var(--border);
+            align-items: baseline;
+        }
+        .source-row:first-child { border-top: 1px solid var(--border); }
+
+        .source-name {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .source-desc { font-size: 13.5px; color: var(--muted); line-height: 1.6; }
+
+        .callout {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--sky);
+            border-radius: 8px;
+            padding: 16px 18px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .updated-line {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--faint);
+            display: none;
+            margin-top: 6px;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 28px 24px;
+            padding-bottom: max(28px, calc(env(safe-area-inset-bottom, 0px) + 28px));
+            text-align: center;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .footer-byline { font-size: 14px; color: var(--text); margin-bottom: 10px; }
+        .footer-byline a { color: var(--sky); font-weight: 500; }
+
+        .footer-links { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .footer-links a { color: var(--muted); font-size: 13px; }
+        .footer-links a:hover { color: var(--text); }
+
+        @media (max-width: 600px) {
+            .container { padding: 36px 16px calc(env(safe-area-inset-bottom, 0px) + 24px); }
+            nav { padding: 0 16px; }
+            .nav-breadcrumb { display: none; }
+            .nav-right { gap: 14px; }
+            .nav-right .nav-hide-mobile { display: none; }
+            .arc-step { grid-template-columns: 1fr; gap: 2px; }
+            .source-row { grid-template-columns: 1fr; gap: 4px; }
+        }
+
+        .skip-link { position:absolute;top:-48px;left:0;z-index:9999;background:#1e293b;color:#38bdf8;padding:8px 16px;font-size:14px;text-decoration:none;border-radius:0 0 4px 0;transition:top 0.1s; }
+        .skip-link:focus { top:0; }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to content</a>
+
+<nav>
+    <a href="/" class="nav-brand">
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <rect width="32" height="32" rx="6" fill="#1a1a2e"/>
+            <polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        PulseCities
+    </a>
+    <span class="nav-breadcrumb">/ press</span>
+    <div class="nav-right">
+        <a href="/map">Map</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/operators" class="nav-hide-mobile">Operators</a>
+        <a href="#contact" class="nav-hide-mobile">Contact</a>
+    </div>
+</nav>
+
+<div id="main-content" class="container">
+
+    <header class="page-header">
+        <p class="page-label">For reporters</p>
+        <h1>Verified findings, with the paper trail</h1>
+        <p class="page-subhead">Every claim on this page traces to specific ACRIS document IDs and court-executed eviction records. Each one verifies in public systems in a few minutes.</p>
+        <p class="page-intro">
+            PulseCities connects NYC deed transfers, eviction records, HPD violations, and permits to surface displacement patterns that are hard to see in any single dataset. The findings below are the clearest examples on record right now.
+        </p>
+        <div class="cta-row">
+            <a href="mailto:nycdisplacement@gmail.com?subject=Press%20inquiry" class="btn-primary" onclick="plausible('Press Contact Click')">Contact for records</a>
+            <a href="/methodology" class="btn-secondary">Read the methodology</a>
+        </div>
+        <p class="updated-line" id="press-last-updated"></p>
+    </header>
+
+    <section>
+        <h2>Finding: eviction, purchase, resale at 870 Belmont Avenue</h2>
+
+        <div class="finding">
+            <p class="finding-place">870 Belmont Avenue, East New York, Brooklyn 11208</p>
+            <p class="finding-kicker">BBL 3040400020 &middot; two residential units</p>
+
+            <div class="finding-arc">
+                <div class="arc-step">
+                    <span class="arc-date">2025-04-07</span>
+                    <span class="arc-event">A city marshal executes a residential eviction at unit 2 (dockets 142544 and 145842, one Housing Court case).</span>
+                </div>
+                <div class="arc-step">
+                    <span class="arc-date">2025-09-05</span>
+                    <span class="arc-event">MTEK NYC LLC buys the building for <span class="amt">$712,775</span>, five months after the eviction. The seller took title for $10 four days earlier, a same-week pass-through.</span>
+                </div>
+                <div class="arc-step">
+                    <span class="arc-date">2026-02-27</span>
+                    <span class="arc-event">MTEK NYC LLC resells for <span class="amt">$1,150,000</span>. A 61% gain in under six months of ownership.</span>
+                </div>
+            </div>
+
+            <p class="finding-context" id="mtek-context"></p>
+
+            <p class="finding-verify">
+                Verify in <a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBL" target="_blank" rel="noopener noreferrer">ACRIS</a>: purchase deed 2025091700354002, pass-through deed 2025091700354001, resale deed 2026030500561001. Eviction dockets via NYC Open Data marshal evictions (court index 332669/23).
+            </p>
+            <div class="finding-links">
+                <a href="/operator/mtek-nyc">MTEK operator profile</a>
+                <a href="/neighborhood/11208">ZIP 11208 records</a>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Finding: the same arc, doubled, at 4575 Furman Avenue</h2>
+
+        <div class="finding">
+            <p class="finding-place">4575 Furman Avenue, Wakefield, Bronx 10470</p>
+            <p class="finding-kicker">BBL 2050840054</p>
+
+            <div class="finding-arc">
+                <div class="arc-step">
+                    <span class="arc-date">2025-01-13</span>
+                    <span class="arc-event">First residential eviction executed.</span>
+                </div>
+                <div class="arc-step">
+                    <span class="arc-date">2025-04-21</span>
+                    <span class="arc-event">Second residential eviction executed, a separate date and docket.</span>
+                </div>
+                <div class="arc-step">
+                    <span class="arc-date">2025-07-08</span>
+                    <span class="arc-event">PHANTOM CAPITAL 161 LLC buys the house for <span class="amt">$500,000</span>, directly from the individual owner of record.</span>
+                </div>
+                <div class="arc-step">
+                    <span class="arc-date">2025-09-30</span>
+                    <span class="arc-event">PHANTOM CAPITAL 161 LLC resells for <span class="amt">$999,000</span>. A 100% gain in 84 days.</span>
+                </div>
+            </div>
+
+            <p class="finding-context" id="phantom-context"></p>
+
+            <p class="finding-verify">
+                Verify in <a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBL" target="_blank" rel="noopener noreferrer">ACRIS</a>: purchase deed 2025071500436001, resale deed 2025101300240002.
+            </p>
+            <div class="finding-links">
+                <a href="/operator/phantom-capital">Phantom Capital operator profile</a>
+                <a href="/neighborhood/10470">ZIP 10470 records</a>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Finding: the pattern is ongoing</h2>
+        <p>
+            The same operator made three more post-eviction purchases in 2026, all in the Bronx, all still held as of the latest deed data. One was made through an entity named PHANTOM AFFORDABLE HOUSING LLC.
+        </p>
+
+        <div class="finding">
+            <div class="finding-arc">
+                <div class="arc-step">
+                    <span class="arc-date">2026-01-08</span>
+                    <span class="arc-event">637 East 224 Street, Bronx 10466. Bought for <span class="amt">$1,450,000</span> by PHANTOM AFFORDABLE HOUSING LLC, four months after a residential eviction there (2025-09-11). Deed 2026011600237001.</span>
+                </div>
+                <div class="arc-step">
+                    <span class="arc-date">2026-01-23</span>
+                    <span class="arc-event">2937 Mickle Avenue, Bronx 10469. Bought for <span class="amt">$650,000</span> by PHANTOM CAPITAL BX LLC, six months after a residential eviction there (2025-07-22). Deed 2026020500770001.</span>
+                </div>
+                <div class="arc-step">
+                    <span class="arc-date">2026-04-30</span>
+                    <span class="arc-event">928 East 219 Street, Bronx 10469. Bought for <span class="amt">$550,000</span> by PHANTOM CAPITAL 18 LLC, ten months after a residential eviction there (2025-07-10). Deed 2026051201091001.</span>
+                </div>
+            </div>
+
+            <p class="finding-verify">
+                BBLs 2048260038, 2047830038, 2046890054. All three appear with their eviction dates on the <a href="/operator/phantom-capital">operator profile</a>.
+            </p>
+        </div>
+    </section>
+
+    <section>
+        <h2>How these were found</h2>
+        <p>
+            PulseCities ingests NYC public records nightly and joins them at the parcel level. The findings above come from one repeatable query: residential evictions executed by city marshals, matched to LLC deed purchases at the same parcel within twelve months, matched again to any later resale at a markup. Operator identities come from clustering LLC grantee names across deeds; every cluster shown publicly passes a classification gate that screens out banks, servicers, and government entities. The scoring model and its limits are documented on the <a href="/methodology">methodology page</a>.
+        </p>
+        <div class="callout">
+            Nothing here alleges illegality. Buying after an eviction and reselling at a profit is legal. What PulseCities documents is the pattern, on the record, with the identities connected.
+        </div>
+    </section>
+
+    <section>
+        <h2>Data sources and currency</h2>
+        <div class="source-list">
+            <div class="source-row">
+                <span class="source-name">ACRIS deeds</span>
+                <span class="source-desc">NYC Department of Finance property transfers. The upstream Open Data feed is currently paused; deed data runs through late May 2026. Stated on every page that uses it.</span>
+            </div>
+            <div class="source-row">
+                <span class="source-name">Marshal evictions</span>
+                <span class="source-desc">Executed residential and commercial evictions via NYC Open Data. Updated daily; the court system publishes with a lag of two to four weeks.</span>
+            </div>
+            <div class="source-row">
+                <span class="source-name">HPD violations</span>
+                <span class="source-desc">Housing maintenance code violations, updated daily.</span>
+            </div>
+            <div class="source-row">
+                <span class="source-name">DOB permits</span>
+                <span class="source-desc">Alteration and construction filings, updated daily.</span>
+            </div>
+            <div class="source-row">
+                <span class="source-name">311 complaints</span>
+                <span class="source-desc">Housing-related service requests, updated daily.</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact">
+        <h2>Contact</h2>
+        <p>
+            PulseCities is built and run by <a href="/about">Michael Espin</a>, working from public records only. For any finding above, or anything you see elsewhere on the site, you can request the full document ID list, BBLs, CSV exports, or a custom query against the underlying data. Replies usually come the same day.
+        </p>
+        <div class="cta-row" style="margin-top:18px;">
+            <a href="mailto:nycdisplacement@gmail.com?subject=Press%20inquiry" class="btn-primary" onclick="plausible('Press Contact Click')">nycdisplacement@gmail.com</a>
+            <a href="/operators" class="btn-secondary">Browse operator profiles</a>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    <p class="footer-byline">Built by Michael Espin</p>
+    <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/about">About</a>
+        <a href="/status">Status</a>
+        <a href="mailto:nycdisplacement@gmail.com">Contact</a>
+        <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="display:inline-flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+    </div>
+</footer>
+
+<script>
+    // Portfolio counts change as deeds land, so they render from the live API
+    // rather than baked-in numbers. If the fetch fails the lines stay hidden
+    // and the frozen deed facts above stand on their own.
+    fetch('/api/operators/top?limit=10')
+        .then(r => r.ok ? r.json() : null)
+        .then(ops => {
+            if (!Array.isArray(ops)) return;
+            const byRoot = {};
+            ops.forEach(o => { byRoot[o.operator_root] = o; });
+            const mtek = byRoot['MTEK'];
+            if (mtek) {
+                document.getElementById('mtek-context').textContent =
+                    'MTEK NYC LLC is one of ' + mtek.llc_count + ' LLC entities tied to a single operator with ' +
+                    mtek.total_acquisitions + ' recorded acquisitions across Brooklyn and Queens.';
+            }
+            const ph = byRoot['PHANTOM'];
+            if (ph) {
+                document.getElementById('phantom-context').textContent =
+                    'PHANTOM CAPITAL 161 LLC is one of ' + ph.llc_count + ' LLC entities tied to a single operator with ' +
+                    ph.total_acquisitions + ' recorded acquisitions, mostly in the Bronx and East Brooklyn. The entities follow numbered naming sequences.';
+            }
+        })
+        .catch(() => {});
+
+    // Freshness line, same source as the homepage chip.
+    fetch('/api/status')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+            const el = document.getElementById('press-last-updated');
+            if (!el || !data || !data.data_through) return;
+            const d = new Date(data.data_through + 'T00:00:00Z');
+            if (isNaN(d)) return;
+            el.textContent = 'Data current through ' + d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }) + '. Deed data through late May 2026 (upstream feed paused).';
+            el.style.display = 'block';
+        })
+        .catch(() => {});
+</script>
+
+</body>
+</html>

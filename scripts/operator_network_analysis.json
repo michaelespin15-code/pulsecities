@@ -164,8 +164,8 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4031930023",
-          "acquiring_entity": "FINANCE OF AMERICA REVERSE LLC",
+          "bbl": "4120310033",
+          "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2025-07-18",
           "acquisition_price": null
         },
@@ -176,8 +176,8 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4120310033",
-          "acquiring_entity": "SELENE FINANCE LP",
+          "bbl": "4031930023",
+          "acquiring_entity": "FINANCE OF AMERICA REVERSE LLC",
           "acquisition_date": "2025-07-18",
           "acquisition_price": null
         },
@@ -188,12 +188,6 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3004450011",
-          "acquiring_entity": "SM FINANCE III LLC",
-          "acquisition_date": "2025-07-25",
-          "acquisition_price": null
-        },
-        {
           "bbl": "3004450050",
           "acquiring_entity": "SM FINANCE III LLC",
           "acquisition_date": "2025-07-25",
@@ -201,6 +195,12 @@
         },
         {
           "bbl": "3004380001",
+          "acquiring_entity": "SM FINANCE III LLC",
+          "acquisition_date": "2025-07-25",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3004450011",
           "acquiring_entity": "SM FINANCE III LLC",
           "acquisition_date": "2025-07-25",
           "acquisition_price": null
@@ -230,12 +230,6 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3079580072",
-          "acquiring_entity": "SELENE FINANCE LP",
-          "acquisition_date": "2025-09-17",
-          "acquisition_price": null
-        },
-        {
           "bbl": "4107220058",
           "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2025-09-17",
@@ -243,6 +237,12 @@
         },
         {
           "bbl": "3089070604",
+          "acquiring_entity": "SELENE FINANCE LP",
+          "acquisition_date": "2025-09-17",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3079580072",
           "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2025-09-17",
           "acquisition_price": null
@@ -260,8 +260,8 @@
           "acquisition_price": 535350.0
         },
         {
-          "bbl": "3042350030",
-          "acquiring_entity": "FINANCE OF AMERICA REVERSE LLC",
+          "bbl": "4099650030",
+          "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2025-09-19",
           "acquisition_price": null
         },
@@ -272,8 +272,8 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4099650030",
-          "acquiring_entity": "SELENE FINANCE LP",
+          "bbl": "3042350030",
+          "acquiring_entity": "FINANCE OF AMERICA REVERSE LLC",
           "acquisition_date": "2025-09-19",
           "acquisition_price": null
         },
@@ -284,7 +284,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3072930032",
+          "bbl": "3054911402",
+          "acquiring_entity": "SELENE FINANCE LP",
+          "acquisition_date": "2025-10-08",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4104660069",
           "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2025-10-08",
           "acquisition_price": null
@@ -296,13 +302,7 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3054911402",
-          "acquiring_entity": "SELENE FINANCE LP",
-          "acquisition_date": "2025-10-08",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4104660069",
+          "bbl": "3072930032",
           "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2025-10-08",
           "acquisition_price": null
@@ -482,13 +482,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4109810148",
+          "bbl": "4102090215",
           "acquiring_entity": "FINANCE OF AMERICA REVERSE LLC",
           "acquisition_date": "2026-01-26",
           "acquisition_price": null
         },
         {
-          "bbl": "4102090215",
+          "bbl": "4109810148",
           "acquiring_entity": "FINANCE OF AMERICA REVERSE LLC",
           "acquisition_date": "2026-01-26",
           "acquisition_price": null
@@ -524,13 +524,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2054260008",
+          "bbl": "4040880017",
           "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2026-02-10",
           "acquisition_price": null
         },
         {
-          "bbl": "4040880017",
+          "bbl": "2054260008",
           "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2026-02-10",
           "acquisition_price": null
@@ -566,13 +566,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3056341506",
+          "bbl": "3054950864",
           "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2026-02-25",
           "acquisition_price": null
         },
         {
-          "bbl": "3054950864",
+          "bbl": "3056341506",
           "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2026-02-25",
           "acquisition_price": null
@@ -614,18 +614,6 @@
           "acquisition_price": 585000.0
         },
         {
-          "bbl": "3049350021",
-          "acquiring_entity": "SELENE FINANCE LP",
-          "acquisition_date": "2026-03-10",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4157140080",
-          "acquiring_entity": "SELENE FINANCE LP",
-          "acquisition_date": "2026-03-10",
-          "acquisition_price": null
-        },
-        {
           "bbl": "2047520161",
           "acquiring_entity": "FINANCE OF AMERICA REVERSE LLC",
           "acquisition_date": "2026-03-10",
@@ -634,6 +622,18 @@
         {
           "bbl": "2048620020",
           "acquiring_entity": "FINANCE OF AMERICA REVERSE LLC",
+          "acquisition_date": "2026-03-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3049350021",
+          "acquiring_entity": "SELENE FINANCE LP",
+          "acquisition_date": "2026-03-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4157140080",
+          "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2026-03-10",
           "acquisition_price": null
         },
@@ -656,7 +656,7 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3020620024",
+          "bbl": "3020620001",
           "acquiring_entity": "SM FINANCE III LLC",
           "acquisition_date": "2026-03-20",
           "acquisition_price": null
@@ -680,7 +680,7 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3020620001",
+          "bbl": "3020620024",
           "acquiring_entity": "SM FINANCE III LLC",
           "acquisition_date": "2026-03-20",
           "acquisition_price": null
@@ -740,7 +740,7 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2028980085",
+          "bbl": "4134560066",
           "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2026-04-21",
           "acquisition_price": null
@@ -752,7 +752,7 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4134560066",
+          "bbl": "2028980085",
           "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2026-04-21",
           "acquisition_price": null
@@ -764,12 +764,6 @@
           "acquisition_price": null
         },
         {
-          "bbl": "1017201020",
-          "acquiring_entity": "SELENE FINANCE LP",
-          "acquisition_date": "2026-04-27",
-          "acquisition_price": null
-        },
-        {
           "bbl": "3013340074",
           "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2026-04-27",
@@ -777,6 +771,12 @@
         },
         {
           "bbl": "4122940009",
+          "acquiring_entity": "SELENE FINANCE LP",
+          "acquisition_date": "2026-04-27",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1017201020",
           "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2026-04-27",
           "acquisition_price": null
@@ -794,13 +794,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3053671123",
+          "bbl": "3064090025",
           "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2026-05-08",
           "acquisition_price": null
         },
         {
-          "bbl": "3064090025",
+          "bbl": "3053671123",
           "acquiring_entity": "SELENE FINANCE LP",
           "acquisition_date": "2026-05-08",
           "acquisition_price": null
@@ -895,8 +895,8 @@
         "11436",
         "11691"
       ],
-      "high_displacement_acquisitions": 52,
-      "high_displacement_pct": 34.9,
+      "high_displacement_acquisitions": 53,
+      "high_displacement_pct": 35.6,
       "targets_high_displacement": false,
       "related_operators": []
     },
@@ -912,25 +912,109 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2037770005",
+          "bbl": "3032680043",
           "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
           "acquisition_date": "2025-05-09",
           "acquisition_price": null
         },
         {
-          "bbl": "1005160034",
+          "bbl": "3017390006",
           "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
           "acquisition_date": "2025-05-09",
           "acquisition_price": null
         },
         {
-          "bbl": "3018360051",
+          "bbl": "1001711202",
           "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
           "acquisition_date": "2025-05-09",
           "acquisition_price": null
         },
         {
-          "bbl": "1002320005",
+          "bbl": "3031740051",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2054230001",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3013610004",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2023150013",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4035900042",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3069950031",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2032250117",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2039840021",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3003260042",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3021301001",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4093050001",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3018660028",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4033380025",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3016290036",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3018030063",
           "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
           "acquisition_date": "2025-05-09",
           "acquisition_price": null
@@ -942,85 +1026,25 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3029220042",
+          "bbl": "1002320005",
           "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
           "acquisition_date": "2025-05-09",
           "acquisition_price": null
         },
         {
-          "bbl": "1019090063",
+          "bbl": "3018360051",
           "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
           "acquisition_date": "2025-05-09",
           "acquisition_price": null
         },
         {
-          "bbl": "3036110149",
+          "bbl": "1005160034",
           "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
           "acquisition_date": "2025-05-09",
           "acquisition_price": null
         },
         {
-          "bbl": "3067760053",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2031590013",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1019120054",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3038430008",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2023270054",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4001500001",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3018570020",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3034170028",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3029180006",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3014550024",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4014930037",
+          "bbl": "2037770005",
           "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
           "acquisition_date": "2025-05-09",
           "acquisition_price": null
@@ -1032,13 +1056,85 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3032680043",
+          "bbl": "4014930037",
           "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
           "acquisition_date": "2025-05-09",
           "acquisition_price": null
         },
         {
-          "bbl": "3017390006",
+          "bbl": "3014550024",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3029180006",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3034170028",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3018570020",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4001500001",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2023270054",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3038430008",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1019120054",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2031590013",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3067760053",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3036110149",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1019090063",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-05-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3029220042",
           "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
           "acquisition_date": "2025-05-09",
           "acquisition_price": null
@@ -1152,96 +1248,6 @@
           "acquisition_price": null
         },
         {
-          "bbl": "1001711202",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3031740051",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2054230001",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3013610004",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2023150013",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4035900042",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3069950031",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2032250117",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2039840021",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3003260042",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3021301001",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4093050001",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3018660028",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4033380025",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3016290036",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
           "bbl": "2047230066",
           "acquiring_entity": "OCEANVIEW LIFE AN ANNUITY COMPANY",
           "acquisition_date": "2025-05-09",
@@ -1329,18 +1335,6 @@
           "bbl": "3034360021",
           "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
           "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3018030063",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-05-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1006130061",
-          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
-          "acquisition_date": "2025-07-17",
           "acquisition_price": null
         },
         {
@@ -1620,6 +1614,12 @@
           "acquisition_price": null
         },
         {
+          "bbl": "1006130061",
+          "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
+          "acquisition_date": "2025-07-17",
+          "acquisition_price": null
+        },
+        {
           "bbl": "2023740001",
           "acquiring_entity": "OCEANVIEW LIFE AND ANNUITY COMPANY",
           "acquisition_date": "2025-07-17",
@@ -1743,8 +1743,8 @@
         "11428",
         "11691"
       ],
-      "high_displacement_acquisitions": 68,
-      "high_displacement_pct": 53.1,
+      "high_displacement_acquisitions": 70,
+      "high_displacement_pct": 54.7,
       "targets_high_displacement": true,
       "related_operators": []
     },
@@ -1808,13 +1808,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3074010022",
+          "bbl": "2029590106",
           "acquiring_entity": "CITIMORTGAGE INC",
           "acquisition_date": "2025-05-06",
           "acquisition_price": null
         },
         {
-          "bbl": "2029590106",
+          "bbl": "3074010022",
           "acquiring_entity": "CITIMORTGAGE INC",
           "acquisition_date": "2025-05-06",
           "acquisition_price": null
@@ -1874,13 +1874,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3018460057",
+          "bbl": "3055110029",
           "acquiring_entity": "CITIMORTGAGE INC",
           "acquisition_date": "2025-05-29",
           "acquisition_price": null
         },
         {
-          "bbl": "3055110029",
+          "bbl": "3018460057",
           "acquiring_entity": "CITIMORTGAGE INC",
           "acquisition_date": "2025-05-29",
           "acquisition_price": null
@@ -1988,18 +1988,6 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2034690021",
-          "acquiring_entity": "CITIMORTGAGE INC",
-          "acquisition_date": "2025-08-06",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4049771034",
-          "acquiring_entity": "CITIMORTGAGE INC",
-          "acquisition_date": "2025-08-06",
-          "acquisition_price": null
-        },
-        {
           "bbl": "4050662744",
           "acquiring_entity": "CITIMORTGAGE INC",
           "acquisition_date": "2025-08-06",
@@ -2012,13 +2000,25 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3044650114",
+          "bbl": "2034690021",
+          "acquiring_entity": "CITIMORTGAGE INC",
+          "acquisition_date": "2025-08-06",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4049771034",
+          "acquiring_entity": "CITIMORTGAGE INC",
+          "acquisition_date": "2025-08-06",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3038840668",
           "acquiring_entity": "CITIMORTGAGE INC",
           "acquisition_date": "2025-08-18",
           "acquisition_price": null
         },
         {
-          "bbl": "3038840668",
+          "bbl": "3044650114",
           "acquiring_entity": "CITIMORTGAGE INC",
           "acquisition_date": "2025-08-18",
           "acquisition_price": null
@@ -2048,13 +2048,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3081790013",
+          "bbl": "3009310034",
           "acquiring_entity": "CITIMORTGAGE INC",
           "acquisition_date": "2025-09-17",
           "acquisition_price": null
         },
         {
-          "bbl": "3009310034",
+          "bbl": "3081790013",
           "acquiring_entity": "CITIMORTGAGE INC",
           "acquisition_date": "2025-09-17",
           "acquisition_price": null
@@ -2102,12 +2102,6 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4126460022",
-          "acquiring_entity": "CITIMORTGAGE INC",
-          "acquisition_date": "2025-11-17",
-          "acquisition_price": null
-        },
-        {
           "bbl": "4014010006",
           "acquiring_entity": "CITIMORTGAGE INC",
           "acquisition_date": "2025-11-17",
@@ -2127,6 +2121,12 @@
         },
         {
           "bbl": "1010751074",
+          "acquiring_entity": "CITIMORTGAGE INC",
+          "acquisition_date": "2025-11-17",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4126460022",
           "acquiring_entity": "CITIMORTGAGE INC",
           "acquisition_date": "2025-11-17",
           "acquisition_price": null
@@ -2198,13 +2198,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2046840022",
+          "bbl": "1007961034",
           "acquiring_entity": "CITIMORTGAGE INC",
           "acquisition_date": "2026-01-28",
           "acquisition_price": null
         },
         {
-          "bbl": "1007961034",
+          "bbl": "2046840022",
           "acquiring_entity": "CITIMORTGAGE INC",
           "acquisition_date": "2026-01-28",
           "acquisition_price": null
@@ -2252,13 +2252,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4017520007",
+          "bbl": "3054890079",
           "acquiring_entity": "CITIMORTGAGE INC",
           "acquisition_date": "2026-03-24",
           "acquisition_price": null
         },
         {
-          "bbl": "3054890079",
+          "bbl": "4017520007",
           "acquiring_entity": "CITIMORTGAGE INC",
           "acquisition_date": "2026-03-24",
           "acquisition_price": null
@@ -2402,6 +2402,12 @@
           "acquisition_price": null
         },
         {
+          "bbl": "2028740044",
+          "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
+          "acquisition_date": "2025-05-28",
+          "acquisition_price": null
+        },
+        {
           "bbl": "2024720004",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2025-05-28",
@@ -2409,12 +2415,6 @@
         },
         {
           "bbl": "2028740045",
-          "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
-          "acquisition_date": "2025-05-28",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2028740044",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2025-05-28",
           "acquisition_price": null
@@ -2462,14 +2462,14 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2039970043",
-          "acquiring_entity": "CHURCHILL FUNDING I LLC",
+          "bbl": "3018370053",
+          "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2025-07-02",
           "acquisition_price": null
         },
         {
-          "bbl": "3018370053",
-          "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
+          "bbl": "2039970043",
+          "acquiring_entity": "CHURCHILL FUNDING I LLC",
           "acquisition_date": "2025-07-02",
           "acquisition_price": null
         },
@@ -2516,13 +2516,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4016870063",
+          "bbl": "1013041096",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2025-09-11",
           "acquisition_price": null
         },
         {
-          "bbl": "1013041096",
+          "bbl": "4016870063",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2025-09-11",
           "acquisition_price": null
@@ -2612,13 +2612,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "1010200059",
+          "bbl": "3076900073",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2025-10-30",
           "acquisition_price": null
         },
         {
-          "bbl": "3076900073",
+          "bbl": "1010200059",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2025-10-30",
           "acquisition_price": null
@@ -2702,6 +2702,12 @@
           "acquisition_price": null
         },
         {
+          "bbl": "3014750062",
+          "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
+          "acquisition_date": "2025-12-03",
+          "acquisition_price": null
+        },
+        {
           "bbl": "1008310004",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2025-12-03",
@@ -2709,12 +2715,6 @@
         },
         {
           "bbl": "1001790063",
-          "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
-          "acquisition_date": "2025-12-03",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3014750062",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2025-12-03",
           "acquisition_price": null
@@ -2745,7 +2745,7 @@
         },
         {
           "bbl": "4015810026",
-          "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
+          "acquiring_entity": "CHURCHILL MARA FUNDING I LLC",
           "acquisition_date": "2025-12-19",
           "acquisition_price": null
         },
@@ -2786,6 +2786,12 @@
           "acquisition_price": null
         },
         {
+          "bbl": "4014290032",
+          "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
+          "acquisition_date": "2026-02-27",
+          "acquisition_price": null
+        },
+        {
           "bbl": "3006490028",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2026-02-27",
@@ -2798,31 +2804,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4014290032",
-          "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
-          "acquisition_date": "2026-02-27",
-          "acquisition_price": null
-        },
-        {
           "bbl": "1004640020",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2026-02-27",
           "acquisition_price": null
         },
         {
-          "bbl": "3064650010",
-          "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
-          "acquisition_date": "2026-02-27",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3032210056",
-          "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
-          "acquisition_date": "2026-02-27",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4014290031",
+          "bbl": "2055920004",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2026-02-27",
           "acquisition_price": null
@@ -2834,7 +2822,19 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2055920004",
+          "bbl": "4014290031",
+          "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
+          "acquisition_date": "2026-02-27",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3032210056",
+          "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
+          "acquisition_date": "2026-02-27",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3064650010",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2026-02-27",
           "acquisition_price": null
@@ -2852,13 +2852,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3030500008",
+          "bbl": "3030500007",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2026-03-06",
           "acquisition_price": null
         },
         {
-          "bbl": "3030500007",
+          "bbl": "3030500008",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2026-03-06",
           "acquisition_price": null
@@ -2870,13 +2870,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3002410034",
+          "bbl": "3023580001",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2026-03-09",
           "acquisition_price": null
         },
         {
-          "bbl": "3023580001",
+          "bbl": "3002410034",
           "acquiring_entity": "CHURCHILL MRA FUNDING I LLC",
           "acquisition_date": "2026-03-09",
           "acquisition_price": null
@@ -3010,8 +3010,8 @@
         "11413",
         "11433"
       ],
-      "high_displacement_acquisitions": 71,
-      "high_displacement_pct": 41.5,
+      "high_displacement_acquisitions": 72,
+      "high_displacement_pct": 42.1,
       "targets_high_displacement": false,
       "related_operators": []
     },
@@ -3093,15 +3093,15 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3051160043",
-          "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
-          "acquisition_date": "2025-05-29",
-          "acquisition_price": null
-        },
-        {
           "bbl": "2024520022",
           "acquiring_entity": "ICECAP FUND III SPV-C LLC",
           "acquisition_date": "2025-05-19",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3051160043",
+          "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
+          "acquisition_date": "2025-05-29",
           "acquisition_price": null
         },
         {
@@ -3117,13 +3117,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2029330021",
+          "bbl": "2046560085",
           "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
           "acquisition_date": "2025-06-18",
           "acquisition_price": null
         },
         {
-          "bbl": "2046560085",
+          "bbl": "2029330021",
           "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
           "acquisition_date": "2025-06-18",
           "acquisition_price": null
@@ -3195,12 +3195,6 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3040120014",
-          "acquiring_entity": "ICECAP FUND III SPV-C LLC",
-          "acquisition_date": "2025-07-25",
-          "acquisition_price": null
-        },
-        {
           "bbl": "2045470050",
           "acquiring_entity": "ICECAP FUND III SPV-C LLC",
           "acquisition_date": "2025-07-25",
@@ -3243,6 +3237,12 @@
           "acquisition_price": null
         },
         {
+          "bbl": "3040120014",
+          "acquiring_entity": "ICECAP FUND III SPV-C LLC",
+          "acquisition_date": "2025-07-25",
+          "acquisition_price": null
+        },
+        {
           "bbl": "3017760038",
           "acquiring_entity": "ICE CAP FUND III SPV-C LLC",
           "acquisition_date": "2025-07-28",
@@ -3255,14 +3255,14 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3048530013",
-          "acquiring_entity": "ICECAP SUB-REIT SPV I LLC",
+          "bbl": "3013660059",
+          "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
           "acquisition_date": "2025-08-25",
           "acquisition_price": null
         },
         {
-          "bbl": "3013660059",
-          "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
+          "bbl": "3048530013",
+          "acquiring_entity": "ICECAP SUB-REIT SPV I LLC",
           "acquisition_date": "2025-08-25",
           "acquisition_price": null
         },
@@ -3370,7 +3370,7 @@
         },
         {
           "bbl": "2028790249",
-          "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
+          "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND IHI LLC",
           "acquisition_date": "2025-12-12",
           "acquisition_price": null
         },
@@ -3387,13 +3387,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3031140002",
+          "bbl": "3057200031",
           "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
           "acquisition_date": "2025-12-23",
           "acquisition_price": null
         },
         {
-          "bbl": "3057200031",
+          "bbl": "3031140002",
           "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
           "acquisition_date": "2025-12-23",
           "acquisition_price": null
@@ -3405,25 +3405,25 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2028720222",
-          "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
-          "acquisition_date": "2026-01-12",
-          "acquisition_price": null
-        },
-        {
           "bbl": "3016400022",
           "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
           "acquisition_date": "2026-01-12",
           "acquisition_price": null
         },
         {
-          "bbl": "3018390010",
+          "bbl": "2028720222",
+          "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
+          "acquisition_date": "2026-01-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2022610020",
           "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
           "acquisition_date": "2026-01-26",
           "acquisition_price": null
         },
         {
-          "bbl": "2022610020",
+          "bbl": "3018390010",
           "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
           "acquisition_date": "2026-01-26",
           "acquisition_price": null
@@ -3441,13 +3441,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2027820018",
+          "bbl": "3056700011",
           "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
           "acquisition_date": "2026-02-03",
           "acquisition_price": null
         },
         {
-          "bbl": "3056700011",
+          "bbl": "2027820018",
           "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
           "acquisition_date": "2026-02-03",
           "acquisition_price": null
@@ -3495,12 +3495,6 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4034350053",
-          "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
-          "acquisition_date": "2026-03-17",
-          "acquisition_price": null
-        },
-        {
           "bbl": "2025570060",
           "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
           "acquisition_date": "2026-03-17",
@@ -3508,6 +3502,12 @@
         },
         {
           "bbl": "2025570061",
+          "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
+          "acquisition_date": "2026-03-17",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4034350053",
           "acquiring_entity": "ICECAP REAL ESTATE DEBT FUND III LLC",
           "acquisition_date": "2026-03-17",
           "acquisition_price": null
@@ -3582,8 +3582,8 @@
         "11236",
         "11385"
       ],
-      "high_displacement_acquisitions": 113,
-      "high_displacement_pct": 72.4,
+      "high_displacement_acquisitions": 129,
+      "high_displacement_pct": 82.7,
       "targets_high_displacement": true,
       "related_operators": []
     },
@@ -3611,12 +3611,6 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4027520195",
-          "acquiring_entity": "JH RESIDENTIAL WHOLE LOAN TRUST",
-          "acquisition_date": "2025-05-20",
-          "acquisition_price": null
-        },
-        {
           "bbl": "3083720004",
           "acquiring_entity": "JH RESIDENTIAL WHOLE LOAN TRUST",
           "acquisition_date": "2025-05-20",
@@ -3629,13 +3623,19 @@
           "acquisition_price": null
         },
         {
+          "bbl": "4027520195",
+          "acquiring_entity": "JH RESIDENTIAL WHOLE LOAN TRUST",
+          "acquisition_date": "2025-05-20",
+          "acquisition_price": null
+        },
+        {
           "bbl": "4137490062",
           "acquiring_entity": "JH RESIDENTIAL WHOLE LOAN TRUST",
           "acquisition_date": "2025-05-27",
           "acquisition_price": null
         },
         {
-          "bbl": "4132460021",
+          "bbl": "4122850036",
           "acquiring_entity": "RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-A",
           "acquisition_date": "2025-05-28",
           "acquisition_price": null
@@ -3647,27 +3647,27 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4122850036",
-          "acquiring_entity": "RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-A",
-          "acquisition_date": "2025-05-28",
-          "acquisition_price": null
-        },
-        {
           "bbl": "4079520038",
           "acquiring_entity": "RESIDENTIAL ASSET SECURITIZATION TRUST SERIES 2003",
           "acquisition_date": "2025-05-28",
           "acquisition_price": null
         },
         {
-          "bbl": "4009741027",
-          "acquiring_entity": "RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-B",
-          "acquisition_date": "2025-06-05",
+          "bbl": "4132460021",
+          "acquiring_entity": "RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-A",
+          "acquisition_date": "2025-05-28",
           "acquisition_price": null
         },
         {
           "bbl": "3032850039",
           "acquiring_entity": "RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-B",
           "acquisition_date": "2026-04-20",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4009741027",
+          "acquiring_entity": "RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-B",
+          "acquisition_date": "2025-06-05",
           "acquisition_price": null
         },
         {
@@ -3681,12 +3681,6 @@
           "acquiring_entity": "RESIDENTIAL BRICKS LLC",
           "acquisition_date": "2025-06-06",
           "acquisition_price": 1350000.0
-        },
-        {
-          "bbl": "3078710011",
-          "acquiring_entity": "RESIDENTIAL CREDIT OPPORTUNITIES TRUST X-B",
-          "acquisition_date": "2025-06-09",
-          "acquisition_price": null
         },
         {
           "bbl": "4135490022",
@@ -3714,6 +3708,12 @@
         },
         {
           "bbl": "4111100043",
+          "acquiring_entity": "RESIDENTIAL CREDIT OPPORTUNITIES TRUST X-B",
+          "acquisition_date": "2025-06-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3078710011",
           "acquiring_entity": "RESIDENTIAL CREDIT OPPORTUNITIES TRUST X-B",
           "acquisition_date": "2025-06-09",
           "acquisition_price": null
@@ -3773,6 +3773,18 @@
           "acquisition_price": null
         },
         {
+          "bbl": "4112710129",
+          "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST XI-A",
+          "acquisition_date": "2025-08-11",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2047560062",
+          "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST X-C",
+          "acquisition_date": "2025-08-11",
+          "acquisition_price": null
+        },
+        {
           "bbl": "1018461119",
           "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST XI-A",
           "acquisition_date": "2025-08-11",
@@ -3805,18 +3817,6 @@
         {
           "bbl": "3076730013",
           "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-B",
-          "acquisition_date": "2025-08-11",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4112710129",
-          "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST XI-A",
-          "acquisition_date": "2025-08-11",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2047560062",
-          "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST X-C",
           "acquisition_date": "2025-08-11",
           "acquisition_price": null
         },
@@ -3893,8 +3893,8 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3076320049",
-          "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-B",
+          "bbl": "4082860107",
+          "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST X-C",
           "acquisition_date": "2025-11-25",
           "acquisition_price": null
         },
@@ -3905,13 +3905,7 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4082860107",
-          "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST X-C",
-          "acquisition_date": "2025-11-25",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1018691250",
+          "bbl": "3076320049",
           "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-B",
           "acquisition_date": "2025-11-25",
           "acquisition_price": null
@@ -3919,6 +3913,12 @@
         {
           "bbl": "1015121005",
           "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST XI-A",
+          "acquisition_date": "2025-11-25",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1018691250",
+          "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-B",
           "acquisition_date": "2025-11-25",
           "acquisition_price": null
         },
@@ -3935,13 +3935,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3005200011",
+          "bbl": "2046600087",
           "acquiring_entity": "RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-B",
           "acquisition_date": "2025-12-23",
           "acquisition_price": null
         },
         {
-          "bbl": "2046600087",
+          "bbl": "3005200011",
           "acquiring_entity": "RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-B",
           "acquisition_date": "2025-12-23",
           "acquisition_price": null
@@ -3959,14 +3959,14 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3039450004",
-          "acquiring_entity": "RESIDENTIAL CREDITT OPPORTUNITIES TRUST IX-B",
+          "bbl": "3019490111",
+          "acquiring_entity": "RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-B",
           "acquisition_date": "2026-01-13",
           "acquisition_price": null
         },
         {
-          "bbl": "3019490111",
-          "acquiring_entity": "RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-B",
+          "bbl": "3039450004",
+          "acquiring_entity": "RESIDENTIAL CREDITT OPPORTUNITIES TRUST IX-B",
           "acquisition_date": "2026-01-13",
           "acquisition_price": null
         },
@@ -4007,14 +4007,14 @@
           "acquisition_price": null
         },
         {
-          "bbl": "1000681216",
-          "acquiring_entity": "TH RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-C",
+          "bbl": "4091480009",
+          "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-C",
           "acquisition_date": "2026-04-15",
           "acquisition_price": null
         },
         {
-          "bbl": "4091480009",
-          "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-C",
+          "bbl": "1000681216",
+          "acquiring_entity": "TH RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-C",
           "acquisition_date": "2026-04-15",
           "acquisition_price": null
         },
@@ -4067,6 +4067,12 @@
           "acquisition_price": null
         },
         {
+          "bbl": "2049420025",
+          "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-C",
+          "acquisition_date": "2026-05-08",
+          "acquisition_price": null
+        },
+        {
           "bbl": "3047910059",
           "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-C",
           "acquisition_date": "2026-05-08",
@@ -4074,12 +4080,6 @@
         },
         {
           "bbl": "4119600006",
-          "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-C",
-          "acquisition_date": "2026-05-08",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2049420025",
           "acquiring_entity": "THE RESIDENTIAL CREDIT OPPORTUNITIES TRUST IX-C",
           "acquisition_date": "2026-05-08",
           "acquisition_price": null
@@ -4179,8 +4179,8 @@
         "11691",
         "11692"
       ],
-      "high_displacement_acquisitions": 35,
-      "high_displacement_pct": 40.7,
+      "high_displacement_acquisitions": 33,
+      "high_displacement_pct": 38.4,
       "targets_high_displacement": false,
       "related_operators": []
     },
@@ -4232,13 +4232,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3053660062",
+          "bbl": "2027060048",
           "acquiring_entity": "VELOCITY COMMERCIAL CAPITAL LLC",
           "acquisition_date": "2025-06-10",
           "acquisition_price": null
         },
         {
-          "bbl": "2027060048",
+          "bbl": "3053660062",
           "acquiring_entity": "VELOCITY COMMERCIAL CAPITAL LLC",
           "acquisition_date": "2025-06-10",
           "acquisition_price": null
@@ -4328,13 +4328,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4113550003",
+          "bbl": "1014831124",
           "acquiring_entity": "VELOCITY COMMERCIAL CAPITAL LLC",
           "acquisition_date": "2025-09-12",
           "acquisition_price": null
         },
         {
-          "bbl": "1014831124",
+          "bbl": "4113550003",
           "acquiring_entity": "VELOCITY COMMERCIAL CAPITAL LLC",
           "acquisition_date": "2025-09-12",
           "acquisition_price": null
@@ -4436,13 +4436,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3047220038",
+          "bbl": "4092890019",
           "acquiring_entity": "VELOCITY COMMERCIAL CAPITAL LLC",
           "acquisition_date": "2026-01-27",
           "acquisition_price": null
         },
         {
-          "bbl": "4092890019",
+          "bbl": "3047220038",
           "acquiring_entity": "VELOCITY COMMERCIAL CAPITAL LLC",
           "acquisition_date": "2026-01-27",
           "acquisition_price": null
@@ -4478,7 +4478,7 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2045280032",
+          "bbl": "1019481354",
           "acquiring_entity": "VELOCITY COMMERCIAL CAPITAL LLC",
           "acquisition_date": "2026-02-27",
           "acquisition_price": null
@@ -4496,19 +4496,19 @@
           "acquisition_price": null
         },
         {
-          "bbl": "1019481354",
+          "bbl": "2045280032",
           "acquiring_entity": "VELOCITY COMMERCIAL CAPITAL LLC",
           "acquisition_date": "2026-02-27",
           "acquisition_price": null
         },
         {
-          "bbl": "3016550079",
+          "bbl": "3041500053",
           "acquiring_entity": "VELOCITY COMMERCIAL CAPITAL LLC",
           "acquisition_date": "2026-03-03",
           "acquisition_price": null
         },
         {
-          "bbl": "3041500053",
+          "bbl": "3016550079",
           "acquiring_entity": "VELOCITY COMMERCIAL CAPITAL LLC",
           "acquisition_date": "2026-03-03",
           "acquisition_price": null
@@ -4532,13 +4532,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3016670068",
+          "bbl": "4109080020",
           "acquiring_entity": "VELOCITY COMMERCIAL CAPITAL LLC",
           "acquisition_date": "2026-03-26",
           "acquisition_price": null
         },
         {
-          "bbl": "4109080020",
+          "bbl": "3016670068",
           "acquiring_entity": "VELOCITY COMMERCIAL CAPITAL LLC",
           "acquisition_date": "2026-03-26",
           "acquisition_price": null
@@ -4610,7 +4610,7 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4098250004",
+          "bbl": "4093200124",
           "acquiring_entity": "VELOCITY COMMERCIAL CAPITAL LLC",
           "acquisition_date": "2026-04-28",
           "acquisition_price": null
@@ -4622,7 +4622,7 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4093200124",
+          "bbl": "4098250004",
           "acquiring_entity": "VELOCITY COMMERCIAL CAPITAL LLC",
           "acquisition_date": "2026-04-28",
           "acquisition_price": null
@@ -4718,9 +4718,9 @@
         "11435",
         "11694"
       ],
-      "high_displacement_acquisitions": 38,
-      "high_displacement_pct": 49.4,
-      "targets_high_displacement": false,
+      "high_displacement_acquisitions": 39,
+      "high_displacement_pct": 50.6,
+      "targets_high_displacement": true,
       "related_operators": []
     },
     {
@@ -4729,25 +4729,25 @@
       "total_acquisitions": 79,
       "parcels": [
         {
-          "bbl": "4118290015",
-          "acquiring_entity": "RCAF ACQUISITION TRUST",
-          "acquisition_date": "2025-04-17",
-          "acquisition_price": null
-        },
-        {
           "bbl": "4128130008",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2025-04-17",
           "acquisition_price": null
         },
         {
-          "bbl": "3078460043",
+          "bbl": "4118290015",
+          "acquiring_entity": "RCAF ACQUISITION TRUST",
+          "acquisition_date": "2025-04-17",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3019690043",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2025-04-22",
           "acquisition_price": null
         },
         {
-          "bbl": "3019690043",
+          "bbl": "3078460043",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2025-04-22",
           "acquisition_price": null
@@ -4777,13 +4777,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4112330023",
+          "bbl": "3038750032",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2025-05-12",
           "acquisition_price": null
         },
         {
-          "bbl": "3038750032",
+          "bbl": "4112330023",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2025-05-12",
           "acquisition_price": null
@@ -4855,13 +4855,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4116500037",
+          "bbl": "4134770012",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2025-05-19",
           "acquisition_price": null
         },
         {
-          "bbl": "4134770012",
+          "bbl": "4116500037",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2025-05-19",
           "acquisition_price": null
@@ -4969,18 +4969,6 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2030350130",
-          "acquiring_entity": "RCAF ACQUISITION TRUST",
-          "acquisition_date": "2025-08-04",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3056510071",
-          "acquiring_entity": "RCAF ACQUISITION TRUST",
-          "acquisition_date": "2025-08-04",
-          "acquisition_price": null
-        },
-        {
           "bbl": "4116770010",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2025-08-04",
@@ -4994,6 +4982,18 @@
         },
         {
           "bbl": "3062210032",
+          "acquiring_entity": "RCAF ACQUISITION TRUST",
+          "acquisition_date": "2025-08-04",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2030350130",
+          "acquiring_entity": "RCAF ACQUISITION TRUST",
+          "acquisition_date": "2025-08-04",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3056510071",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2025-08-04",
           "acquisition_price": null
@@ -5017,13 +5017,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2054060114",
+          "bbl": "4052250005",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2025-08-19",
           "acquisition_price": null
         },
         {
-          "bbl": "4052250005",
+          "bbl": "2054060114",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2025-08-19",
           "acquisition_price": null
@@ -5059,13 +5059,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3016860019",
+          "bbl": "4139120204",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2025-10-09",
           "acquisition_price": null
         },
         {
-          "bbl": "4139120204",
+          "bbl": "3016860019",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2025-10-09",
           "acquisition_price": null
@@ -5155,6 +5155,12 @@
           "acquisition_price": null
         },
         {
+          "bbl": "3035320019",
+          "acquiring_entity": "RCAF ACQUISITION TRUST",
+          "acquisition_date": "2026-04-23",
+          "acquisition_price": null
+        },
+        {
           "bbl": "2033490037",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2026-04-23",
@@ -5167,25 +5173,19 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3035320019",
-          "acquiring_entity": "RCAF ACQUISITION TRUST",
-          "acquisition_date": "2026-04-23",
-          "acquisition_price": null
-        },
-        {
           "bbl": "4135880068",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2026-04-23",
           "acquisition_price": null
         },
         {
-          "bbl": "4132010004",
+          "bbl": "4013380051",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2026-04-23",
           "acquisition_price": null
         },
         {
-          "bbl": "4013380051",
+          "bbl": "4132010004",
           "acquiring_entity": "RCAF ACQUISITION TRUST",
           "acquisition_date": "2026-04-23",
           "acquisition_price": null
@@ -5250,9 +5250,9 @@
         "11434",
         "11691"
       ],
-      "high_displacement_acquisitions": 43,
-      "high_displacement_pct": 54.4,
-      "targets_high_displacement": true,
+      "high_displacement_acquisitions": 37,
+      "high_displacement_pct": 46.8,
+      "targets_high_displacement": false,
       "related_operators": []
     },
     {
@@ -5297,16 +5297,16 @@
           "acquisition_price": 1100000.0
         },
         {
-          "bbl": "2031100083",
-          "acquiring_entity": "PHANTOM KOACH LLC",
-          "acquisition_date": "2025-06-10",
-          "acquisition_price": 955000.0
-        },
-        {
           "bbl": "2048490006",
           "acquiring_entity": "PHANTOM CAPITAL 53 LLC",
           "acquisition_date": "2025-06-10",
           "acquisition_price": 257500.0
+        },
+        {
+          "bbl": "2031100083",
+          "acquiring_entity": "PHANTOM KOACH LLC",
+          "acquisition_date": "2025-06-10",
+          "acquisition_price": 955000.0
         },
         {
           "bbl": "4110730006",
@@ -5345,16 +5345,16 @@
           "acquisition_price": 860000.0
         },
         {
-          "bbl": "2027650214",
-          "acquiring_entity": "PHANTOM CAPITAL ACQUISITIONS LLC",
-          "acquisition_date": "2025-08-11",
-          "acquisition_price": 780000.0
-        },
-        {
           "bbl": "2045440056",
           "acquiring_entity": "PHANTOM CAPITAL ACQUISITIONS LLC",
           "acquisition_date": "2025-08-11",
           "acquisition_price": 530000.0
+        },
+        {
+          "bbl": "2027650214",
+          "acquiring_entity": "PHANTOM CAPITAL ACQUISITIONS LLC",
+          "acquisition_date": "2025-08-11",
+          "acquisition_price": 780000.0
         },
         {
           "bbl": "2046990022",
@@ -5405,16 +5405,16 @@
           "acquisition_price": 1175000.0
         },
         {
-          "bbl": "3038260005",
-          "acquiring_entity": "PHANTOM CAPITAL 10 LLC",
-          "acquisition_date": "2025-10-22",
-          "acquisition_price": 1050000.0
-        },
-        {
           "bbl": "2050590072",
           "acquiring_entity": "PHANTOM CAPITAL 10 LLC",
           "acquisition_date": "2025-10-22",
           "acquisition_price": 680000.0
+        },
+        {
+          "bbl": "3038260005",
+          "acquiring_entity": "PHANTOM CAPITAL 10 LLC",
+          "acquisition_date": "2025-10-22",
+          "acquisition_price": 1050000.0
         },
         {
           "bbl": "2038810004",
@@ -5447,16 +5447,16 @@
           "acquisition_price": 999000.0
         },
         {
-          "bbl": "2055930091",
-          "acquiring_entity": "PHANTOM PARTNERS 89 LLC",
-          "acquisition_date": "2025-11-06",
-          "acquisition_price": 605000.0
-        },
-        {
           "bbl": "2055930090",
           "acquiring_entity": "PHANTOM PARTNERS 89 LLC",
           "acquisition_date": "2025-11-06",
           "acquisition_price": 650000.0
+        },
+        {
+          "bbl": "2055930091",
+          "acquiring_entity": "PHANTOM PARTNERS 89 LLC",
+          "acquisition_date": "2025-11-06",
+          "acquisition_price": 605000.0
         },
         {
           "bbl": "2035550037",
@@ -5507,16 +5507,16 @@
           "acquisition_price": 1450000.0
         },
         {
-          "bbl": "2049760010",
-          "acquiring_entity": "PHANTOM CAPITAL 21 LLC",
-          "acquisition_date": "2026-01-12",
-          "acquisition_price": 800000.0
-        },
-        {
           "bbl": "2045980019",
           "acquiring_entity": "PHANTOM AFFORDABLE HOUSING LLC",
           "acquisition_date": "2026-01-12",
           "acquisition_price": 950000.0
+        },
+        {
+          "bbl": "2049760010",
+          "acquiring_entity": "PHANTOM CAPITAL 21 LLC",
+          "acquisition_date": "2026-01-12",
+          "acquisition_price": 800000.0
         },
         {
           "bbl": "2027820041",
@@ -5567,16 +5567,16 @@
           "acquisition_price": 585000.0
         },
         {
-          "bbl": "2048360053",
-          "acquiring_entity": "PHANTOM NYC HOLDINGS LLC",
-          "acquisition_date": "2026-02-10",
-          "acquisition_price": 780000.0
-        },
-        {
           "bbl": "2035950001",
           "acquiring_entity": "PHANTOM NYC HOLDINGS LLC",
           "acquisition_date": "2026-02-10",
           "acquisition_price": 1300000.0
+        },
+        {
+          "bbl": "2048360053",
+          "acquiring_entity": "PHANTOM NYC HOLDINGS LLC",
+          "acquisition_date": "2026-02-10",
+          "acquisition_price": 780000.0
         },
         {
           "bbl": "2027660071",
@@ -5675,12 +5675,6 @@
           "acquisition_price": 850000.0
         },
         {
-          "bbl": "2037470098",
-          "acquiring_entity": "PHANTOM CAPITAL 99 LLC",
-          "acquisition_date": "2026-05-08",
-          "acquisition_price": 1325000.0
-        },
-        {
           "bbl": "2037470100",
           "acquiring_entity": "PHANTOM CAPITAL 99 LLC",
           "acquisition_date": "2026-05-08",
@@ -5688,6 +5682,12 @@
         },
         {
           "bbl": "2037470097",
+          "acquiring_entity": "PHANTOM CAPITAL 99 LLC",
+          "acquisition_date": "2026-05-08",
+          "acquisition_price": 1325000.0
+        },
+        {
+          "bbl": "2037470098",
           "acquiring_entity": "PHANTOM CAPITAL 99 LLC",
           "acquisition_date": "2026-05-08",
           "acquisition_price": 1325000.0
@@ -5781,8 +5781,8 @@
         "11422",
         "11434"
       ],
-      "high_displacement_acquisitions": 63,
-      "high_displacement_pct": 84.0,
+      "high_displacement_acquisitions": 66,
+      "high_displacement_pct": 88.0,
       "targets_high_displacement": true,
       "related_operators": []
     },
@@ -5924,13 +5924,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3086670733",
+          "bbl": "3022401301",
           "acquiring_entity": "TOORAK CAPITAL PARTNERS LLC",
           "acquisition_date": "2025-07-09",
           "acquisition_price": null
         },
         {
-          "bbl": "3022401301",
+          "bbl": "3086670733",
           "acquiring_entity": "TOORAK CAPITAL PARTNERS LLC",
           "acquisition_date": "2025-07-09",
           "acquisition_price": null
@@ -5972,13 +5972,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3019130023",
+          "bbl": "4095970019",
           "acquiring_entity": "TOORAK CAPITAL PARTNERS LLC",
           "acquisition_date": "2025-08-11",
           "acquisition_price": null
         },
         {
-          "bbl": "4095970019",
+          "bbl": "3019130023",
           "acquiring_entity": "TOORAK CAPITAL PARTNERS LLC",
           "acquisition_date": "2025-08-11",
           "acquisition_price": null
@@ -5996,13 +5996,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3050330051",
+          "bbl": "3016680041",
           "acquiring_entity": "TOORAK CAPITAL PARTNERS LLC",
           "acquisition_date": "2025-08-21",
           "acquisition_price": null
         },
         {
-          "bbl": "3016680041",
+          "bbl": "3050330051",
           "acquiring_entity": "TOORAK CAPITAL PARTNERS LLC",
           "acquisition_date": "2025-08-21",
           "acquisition_price": null
@@ -6038,13 +6038,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4121820109",
+          "bbl": "4019800070",
           "acquiring_entity": "TOORAK CAPITAL PARTNERS LLC",
           "acquisition_date": "2025-09-08",
           "acquisition_price": null
         },
         {
-          "bbl": "4019800070",
+          "bbl": "4121820109",
           "acquiring_entity": "TOORAK CAPITAL PARTNERS LLC",
           "acquisition_date": "2025-09-08",
           "acquisition_price": null
@@ -6092,13 +6092,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2031220040",
+          "bbl": "2057590373",
           "acquiring_entity": "TOORAK CAPITAL PARTNERS LLC",
           "acquisition_date": "2025-10-27",
           "acquisition_price": null
         },
         {
-          "bbl": "2057590373",
+          "bbl": "2031220040",
           "acquiring_entity": "TOORAK CAPITAL PARTNERS LLC",
           "acquisition_date": "2025-10-27",
           "acquisition_price": null
@@ -6278,8 +6278,8 @@
         "11691",
         "11692"
       ],
-      "high_displacement_acquisitions": 63,
-      "high_displacement_pct": 55.3,
+      "high_displacement_acquisitions": 67,
+      "high_displacement_pct": 58.8,
       "targets_high_displacement": true,
       "related_operators": []
     },
@@ -6304,48 +6304,6 @@
           "bbl": "4130840136",
           "acquiring_entity": "CSMC 2017-RPL1 TRUST",
           "acquisition_date": "2025-05-13",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2047660012",
-          "acquiring_entity": "CSMC 2022-JR1 TRUST",
-          "acquisition_date": "2025-05-19",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4024840051",
-          "acquiring_entity": "CSMC 2021-JR2 TRUST",
-          "acquisition_date": "2025-05-19",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3054310013",
-          "acquiring_entity": "CSMC 2021-JR2 TRUST",
-          "acquisition_date": "2025-05-19",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3085060056",
-          "acquiring_entity": "CSMC 2021-JR2 TRUST",
-          "acquisition_date": "2025-05-19",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3055150054",
-          "acquiring_entity": "CSMC 2022-JR1 TRUST",
-          "acquisition_date": "2025-05-19",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4091570017",
-          "acquiring_entity": "CSMC 2022-JR1 TRUST",
-          "acquisition_date": "2025-05-19",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3054170043",
-          "acquiring_entity": "CSMC 2021-JR2 TRUST",
-          "acquisition_date": "2025-05-19",
           "acquisition_price": null
         },
         {
@@ -6409,6 +6367,48 @@
           "acquisition_price": null
         },
         {
+          "bbl": "2047660012",
+          "acquiring_entity": "CSMC 2022-JR1 TRUST",
+          "acquisition_date": "2025-05-19",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4024840051",
+          "acquiring_entity": "CSMC 2021-JR2 TRUST",
+          "acquisition_date": "2025-05-19",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3054310013",
+          "acquiring_entity": "CSMC 2021-JR2 TRUST",
+          "acquisition_date": "2025-05-19",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3085060056",
+          "acquiring_entity": "CSMC 2021-JR2 TRUST",
+          "acquisition_date": "2025-05-19",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3055150054",
+          "acquiring_entity": "CSMC 2022-JR1 TRUST",
+          "acquisition_date": "2025-05-19",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4091570017",
+          "acquiring_entity": "CSMC 2022-JR1 TRUST",
+          "acquisition_date": "2025-05-19",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3054170043",
+          "acquiring_entity": "CSMC 2021-JR2 TRUST",
+          "acquisition_date": "2025-05-19",
+          "acquisition_price": null
+        },
+        {
           "bbl": "3046800059",
           "acquiring_entity": "CSMC 2022-JR1 TRUST",
           "acquisition_date": "2025-06-06",
@@ -6451,25 +6451,7 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4156700095",
-          "acquiring_entity": "CSMC 2022-JR1 TRUST",
-          "acquisition_date": "2025-06-19",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4115950023",
-          "acquiring_entity": "CSMC 2022-JR1 TRUST",
-          "acquisition_date": "2025-06-19",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4100700139",
-          "acquiring_entity": "CSMC 2022-JR1 TRUST",
-          "acquisition_date": "2025-06-19",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4113280011",
+          "bbl": "4017720004",
           "acquiring_entity": "CSMC 2021-JR2 TRUST",
           "acquisition_date": "2025-06-19",
           "acquisition_price": null
@@ -6481,8 +6463,26 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4017720004",
+          "bbl": "4113280011",
           "acquiring_entity": "CSMC 2021-JR2 TRUST",
+          "acquisition_date": "2025-06-19",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4100700139",
+          "acquiring_entity": "CSMC 2022-JR1 TRUST",
+          "acquisition_date": "2025-06-19",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4115950023",
+          "acquiring_entity": "CSMC 2022-JR1 TRUST",
+          "acquisition_date": "2025-06-19",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4156700095",
+          "acquiring_entity": "CSMC 2022-JR1 TRUST",
           "acquisition_date": "2025-06-19",
           "acquisition_price": null
         },
@@ -6595,13 +6595,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4094490032",
+          "bbl": "2033000079",
           "acquiring_entity": "CSMC 2021-JR2 TRUST",
           "acquisition_date": "2025-10-10",
           "acquisition_price": null
         },
         {
-          "bbl": "2033000079",
+          "bbl": "4094490032",
           "acquiring_entity": "CSMC 2021-JR2 TRUST",
           "acquisition_date": "2025-10-10",
           "acquisition_price": null
@@ -6613,31 +6613,7 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3055700060",
-          "acquiring_entity": "CSMC 2021-JR2 TRUST",
-          "acquisition_date": "2025-10-21",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3015400063",
-          "acquiring_entity": "CSMC 2021-JR2 TRUST",
-          "acquisition_date": "2025-10-21",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4016690052",
-          "acquiring_entity": "CSMC 2021-JR2 TRUST",
-          "acquisition_date": "2025-10-21",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3041340043",
-          "acquiring_entity": "CSMC 2021-JR2 TRUST",
-          "acquisition_date": "2025-10-21",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2054270108",
+          "bbl": "4085470020",
           "acquiring_entity": "CSMC 2021-JR2 TRUST",
           "acquisition_date": "2025-10-21",
           "acquisition_price": null
@@ -6649,7 +6625,31 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4085470020",
+          "bbl": "2054270108",
+          "acquiring_entity": "CSMC 2021-JR2 TRUST",
+          "acquisition_date": "2025-10-21",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3041340043",
+          "acquiring_entity": "CSMC 2021-JR2 TRUST",
+          "acquisition_date": "2025-10-21",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4016690052",
+          "acquiring_entity": "CSMC 2021-JR2 TRUST",
+          "acquisition_date": "2025-10-21",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3015400063",
+          "acquiring_entity": "CSMC 2021-JR2 TRUST",
+          "acquisition_date": "2025-10-21",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3055700060",
           "acquiring_entity": "CSMC 2021-JR2 TRUST",
           "acquisition_date": "2025-10-21",
           "acquisition_price": null
@@ -6766,8 +6766,8 @@
         "11691",
         "11694"
       ],
-      "high_displacement_acquisitions": 27,
-      "high_displacement_pct": 39.7,
+      "high_displacement_acquisitions": 26,
+      "high_displacement_pct": 38.2,
       "targets_high_displacement": false,
       "related_operators": []
     },
@@ -6873,13 +6873,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4142100048",
+          "bbl": "2045720044",
           "acquiring_entity": "MANHATTAN BRIDGE CAPITAL INC",
           "acquisition_date": "2025-06-17",
           "acquisition_price": null
         },
         {
-          "bbl": "2045720044",
+          "bbl": "4142100048",
           "acquiring_entity": "MANHATTAN BRIDGE CAPITAL INC",
           "acquisition_date": "2025-06-17",
           "acquisition_price": null
@@ -6993,6 +6993,12 @@
           "acquisition_price": null
         },
         {
+          "bbl": "4136740060",
+          "acquiring_entity": "MANHATTAN BRIDGE CAPTIAL INC",
+          "acquisition_date": "2025-10-22",
+          "acquisition_price": null
+        },
+        {
           "bbl": "4016440011",
           "acquiring_entity": "MANHATTAN BRIDGE CAPITAL INC",
           "acquisition_date": "2025-10-22",
@@ -7003,12 +7009,6 @@
           "acquiring_entity": "MANHATTAN INNOVATION CENTER LLC",
           "acquisition_date": "2025-10-22",
           "acquisition_price": 3125000.0
-        },
-        {
-          "bbl": "4136740060",
-          "acquiring_entity": "MANHATTAN BRIDGE CAPTIAL INC",
-          "acquisition_date": "2025-10-22",
-          "acquisition_price": null
         },
         {
           "bbl": "2048240063",
@@ -7113,16 +7113,16 @@
           "acquisition_price": 1401000.0
         },
         {
-          "bbl": "3016460059",
-          "acquiring_entity": "MANHATTAN BRIDGE CAPITAL INC",
-          "acquisition_date": "2026-02-17",
-          "acquisition_price": null
-        },
-        {
           "bbl": "1005141203",
           "acquiring_entity": "MB MANHATTAN REVOCABLE TRUST DATED 12/2/25",
           "acquisition_date": "2026-02-17",
           "acquisition_price": 6250000.0
+        },
+        {
+          "bbl": "3016460059",
+          "acquiring_entity": "MANHATTAN BRIDGE CAPITAL INC",
+          "acquisition_date": "2026-02-17",
+          "acquisition_price": null
         },
         {
           "bbl": "3040840008",
@@ -7281,61 +7281,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4033880059",
+          "bbl": "3075580029",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
         },
         {
-          "bbl": "1007991001",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3001540017",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1013260021",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1008230079",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1000071102",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3009470001",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3029210012",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3025130001",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1008300030",
+          "bbl": "3056670010",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
@@ -7419,145 +7371,37 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3056670010",
+          "bbl": "1008300030",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
         },
         {
-          "bbl": "3075580029",
+          "bbl": "3025130001",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
         },
         {
-          "bbl": "3000511068",
+          "bbl": "3029210012",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
         },
         {
-          "bbl": "1000930028",
+          "bbl": "3009470001",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
         },
         {
-          "bbl": "1015450022",
+          "bbl": "1000071102",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
         },
         {
-          "bbl": "3017600043",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1008180078",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4108910021",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2041700020",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3046330045",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3010320025",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3020740024",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3008160001",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4032340173",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1021530047",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3031580046",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3022640074",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2024060003",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3026830035",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2023620041",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2044260032",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1009070042",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3031710068",
-          "acquiring_entity": "BREDIF LPA LLC",
-          "acquisition_date": "2026-01-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2022610005",
+          "bbl": "1008230079",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
@@ -7569,55 +7413,115 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2030930032",
+          "bbl": "2022610005",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
         },
         {
-          "bbl": "3002490032",
+          "bbl": "3031710068",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
         },
         {
-          "bbl": "3013130046",
+          "bbl": "1009070042",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
         },
         {
-          "bbl": "1014140012",
+          "bbl": "2044260032",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
         },
         {
-          "bbl": "3010140062",
+          "bbl": "2023620041",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
         },
         {
-          "bbl": "4029740137",
+          "bbl": "3026830035",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
         },
         {
-          "bbl": "4019960011",
+          "bbl": "2024060003",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
         },
         {
-          "bbl": "4115440100",
+          "bbl": "3022640074",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
         },
         {
-          "bbl": "3028340001",
+          "bbl": "3031580046",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4032340173",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3008160001",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3020740024",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3010320025",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3046330045",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2041700020",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4108910021",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1008180078",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3017600043",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1015450022",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
@@ -7660,6 +7564,102 @@
         },
         {
           "bbl": "3017920065",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3000511068",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1000930028",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1014140012",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3010140062",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3002490032",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3013130046",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4029740137",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2030930032",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3028340001",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4115440100",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4019960011",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1013260021",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3001540017",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1007991001",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4033880059",
+          "acquiring_entity": "BREDIF LPA LLC",
+          "acquisition_date": "2026-01-09",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1021530047",
           "acquiring_entity": "BREDIF LPA LLC",
           "acquisition_date": "2026-01-09",
           "acquisition_price": null
@@ -7757,25 +7757,79 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3031750052",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-02-26",
-          "acquisition_price": null
-        },
-        {
           "bbl": "3019860024",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-02-26",
           "acquisition_price": null
         },
         {
-          "bbl": "2024060003",
+          "bbl": "3031750052",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-02-26",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4102190008",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
           "acquisition_price": null
         },
         {
-          "bbl": "1013260021",
+          "bbl": "1015450022",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4085550075",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1021530047",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3009470001",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4036210021",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3013130046",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3026910046",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1007991001",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2041560011",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3029210012",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
           "acquisition_price": null
@@ -7793,133 +7847,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4102190008",
+          "bbl": "4115440100",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
           "acquisition_price": null
         },
         {
-          "bbl": "1008180078",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2022610005",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4085550075",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1014140012",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3034240068",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3029210012",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1005720062",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4032340173",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3001540017",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3026910046",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4019960011",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4036210021",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3025620010",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4029740137",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4108910021",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3010320025",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3026560038",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1006951301",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1008230079",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3046330040",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3022640074",
+          "bbl": "1015770044",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
           "acquisition_price": null
@@ -7931,7 +7865,85 @@
           "acquisition_price": null
         },
         {
+          "bbl": "3010320025",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4108910021",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4029740137",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1009070042",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2023620040",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4033890029",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
           "bbl": "3011490006",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3034010036",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3025620010",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1008230079",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3022640074",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3046330040",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3000361202",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3028340001",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
           "acquisition_price": null
@@ -7949,12 +7961,6 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3000361202",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
           "bbl": "3002490032",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
@@ -7967,19 +7973,49 @@
           "acquisition_price": null
         },
         {
+          "bbl": "2044260032",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
           "bbl": "3032580040",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
           "acquisition_price": null
         },
         {
-          "bbl": "3028340001",
+          "bbl": "3031710068",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
           "acquisition_price": null
         },
         {
-          "bbl": "3034010036",
+          "bbl": "3017920065",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3020150020",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1006951301",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3008160001",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3026560038",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
           "acquisition_price": null
@@ -8021,61 +8057,7 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2023620040",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3020150020",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3013130046",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1015450022",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1021530047",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3009470001",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4115440100",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1007991001",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2041560011",
-          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
-          "acquisition_date": "2026-03-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1015770044",
+          "bbl": "2024060003",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
           "acquisition_price": null
@@ -8087,37 +8069,55 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2044260032",
+          "bbl": "4032340173",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
           "acquisition_price": null
         },
         {
-          "bbl": "3017920065",
+          "bbl": "1013260021",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
           "acquisition_price": null
         },
         {
-          "bbl": "3008160001",
+          "bbl": "2022610005",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
           "acquisition_price": null
         },
         {
-          "bbl": "3031710068",
+          "bbl": "1008180078",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
           "acquisition_price": null
         },
         {
-          "bbl": "1009070042",
+          "bbl": "3034240068",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
           "acquisition_price": null
         },
         {
-          "bbl": "4033890029",
+          "bbl": "1014140012",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3001540017",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1005720062",
+          "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
+          "acquisition_date": "2026-03-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4019960011",
           "acquiring_entity": "BARINGS 2026-SBP ISSUER LLC",
           "acquisition_date": "2026-03-12",
           "acquisition_price": null
@@ -8176,8 +8176,456 @@
         "11417",
         "11433"
       ],
-      "high_displacement_acquisitions": 22,
-      "high_displacement_pct": 34.4,
+      "high_displacement_acquisitions": 21,
+      "high_displacement_pct": 32.8,
+      "targets_high_displacement": false,
+      "related_operators": []
+    },
+    {
+      "operator_root": "FINANCIAL",
+      "total_properties": 63,
+      "total_acquisitions": 70,
+      "parcels": [
+        {
+          "bbl": "3017780004",
+          "acquiring_entity": "AMERICAN FINANCIAL INC DBA ORION LENDING",
+          "acquisition_date": "2025-04-23",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1007531201",
+          "acquiring_entity": "W FINANCIAL REIT LTD",
+          "acquisition_date": "2025-04-29",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1002990021",
+          "acquiring_entity": "LW FINANCIAL LLC",
+          "acquisition_date": "2025-05-01",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1010370035",
+          "acquiring_entity": "LW FINANCIAL LLC",
+          "acquisition_date": "2025-05-01",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3001760014",
+          "acquiring_entity": "LW FINANCIAL LLC",
+          "acquisition_date": "2025-05-02",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4017100065",
+          "acquiring_entity": "LW FINANCIAL LLC",
+          "acquisition_date": "2025-05-06",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3054661101",
+          "acquiring_entity": "AMERICAN FINANCIAL NETWORK INC DBA",
+          "acquisition_date": "2025-05-12",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3028410035",
+          "acquiring_entity": "LW FINANCIAL LLC",
+          "acquisition_date": "2025-05-29",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4012961012",
+          "acquiring_entity": "W FINANCIAL REIT LTD",
+          "acquisition_date": "2025-05-29",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3054800048",
+          "acquiring_entity": "AMERICAN FINANCIAL NETWORK INC DBA ORION LENDING",
+          "acquisition_date": "2025-06-11",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3000560002",
+          "acquiring_entity": "W FINANCIAL REIT LTD",
+          "acquisition_date": "2025-06-26",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3073600038",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-07-07",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1008921108",
+          "acquiring_entity": "W FINANCIAL REIT LTD",
+          "acquisition_date": "2025-07-07",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3025750029",
+          "acquiring_entity": "LW FINANCIAL LLC",
+          "acquisition_date": "2025-07-14",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3023370019",
+          "acquiring_entity": "W FINANCIAL REIT LTD",
+          "acquisition_date": "2025-07-16",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1005670028",
+          "acquiring_entity": "LW FINANCIAL LLC",
+          "acquisition_date": "2025-07-18",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3054230079",
+          "acquiring_entity": "AMERICAN FINANCIAL NETWORK INC DBA ORION LENDING",
+          "acquisition_date": "2025-07-23",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3056600059",
+          "acquiring_entity": "AMERICAN FINANCIAL NETWORK INC DBA ORION LENDING",
+          "acquisition_date": "2025-08-04",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4010081089",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-07-29",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4157870033",
+          "acquiring_entity": "FINANCIAL FREEDOM SENIOR FUNDING CORPORATION",
+          "acquisition_date": "2025-07-31",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3055971601",
+          "acquiring_entity": "AMERICAN FINANCIAL NETWORK INC",
+          "acquisition_date": "2025-08-07",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3055971602",
+          "acquiring_entity": "AMERICAN FINANCIAL NETWORK INC",
+          "acquisition_date": "2025-08-07",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3018080016",
+          "acquiring_entity": "AMERICAN FINANCIAL NETWORK INC D/B/A ORION LENDIN",
+          "acquisition_date": "2025-08-07",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4136350033",
+          "acquiring_entity": "FINANCIAL ASSET SECURITIES CORPORATION",
+          "acquisition_date": "2025-08-21",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1013370105",
+          "acquiring_entity": "W FINANCIAL REIT LTD",
+          "acquisition_date": "2025-09-11",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3022181701",
+          "acquiring_entity": "AMERICAN FINANCIAL NETWORK INC",
+          "acquisition_date": "2025-09-16",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1008210010",
+          "acquiring_entity": "W FINANCIAL REIT LTD",
+          "acquisition_date": "2025-09-24",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2041000034",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2047690017",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3014350062",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2050500020",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3047460043",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3037570035",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4121830006",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4128550161",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4110070048",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2035100021",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4135730033",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4142311109",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4102750020",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4156550017",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4160290064",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4125400107",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4125370075",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4113180051",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3015150073",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2053510037",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4160470044",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "4128250450",
+          "acquiring_entity": "BSI FINANCIAL SERVICES",
+          "acquisition_date": "2025-10-10",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3004290074",
+          "acquiring_entity": "LW FINANCIAL LLC",
+          "acquisition_date": "2025-10-29",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3087160061",
+          "acquiring_entity": "W FINANCIAL REIT LTD",
+          "acquisition_date": "2026-02-17",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3030190001",
+          "acquiring_entity": "W FINANCIAL REIT LTD",
+          "acquisition_date": "2025-12-04",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3065210006",
+          "acquiring_entity": "AMERICAN FINANCIAL NETWORK INC",
+          "acquisition_date": "2025-12-15",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3030820019",
+          "acquiring_entity": "W FINANCIAL REIT LTD",
+          "acquisition_date": "2025-12-17",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3020970063",
+          "acquiring_entity": "W FINANCIAL REIT LTD",
+          "acquisition_date": "2025-12-19",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3056700074",
+          "acquiring_entity": "AMERICAN FINANCIAL NETWORK INC DBA ORION LENDING",
+          "acquisition_date": "2026-01-07",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3068060041",
+          "acquiring_entity": "AMERICAN FINANCIAL NETWORK INC DBA ORION LENDING",
+          "acquisition_date": "2026-01-15",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3003890051",
+          "acquiring_entity": "W FINANCIAL REIT LTD",
+          "acquisition_date": "2026-01-20",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3082260043",
+          "acquiring_entity": "FINANCIAL EQUITIES",
+          "acquisition_date": "2026-02-04",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3011480011",
+          "acquiring_entity": "AMERICAN FINANCIAL NETWORK INC",
+          "acquisition_date": "2026-04-07",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2033560200",
+          "acquiring_entity": "D2 FINANCIAL LLC",
+          "acquisition_date": "2026-04-15",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "2033560196",
+          "acquiring_entity": "D2 FINANCIAL LLC",
+          "acquisition_date": "2026-04-15",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "1004251101",
+          "acquiring_entity": "W FINANCIAL REIT LTD",
+          "acquisition_date": "2026-04-24",
+          "acquisition_price": null
+        }
+      ],
+      "llc_count": 12,
+      "llc_entities": [
+        "AMERICAN FINANCIAL INC DBA ORION LENDING",
+        "AMERICAN FINANCIAL NETWORK INC",
+        "AMERICAN FINANCIAL NETWORK INC D/B/A ORION LENDIN",
+        "AMERICAN FINANCIAL NETWORK INC DBA",
+        "AMERICAN FINANCIAL NETWORK INC DBA ORION LENDING",
+        "BSI FINANCIAL SERVICES",
+        "D2 FINANCIAL LLC",
+        "FINANCIAL ASSET SECURITIES CORPORATION",
+        "FINANCIAL EQUITIES",
+        "FINANCIAL FREEDOM SENIOR FUNDING CORPORATION",
+        "LW FINANCIAL LLC",
+        "W FINANCIAL REIT LTD"
+      ],
+      "total_portfolio_value": 0,
+      "avg_acquisition_price": 0.0,
+      "acquisitions_per_month": 5.74,
+      "first_acquisition": "2025-04-23",
+      "last_acquisition": "2026-04-24",
+      "zip_codes_targeted": [
+        "10002",
+        "10003",
+        "10011",
+        "10017",
+        "10036",
+        "10461",
+        "10466",
+        "10467",
+        "10469",
+        "10473",
+        "11201",
+        "11204",
+        "11205",
+        "11206",
+        "11207",
+        "11211",
+        "11216",
+        "11217",
+        "11219",
+        "11222",
+        "11229",
+        "11230",
+        "11231",
+        "11233",
+        "11235",
+        "11236",
+        "11238",
+        "11372",
+        "11411",
+        "11412",
+        "11413",
+        "11414",
+        "11422",
+        "11433",
+        "11434",
+        "11691",
+        "11692"
+      ],
+      "high_displacement_acquisitions": 23,
+      "high_displacement_pct": 32.9,
       "targets_high_displacement": false,
       "related_operators": []
     },
@@ -8235,14 +8683,14 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4006560056",
-          "acquiring_entity": "STANDARD INSURANCE COMAPNY",
+          "bbl": "2030000019",
+          "acquiring_entity": "STANDARD INSURANCE COMPANY",
           "acquisition_date": "2025-05-28",
           "acquisition_price": null
         },
         {
-          "bbl": "2030000019",
-          "acquiring_entity": "STANDARD INSURANCE COMPANY",
+          "bbl": "4006560056",
+          "acquiring_entity": "STANDARD INSURANCE COMAPNY",
           "acquisition_date": "2025-05-28",
           "acquisition_price": null
         },
@@ -8283,13 +8731,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2028670025",
+          "bbl": "2027820026",
           "acquiring_entity": "STANDARD INSURANCE COMPANY",
           "acquisition_date": "2025-07-10",
           "acquisition_price": null
         },
         {
-          "bbl": "2027820026",
+          "bbl": "2028670025",
           "acquiring_entity": "STANDARD INSURANCE COMPANY",
           "acquisition_date": "2025-07-10",
           "acquisition_price": null
@@ -8481,13 +8929,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2034980030",
+          "bbl": "2044330007",
           "acquiring_entity": "STANDARD INSURANCE COMPANY",
           "acquisition_date": "2026-02-27",
           "acquisition_price": null
         },
         {
-          "bbl": "2044330007",
+          "bbl": "2034980030",
           "acquiring_entity": "STANDARD INSURANCE COMPANY",
           "acquisition_date": "2026-02-27",
           "acquisition_price": null
@@ -8580,8 +9028,8 @@
         "11233",
         "11415"
       ],
-      "high_displacement_acquisitions": 74,
-      "high_displacement_pct": 71.2,
+      "high_displacement_acquisitions": 84,
+      "high_displacement_pct": 80.8,
       "targets_high_displacement": true,
       "related_operators": []
     },
@@ -8591,13 +9039,13 @@
       "total_acquisitions": 50,
       "parcels": [
         {
-          "bbl": "3020060166",
+          "bbl": "4141660055",
           "acquiring_entity": "MCLP ASSET COMPANY INC",
           "acquisition_date": "2025-04-16",
           "acquisition_price": null
         },
         {
-          "bbl": "4141660055",
+          "bbl": "3020060166",
           "acquiring_entity": "MCLP ASSET COMPANY INC",
           "acquisition_date": "2025-04-16",
           "acquisition_price": null
@@ -8843,13 +9291,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4112250011",
+          "bbl": "1015151410",
           "acquiring_entity": "MCLP ASSET COMPANY INC",
           "acquisition_date": "2026-04-03",
           "acquisition_price": null
         },
         {
-          "bbl": "1015151410",
+          "bbl": "4112250011",
           "acquiring_entity": "MCLP ASSET COMPANY INC",
           "acquisition_date": "2026-04-03",
           "acquisition_price": null
@@ -8924,9 +9372,9 @@
         "11693",
         "11694"
       ],
-      "high_displacement_acquisitions": 29,
-      "high_displacement_pct": 58.0,
-      "targets_high_displacement": true,
+      "high_displacement_acquisitions": 24,
+      "high_displacement_pct": 48.0,
+      "targets_high_displacement": false,
       "related_operators": []
     },
     {
@@ -8953,9 +9401,9 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2024720004",
-          "acquiring_entity": "BROAD X FUNDING II LLC",
-          "acquisition_date": "2026-03-11",
+          "bbl": "3050900041",
+          "acquiring_entity": "BROAD X FUNDING LLC",
+          "acquisition_date": "2025-05-27",
           "acquisition_price": null
         },
         {
@@ -8965,9 +9413,9 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3050900041",
-          "acquiring_entity": "BROAD X FUNDING LLC",
-          "acquisition_date": "2025-05-27",
+          "bbl": "2024720004",
+          "acquiring_entity": "BROAD X FUNDING II LLC",
+          "acquisition_date": "2026-03-11",
           "acquisition_price": null
         },
         {
@@ -9001,13 +9449,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3032940025",
+          "bbl": "3012000069",
           "acquiring_entity": "BROAD X FUNDING LLC",
           "acquisition_date": "2025-07-03",
           "acquisition_price": null
         },
         {
-          "bbl": "3012000069",
+          "bbl": "3032940025",
           "acquiring_entity": "BROAD X FUNDING LLC",
           "acquisition_date": "2025-07-03",
           "acquisition_price": null
@@ -9109,13 +9557,13 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3035670008",
+          "bbl": "3035670009",
           "acquiring_entity": "BROAD X FUNDING LLC",
           "acquisition_date": "2025-12-24",
           "acquisition_price": null
         },
         {
-          "bbl": "3035670009",
+          "bbl": "3035670008",
           "acquiring_entity": "BROAD X FUNDING LLC",
           "acquisition_date": "2025-12-24",
           "acquisition_price": null
@@ -9157,12 +9605,6 @@
           "acquisition_price": null
         },
         {
-          "bbl": "3041180042",
-          "acquiring_entity": "BROAD X FUNDING LLC",
-          "acquisition_date": "2026-03-05",
-          "acquisition_price": null
-        },
-        {
           "bbl": "3041180044",
           "acquiring_entity": "BROAD X FUNDING LLC",
           "acquisition_date": "2026-03-05",
@@ -9170,6 +9612,12 @@
         },
         {
           "bbl": "3041180045",
+          "acquiring_entity": "BROAD X FUNDING LLC",
+          "acquisition_date": "2026-03-05",
+          "acquisition_price": null
+        },
+        {
+          "bbl": "3041180042",
           "acquiring_entity": "BROAD X FUNDING LLC",
           "acquisition_date": "2026-03-05",
           "acquisition_price": null
@@ -9245,8 +9693,8 @@
         "11226",
         "11237"
       ],
-      "high_displacement_acquisitions": 62,
-      "high_displacement_pct": 89.9,
+      "high_displacement_acquisitions": 64,
+      "high_displacement_pct": 92.8,
       "targets_high_displacement": true,
       "related_operators": []
     },
@@ -9370,7 +9818,7 @@
           "acquisition_price": null
         },
         {
-          "bbl": "2024510035",
+          "bbl": "4034890010",
           "acquiring_entity": "SYMETRA LIFE INSURANCE COMPANY",
           "acquisition_date": "2025-09-29",
           "acquisition_price": null
@@ -9382,7 +9830,7 @@
           "acquisition_price": null
         },
         {
-          "bbl": "4034890010",
+          "bbl": "2024510035",
           "acquiring_entity": "SYMETRA LIFE INSURANCE COMPANY",
           "acquisition_date": "2025-09-29",
           "acquisition_price": null
@@ -9556,8 +10004,8 @@
         "11385",
         "11432"
       ],
-      "high_displacement_acquisitions": 42,
-      "high_displacement_pct": 65.6,
+      "high_displacement_acquisitions": 40,
+      "high_displacement_pct": 62.5,
       "targets_high_displacement": true,
       "related_operators": []
     },
@@ -9609,28 +10057,28 @@
           "acquisition_price": 607000.0
         },
         {
-          "bbl": "3034510027",
-          "acquiring_entity": "MTEK PARK LLC",
-          "acquisition_date": "2025-06-18",
-          "acquisition_price": 1165000.0
-        },
-        {
           "bbl": "3040300114",
           "acquiring_entity": "MTEK PARK LLC",
           "acquisition_date": "2025-06-18",
           "acquisition_price": 440000.0
         },
         {
-          "bbl": "3052850035",
+          "bbl": "3034510027",
           "acquiring_entity": "MTEK PARK LLC",
-          "acquisition_date": "2025-07-10",
-          "acquisition_price": 1500000.0
+          "acquisition_date": "2025-06-18",
+          "acquisition_price": 1165000.0
         },
         {
           "bbl": "3016590018",
           "acquiring_entity": "MTEK PARK LLC",
           "acquisition_date": "2025-07-10",
           "acquisition_price": 1200000.0
+        },
+        {
+          "bbl": "3052850035",
+          "acquiring_entity": "MTEK PARK LLC",
+          "acquisition_date": "2025-07-10",
+          "acquisition_price": 1500000.0
         },
         {
           "bbl": "3048940042",
@@ -9669,16 +10117,16 @@
           "acquisition_price": 1000000.0
         },
         {
-          "bbl": "3012550070",
-          "acquiring_entity": "MTEK FRANKLIN LLC",
-          "acquisition_date": "2025-09-05",
-          "acquisition_price": 1550000.0
-        },
-        {
           "bbl": "3040400020",
           "acquiring_entity": "MTEK NYC LLC",
           "acquisition_date": "2025-09-05",
           "acquisition_price": 712775.0
+        },
+        {
+          "bbl": "3012550070",
+          "acquiring_entity": "MTEK FRANKLIN LLC",
+          "acquisition_date": "2025-09-05",
+          "acquisition_price": 1550000.0
         },
         {
           "bbl": "3016520018",
@@ -9861,316 +10309,9 @@
         "11429",
         "11434"
       ],
-      "high_displacement_acquisitions": 32,
-      "high_displacement_pct": 76.2,
+      "high_displacement_acquisitions": 31,
+      "high_displacement_pct": 73.8,
       "targets_high_displacement": true,
-      "related_operators": []
-    },
-    {
-      "operator_root": "METROPOLITAN",
-      "total_properties": 42,
-      "total_acquisitions": 44,
-      "parcels": [
-        {
-          "bbl": "4008830001",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-04-06",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3033820038",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-04-18",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4093940010",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-05-02",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4156140054",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-05-19",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2030710057",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-05-23",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3081730014",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-05-23",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3080850023",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-06-27",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3080400032",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-07-23",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4016910020",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-07-24",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2050510062",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-07-26",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4071760053",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-08-04",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4123500108",
-          "acquiring_entity": "METROPOLITAN TOWER LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-08-13",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3053700040",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-08-21",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4135900002",
-          "acquiring_entity": "METROPOLITAN TOWER LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-08-25",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1006021021",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-09-10",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4092840019",
-          "acquiring_entity": "HC METROPOLITAN LLC",
-          "acquisition_date": "2025-09-18",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3047930021",
-          "acquiring_entity": "METROPOLITAN TOWER LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-09-22",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4116110031",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-10-13",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4136590036",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-10-21",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4067131056",
-          "acquiring_entity": "METROPOLITAN TOWER LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-11-06",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4036980041",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-11-12",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3054940121",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-11-19",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4026450001",
-          "acquiring_entity": "5549 METROPOLITAN LLC",
-          "acquisition_date": "2025-11-24",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3016140028",
-          "acquiring_entity": "METROPOLITAN TOWER LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-12-05",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3013120071",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-12-18",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3048040021",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2025-12-18",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4039010037",
-          "acquiring_entity": "EE METROPOLITAN LLC",
-          "acquisition_date": "2026-01-14",
-          "acquisition_price": 1200000.0
-        },
-        {
-          "bbl": "3053720050",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2026-01-28",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3022241402",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2026-02-16",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3053450023",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2026-02-17",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3048130030",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2026-02-17",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3052370184",
-          "acquiring_entity": "METROPOLITAN TOWER LIFE INSURANCE COMPANY",
-          "acquisition_date": "2026-03-05",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4020040086",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2026-03-18",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4095440010",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2026-03-31",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4051051421",
-          "acquiring_entity": "METROPOLITAN CITY ORIGIN LLC",
-          "acquisition_date": "2026-04-03",
-          "acquisition_price": 630000.0
-        },
-        {
-          "bbl": "4123970101",
-          "acquiring_entity": "METROPOLITAN TOWER LIFE INSURANCE COMPANY",
-          "acquisition_date": "2026-04-06",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "2057231021",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2026-04-09",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "3033210152",
-          "acquiring_entity": "METROPOLITAN TOWER LIFE INSURANCE COMPANY",
-          "acquisition_date": "2026-04-24",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "1002300008",
-          "acquiring_entity": "METROPOLITAN REAL ESTATE",
-          "acquisition_date": "2026-04-29",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4026460004",
-          "acquiring_entity": "METROPOLITAN 60TH STREET LLC",
-          "acquisition_date": "2026-05-08",
-          "acquisition_price": 1160000.0
-        },
-        {
-          "bbl": "4126830004",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2026-05-13",
-          "acquisition_price": null
-        },
-        {
-          "bbl": "4031570158",
-          "acquiring_entity": "METROPOLITAN LIFE INSURANCE COMPANY",
-          "acquisition_date": "2026-05-14",
-          "acquisition_price": null
-        }
-      ],
-      "llc_count": 8,
-      "llc_entities": [
-        "5549 METROPOLITAN LLC",
-        "EE METROPOLITAN LLC",
-        "HC METROPOLITAN LLC",
-        "METROPOLITAN 60TH STREET LLC",
-        "METROPOLITAN CITY ORIGIN LLC",
-        "METROPOLITAN LIFE INSURANCE COMPANY",
-        "METROPOLITAN REAL ESTATE",
-        "METROPOLITAN TOWER LIFE INSURANCE COMPANY"
-      ],
-      "total_portfolio_value": 2990000.0,
-      "avg_acquisition_price": 67954.55,
-      "acquisitions_per_month": 3.28,
-      "first_acquisition": "2025-04-06",
-      "last_acquisition": "2026-05-14",
-      "zip_codes_targeted": [
-        "10013",
-        "10457",
-        "10466",
-        "11102",
-        "11203",
-        "11204",
-        "11213",
-        "11218",
-        "11221",
-        "11225",
-        "11230",
-        "11236",
-        "11366",
-        "11368",
-        "11369",
-        "11374",
-        "11375",
-        "11385",
-        "11412",
-        "11417",
-        "11418",
-        "11419",
-        "11420",
-        "11422",
-        "11434",
-        "11691"
-      ],
-      "high_displacement_acquisitions": 18,
-      "high_displacement_pct": 40.9,
-      "targets_high_displacement": false,
       "related_operators": []
     }
   ]

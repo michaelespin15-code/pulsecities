@@ -34,6 +34,12 @@ configure_logging()
 logger = logging.getLogger(__name__)
 
 STATE_PATH = Path(__file__).parent / "eviction_flips_state.json"
+
+# Each run with new arcs appends an edition here, approved: false. The future
+# public /flips editions page renders approved editions only; flipping the
+# flag after review is the human gate between scan output and publication.
+EDITIONS_PATH = Path(__file__).parent / "eviction_flips_editions.json"
+
 REPORT_TO = "michaelespin15@gmail.com"
 
 # Arc thresholds. Purchases under $100k are usually partial-interest or
@@ -204,6 +210,20 @@ def run(dry_run: bool = False) -> None:
             logger.info("Report emailed to %s", REPORT_TO)
 
     if not dry_run:
+        if new_arcs:
+            editions = []
+            if EDITIONS_PATH.exists():
+                editions = json.loads(EDITIONS_PATH.read_text()).get("editions", [])
+            editions.append({
+                "week": date.today().strftime("%G-W%V"),
+                "generated": date.today().isoformat(),
+                "approved": False,
+                "arcs": new_arcs,
+            })
+            EDITIONS_PATH.write_text(json.dumps({"editions": editions}, indent=1))
+            logger.info("Edition %s recorded (%d arcs, awaiting review)",
+                        editions[-1]["week"], len(new_arcs))
+
         STATE_PATH.write_text(json.dumps({
             "updated": date.today().isoformat(),
             "seen_keys": sorted(seen | {a["key"] for a in arcs}),

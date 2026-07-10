@@ -471,6 +471,95 @@ def get_operator_profile_by_slug(
     }
 
 
+@router.get("/{slug}/paper-trail.csv")
+@limiter.limit("10/minute")
+def get_operator_paper_trail(
+    request: Request,
+    slug: str,
+    db: Session = Depends(get_db),
+):
+    """
+    The operator's deed record as CSV: one acquisition row per tracked parcel
+    (sourced from operator_parcels so the export always matches the profile
+    page counts), plus disposition rows for every sale by the same entities.
+    Each row carries the ACRIS document ID so any line can be verified at the
+    source in minutes.
+    """
+    if not re.match(r"^[a-z0-9-]+$", slug):
+        raise HTTPException(status_code=400, detail="Invalid slug format")
+
+    op_row = db.execute(
+        text("SELECT id, slug, operator_root, llc_entities, operator_class FROM operators WHERE slug = :slug"),
+        {"slug": slug},
+    ).fetchone()
+    if op_row is None:
+        raise HTTPException(status_code=404, detail="Operator not found")
+
+    # Same classification gate as the profile endpoint.
+    if getattr(op_row, "operator_class", "operator") != "operator":
+        raise HTTPException(status_code=404, detail="Operator not found")
+
+    llc_names = op_row.llc_entities or []
+
+    acq_rows = db.execute(text("""
+        SELECT op.bbl, p.address, p.zip_code,
+               op.acquiring_entity, op.acquisition_date, op.acquisition_price,
+               o.document_id, g.party_name AS seller
+        FROM operator_parcels op
+        LEFT JOIN parcels p ON p.bbl = op.bbl
+        LEFT JOIN ownership_raw o
+          ON o.bbl = op.bbl
+         AND o.party_type = '2'
+         AND o.party_name_normalized = op.acquiring_entity
+         AND o.doc_date = op.acquisition_date
+        LEFT JOIN ownership_raw g
+          ON g.document_id = o.document_id AND g.party_type = '1'
+        WHERE op.operator_id = :op_id
+        ORDER BY op.acquisition_date
+    """), {"op_id": op_row.id}).fetchall()
+
+    sale_rows = db.execute(text("""
+        SELECT o.bbl, p.address, p.zip_code,
+               o.party_name_normalized AS selling_entity, o.doc_date, o.doc_amount,
+               o.document_id, g.party_name AS buyer
+        FROM ownership_raw o
+        LEFT JOIN parcels p ON p.bbl = o.bbl
+        LEFT JOIN ownership_raw g
+          ON g.document_id = o.document_id AND g.party_type = '2'
+        WHERE o.party_type = '1'
+          AND o.doc_type IN ('DEED', 'DEEDP')
+          AND o.party_name_normalized = ANY(:names)
+        ORDER BY o.doc_date
+    """), {"names": llc_names}).fetchall() if llc_names else []
+
+    def field(v) -> str:
+        s = "" if v is None else str(v)
+        if any(c in s for c in (",", '"', "\n")):
+            s = '"' + s.replace('"', '""') + '"'
+        return s
+
+    lines = ["record_type,bbl,address,zip_code,entity,counterparty,deed_date,deed_amount,acris_document_id"]
+    for r in acq_rows:
+        lines.append(",".join(field(v) for v in (
+            "acquisition", r.bbl, r.address, r.zip_code, r.acquiring_entity,
+            r.seller, r.acquisition_date, r.acquisition_price, r.document_id,
+        )))
+    for r in sale_rows:
+        lines.append(",".join(field(v) for v in (
+            "disposition", r.bbl, r.address, r.zip_code, r.selling_entity,
+            r.buyer, r.doc_date, r.doc_amount, r.document_id,
+        )))
+
+    return Response(
+        content="\n".join(lines) + "\n",
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f'attachment; filename="{op_row.slug}-paper-trail.csv"',
+            "Cache-Control": "public, max-age=3600",
+        },
+    )
+
+
 @router.get("/{slug}/network")
 @limiter.limit("30/minute")
 def get_operator_network(
