@@ -254,6 +254,9 @@
                         style="font-size:0.75rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 0;min-height:32px;">
                     </button>
                 </div>
+                <div style="padding:10px 16px 12px; font-size:0.68rem; color:rgba(148,163,184,0.4); line-height:1.5;">
+                    <span data-i18n="acq_verify_note">Each row shows its ACRIS document ID under the date. Verify any record at</span> <a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBL" target="_blank" rel="noopener noreferrer" style="color:rgba(249,115,22,0.65);">a836-acris.nyc.gov</a>.
+                </div>
             </div>
 
             <!-- Acquisition pace chart (below deal log) -->
@@ -373,6 +376,7 @@
             follow_error:        'Could not subscribe. Try again.',
             pattern_note_header: 'Analyst note',
             recent_acq_header:   'Recent Acquisitions',
+            acq_verify_note:     'Each row shows its ACRIS document ID under the date. Verify any record at',
             recent_acq_window:   '(last 18 months, up to 50)',
             th_address:          'Address',
             th_zip:              'Zip',
@@ -445,6 +449,7 @@
             follow_error:        'No se pudo suscribir. Intenta de nuevo.',
             pattern_note_header: 'Nota del analista',
             recent_acq_header:   'Adquisiciones Recientes',
+            acq_verify_note:     'Cada fila muestra su ID de documento ACRIS bajo la fecha. Verifique cualquier registro en',
             recent_acq_window:   '(\u00faltimos 18 meses, hasta 50)',
             th_address:          'Direcci\u00f3n',
             th_zip:              'ZIP',
@@ -621,6 +626,15 @@
             amtDiv.className = 'mob-meta';
             amtDiv.textContent = fmtCurrency(r.doc_amount);
             div.appendChild(amtDiv);
+        }
+
+        if (r.document_id) {
+            const docDiv = document.createElement('div');
+            docDiv.className = 'mob-meta';
+            docDiv.style.fontSize = '0.62rem';
+            docDiv.style.opacity = '0.7';
+            docDiv.textContent = 'ACRIS ' + r.document_id;
+            div.appendChild(docDiv);
         }
 
         return div;
@@ -1064,7 +1078,8 @@
                     '<td style="padding:8px 16px;color:rgba(241,245,249,0.85);">' + esc(addrOrLot(r.address, r.bbl) || t('na')) + '</td>' +
                     '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;line-height:1.3;">' + esc(r.zip_code || '') + (r.zip_code && zipNames[r.zip_code] ? '<br><span style="font-size:0.65rem;color:rgba(148,163,184,0.55);font-family:inherit;">' + esc(zipNames[r.zip_code]) + '</span>' : '') + '</td>' +
                     '<td class="mono" style="padding:8px 16px;color:#94a3b8;font-size:0.7rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(r.buyer_name || '') + '</td>' +
-                    '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;white-space:nowrap;">' + esc(r.doc_date || '') + '</td>' +
+                    '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;white-space:nowrap;">' + esc(r.doc_date || '') +
+                        (r.document_id ? '<br><span style="font-size:0.62rem;color:rgba(148,163,184,0.45);">' + esc(r.document_id) + '</span>' : '') + '</td>' +
                     '<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:#94a3b8;font-size:0.72rem;white-space:nowrap;">' + fmtCurrency(r.doc_amount) + '</td>';
                 tbody.appendChild(tr);
 
