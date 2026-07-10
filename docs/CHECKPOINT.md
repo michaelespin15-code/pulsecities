@@ -12,8 +12,10 @@ the pre-publish handoff, lives in git history of this file.)
 - **Docket feed**: `/api/flips/editions/latest` serves the strongest arc of the newest
   `approved: true` edition in `scripts/eviction_flips_editions.json`, enriched with
   neighborhood and borough. The verified Furman Avenue arc is the markup fallback until
-  the first edition is approved (first scan lands Sunday 2026-07-12, 09:30 cron;
-  Michael flips `approved` after review).
+  the first edition is approved. First scan was run manually 2026-07-10: edition
+  2026-W28 (17 arcs) is awaiting Michael's review; the report email went out. The
+  Sunday 09:30 cron will therefore find nothing new this week, and that silence is
+  expected, not a failure.
 - **Muted green palette** on every tier surface: map fill + legend, methodology dots,
   og cards, ops distribution, brief chips, SSR `_tier_info`/`_idx_color`. Low #3E6B54,
   moderate #C08B2D, high #F97316, critical #EF4444. Low-as-text stays slate for contrast.
@@ -42,5 +44,6 @@ reloaded, editions endpoint answering `{"week":null,"arc":null}` until Sunday.
   (#22c55e/#eab308) for tier chips. Left alone deliberately: the email design shipped
   2026-07-09 and dark-bg contrast for #3E6B54 text needs a design pass, not a blind swap.
 - **Sunday 2026-07-12 firsts** (all expected, none alarms): digest 09:00, flips scan
-  09:30 (17 seed arcs, writes the first edition), restore-test 05:00, ops-health 09:45.
+  09:30 (quiet: the 17 seed arcs already went out 2026-07-10), restore-test 05:00,
+  ops-health 09:45.
 - Backlog: memory `project_next_steps.md`.
