@@ -632,6 +632,7 @@
                 stats_eviction_unit:  'eviction filings',
                 stats_eviction_unit_s:'eviction filing',
                 stats_prefix:         'Recently on record:',
+                stats_through:        'through',
                 stats_conjunction:    'and',
             },
             es: {
@@ -680,6 +681,7 @@
                 stats_eviction_unit:  'desalojos registrados',
                 stats_eviction_unit_s:'desalojo registrado',
                 stats_prefix:         'Recientemente en registro:',
+                stats_through:        'hasta',
                 stats_conjunction:    'y',
             }
         };
@@ -757,10 +759,21 @@
             // Only the LLC transfer count is shown here. We avoid naming a fixed
             // window ("last 90 days"): ACRIS pauses upstream at NYC Open Data for
             // weeks at a time, so a today-anchored window would overstate recency.
-            // "Recently on record" stays true whether or not the feed is current.
-            const s = i18n[getCurrentLanguage()] || i18n.en;
+            // When the feed IS paused, name the real watermark so "recently"
+            // never reads as current.
+            const lang = getCurrentLanguage();
+            const s = i18n[lang] || i18n.en;
             const unit = llc === 1 ? s.stats_llc_unit_s : s.stats_llc_unit;
-            chips.textContent = `${s.stats_prefix} ${llc.toLocaleString()} ${unit}`;
+            let suffix = '';
+            const acris = (data.data_freshness || {}).acris;
+            if (acris && acris.stale && acris.through) {
+                const d = new Date(acris.through + 'T00:00:00Z');
+                if (!isNaN(d)) {
+                    const ds = d.toLocaleDateString(lang === 'es' ? 'es' : 'en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+                    suffix = ` ${s.stats_through} ${ds}`;
+                }
+            }
+            chips.textContent = `${s.stats_prefix} ${llc.toLocaleString()} ${unit}${suffix}`;
             chips.style.opacity = '1';
         }
 
