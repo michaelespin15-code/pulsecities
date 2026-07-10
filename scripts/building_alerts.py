@@ -217,9 +217,14 @@ def run(dry_run: bool = False) -> None:
     now = datetime.now(timezone.utc)
     since = now - timedelta(hours=24)
     if STATE_PATH.exists():
-        state = json.loads(STATE_PATH.read_text())
-        if state.get("last_run"):
-            since = datetime.fromisoformat(state["last_run"])
+        # A corrupt state file must not become a permanent crash loop; fall
+        # back to the bounded 24h window and let this run rewrite it.
+        try:
+            state = json.loads(STATE_PATH.read_text())
+            if state.get("last_run"):
+                since = datetime.fromisoformat(state["last_run"])
+        except (ValueError, OSError):
+            logger.warning("Unreadable state file %s; using the 24h window", STATE_PATH)
 
     with get_scraper_db() as db:
         alerts = scan(db, since)
@@ -227,6 +232,7 @@ def run(dry_run: bool = False) -> None:
     logger.info("Building-alert scan complete: %d watch(es) with new records since %s",
                 len(alerts), since.isoformat())
 
+    any_failed = False
     for alert in alerts:
         subject, html, text_body = build_email(alert)
         if dry_run:
@@ -249,10 +255,19 @@ def run(dry_run: bool = False) -> None:
             logger.info("Alert sent to %s for %s (%d events)",
                         alert["email"], alert["bbl"], len(alert["events"]))
         except Exception:
+            any_failed = True
             logger.exception("Failed to send building alert to %s", alert["email"])
 
     if not dry_run:
-        STATE_PATH.write_text(json.dumps({"last_run": now.isoformat()}))
+        if any_failed:
+            # Keep the old watermark so the failed alerts are retried next
+            # run. The successful recipients get a duplicate, which beats a
+            # watcher silently missing a deed on their building.
+            logger.warning("Send failures; watermark not advanced, next run retries.")
+            return
+        tmp = STATE_PATH.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps({"last_run": now.isoformat()}))
+        os.replace(tmp, STATE_PATH)
 
 
 if __name__ == "__main__":

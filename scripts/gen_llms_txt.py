@@ -58,7 +58,21 @@ def _active_keys(db):
 
 
 def _top_risk(db, limit=5):
-    return db.execute(text("""
+    """The published top-risk list. Prefer /api/stats so this file can never
+    disagree with what the site shows (the API filters out ZIPs whose dominant
+    signal has no recent raw records); fall back to a plain score sort if the
+    app is down while cron runs."""
+    try:
+        import urllib.request
+        with urllib.request.urlopen("https://pulsecities.com/api/stats", timeout=15) as resp:
+            import json as _json
+            data = _json.load(resp)
+        entries = (data.get("top_risk_list") or [])[:limit]
+        if entries:
+            return [(e["zip_code"], e["name"], e["score"]) for e in entries]
+    except Exception:
+        pass
+    rows = db.execute(text("""
         SELECT n.zip_code, n.name, round(ds.score::numeric, 1) AS score
         FROM displacement_scores ds
         JOIN neighborhoods n ON n.zip_code = ds.zip_code
@@ -66,6 +80,13 @@ def _top_risk(db, limit=5):
         ORDER BY ds.score DESC
         LIMIT :lim
     """), {"lim": limit}).fetchall()
+    return [(r.zip_code, r.name, r.score) for r in rows]
+
+
+def _scored_count(db) -> int:
+    return db.execute(text(
+        "SELECT COUNT(DISTINCT zip_code) FROM displacement_scores WHERE score IS NOT NULL"
+    )).scalar() or 0
 
 
 def build():
@@ -78,10 +99,11 @@ def build():
         )
         dormant = [label for k, label, _ in SIGNALS if k not in active]
         top = _top_risk(db)
+        n_scored = _scored_count(db)
 
     nbhd = "\n".join(
-        f"- {r.name} ({r.zip_code}, {_borough(r.zip_code)}) - score {r.score}, high displacement pressure"
-        for r in top
+        f"- {name} ({zip_code}, {_borough(zip_code)}) - score {score}, high displacement pressure"
+        for zip_code, name, score in top
     )
     dormant_note = (
         f" {', '.join(dormant)} is currently dormant pending second-year DHCR data, "
@@ -91,13 +113,13 @@ def build():
 
     return f"""# PulseCities
 
-> Real-time displacement risk intelligence for all 178 NYC neighborhoods, built on public data signals updated daily from city records.
+> Real-time displacement risk intelligence for all {n_scored} NYC neighborhoods, built on public data signals updated daily from city records.
 
-PulseCities tracks housing displacement pressure across New York City by aggregating and scoring signals from public datasets: LLC property acquisitions (ACRIS), renovation permit filings (DOB), tenant complaint rates (311/HPD), residential eviction filings, HPD housing violations, and rent-stabilized unit loss (DHCR). Each of the 178 ZIP code neighborhoods receives a daily composite score from 0 to 100.
+PulseCities tracks housing displacement pressure across New York City by aggregating and scoring signals from public datasets: LLC property acquisitions (ACRIS), renovation permit filings (DOB), tenant complaint rates (311/HPD), residential eviction filings, HPD housing violations, and rent-stabilized unit loss (DHCR). Each of the {n_scored} ZIP code neighborhoods receives a daily composite score from 0 to 100.
 
 ## What this site provides
 
-- Displacement risk scores (0 to 100) for all 178 NYC neighborhoods, updated nightly
+- Displacement risk scores (0 to 100) for all {n_scored} NYC neighborhoods, updated nightly
 - Signal breakdown showing which factors drive pressure in each area
 - Week-over-week score changes to identify neighborhoods under acute pressure
 - LLC operator profiles linking corporate entities to their NYC property portfolios
@@ -123,7 +145,7 @@ Scoring methodology: each signal is normalized 0 to 100 relative to all NYC neig
 
 ## API
 
-- `GET /api/neighborhoods` - GeoJSON FeatureCollection of all 178 neighborhoods with scores
+- `GET /api/neighborhoods` - GeoJSON FeatureCollection of all {n_scored} scored neighborhoods with scores
 - `GET /api/neighborhoods/{{zip}}/score` - score and signal breakdown for a ZIP code
 - `GET /api/neighborhoods/top-risk` - top N neighborhoods by current score
 - `GET /api/neighborhoods/top-movers` - neighborhoods with largest week-over-week score increase

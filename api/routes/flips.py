@@ -158,33 +158,39 @@ _EDITIONS_PATH = Path(__file__).resolve().parents[2] / "scripts" / "eviction_fli
 _BOROUGHS = {"1": "Manhattan", "2": "Bronx", "3": "Brooklyn", "4": "Queens", "5": "Staten Island"}
 
 
+# The public shape of an arc. An explicit whitelist so internal fields in the
+# editions file (dedupe keys, future reviewer notes) never leak to the API.
+_ARC_FIELDS = ("bbl", "address", "zip_code", "eviction_date", "eviction_count",
+               "buy_doc", "buy_date", "buy_amt", "buyer",
+               "sell_doc", "sell_date", "sell_amt", "gain_pct")
+
+
 @router.get("/editions/latest")
 @limiter.limit("60/minute")
 def latest_edition(request: Request, response: Response, db: Session = Depends(get_db)):
     """Featured arc of the newest approved eviction-flip edition."""
     response.headers["Cache-Control"] = "public, max-age=3600"
+    # The editions file is script-written but human-edited for approval; a
+    # stray edit must degrade to the no-edition response, never a 500.
     try:
         editions = json.loads(_EDITIONS_PATH.read_text()).get("editions", [])
-    except (OSError, ValueError):
-        editions = []
-
-    approved = [e for e in editions if e.get("approved") and e.get("arcs")]
-    if not approved:
+        approved = [e for e in editions if e.get("approved") and e.get("arcs")]
+        if not approved:
+            return {"week": None, "arc": None}
+        edition = approved[-1]
+        arc = max(edition["arcs"], key=lambda a: float(a.get("gain_pct") or 0))
+        payload = {k: arc.get(k) for k in _ARC_FIELDS}
+        week = edition.get("week")
+    except Exception:
+        logger.exception("Malformed editions file at %s", _EDITIONS_PATH)
         return {"week": None, "arc": None}
 
-    edition = approved[-1]
-    arc = max(edition["arcs"], key=lambda a: a.get("gain_pct") or 0)
     neighborhood = None
-    if arc.get("zip_code"):
+    if payload.get("zip_code"):
         neighborhood = db.execute(
             text("SELECT name FROM neighborhoods WHERE zip_code = :zip"),
-            {"zip": arc["zip_code"]},
+            {"zip": payload["zip_code"]},
         ).scalar()
-    return {
-        "week": edition.get("week"),
-        "arc": {
-            **arc,
-            "neighborhood": neighborhood,
-            "borough": _BOROUGHS.get(str(arc.get("bbl", ""))[:1]),
-        },
-    }
+    payload["neighborhood"] = neighborhood
+    payload["borough"] = _BOROUGHS.get(str(payload.get("bbl", ""))[:1])
+    return {"week": week, "arc": payload}

@@ -385,6 +385,17 @@ def subscribe(
     body: SubscribeRequest,
     db: Session = Depends(get_db),
 ):
+    # Per-address creation cap. Targets are effectively unlimited (any BBL),
+    # so without this a hostile caller could pour confirmation emails onto a
+    # victim address and burn the sender reputation with them. Ten new
+    # subscriptions a day is far beyond any real use.
+    recent = db.execute(text(
+        "SELECT count(*) FROM subscribers WHERE email = :e AND created_at > now() - interval '1 day'"
+    ), {"e": body.email}).scalar() or 0
+    if recent >= 10:
+        raise HTTPException(status_code=429,
+                            detail='Too many new subscriptions for this address today.')
+
     operator_name = None
     building_address = None
     if body.bbl:
