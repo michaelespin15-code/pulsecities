@@ -15,11 +15,11 @@ PulseCities tracks housing displacement pressure across New York City by aggrega
 
 ## Current high-risk neighborhoods (as of latest scoring run)
 
-- Bedford-Stuyvesant (11216, Brooklyn) - score 71.1, high displacement pressure
-- Wakefield (10466, Bronx) - score 63.3, high displacement pressure
-- East Flatbush (11203, Brooklyn) - score 59.2, high displacement pressure
-- Harlem (10026, Manhattan) - score 58.8, high displacement pressure
-- Hunts Point (10474, Bronx) - score 57.9, high displacement pressure
+- Bedford-Stuyvesant (11216, Brooklyn) - score 69.7, high displacement pressure
+- Hunts Point (10474, Bronx) - score 63.9, high displacement pressure
+- Harlem (10026, Manhattan) - score 61.2, high displacement pressure
+- Wakefield (10466, Bronx) - score 59.9, high displacement pressure
+- Wakefield (10470, Bronx) - score 58.9, high displacement pressure
 
 ## Data sources
 
@@ -46,16 +46,18 @@ Scoring methodology: each signal is normalized 0 to 100 relative to all NYC neig
 
 ## Key pages
 
-- https://pulsecities.com/ - landing page with live stats and top-risk neighborhoods
+- https://pulsecities.com/ - landing page with live stats, the week's verified eviction-flip finding, and top-risk neighborhoods
 - https://pulsecities.com/map - interactive heatmap of all NYC neighborhoods
 - https://pulsecities.com/neighborhoods - directory of every scored ZIP, grouped by borough and ranked
 - https://pulsecities.com/brooklyn (also /manhattan, /queens, /bronx, /staten-island) - borough-level ranked ZIP lists
 - https://pulsecities.com/neighborhood/{zip} - per-neighborhood detail with signal breakdown and six-month score trend (e.g. /neighborhood/11216)
+- https://pulsecities.com/operators - directory of tracked LLC operator networks
 - https://pulsecities.com/operator/{name} - LLC operator portfolio profiles
 - https://pulsecities.com/flips - Flip Watch, citywide feed of buildings bought by an LLC and filed for renovation within 60 days
 - https://pulsecities.com/radar - Speculation Radar, one LLC taking 3+ buildings in one ZIP within 90 days
 - https://pulsecities.com/this-week - current week in NYC displacement (score movers, new filings, newest flips)
 - https://pulsecities.com/this-week/archive - every past weekly edition at /week/{YYYY-Www}
+- https://pulsecities.com/press - verified findings with ACRIS document IDs and downloadable paper-trail CSVs
 - https://pulsecities.com/methodology - full scoring methodology
 
 ## About
