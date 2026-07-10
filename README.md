@@ -39,6 +39,13 @@ All data is public record.
 
 - DHCR: Rent-stabilized building registrations (kj4p-ruqc)
 
+## How it works
+
+[docs/how-it-works.md](docs/how-it-works.md) is a technical walkthrough: the
+nightly pipeline, the displacement score, the entity resolution that
+reconstructs landlord networks from shell LLCs, the classification gate, the
+eviction-flip scan, and the correctness work that keeps the numbers trustworthy.
+
 ## Stack
 
 Python · FastAPI · PostgreSQL + PostGIS · MapLibre GL JS · DigitalOcean

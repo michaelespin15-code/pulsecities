@@ -442,7 +442,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <span style="font-size:.85rem;color:rgba(148,163,184,.55);">PulseCities</span>
   </a>
-  <div class="nav-links"><a href="/map">Map</a><a href="/methodology">Methodology</a><a href="/about">About</a></div>
+  <div class="nav-links"><a href="/map">Map</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="/press">Press</a></div>
 </div></nav>
 <main><div class="container">
   <p class="breadcrumb"><a href="/map">&#8592; Back to map</a>{breadcrumb_borough}</p>
@@ -482,8 +482,8 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
     <a href="/brief/zip/{zip_code}" class="btn-copy">Evidence brief</a>
   </div>
 </div></main>
-<footer><div style="font-size:11px;color:var(--faint);margin-bottom:8px;text-align:center;"><a href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" style="color:var(--faint);text-decoration:none;">Built by Michael Espin</a></div><div class="footer-links">
-  <a href="/">Home</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="/status">Status</a><a href="mailto:nycdisplacement@gmail.com">Contact</a><a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="display:inline-flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+<footer><div style="font-size:11px;color:var(--faint);margin-bottom:8px;text-align:center;">Built by Michael Espin</div><div class="footer-links">
+  <a href="/">Home</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="/press">Press</a><a href="/status">Status</a><a href="mailto:nycdisplacement@gmail.com">Contact</a><a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="display:inline-flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
 </div></footer>
 <script>
 function copyLink() {{
@@ -1148,7 +1148,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     <div style="display:flex;align-items:center;gap:16px;">
       <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Map</a>
       <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Methodology</a>
-      <a href="/about" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">About</a>
+      <a href="/about" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">About</a><a href="/press" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Press</a>
       <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
     </div>
   </div>
@@ -1170,7 +1170,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <div class="footer-links">
     <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
     <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
-    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
+    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a><a href="/press" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Press</a>
     <a href="/status" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
     <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
     <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="color:#64748b;text-decoration:none;display:inline-flex;align-items:center;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
@@ -1384,7 +1384,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <div class="footer-links">
     <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
     <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
-    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
+    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a><a href="/press" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Press</a>
     <a href="/status" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
     <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
   </div>
@@ -1583,7 +1583,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <div class="footer-links">
     <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
     <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
-    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
+    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a><a href="/press" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Press</a>
     <a href="/status" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
     <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
   </div>
@@ -1783,7 +1783,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <div class="footer-links">
     <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
     <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
-    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
+    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a><a href="/press" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Press</a>
     <a href="/status" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
     <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
     <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="color:#64748b;text-decoration:none;display:inline-flex;align-items:center;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
@@ -2026,7 +2026,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <div class="footer-links">
     <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
     <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
-    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
+    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a><a href="/press" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Press</a>
     <a href="/status" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
     <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
     <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="color:#64748b;text-decoration:none;display:inline-flex;align-items:center;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
@@ -2259,7 +2259,7 @@ _WEEK_FOOTER_HTML = (
     '<a href="/" style="color:#64748b;">Home</a>'
     '<a href="/this-week" style="color:#64748b;">This week</a>'
     '<a href="/methodology" style="color:#64748b;">Methodology</a>'
-    '<a href="/about" style="color:#64748b;">About</a>'
+    '<a href="/about" style="color:#64748b;">About</a><a href="/press" style="color:#64748b;">Press</a>'
     '<a href="/status" style="color:#64748b;">Status</a>'
     '</div>\n</footer>'
 )
@@ -2695,7 +2695,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <div class="footer-links">
     <a href="/" style="color:#64748b;">Home</a>
     <a href="/methodology" style="color:#64748b;">Methodology</a>
-    <a href="/about" style="color:#64748b;">About</a>
+    <a href="/about" style="color:#64748b;">About</a><a href="/press" style="color:#64748b;">Press</a>
     <a href="/status" style="color:#64748b;">Status</a>
     <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;">Contact</a>
   </div>
