@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme: dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public API | PulseCities</title>
+    <meta name="description" content="Free read-only JSON API for NYC displacement data: neighborhood risk scores, operator portfolios, renovation flips, and buying clusters, all from public records.">
+    <link rel="canonical" href="https://pulsecities.com/developers">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+    <meta property="og:title" content="Public API | PulseCities">
+    <meta property="og:description" content="Free read-only JSON API for NYC displacement data: neighborhood risk scores, operator portfolios, renovation flips, and buying clusters.">
+    <meta property="og:url" content="https://pulsecities.com/developers">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="PulseCities">
+    <meta property="og:image" content="https://pulsecities.com/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Public API | PulseCities">
+    <meta name="twitter:description" content="Free read-only JSON API for NYC displacement data, from public records.">
+    <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap"></noscript>
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebAPI",
+        "name": "PulseCities Public API",
+        "description": "Free read-only JSON API for NYC displacement data: neighborhood risk scores, operator portfolios, renovation flips, and buying clusters, derived from public records.",
+        "url": "https://pulsecities.com/developers",
+        "documentation": "https://pulsecities.com/developers",
+        "provider": { "@type": "Person", "name": "Michael Espin" },
+        "termsOfService": "https://pulsecities.com/developers#terms"
+    }
+    </script>
+
+    <script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>
+    <script>
+        window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+        plausible.init()
+        plausible('API Docs View')
+    </script>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:      #0f172a;
+            --surface: #131e33;
+            --border:  rgba(148, 163, 184, 0.12);
+            --text:    #e2e8f0;
+            --muted:   #94a3b8;
+            --faint:   rgba(148, 163, 184, 0.45);
+            --orange:  #f97316;
+            --sky:     #38bdf8;
+            --mono:    'JetBrains Mono', monospace;
+        }
+
+        html { scroll-behavior: smooth; }
+        section[id] { scroll-margin-top: 68px; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            font-size: 15px;
+            overflow-x: hidden;
+        }
+
+        a { color: var(--sky); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        nav {
+            position: sticky; top: 0; z-index: 10;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px; height: 52px;
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        }
+        .nav-brand {
+            font-size: 14px; font-weight: 600; color: var(--orange);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .nav-brand:hover { text-decoration: none; opacity: 0.85; }
+        .nav-breadcrumb { font-size: 12px; color: var(--faint); font-family: var(--mono); }
+        .nav-right { display: flex; align-items: center; gap: 16px; font-size: 13px; }
+
+        .container { max-width: 740px; margin: 0 auto; padding: 56px 24px 80px; }
+
+        .page-label {
+            font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--orange);
+            font-family: var(--mono); margin-bottom: 12px;
+        }
+        h1 {
+            font-family: 'Bricolage Grotesque', 'DM Sans', sans-serif;
+            font-size: clamp(22px, 4vw, 30px); font-weight: 600;
+            line-height: 1.25; margin-bottom: 16px;
+        }
+        .page-intro { font-size: 16px; color: var(--muted); line-height: 1.65; margin-bottom: 40px; }
+
+        h2 {
+            font-family: 'Bricolage Grotesque', 'DM Sans', sans-serif;
+            font-size: 19px; font-weight: 600; margin: 44px 0 12px;
+        }
+        p { color: var(--muted); margin-bottom: 12px; }
+        p strong { color: var(--text); }
+
+        code {
+            font-family: var(--mono); font-size: 12.5px;
+            background: rgba(148, 163, 184, 0.1);
+            border-radius: 4px; padding: 1.5px 5px; color: var(--text);
+        }
+        pre {
+            background: var(--surface);
+            border: 1px solid var(--border); border-radius: 10px;
+            padding: 14px 16px; overflow-x: auto;
+            font-family: var(--mono); font-size: 12.5px; line-height: 1.6;
+            color: var(--text); margin: 10px 0 18px;
+        }
+        pre code { background: none; padding: 0; }
+        .comment { color: var(--faint); }
+
+        .endpoint {
+            border: 1px solid var(--border); border-radius: 12px;
+            padding: 18px 20px 8px; margin-bottom: 16px;
+            background: var(--surface);
+        }
+        .endpoint-route {
+            font-family: var(--mono); font-size: 13.5px; font-weight: 600;
+            margin-bottom: 6px; word-break: break-all;
+        }
+        .endpoint-route .method { color: var(--orange); margin-right: 8px; }
+        .endpoint p { font-size: 14px; }
+
+        .fields { font-family: var(--mono); font-size: 12px; color: var(--muted); line-height: 1.9; margin-bottom: 12px; }
+        .fields b { color: var(--text); font-weight: 600; }
+
+        ul { color: var(--muted); padding-left: 20px; margin-bottom: 14px; }
+        li { margin-bottom: 6px; }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 26px 20px calc(env(safe-area-inset-bottom, 0px) + 26px);
+            text-align: center; font-size: 13px; color: var(--muted);
+        }
+        .footer-byline { color: var(--text); margin-bottom: 10px; }
+        .footer-links { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; }
+        .footer-links a { color: var(--muted); }
+        .footer-links a:hover { color: var(--text); }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/" class="nav-brand">
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <rect width="32" height="32" rx="6" fill="#1a1a2e"/>
+            <polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        PulseCities
+    </a>
+    <span class="nav-breadcrumb">/ developers</span>
+    <div class="nav-right">
+        <a href="/map">Open the map</a>
+    </div>
+</nav>
+
+<main class="container">
+
+    <p class="page-label">Public API</p>
+    <h1>NYC displacement data, as JSON.</h1>
+    <p class="page-intro">
+        Everything the site shows is available as a free read-only API. No key, no signup.
+        The data comes from NYC public records (ACRIS deeds, DOB permits, marshal evictions,
+        HPD violations, 311 complaints) and refreshes nightly. If you publish something built
+        on it, credit <strong>PulseCities (pulsecities.com)</strong>.
+    </p>
+
+    <h2 id="quick-start">Quick start</h2>
+    <pre><code><span class="comment"># The current citywide picture: top-risk list, live counts, feed freshness</span>
+curl https://pulsecities.com/api/stats</code></pre>
+
+    <h2 id="ground-rules">Ground rules</h2>
+    <ul>
+        <li>Base URL is <code>https://pulsecities.com/api</code>. Every endpoint below is <code>GET</code> and returns JSON.</li>
+        <li>Rate limit is 60 requests per minute per IP (30 on a few heavier routes). Responses carry standard <code>X-RateLimit-*</code> headers.</li>
+        <li>Data refreshes once a night from city sources. Most responses are cached for an hour; there is nothing to gain from polling faster.</li>
+        <li>Check <code>data_freshness</code> in <code>/api/stats</code> before trusting a window. When an upstream feed pauses (ACRIS does), the field says so.</li>
+        <li>Attribution: CC BY 4.0. Name PulseCities and link pulsecities.com.</li>
+    </ul>
+
+    <h2 id="endpoints">Endpoints</h2>
+
+    <div class="endpoint">
+        <div class="endpoint-route"><span class="method">GET</span>/api/stats</div>
+        <p>Citywide snapshot: recent LLC transfer and eviction counts, the current top-risk neighborhoods, and per-source freshness watermarks.</p>
+        <p class="fields"><b>llc_transfers_recent</b> · <b>evictions_30d</b> · <b>top_risk_list[]</b> rank, zip_code, name, borough, score, dominant_signal, signal_counts · <b>data_freshness</b> per source: through, days_stale, stale</p>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-route"><span class="method">GET</span>/api/neighborhoods</div>
+        <p>GeoJSON FeatureCollection of every NYC ZIP neighborhood with its current composite score. This is the layer the map renders.</p>
+        <p class="fields"><b>features[].properties</b> zip_code, name, borough, score · <b>features[].geometry</b> polygon</p>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-route"><span class="method">GET</span>/api/neighborhoods/{zip}/score</div>
+        <p>One neighborhood in depth: composite score plus the six-signal breakdown, raw counts, and a plain-language summary.</p>
+        <pre><code>curl https://pulsecities.com/api/neighborhoods/11216/score</code></pre>
+        <p class="fields"><b>score</b> 0 to 100 · <b>signal_breakdown</b> each signal normalized 0 to 100 · <b>signal_raw_counts</b> · <b>summary_text</b></p>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-route"><span class="method">GET</span>/api/score-history/{zip}?days=180</div>
+        <p>Daily composite score snapshots for a ZIP, oldest first. Good for trend lines.</p>
+        <p class="fields"><b>[]</b> date, score</p>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-route"><span class="method">GET</span>/api/operators/top?limit=10</div>
+        <p>The most active LLC operator networks on record, by acquisitions. Lenders, GSEs, and government entities are classified out.</p>
+        <p class="fields"><b>[]</b> operator_root, total_acquisitions, llc_count</p>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-route"><span class="method">GET</span>/api/flips</div>
+        <p>Citywide renovation-flip feed: an LLC takes a building by deed, then files an A1/A2 renovation permit on the same lot within 60 days. One year of lookback, newest first.</p>
+        <p class="fields"><b>count</b> · <b>flips[]</b> bbl, address, zip_code, neighborhood, buyer, doc_amount, transfer_date, permit_date, days_between</p>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-route"><span class="method">GET</span>/api/radar</div>
+        <p>Concentrated-buying clusters: one buyer taking three or more buildings in one ZIP within 90 days.</p>
+        <p class="fields"><b>count</b> · <b>clusters[]</b> buyer, zip_code, neighborhood, building_count, span_days, total_amount, properties[]</p>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-route"><span class="method">GET</span>/api/flips/editions/latest</div>
+        <p>The featured arc of the newest human-reviewed eviction-flip edition: eviction, LLC purchase, resale, with ACRIS document IDs. Returns nulls until an edition is approved.</p>
+        <p class="fields"><b>week</b> · <b>arc</b> bbl, address, eviction_date, buy_date, buy_amt, buyer, sell_date, sell_amt, gain_pct, buy_doc, sell_doc</p>
+    </div>
+
+    <h2 id="keys">Partner keys</h2>
+    <p>
+        The public tier above is all you need to read the data. Keys exist for partners
+        (newsroom data teams, researchers) who want identified access and usage visibility:
+        send the key as an <code>X-API-Key</code> header and your traffic is tracked under
+        your name instead of an anonymous IP. An invalid key fails with a 401 rather than
+        silently falling back to public access.
+    </p>
+    <p>
+        Want one, or need more than the public rate limit?
+        Email <a href="mailto:nycdisplacement@gmail.com">nycdisplacement@gmail.com</a> with
+        a line about what you're building.
+    </p>
+
+    <h2 id="terms">Terms</h2>
+    <ul>
+        <li>All data is derived from NYC public records. Scores are indicators built from those records, not predictions about any tenant or building. Read the <a href="/methodology">methodology</a> before drawing conclusions.</li>
+        <li>Provided as is, no uptime guarantee. The <a href="/status">status page</a> shows feed freshness in real time.</li>
+        <li>Attribution required for published work: PulseCities, linked to pulsecities.com (CC BY 4.0).</li>
+        <li>Don't hammer the API; sustained abuse gets an IP blocked.</li>
+    </ul>
+
+</main>
+
+<footer>
+    <p class="footer-byline">Built by Michael Espin</p>
+    <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/neighborhoods">Neighborhoods</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/about">About</a>
+        <a href="/press">Press</a>
+        <a href="/status">Status</a>
+        <a href="mailto:nycdisplacement@gmail.com">Contact</a>
+        <a href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="display:inline-flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+    </div>
+</footer>
+
+</body>
+</html>

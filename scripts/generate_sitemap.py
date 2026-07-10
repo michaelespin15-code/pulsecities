@@ -25,6 +25,7 @@ _CORE = [
     ("/methodology", "weekly",  "0.8",  "2026-07-09"),
     ("/about",       "weekly",  "0.8",  "2026-04-29"),
     ("/press",       "weekly",  "0.75", "2026-07-10"),
+    ("/developers",  "weekly",  "0.7",  "2026-07-10"),
     ("/operators",   "weekly",  "0.75", "2026-04-29"),
     ("/neighborhoods", "daily", "0.8",  None),
     ("/brooklyn",      "daily", "0.8",  None),

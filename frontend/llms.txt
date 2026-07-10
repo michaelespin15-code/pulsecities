@@ -58,6 +58,7 @@ Scoring methodology: each signal is normalized 0 to 100 relative to all NYC neig
 - https://pulsecities.com/this-week - current week in NYC displacement (score movers, new filings, newest flips)
 - https://pulsecities.com/this-week/archive - every past weekly edition at /week/{YYYY-Www}
 - https://pulsecities.com/press - verified findings with ACRIS document IDs and downloadable paper-trail CSVs
+- https://pulsecities.com/developers - public API documentation with endpoint reference and usage terms
 - https://pulsecities.com/methodology - full scoring methodology
 
 ## About
