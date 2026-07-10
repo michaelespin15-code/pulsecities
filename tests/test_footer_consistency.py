@@ -21,7 +21,7 @@ CANON = {"/", "/methodology", "/about", "/press", "/status"}
 
 # Static pages served straight off disk by nginx.
 STATIC_PAGES = ["index.html", "about.html", "methodology.html", "press.html",
-                "status.html", "operator.html", "preview.html", "developers.html"]
+                "status.html", "operator.html", "developers.html"]
 
 # SSR routes rendered by FastAPI. nginx maps /brooklyn -> /borough/brooklyn,
 # so the app-level path is used here. (/map is the app shell, no footer.)
