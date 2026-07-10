@@ -216,6 +216,7 @@ def _build_neighborhood_page(
     summary: str | None,
     last_updated: str | None,
     history: list[tuple[str, float]] | None = None,
+    petitions: dict | None = None,
 ) -> str:
     e = _html.escape
 
@@ -377,6 +378,26 @@ def _build_neighborhood_page(
         f'width="320" height="64"></a>'
     )
 
+    # Housing-court petition volumes, ZIP-level by design (the OCA extract
+    # is de-identified). Display-only: the CC BY-NC-SA license keeps this
+    # out of the composite score and off every API surface.
+    petitions_section = ""
+    if petitions and petitions.get("recent"):
+        pct = ""
+        if petitions.get("prior"):
+            change = (petitions["recent"] - petitions["prior"]) / petitions["prior"] * 100
+            arrow_color = "#ef4444" if change >= 10 else ("#3E6B54" if change <= -10 else "var(--muted)")
+            pct = (f' <span style="font-family:\'JetBrains Mono\',monospace;color:{arrow_color};">'
+                   f'{change:+.0f}%</span> <span style="color:var(--faint);">vs the prior three months '
+                   f'({petitions["prior"]:,} filed)</span>')
+        petitions_section = f"""  <section style="margin-bottom:32px;">
+    <h2>Early warning: housing-court petitions</h2>
+    <p class="section-sub">Residential eviction cases filed in housing court for {zip_code}. Filings lead executed evictions by months, so rising volume is the earliest public signal available.</p>
+    <p style="font-size:.95rem;margin-bottom:8px;"><span style="font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:600;">{petitions["recent"]:,}</span> <span style="color:var(--muted);">petitions filed {e(petitions["window"])}</span>{pct}</p>
+    <p class="data-note">Source: NYS Office of Court Administration via the OCA Data Collective (Housing Data Coalition), CC BY-NC-SA. The extract is ZIP-level by design and does not identify tenants or buildings. Shown for context only; not part of the composite score.</p>
+  </section>
+"""
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -479,7 +500,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
     </table>
     <p class="data-note">All counts from NYC public records. Index values are normalized across 178 NYC ZIP codes. Data is refreshed nightly.</p>
   </section>
-  <section style="margin-bottom:32px;">
+{petitions_section}  <section style="margin-bottom:32px;">
     <h2>About this data</h2>
     <div class="faq-list">
       <div class="faq-item"><p class="faq-q">{e(_FAQ_Q1)}</p><p class="faq-a">{e(_FAQ_A1)}</p></div>
@@ -611,8 +632,30 @@ def neighborhood_page(zip_code: str, db: Session = Depends(get_db)):
     """), {"zip": zip_code}).fetchall()
     history = [(r.scored_at.isoformat(), round(float(r.composite_score), 1)) for r in history_rows]
 
+    # OCA petition volumes: newest three complete months in the extract vs
+    # the three before them. The extract lags filing by weeks, so windows
+    # anchor on what the data actually contains, not the calendar.
+    petitions = None
+    pet_rows = db.execute(text("""
+        SELECT month, SUM(filings) AS n
+        FROM oca_petitions_monthly
+        WHERE zip_code = :zip
+          AND month < date_trunc('month', CURRENT_DATE)
+        GROUP BY month ORDER BY month DESC LIMIT 6
+    """), {"zip": zip_code}).fetchall()
+    if pet_rows:
+        recent = sum(int(r.n) for r in pet_rows[:3])
+        prior = sum(int(r.n) for r in pet_rows[3:6]) if len(pet_rows) > 3 else None
+        newest, oldest_recent = pet_rows[0].month, pet_rows[min(2, len(pet_rows) - 1)].month
+        window = (
+            f"{oldest_recent.strftime('%b')} to {newest.strftime('%b %Y')}"
+            if oldest_recent != newest else newest.strftime("%b %Y")
+        )
+        petitions = {"recent": recent, "prior": prior, "window": window}
+
     page_html = _build_neighborhood_page(
         zip_code, name, borough, score, breakdown, raw_counts, raw_hpd, summary, last_updated, history,
+        petitions=petitions,
     )
     _page_cache[zip_code] = (page_html, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page_html)
