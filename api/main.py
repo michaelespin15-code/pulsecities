@@ -8,10 +8,13 @@ Run (production):
     gunicorn -w 2 -k uvicorn.workers.UvicornWorker api.main:app
 """
 
+import hashlib
 import logging
+import time
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -35,6 +38,60 @@ app = FastAPI(
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Partner API keys (see /developers). The public tier is keyless; when a
+# request carries X-API-Key the key must resolve to an active row or the
+# request fails loudly. A silently ignored bad key would look like public
+# access to the caller and like no partner traffic to us. Lookups cache
+# for a minute so keyed traffic doesn't add a query per request, and
+# last_used_at advances at most once per cache window.
+_API_KEY_CACHE: dict[str, tuple[dict | None, float]] = {}
+_API_KEY_TTL = 60.0
+
+
+def _resolve_api_key(raw_key: str) -> dict | None:
+    key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
+    cached = _API_KEY_CACHE.get(key_hash)
+    if cached and time.monotonic() < cached[1]:
+        return cached[0]
+
+    from sqlalchemy import text
+    from models.database import SessionLocal
+    db = SessionLocal()
+    try:
+        row = db.execute(
+            text("SELECT label, tier FROM api_keys WHERE key_hash = :h AND active"),
+            {"h": key_hash},
+        ).fetchone()
+        info = {"label": row.label, "tier": row.tier} if row else None
+        if row:
+            db.execute(
+                text("UPDATE api_keys SET last_used_at = now() WHERE key_hash = :h"),
+                {"h": key_hash},
+            )
+            db.commit()
+    finally:
+        db.close()
+
+    if len(_API_KEY_CACHE) > 256:
+        _API_KEY_CACHE.clear()
+    _API_KEY_CACHE[key_hash] = (info, time.monotonic() + _API_KEY_TTL)
+    return info
+
+
+@app.middleware("http")
+async def api_key_middleware(request, call_next):
+    raw_key = request.headers.get("x-api-key")
+    if raw_key:
+        info = _resolve_api_key(raw_key)
+        if info is None:
+            return JSONResponse(
+                status_code=401,
+                content={"detail": "Invalid or revoked API key."},
+            )
+        request.state.api_key = info
+    return await call_next(request)
+
 
 # Gunicorn listens on a unix socket, so the peer has no IP address and an
 # IP allowlist can never match. Only nginx can reach the socket, so trusting
