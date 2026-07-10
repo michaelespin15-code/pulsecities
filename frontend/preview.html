@@ -64,10 +64,18 @@
             display: flex; align-items: center; gap: 8px; flex-shrink: 0;
         }
         .nav-brand:hover { text-decoration: none; opacity: 0.85; }
+        .nav-right { display: flex; align-items: center; gap: 18px; }
         .nav-links { display: flex; align-items: center; gap: 22px; font-size: 13px; }
         .nav-links a { color: var(--muted); }
         .nav-links a:hover { color: var(--text); text-decoration: none; }
-        .nav-menu { display: none; position: relative; }
+        .lang-toggle {
+            font-family: var(--mono); font-size: 11px; color: var(--faint);
+            background: none; border: none; cursor: pointer; padding: 4px 2px;
+            letter-spacing: 0.04em;
+        }
+        .lang-toggle:hover { color: var(--muted); }
+        .nav-menu { position: relative; }
+        .menu-primary { display: none; }
         .nav-menu summary {
             list-style: none; cursor: pointer;
             font-size: 13px; color: var(--muted);
@@ -280,7 +288,7 @@
         }
         @media (max-width: 720px) {
             .nav-links { display: none; }
-            .nav-menu { display: block; }
+            .menu-primary { display: block; }
             .search-row { flex-direction: column; }
             .search-row button { width: 100%; }
             .modules { grid-template-columns: 1fr; }
@@ -310,23 +318,29 @@
         </svg>
         PulseCities
     </a>
-    <div class="nav-links">
-        <a href="/map">Map</a>
-        <a href="/operators">Operators</a>
-        <a href="/press">Press</a>
-        <a href="/methodology">Methodology</a>
-    </div>
-    <details class="nav-menu">
-        <summary aria-label="Open menu">Menu</summary>
-        <div class="nav-menu-panel">
-            <a href="/map">Map</a>
-            <a href="/operators">Operators</a>
-            <a href="/press">Press</a>
-            <a href="/methodology">Methodology</a>
-            <a href="/neighborhoods">Neighborhoods</a>
-            <a href="/about">About</a>
+    <div class="nav-right">
+        <div class="nav-links">
+            <a href="/map" data-i18n="nav_map">Map</a>
+            <a href="/operators" data-i18n="nav_operators">Operators</a>
+            <a href="/press" data-i18n="nav_press">Press</a>
+            <a href="/methodology" data-i18n="nav_methodology">Methodology</a>
         </div>
-    </details>
+        <details class="nav-menu">
+            <summary aria-label="Open menu" data-i18n="nav_more">More</summary>
+            <div class="nav-menu-panel">
+                <a href="/map" class="menu-primary" data-i18n="nav_map">Map</a>
+                <a href="/operators" class="menu-primary" data-i18n="nav_operators">Operators</a>
+                <a href="/press" class="menu-primary" data-i18n="nav_press">Press</a>
+                <a href="/methodology" class="menu-primary" data-i18n="nav_methodology">Methodology</a>
+                <a href="/flips" data-i18n="nav_flips">Flip Watch</a>
+                <a href="/radar" data-i18n="nav_radar">Radar</a>
+                <a href="/neighborhoods" data-i18n="nav_neighborhoods">Neighborhoods</a>
+                <a href="/about" data-i18n="nav_about">About</a>
+                <a href="/status" data-i18n="nav_status">Status</a>
+            </div>
+        </details>
+        <button class="lang-toggle" id="lang-toggle" aria-label="Cambiar idioma">EN / ES</button>
+    </div>
 </nav>
 
 <main id="main" class="container">
@@ -336,64 +350,64 @@
             <svg class="pulse-trace" viewBox="0 0 260 24" aria-hidden="true">
                 <polyline points="0,12 60,12 78,4 96,20 114,8 132,16 150,12 260,12"/>
             </svg>
-            <h1>The displacement story NYC doesn't officially tell.</h1>
-            <p class="hero-sub">Search any address, ZIP, or neighborhood. Every signal comes from public records.</p>
+            <h1 data-i18n="tagline">The displacement story NYC doesn't officially tell.</h1>
+            <p class="hero-sub" data-i18n="hero_sub">Search any address, ZIP, or neighborhood. Every signal comes from public records.</p>
             <form class="search-row" action="/map" method="get">
-                <input type="text" name="q" placeholder="Enter an address, ZIP, or neighborhood" aria-label="Search an address, ZIP, or neighborhood">
-                <button type="submit">Search</button>
+                <input type="text" name="q" placeholder="Enter an address, ZIP, or neighborhood" aria-label="Search an address, ZIP, or neighborhood" id="search-input">
+                <button type="submit" data-i18n="search_btn">Search</button>
             </form>
             <p class="hero-meta" id="hero-meta"></p>
         </div>
         <div>
             <a class="hero-map" href="/map" aria-label="Explore the displacement risk map">
                 <img src="/preview-palette-a.jpg" width="960" height="800" alt="NYC displacement risk map">
-                <span class="map-explore">Explore the map &rarr;</span>
+                <span class="map-explore" data-i18n="explore_map">Explore the map &rarr;</span>
             </a>
             <div class="hero-legend">
-                <span><i style="background:#3E6B54"></i>Low</span>
-                <span><i style="background:#C08B2D"></i>Moderate</span>
-                <span><i style="background:#F97316"></i>High</span>
-                <span><i style="background:#EF4444"></i>Critical</span>
+                <span><i style="background:#3E6B54"></i><span data-i18n="legend_low">Low</span></span>
+                <span><i style="background:#C08B2D"></i><span data-i18n="legend_moderate">Moderate</span></span>
+                <span><i style="background:#F97316"></i><span data-i18n="legend_high">High</span></span>
+                <span><i style="background:#EF4444"></i><span data-i18n="legend_critical">Critical</span></span>
             </div>
         </div>
     </header>
 
     <section aria-labelledby="finding-label">
-        <p class="eyebrow" id="finding-label">This week's finding</p>
+        <p class="eyebrow" id="finding-label" data-i18n="finding_eyebrow">This week's finding</p>
 
         <!-- Signature element: a real paper trail, rendered as the docket it is.
              In production this card is fed by the approved weekly eviction-flip
              editions; the arc below is a verified example (see /press). -->
         <article class="docket">
             <div class="docket-head">
-                <span>Eviction &rarr; purchase &rarr; resale</span>
-                <span class="gain">+100% in 84 days</span>
+                <span data-i18n="docket_head">Eviction &rarr; purchase &rarr; resale</span>
+                <span class="gain" data-i18n="docket_gain">+100% in 84 days</span>
             </div>
             <div class="docket-body">
                 <p class="docket-place">4575 Furman Avenue, Wakefield, Bronx</p>
-                <p class="docket-sub">BBL 2050840054 &middot; ZIP 10470 &middot; every step below is a public record</p>
+                <p class="docket-sub" data-i18n="docket_sub">BBL 2050840054 &middot; ZIP 10470 &middot; every step below is a public record</p>
                 <div class="arc">
                     <div class="arc-step">
-                        <span class="arc-date">Jan 13, 2025</span>
-                        <span class="arc-event">A city marshal executes a residential eviction.</span>
+                        <span class="arc-date" data-i18n="arc_d1">Jan 13, 2025</span>
+                        <span class="arc-event" data-i18n="arc_e1">A city marshal executes a residential eviction.</span>
                     </div>
                     <div class="arc-step">
-                        <span class="arc-date">Apr 21, 2025</span>
-                        <span class="arc-event">A second eviction is executed, separate date and docket.</span>
+                        <span class="arc-date" data-i18n="arc_d2">Apr 21, 2025</span>
+                        <span class="arc-event" data-i18n="arc_e2">A second eviction is executed, separate date and docket.</span>
                     </div>
                     <div class="arc-step hot">
-                        <span class="arc-date">Jul 8, 2025</span>
-                        <span class="arc-event">PHANTOM CAPITAL 161 LLC buys the house for <span class="amt">$500,000</span>, directly from the owner of record.</span>
+                        <span class="arc-date" data-i18n="arc_d3">Jul 8, 2025</span>
+                        <span class="arc-event" data-i18n-html="arc_e3">PHANTOM CAPITAL 161 LLC buys the house for <span class="amt">$500,000</span>, directly from the owner of record.</span>
                     </div>
                     <div class="arc-step hot">
-                        <span class="arc-date">Sep 30, 2025</span>
-                        <span class="arc-event">The LLC resells for <span class="amt">$999,000</span>.</span>
+                        <span class="arc-date" data-i18n="arc_d4">Sep 30, 2025</span>
+                        <span class="arc-event" data-i18n-html="arc_e4">The LLC resells for <span class="amt">$999,000</span>.</span>
                     </div>
                 </div>
             </div>
             <div class="docket-foot">
                 <span class="docket-ids">ACRIS 2025071500436001 &middot; 2025101300240002</span>
-                <a class="docket-cta" href="/press">Read the paper trail &rarr;</a>
+                <a class="docket-cta" href="/press" data-i18n="docket_cta">Read the paper trail &rarr;</a>
             </div>
         </article>
     </section>
@@ -401,19 +415,19 @@
     <section aria-label="Live signals">
         <div class="modules">
             <div class="module">
-                <p class="module-label">Highest risk right now</p>
+                <p class="module-label" data-i18n="mod_rankings">Highest risk right now</p>
                 <div class="module-body" id="mod-rankings"></div>
-                <a class="module-cta" href="/neighborhoods">Full rankings &rarr;</a>
+                <a class="module-cta" href="/neighborhoods" data-i18n="mod_rankings_cta">Full rankings &rarr;</a>
             </div>
             <div class="module">
-                <p class="module-label">Operators on record</p>
+                <p class="module-label" data-i18n="mod_operators">Operators on record</p>
                 <div class="module-body" id="mod-operators"></div>
-                <a class="module-cta" href="/operators">All operators &rarr;</a>
+                <a class="module-cta" href="/operators" data-i18n="mod_operators_cta">All operators &rarr;</a>
             </div>
             <div class="module">
-                <p class="module-label">Live signals</p>
+                <p class="module-label" data-i18n="mod_signals">Live signals</p>
                 <div class="module-body" id="mod-signals"></div>
-                <div class="module-cta"><a href="/flips">Flip watch &rarr;</a> &middot; <a href="/radar">Radar &rarr;</a></div>
+                <div class="module-cta"><a href="/flips" data-i18n="mod_flips_cta">Flip watch &rarr;</a> &middot; <a href="/radar" data-i18n="mod_radar_cta">Radar &rarr;</a></div>
             </div>
         </div>
     </section>
@@ -439,6 +453,65 @@
     function esc(s) {
         return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
+
+    // Language toggle. Shares the pc-lang key with the live site so the
+    // preference follows the visitor between pages. Only the es strings
+    // live here; en is the markup itself.
+    const I18N_ES = {
+        nav_map: 'Mapa', nav_operators: 'Operadores', nav_press: 'Prensa',
+        nav_methodology: 'Metodología', nav_more: 'Más', nav_flips: 'Flip Watch',
+        nav_radar: 'Radar', nav_neighborhoods: 'Vecindarios', nav_about: 'Acerca de',
+        nav_status: 'Estado',
+        tagline: 'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
+        hero_sub: 'Busca cualquier dirección, código postal o vecindario. Cada señal viene de registros públicos.',
+        search_btn: 'Buscar',
+        search_ph: 'Escribe una dirección, código postal o vecindario',
+        explore_map: 'Explorar el mapa →',
+        legend_low: 'Bajo', legend_moderate: 'Moderado', legend_high: 'Alto', legend_critical: 'Crítico',
+        finding_eyebrow: 'El hallazgo de la semana',
+        docket_head: 'Desalojo → compra → reventa',
+        docket_gain: '+100% en 84 días',
+        docket_sub: 'BBL 2050840054 · ZIP 10470 · cada paso es un registro público',
+        arc_d1: '13 ene 2025', arc_e1: 'Un alguacil de la ciudad ejecuta un desalojo residencial.',
+        arc_d2: '21 abr 2025', arc_e2: 'Se ejecuta un segundo desalojo, con fecha y expediente distintos.',
+        arc_d3: '8 jul 2025',
+        arc_e3: 'PHANTOM CAPITAL 161 LLC compra la casa por <span class="amt">$500,000</span>, directamente al dueño registrado.',
+        arc_d4: '30 sep 2025',
+        arc_e4: 'La LLC la revende por <span class="amt">$999,000</span>.',
+        docket_cta: 'Ver el expediente →',
+        mod_rankings: 'Mayor riesgo ahora', mod_rankings_cta: 'Ranking completo →',
+        mod_operators: 'Operadores registrados', mod_operators_cta: 'Todos los operadores →',
+        mod_signals: 'Señales en vivo',
+        mod_flips_cta: 'Flip watch →', mod_radar_cta: 'Radar →',
+    };
+    const I18N_EN = {};
+    document.querySelectorAll('[data-i18n], [data-i18n-html]').forEach(el => {
+        const key = el.dataset.i18n || el.dataset.i18nHtml;
+        I18N_EN[key] = el.dataset.i18nHtml ? el.innerHTML : el.textContent;
+    });
+    I18N_EN.search_ph = document.getElementById('search-input').placeholder;
+
+    function applyLang(lang) {
+        const dict = lang === 'es' ? I18N_ES : I18N_EN;
+        document.documentElement.lang = lang;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const v = dict[el.dataset.i18n];
+            if (v != null) el.textContent = v;
+        });
+        document.querySelectorAll('[data-i18n-html]').forEach(el => {
+            const v = dict[el.dataset.i18nHtml];
+            if (v != null) el.innerHTML = v;
+        });
+        document.getElementById('search-input').placeholder = dict.search_ph || I18N_EN.search_ph;
+        const t = document.getElementById('lang-toggle');
+        t.textContent = lang === 'es' ? 'ES / EN' : 'EN / ES';
+    }
+    document.getElementById('lang-toggle').addEventListener('click', () => {
+        const next = (localStorage.getItem('pc-lang') || 'en') === 'es' ? 'en' : 'es';
+        localStorage.setItem('pc-lang', next);
+        applyLang(next);
+    });
+    applyLang(localStorage.getItem('pc-lang') || 'en');
 
     // Hero meta: real freshness, honestly windowed. Deed watermark is named
     // whenever the upstream feed is paused.
