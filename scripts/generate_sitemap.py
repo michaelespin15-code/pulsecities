@@ -36,6 +36,7 @@ _CORE = [
     ("/this-week",         "daily",  "0.75", None),
     ("/this-week/archive", "weekly", "0.65", None),
     ("/flips",       "daily",   "0.75", None),
+    ("/flips/editions", "weekly", "0.7", None),
     ("/radar",       "daily",   "0.75", None),
 ]
 

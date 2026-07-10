@@ -26,7 +26,8 @@ STATIC_PAGES = ["index.html", "about.html", "methodology.html", "press.html",
 # SSR routes rendered by FastAPI. nginx maps /brooklyn -> /borough/brooklyn,
 # so the app-level path is used here. (/map is the app shell, no footer.)
 SSR_ROUTES = ["/neighborhoods", "/borough/brooklyn", "/this-week",
-              "/neighborhood/11216", "/brief/operator/mtek-nyc"]
+              "/neighborhood/11216", "/brief/operator/mtek-nyc",
+              "/flips", "/flips/editions"]
 
 
 def _footer_paths(html: str) -> set:

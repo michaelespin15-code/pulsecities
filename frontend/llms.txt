@@ -54,6 +54,7 @@ Scoring methodology: each signal is normalized 0 to 100 relative to all NYC neig
 - https://pulsecities.com/operators - directory of tracked LLC operator networks
 - https://pulsecities.com/operator/{name} - LLC operator portfolio profiles
 - https://pulsecities.com/flips - Flip Watch, citywide feed of buildings bought by an LLC and filed for renovation within 60 days
+- https://pulsecities.com/flips/editions - human-reviewed weekly editions of eviction-to-resale arcs with ACRIS document IDs
 - https://pulsecities.com/radar - Speculation Radar, one LLC taking 3+ buildings in one ZIP within 90 days
 - https://pulsecities.com/this-week - current week in NYC displacement (score movers, new filings, newest flips)
 - https://pulsecities.com/this-week/archive - every past weekly edition at /week/{YYYY-Www}

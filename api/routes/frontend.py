@@ -1760,7 +1760,8 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <p id="fw-desc" style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px;line-height:1.6;">
     Buildings where an LLC took the deed and filed a renovation permit within {FLIP_WINDOW_DAYS} days. That fast turn is one of the clearest early signals of a building being repositioned. Public records only.
   </p>
-  <p id="fw-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.55);margin-bottom:28px;">{n} flips detected across NYC in the past 12 months.</p>
+  <p id="fw-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.55);margin-bottom:6px;">{n} flips detected across NYC in the past 12 months.</p>
+  <p style="font-size:0.75rem;margin-bottom:28px;"><a href="/flips/editions" id="fw-editions-link" style="color:rgba(249,115,22,0.75);">Weekly reviewed editions &rarr;</a></p>
   <ul class="flip-list">
 {rows_html}  </ul>
   <p id="fw-note" style="font-size:0.72rem;color:rgba(148,163,184,0.45);margin-top:24px;line-height:1.6;">
@@ -1817,6 +1818,286 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 </html>"""
 
     _flips_cache = (page, time.monotonic() + _PAGE_TTL)
+    return HTMLResponse(page)
+
+
+# Editions cache is short: an approval should reach the page within minutes.
+_editions_page_cache: tuple[str, float] | None = None
+_EDITIONS_TTL = 600
+
+
+@router.get("/flips/editions", include_in_schema=False)
+def flips_editions_page(db: Session = Depends(get_db)):
+    """Eviction Flips editions — the human-reviewed weekly archive.
+
+    Renders approved editions only, newest first. Each arc is the full
+    paper trail: eviction, LLC purchase, resale, with ACRIS document IDs.
+    The weekly scan writes editions with approved: false; nothing shows
+    here until a human has reviewed it.
+    """
+    global _editions_page_cache
+    if _editions_page_cache and time.monotonic() < _editions_page_cache[1]:
+        return HTMLResponse(_editions_page_cache[0])
+
+    from api.routes.flips import _EDITIONS_PATH, _BOROUGHS
+    try:
+        editions = json.loads(_EDITIONS_PATH.read_text()).get("editions", [])
+    except (OSError, ValueError):
+        editions = []
+    approved = [e for e in editions if e.get("approved") and e.get("arcs")]
+    approved.reverse()
+
+    zips = {a.get("zip_code") for e in approved for a in e["arcs"] if a.get("zip_code")}
+    hood_by_zip = {}
+    if zips:
+        rows = db.execute(
+            text("SELECT zip_code, name FROM neighborhoods WHERE zip_code = ANY(:zips)"),
+            {"zips": list(zips)},
+        ).fetchall()
+        hood_by_zip = {r.zip_code: r.name for r in rows}
+
+    _MONTHS = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+    def _short_date(iso: str | None) -> str:
+        if not iso:
+            return ""
+        try:
+            y, m, d = iso.split("-")
+            return f"{_MONTHS[int(m)]} {int(d)}, {y}"
+        except (ValueError, IndexError):
+            return iso
+
+    def _days_between(a: str, b: str) -> int | None:
+        try:
+            return (date.fromisoformat(b) - date.fromisoformat(a)).days
+        except (ValueError, TypeError):
+            return None
+
+    sections_html = ""
+    list_items = []
+    pos = 0
+    total_arcs = 0
+    for ed in approved:
+        week = _html.escape(ed.get("week", ""))
+        generated = _short_date(ed.get("generated"))
+        arcs = sorted(ed["arcs"], key=lambda a: a.get("gain_pct") or 0, reverse=True)
+        total_arcs += len(arcs)
+        cards = ""
+        for a in arcs:
+            pos += 1
+            bbl = _html.escape(str(a.get("bbl", "")))
+            addr = _html.escape((a.get("address") or f"BBL {a.get('bbl')}").title())
+            zip_code = a.get("zip_code") or ""
+            hood = hood_by_zip.get(zip_code)
+            borough = _BOROUGHS.get(str(a.get("bbl", ""))[:1], "")
+            place_bits = [b for b in (hood, borough) if b]
+            geo = _html.escape(" · ".join(place_bits) + (f" · {zip_code}" if zip_code else ""))
+            days = _days_between(a.get("buy_date"), a.get("sell_date"))
+            gain = f"+{int(a.get('gain_pct') or 0)}%"
+            gain_days = f"{days}" if days is not None else ""
+            ev_n = int(a.get("eviction_count") or 1)
+            buyer = _html.escape(a.get("buyer") or "an LLC")
+            buy_amt = _fmt_amount(a.get("buy_amt"))
+            sell_amt = _fmt_amount(a.get("sell_amt"))
+            ev_line = (
+                f"The latest of {ev_n} residential evictions on record is executed."
+                if ev_n > 1 else "A city marshal executes a residential eviction."
+            )
+            cards += f"""
+<article class="arc-card">
+  <div class="arc-head">
+    <a class="arc-addr" href="/property/{bbl}">{addr}</a>
+    <span class="arc-gain" data-gain="{gain}" data-days="{gain_days}">{gain}{f' in {days} days' if days is not None else ''}</span>
+  </div>
+  <div class="arc-geo">{geo} &middot; BBL {bbl}</div>
+  <ol class="arc-steps">
+    <li><span class="arc-date" data-date="{_html.escape(a.get('eviction_date') or '')}">{_short_date(a.get('eviction_date'))}</span>
+        <span class="arc-line" data-t="{'ev_many' if ev_n > 1 else 'ev_one'}" data-n="{ev_n}">{ev_line}</span></li>
+    <li><span class="arc-date" data-date="{_html.escape(a.get('buy_date') or '')}">{_short_date(a.get('buy_date'))}</span>
+        <span class="arc-line" data-t="buy" data-buyer="{buyer}" data-amt="{buy_amt}">{buyer} buys the property for {buy_amt}.</span></li>
+    <li><span class="arc-date" data-date="{_html.escape(a.get('sell_date') or '')}">{_short_date(a.get('sell_date'))}</span>
+        <span class="arc-line" data-t="sell" data-amt="{sell_amt}">The LLC resells for {sell_amt}.</span></li>
+  </ol>
+  <div class="arc-ids">ACRIS {_html.escape(a.get('buy_doc') or '')} &middot; {_html.escape(a.get('sell_doc') or '')}</div>
+</article>"""
+            list_items.append({
+                "@type": "ListItem",
+                "position": pos,
+                "name": f"{(a.get('address') or '').title()} eviction flip",
+                "url": f"https://pulsecities.com/property/{a.get('bbl')}",
+            })
+        sections_html += f"""
+<section class="edition">
+  <h2 class="edition-week">{week}<span class="edition-date"> &middot; published {generated}</span></h2>
+{cards}
+</section>"""
+
+    if not sections_html:
+        sections_html = ('<p class="ed-empty" id="ed-empty">No reviewed editions yet. '
+                         'The first one publishes after human review of the weekly scan.</p>')
+
+    title = "Eviction Flips: weekly editions | PulseCities"
+    desc = (
+        f"{total_arcs} verified eviction-to-resale arcs across NYC: a residential eviction, "
+        "an LLC purchase, and a markup resale, each backed by ACRIS document IDs. "
+        "Human-reviewed weekly."
+    )
+    jsonld = _jsonld({
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "NYC Eviction Flips, weekly editions",
+        "description": desc,
+        "url": "https://pulsecities.com/flips/editions",
+        "numberOfItems": total_arcs,
+        "itemListElement": list_items,
+    })
+
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{_html.escape(title)}</title>
+<meta name="description" content="{_html.escape(desc)}">
+<link rel="canonical" href="https://pulsecities.com/flips/editions">
+<meta property="og:title" content="{_html.escape(title)}">
+<meta property="og:description" content="{_html.escape(desc)}">
+<meta property="og:url" content="https://pulsecities.com/flips/editions">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PulseCities">
+<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{_html.escape(title)}">
+<meta name="twitter:description" content="{_html.escape(desc)}">
+<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<script type="application/ld+json">{jsonld}</script>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+<style>
+*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh;line-height:1.65}}
+nav{{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0}}
+.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
+.container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
+a{{color:inherit;text-decoration:none}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b}}
+.footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
+@media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
+.edition{{margin-bottom:36px}}
+.edition-week{{font-family:'JetBrains Mono',monospace;font-size:0.85rem;font-weight:600;color:#f97316;letter-spacing:0.06em;margin-bottom:14px;text-transform:uppercase}}
+.edition-date{{color:rgba(148,163,184,0.5);font-weight:400;text-transform:none;letter-spacing:0}}
+.arc-card{{background:#131e33;border:1px solid rgba(148,163,184,0.12);border-radius:12px;padding:16px 18px 14px;margin-bottom:12px}}
+.arc-head{{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}}
+.arc-addr{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.02rem;font-weight:600;color:#e2e8f0}}
+.arc-addr:hover{{color:#f97316}}
+.arc-gain{{font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:600;color:#ef4444;border:1.5px solid rgba(239,68,68,0.5);border-radius:4px;padding:1px 8px;white-space:nowrap}}
+.arc-geo{{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:rgba(148,163,184,0.55);margin:2px 0 12px}}
+.arc-steps{{list-style:none;margin:0 0 12px;display:flex;flex-direction:column;gap:7px}}
+.arc-steps li{{font-size:0.85rem;color:#cbd5e1}}
+.arc-date{{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#f97316;display:block}}
+.arc-ids{{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:rgba(148,163,184,0.45);border-top:1px solid rgba(148,163,184,0.08);padding-top:10px;word-break:break-word}}
+.ed-empty{{font-size:0.85rem;color:#94a3b8;padding:24px 0}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="/" style="display:flex;align-items:center;gap:8px;color:#f1f5f9;">
+      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span>
+    </a>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <a href="/flips" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Flip Watch</a>
+      <a href="/radar" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Radar</a>
+      <a href="/press" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Press</a>
+      <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Methodology</a>
+      <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
+    </div>
+  </div>
+</nav>
+<div class="container">
+  <div style="margin-bottom:8px;">
+    <a href="/flips" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Flip Watch</a>
+  </div>
+  <h1 id="ed-heading" style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.4rem;font-weight:600;margin-bottom:6px;">Eviction Flips: weekly editions</h1>
+  <p id="ed-desc" style="font-size:0.82rem;color:#94a3b8;margin-bottom:28px;line-height:1.6;">
+    The arc this site exists to document: a residential eviction, an LLC purchase, and a markup resale on the same lot. Every step is a public record with its ACRIS document ID. A new edition publishes each week after human review; nothing appears here unreviewed.
+  </p>
+{sections_html}
+  <p id="ed-note" style="font-size:0.72rem;color:rgba(148,163,184,0.45);margin-top:24px;line-height:1.6;">
+    An eviction followed by a sale is not by itself wrongdoing. This page reports the public-record pattern, not a conclusion about any owner. <a href="/methodology" style="color:rgba(249,115,22,0.75);">How this is measured &rarr;</a>
+  </p>
+</div>
+{_FOOTER_HTML}
+<script>
+(function() {{
+  var lang = localStorage.getItem('pc-lang') || 'en';
+  var i18n = {{
+    en: {{
+      heading: 'Eviction Flips: weekly editions',
+      desc: 'The arc this site exists to document: a residential eviction, an LLC purchase, and a markup resale on the same lot. Every step is a public record with its ACRIS document ID. A new edition publishes each week after human review; nothing appears here unreviewed.',
+      note: 'An eviction followed by a sale is not by itself wrongdoing. This page reports the public-record pattern, not a conclusion about any owner.',
+      how: 'How this is measured \\u2192',
+      gain_in: '{{gain}} in {{days}} days',
+      ev_one: 'A city marshal executes a residential eviction.',
+      ev_many: 'The latest of {{n}} residential evictions on record is executed.',
+      buy: '{{buyer}} buys the property for {{amt}}.',
+      sell: 'The LLC resells for {{amt}}.',
+      toggle: 'EN / ES'
+    }},
+    es: {{
+      heading: 'Reventas tras desalojo: ediciones semanales',
+      desc: 'El arco que este sitio existe para documentar: un desalojo residencial, una compra por una LLC y una reventa con sobreprecio en el mismo lote. Cada paso es un registro p\\u00fablico con su ID de documento ACRIS. Cada semana se publica una edici\\u00f3n tras revisi\\u00f3n humana; nada aparece aqu\\u00ed sin revisar.',
+      note: 'Un desalojo seguido de una venta no es en s\\u00ed una irregularidad. Esta p\\u00e1gina reporta el patr\\u00f3n del registro p\\u00fablico, no una conclusi\\u00f3n sobre ning\\u00fan propietario.',
+      how: 'C\\u00f3mo se mide \\u2192',
+      gain_in: '{{gain}} en {{days}} d\\u00edas',
+      ev_one: 'Un alguacil de la ciudad ejecuta un desalojo residencial.',
+      ev_many: 'Se ejecuta el \\u00faltimo de {{n}} desalojos residenciales registrados.',
+      buy: '{{buyer}} compra la propiedad por {{amt}}.',
+      sell: 'La LLC la revende por {{amt}}.',
+      toggle: 'EN / ES'
+    }}
+  }};
+  function fill(t, params) {{
+    return t.replace(/\\{{(\\w+)\\}}/g, function(_, k) {{ return params[k] != null ? params[k] : ''; }});
+  }}
+  function applyLang(l) {{
+    var s = i18n[l] || i18n.en;
+    var set = function(id, val) {{ var el = document.getElementById(id); if (el) el.textContent = val; }};
+    set('ed-heading', s.heading);
+    set('ed-desc', s.desc);
+    var note = document.getElementById('ed-note');
+    if (note) note.innerHTML = s.note + ' <a href="/methodology" style="color:rgba(249,115,22,0.75);">' + s.how + '</a>';
+    document.querySelectorAll('.arc-line').forEach(function(el) {{
+      var t = s[el.dataset.t];
+      if (t) el.textContent = fill(t, el.dataset);
+    }});
+    document.querySelectorAll('.arc-gain').forEach(function(el) {{
+      if (el.dataset.days) el.textContent = fill(s.gain_in, {{ gain: el.dataset.gain, days: el.dataset.days }});
+    }});
+    document.querySelectorAll('.arc-date').forEach(function(el) {{
+      if (!el.dataset.date) return;
+      el.textContent = new Date(el.dataset.date + 'T00:00:00Z').toLocaleDateString(
+        l === 'es' ? 'es' : 'en-US', {{ month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }});
+    }});
+    var btn = document.getElementById('lang-toggle');
+    if (btn) btn.textContent = s.toggle;
+  }}
+  applyLang(lang);
+  var btn = document.getElementById('lang-toggle');
+  if (btn) btn.addEventListener('click', function() {{
+    lang = lang === 'en' ? 'es' : 'en';
+    localStorage.setItem('pc-lang', lang);
+    applyLang(lang);
+  }});
+}})();
+</script>
+</body>
+</html>"""
+
+    _editions_page_cache = (page, time.monotonic() + _EDITIONS_TTL)
     return HTMLResponse(page)
 
 
