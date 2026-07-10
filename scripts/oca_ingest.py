@@ -103,7 +103,8 @@ def aggregate(index_csv: Path, spill_path: Path) -> Counter:
             ).fetchone()
             if not hit:
                 continue
-            classification = (row.get("classification") or "Other").strip() or "Other"
+            # Clamp to the column width so a new upstream label can't abort the rebuild.
+            classification = ((row.get("classification") or "Other").strip() or "Other")[:40]
             counts[(hit[0], filed[:7] + "-01", classification)] += 1
     con.close()
     return counts

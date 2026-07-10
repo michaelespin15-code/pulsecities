@@ -82,7 +82,7 @@ def _set_meta(html: str, attr: str, attr_val: str, new_content: str) -> str:
 _FAQ_Q1 = "What does this displacement score mean?"
 _FAQ_A1 = (
     "The score is a 0 to 100 index showing where multiple public-record displacement signals "
-    "are elevated at the ZIP level. Each signal is normalized across all 178 NYC ZIP codes so "
+    "are elevated at the ZIP level. Each signal is normalized across all 177 NYC ZIP codes so "
     "dense areas are not scored by raw counts alone."
 )
 _FAQ_Q2 = "What public records are included?"
@@ -498,7 +498,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
       <thead><tr><th>Signal</th><th>Count</th><th>Index</th></tr></thead>
       <tbody>{rows_html}</tbody>
     </table>
-    <p class="data-note">All counts from NYC public records. Index values are normalized across 178 NYC ZIP codes. Data is refreshed nightly.</p>
+    <p class="data-note">All counts from NYC public records. Index values are normalized across 177 NYC ZIP codes. Data is refreshed nightly.</p>
   </section>
 {petitions_section}  <section style="margin-bottom:32px;">
     <h2>About this data</h2>
@@ -633,15 +633,24 @@ def neighborhood_page(zip_code: str, db: Session = Depends(get_db)):
     history = [(r.scored_at.isoformat(), round(float(r.composite_score), 1)) for r in history_rows]
 
     # OCA petition volumes: newest three complete months in the extract vs
-    # the three before them. The extract lags filing by weeks, so windows
-    # anchor on what the data actually contains, not the calendar.
+    # the three calendar months before them. Months with zero filings have
+    # no table row, so the six-month window is generated over the calendar
+    # (anchored on the ZIP's newest complete month) and missing months count
+    # as zero; otherwise a gap month would silently stretch the comparison span.
     petitions = None
     pet_rows = db.execute(text("""
-        SELECT month, SUM(filings) AS n
-        FROM oca_petitions_monthly
-        WHERE zip_code = :zip
-          AND month < date_trunc('month', CURRENT_DATE)
-        GROUP BY month ORDER BY month DESC LIMIT 6
+        WITH anchor AS (
+            SELECT max(month) AS m FROM oca_petitions_monthly
+            WHERE zip_code = :zip AND month < date_trunc('month', CURRENT_DATE)
+        )
+        SELECT gs.month::date AS month, COALESCE(SUM(o.filings), 0) AS n
+        FROM anchor,
+             generate_series(anchor.m - interval '5 months', anchor.m,
+                             interval '1 month') AS gs(month)
+        LEFT JOIN oca_petitions_monthly o
+               ON o.zip_code = :zip AND o.month = gs.month::date
+        WHERE anchor.m IS NOT NULL
+        GROUP BY gs.month ORDER BY gs.month DESC
     """), {"zip": zip_code}).fetchall()
     if pet_rows:
         recent = sum(int(r.n) for r in pet_rows[:3])
@@ -1666,7 +1675,7 @@ def flip_watch_page(db: Session = Depends(get_db)):
             y, m, d = iso.split("-")
             return f"{_MONTHS[int(m)]} {int(d)}, {y}"
         except (ValueError, IndexError):
-            return iso
+            return _html.escape(iso)
 
     rows_html = ""
     list_items = []
@@ -1909,7 +1918,7 @@ def flips_editions_page(db: Session = Depends(get_db)):
             y, m, d = iso.split("-")
             return f"{_MONTHS[int(m)]} {int(d)}, {y}"
         except (ValueError, IndexError):
-            return iso
+            return _html.escape(iso)
 
     def _days_between(a: str, b: str) -> int | None:
         try:
@@ -2172,7 +2181,7 @@ def speculation_radar_page(db: Session = Depends(get_db)):
             y, m, d = iso.split("-")
             return f"{_MONTHS[int(m)]} {int(d)}, {y}"
         except (ValueError, IndexError):
-            return iso
+            return _html.escape(iso)
 
     rows_html = ""
     list_items = []

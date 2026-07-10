@@ -1,12 +1,12 @@
 # PulseCities
 
-> Real-time displacement risk intelligence for all 178 NYC neighborhoods, built on public data signals updated daily from city records.
+> Real-time displacement risk intelligence for all 177 NYC neighborhoods, built on public data signals updated daily from city records.
 
-PulseCities tracks housing displacement pressure across New York City by aggregating and scoring signals from public datasets: LLC property acquisitions (ACRIS), renovation permit filings (DOB), tenant complaint rates (311/HPD), residential eviction filings, HPD housing violations, and rent-stabilized unit loss (DHCR). Each of the 178 ZIP code neighborhoods receives a daily composite score from 0 to 100.
+PulseCities tracks housing displacement pressure across New York City by aggregating and scoring signals from public datasets: LLC property acquisitions (ACRIS), renovation permit filings (DOB), tenant complaint rates (311/HPD), residential eviction filings, HPD housing violations, and rent-stabilized unit loss (DHCR). Each of the 177 ZIP code neighborhoods receives a daily composite score from 0 to 100.
 
 ## What this site provides
 
-- Displacement risk scores (0 to 100) for all 178 NYC neighborhoods, updated nightly
+- Displacement risk scores (0 to 100) for all 177 NYC neighborhoods, updated nightly
 - Signal breakdown showing which factors drive pressure in each area
 - Week-over-week score changes to identify neighborhoods under acute pressure
 - LLC operator profiles linking corporate entities to their NYC property portfolios
@@ -18,8 +18,8 @@ PulseCities tracks housing displacement pressure across New York City by aggrega
 - Bedford-Stuyvesant (11216, Brooklyn) - score 69.7, high displacement pressure
 - Hunts Point (10474, Bronx) - score 63.9, high displacement pressure
 - Harlem (10026, Manhattan) - score 61.2, high displacement pressure
-- Wakefield (10466, Bronx) - score 59.9, high displacement pressure
 - Wakefield (10470, Bronx) - score 58.9, high displacement pressure
+- Longwood (10459, Bronx) - score 56.9, high displacement pressure
 
 ## Data sources
 
@@ -36,7 +36,7 @@ Scoring methodology: each signal is normalized 0 to 100 relative to all NYC neig
 
 ## API
 
-- `GET /api/neighborhoods` - GeoJSON FeatureCollection of all 178 neighborhoods with scores
+- `GET /api/neighborhoods` - GeoJSON FeatureCollection of all 177 scored neighborhoods with scores
 - `GET /api/neighborhoods/{zip}/score` - score and signal breakdown for a ZIP code
 - `GET /api/neighborhoods/top-risk` - top N neighborhoods by current score
 - `GET /api/neighborhoods/top-movers` - neighborhoods with largest week-over-week score increase

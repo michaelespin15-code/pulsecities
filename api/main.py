@@ -48,6 +48,42 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 _API_KEY_CACHE: dict[str, tuple[dict | None, float]] = {}
 _API_KEY_TTL = 60.0
 
+# Junk-key flood guard. Unique bogus keys bypass the result cache (every one
+# is a miss), so cap DB lookups per client IP per window; past the cap the
+# 401 is served without touching the database.
+_KEY_FAIL_WINDOW = 60.0
+_KEY_FAIL_LIMIT = 20
+_key_fail_counts: dict[str, tuple[int, float]] = {}
+
+
+def _key_lookups_exhausted(client_ip: str) -> bool:
+    now = time.monotonic()
+    count, reset_at = _key_fail_counts.get(client_ip, (0, 0.0))
+    if now >= reset_at:
+        count, reset_at = 0, now + _KEY_FAIL_WINDOW
+    if count >= _KEY_FAIL_LIMIT:
+        return True
+    if len(_key_fail_counts) > 1024:
+        for ip, (_, r) in list(_key_fail_counts.items()):
+            if now >= r:
+                del _key_fail_counts[ip]
+    _key_fail_counts[client_ip] = (count + 1, reset_at)
+    return False
+
+
+def _prune_key_cache() -> None:
+    """Drop expired entries; if still over the cap, drop the oldest. Never
+    wholesale-clears, so a junk-key flood can't evict valid partner entries."""
+    if len(_API_KEY_CACHE) <= 256:
+        return
+    now = time.monotonic()
+    for k, (_, exp) in list(_API_KEY_CACHE.items()):
+        if now >= exp:
+            del _API_KEY_CACHE[k]
+    while len(_API_KEY_CACHE) > 256:
+        oldest = min(_API_KEY_CACHE, key=lambda k: _API_KEY_CACHE[k][1])
+        del _API_KEY_CACHE[oldest]
+
 
 def _resolve_api_key(raw_key: str) -> dict | None:
     key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
@@ -73,8 +109,7 @@ def _resolve_api_key(raw_key: str) -> dict | None:
     finally:
         db.close()
 
-    if len(_API_KEY_CACHE) > 256:
-        _API_KEY_CACHE.clear()
+    _prune_key_cache()
     _API_KEY_CACHE[key_hash] = (info, time.monotonic() + _API_KEY_TTL)
     return info
 
@@ -83,7 +118,21 @@ def _resolve_api_key(raw_key: str) -> dict | None:
 async def api_key_middleware(request, call_next):
     raw_key = request.headers.get("x-api-key")
     if raw_key:
-        info = _resolve_api_key(raw_key)
+        key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
+        cached = _API_KEY_CACHE.get(key_hash)
+        if cached and time.monotonic() < cached[1]:
+            info = cached[0]
+        else:
+            client_ip = (request.client.host if request.client else "") or "unknown"
+            if _key_lookups_exhausted(client_ip):
+                return JSONResponse(
+                    status_code=429,
+                    content={"detail": "Too many key lookups. Slow down."},
+                )
+            # Sync SQLAlchemy off the event loop, so a cache-miss lookup
+            # can't stall every other request on this worker.
+            from starlette.concurrency import run_in_threadpool
+            info = await run_in_threadpool(_resolve_api_key, raw_key)
         if info is None:
             return JSONResponse(
                 status_code=401,

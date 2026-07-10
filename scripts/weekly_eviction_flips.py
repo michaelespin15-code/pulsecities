@@ -220,7 +220,11 @@ def run(dry_run: bool = False) -> None:
                 "approved": False,
                 "arcs": new_arcs,
             })
-            EDITIONS_PATH.write_text(json.dumps({"editions": editions}, indent=1))
+            # Atomic replace: the editions API and the /flips/editions page
+            # read this file live, and a torn read parses as "no editions".
+            tmp = EDITIONS_PATH.with_suffix(".json.tmp")
+            tmp.write_text(json.dumps({"editions": editions}, indent=1))
+            os.replace(tmp, EDITIONS_PATH)
             logger.info("Edition %s recorded (%d arcs, awaiting review)",
                         editions[-1]["week"], len(new_arcs))
 

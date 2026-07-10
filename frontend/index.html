@@ -48,7 +48,7 @@
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "PulseCities",
-        "description": "Displacement risk scores for all 178 NYC neighborhoods, built on six public data signals.",
+        "description": "Displacement risk scores for all 177 NYC neighborhoods, built on six public data signals.",
         "url": "https://pulsecities.com",
         "applicationCategory": "DataVisualization",
         "operatingSystem": "Web",
@@ -62,7 +62,7 @@
         "@context": "https://schema.org",
         "@type": "Dataset",
         "name": "NYC Displacement Risk Scores",
-        "description": "Daily displacement risk scores for all 178 NYC neighborhoods, derived from six public data signals: LLC property acquisitions, renovation permits, tenant complaints, eviction filings, HPD violations, and rent-stabilized unit loss.",
+        "description": "Daily displacement risk scores for all 177 NYC neighborhoods, derived from six public data signals: LLC property acquisitions, renovation permits, tenant complaints, eviction filings, HPD violations, and rent-stabilized unit loss.",
         "url": "https://pulsecities.com",
         "license": "https://creativecommons.org/licenses/by/4.0/",
         "creator": { "@type": "Person", "name": "Michael Espin", "url": "https://pulsecities.com" },
@@ -710,15 +710,17 @@
             ? t('ed_ev_many').replace('{n}', a.eviction_count)
             : t('ed_ev_one');
         const dateOpts = { month: 'short', day: 'numeric', year: 'numeric' };
-        const steps = [
-            { date: fmtDate(a.eviction_date, dateOpts), html: esc(evText), hot: false },
+        const steps = [];
+        if (a.eviction_date) steps.push(
+            { date: fmtDate(a.eviction_date, dateOpts), html: esc(evText), hot: false });
+        steps.push(
             { date: fmtDate(a.buy_date, dateOpts),
               html: esc(t('ed_buy')).replace('{buyer}', () => esc(a.buyer))
                   .replace('{amt}', () => '<span class="amt">' + esc(fmtMoney(a.buy_amt)) + '</span>'), hot: true },
             { date: fmtDate(a.sell_date, dateOpts),
               html: esc(t('ed_sell'))
-                  .replace('{amt}', () => '<span class="amt">' + esc(fmtMoney(a.sell_amt)) + '</span>'), hot: true },
-        ];
+                  .replace('{amt}', () => '<span class="amt">' + esc(fmtMoney(a.sell_amt)) + '</span>'), hot: true }
+        );
         document.getElementById('docket').innerHTML = `
             <div class="docket-head">
                 <span>${esc(t('docket_head'))}</span>
