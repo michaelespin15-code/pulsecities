@@ -93,9 +93,17 @@ class TestBackfill:
             f"BREDIF total_properties={row.total_properties} is less than 66"
         )
 
-    def test_twenty_operators_seeded(self, db):
-        count = db.execute(text("SELECT COUNT(*) FROM operators")).scalar()
-        assert count >= 20, f"Expected >= 20 operators, found {count}"
+    def test_public_operators_seeded(self, db):
+        # The backfill deletes SUPPRESSED rows, so total row count varies with
+        # each analysis run. What must hold: every allowlisted public operator
+        # has a row with the class the public surfaces gate on.
+        rows = db.execute(
+            text("SELECT slug FROM operators WHERE operator_class = 'operator'")
+        ).fetchall()
+        slugs = {r.slug for r in rows}
+        assert {"mtek-nyc", "phantom-capital", "bredif"} <= slugs, (
+            f"Missing public operator rows, found {sorted(slugs)}"
+        )
 
     def test_highest_displacement_score_nonnull(self, db):
         value = db.execute(

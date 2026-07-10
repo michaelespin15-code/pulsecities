@@ -20,7 +20,11 @@ from pathlib import Path
 from sqlalchemy import text
 
 from models.database import get_scraper_db
-from scoring.operator_classification import OperatorClass, classify_operator_candidate
+from scoring.operator_classification import (
+    KNOWN_OPERATOR_ALLOWLIST,
+    OperatorClass,
+    classify_operator_candidate,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +80,7 @@ _BANK_ROOTS = {
 }
 
 
-def _operator_root(name: str | None) -> str | None:
+def _operator_root(name: str | None, known_roots: set[str] | None = None) -> str | None:
     """
     Extract the identifying brand from a normalized LLC name.
 
@@ -89,8 +93,12 @@ def _operator_root(name: str | None) -> str | None:
     don't reflect the coordinated multi-LLC acquisition scheme we're tracking.
 
     Compound-brand extension: short first tokens (≤4 chars) are fused with a
-    short non-generic successor token when present, so space-variant spellings
-    of the same brand ("ICE CAP" vs "ICECAP") resolve to the same root key.
+    short non-generic successor token, so space-variant spellings of the same
+    brand ("ICE CAP" vs "ICECAP") resolve to the same root key. Fusion only
+    fires when the fused spelling exists as a standalone brand in known_roots;
+    otherwise the second token is treated as a series name and the first token
+    stands alone ("MTEK GOLD" stays under "MTEK" because no "MTEKGOLD..."
+    filings exist). Callers build known_roots with a first pass that omits it.
     """
     if not name:
         return None
@@ -114,13 +122,14 @@ def _operator_root(name: str | None) -> str | None:
     if not first_tok:
         return None
 
-    if len(first_tok) <= 4 and first_idx + 1 < len(tokens):
+    if known_roots and len(first_tok) <= 4 and first_idx + 1 < len(tokens):
         next_tok = tokens[first_idx + 1].strip(".,;")
         if (
             3 <= len(next_tok) <= 4
             and next_tok not in _GENERIC
             and next_tok not in _BANK_ROOTS
             and not re.match(r"^\d+$", next_tok)
+            and first_tok + next_tok in known_roots
         ):
             return first_tok + next_tok
 
@@ -140,7 +149,7 @@ def _load_high_displacement_zips(db) -> set[str]:
 
 
 def _load_bbl_zips(db) -> dict[str, str]:
-    """BBL → zip_code from violations and permits tables (both have good coverage)."""
+    """BBL → zip_code. parcels is authoritative; violations/permits cover BBLs not in parcels."""
     rows = db.execute(text("""
         SELECT bbl, zip_code FROM (
             SELECT bbl, zip_code FROM violations_raw WHERE bbl IS NOT NULL AND zip_code IS NOT NULL
@@ -148,7 +157,12 @@ def _load_bbl_zips(db) -> dict[str, str]:
             SELECT bbl, zip_code FROM permits_raw   WHERE bbl IS NOT NULL AND zip_code IS NOT NULL
         ) t
     """)).fetchall()
-    return {r.bbl: r.zip_code for r in rows if r.bbl and r.zip_code}
+    zips = {r.bbl: r.zip_code for r in rows if r.bbl and r.zip_code}
+    parcel_rows = db.execute(text(
+        "SELECT bbl, zip_code FROM parcels WHERE bbl IS NOT NULL AND zip_code IS NOT NULL"
+    )).fetchall()
+    zips.update({r.bbl: r.zip_code for r in parcel_rows if r.bbl and r.zip_code})
+    return zips
 
 
 def run_analysis(db) -> list[dict]:
@@ -161,23 +175,37 @@ def run_analysis(db) -> list[dict]:
     logger.info("BBL→zip lookup: %d properties", len(bbl_zip))
 
     rows = db.execute(text("""
-        SELECT party_name_normalized, bbl, doc_date, doc_amount
-        FROM ownership_raw
-        WHERE party_type = '2'
-          AND doc_date >= :cutoff
-          AND party_name_normalized IS NOT NULL
-          AND bbl IS NOT NULL
-        ORDER BY doc_date
+        SELECT o.party_name_normalized, o.bbl, o.doc_date, o.doc_amount,
+               g.party_name_normalized AS grantor_name
+        FROM ownership_raw o
+        LEFT JOIN ownership_raw g
+          ON g.document_id = o.document_id AND g.party_type = '1'
+        WHERE o.party_type = '2'
+          AND o.doc_date >= :cutoff
+          AND o.party_name_normalized IS NOT NULL
+          AND o.bbl IS NOT NULL
+        ORDER BY o.doc_date
     """), {"cutoff": cutoff}).fetchall()
 
     logger.info("%d LLC acquisitions pulled for last 18 months", len(rows))
+
+    # First pass: standalone brand tokens across the corpus. Compound fusion
+    # in the second pass only fires when the fused spelling exists here.
+    known_roots = {
+        root for r in rows if (root := _operator_root(r.party_name_normalized))
+    }
 
     # root -> {llc_names: set, acquisitions: list}
     groups: dict[str, dict] = defaultdict(lambda: {"llc_names": set(), "acquisitions": []})
 
     for r in rows:
-        root = _operator_root(r.party_name_normalized)
+        root = _operator_root(r.party_name_normalized, known_roots)
         if not root:
+            continue
+        # Grantor and grantee resolving to the same root is a portfolio
+        # shuffle (BREDIF moves the same notes LPA -> REIT -> issuer), not
+        # an acquisition. Counting each hop inflates the acquisition total.
+        if r.grantor_name and _operator_root(r.grantor_name, known_roots) == root:
             continue
         # Per-entity suppression check: filter bank/lender/intermediary names
         # before they can contaminate otherwise-legitimate clusters.
@@ -201,6 +229,11 @@ def run_analysis(db) -> list[dict]:
         llc_names   = g["llc_names"]
         acquisitions = g["acquisitions"]
 
+        # Curated operators skip the noise heuristics below: PHANTOM's numbered
+        # shells run barely 2 acquisitions per LLC by design, which is exactly
+        # the shape the surname filter exists to kill.
+        allowlisted = root in KNOWN_OPERATOR_ALLOWLIST
+
         if len(llc_names) < 2 or len(acquisitions) < 5:
             continue
 
@@ -209,7 +242,7 @@ def run_analysis(db) -> list[dict]:
         # the root isn't a coordinated operator — it's just a common last name.
         # Coordinated operators like MTEK run ~3-10 properties per LLC.
         avg_per_llc = len(acquisitions) / len(llc_names)
-        if avg_per_llc < 2.0:
+        if avg_per_llc < 2.0 and not allowlisted:
             continue
 
         zips_hit = {bbl_zip[a["bbl"]] for a in acquisitions if a["bbl"] in bbl_zip}
@@ -218,7 +251,7 @@ def run_analysis(db) -> list[dict]:
 
         # Require meaningful concentration in high-displacement zips — filters
         # out metro-wide flippers and institutional portfolios with no geographic focus.
-        if hd_pct < 0.30:
+        if hd_pct < 0.30 and not allowlisted:
             continue
 
         total_val = sum(a["doc_amount"] for a in acquisitions if a["doc_amount"])
@@ -231,10 +264,28 @@ def run_analysis(db) -> list[dict]:
         else:
             velocity = 0.0
 
+        # One parcel row per BBL, keyed to the latest acquisition. This is
+        # what backfill_operators.py writes to operator_parcels, so the page
+        # property table always matches the headline counts.
+        latest_by_bbl: dict[str, dict] = {}
+        for a in acquisitions:
+            prev = latest_by_bbl.get(a["bbl"])
+            if prev is None or (a["doc_date"] and prev["doc_date"] and a["doc_date"] > prev["doc_date"]):
+                latest_by_bbl[a["bbl"]] = a
+
         results.append({
             "operator_root":                root,
             "total_properties":             len({a["bbl"] for a in acquisitions}),
             "total_acquisitions":           len(acquisitions),
+            "parcels": [
+                {
+                    "bbl":               a["bbl"],
+                    "acquiring_entity":  a["party_name"],
+                    "acquisition_date":  a["doc_date"].isoformat() if a["doc_date"] else None,
+                    "acquisition_price": a["doc_amount"],
+                }
+                for a in latest_by_bbl.values()
+            ],
             "llc_count":                    len(llc_names),
             "llc_entities":                 sorted(llc_names),
             "total_portfolio_value":        round(total_val, 2),

@@ -65,7 +65,7 @@ _BANK_ROOTS = {
 }
 
 
-def _operator_root(name: str | None) -> str | None:
+def _operator_root(name: str | None, known_roots: set[str] | None = None) -> str | None:
     if not name:
         return None
     cleaned = re.sub(r"\b(LLC|L\.L\.C|CORP|INC|LTD|LP|LLP)\b\.?$", "", name).strip()
@@ -90,16 +90,17 @@ def _operator_root(name: str | None) -> str | None:
 
     # Compound-brand extension: a short first token (e.g. "ICE") may be the
     # first half of a two-word brand that appears both fused ("ICECAP") and
-    # space-separated ("ICE CAP") across different filings.  When the
-    # immediately following token is also a short, non-generic brand token,
-    # fuse them so both spellings map to the same root.
-    if len(first_tok) <= 4 and first_idx + 1 < len(tokens):
+    # space-separated ("ICE CAP") across different filings.  Fuse only when
+    # the fused spelling exists as a standalone brand in known_roots; a
+    # non-brand second token is a series name ("MTEK GOLD" stays "MTEK").
+    if known_roots and len(first_tok) <= 4 and first_idx + 1 < len(tokens):
         next_tok = tokens[first_idx + 1].strip(".,;")
         if (
             3 <= len(next_tok) <= 4
             and next_tok not in _GENERIC
             and next_tok not in _BANK_ROOTS
             and not re.match(r"^\d+$", next_tok)
+            and first_tok + next_tok in known_roots
         ):
             return first_tok + next_tok
 
@@ -141,10 +142,16 @@ def _load_clusters(db) -> list[dict]:
 
     logger.info("%d LLC acquisition records in window", len(rows))
 
+    # Standalone brand tokens first, so compound fusion only fires for
+    # spellings that actually exist in the corpus.
+    known_roots = {
+        root for r in rows if (root := _operator_root(r.party_name_normalized))
+    }
+
     groups: dict[str, dict] = defaultdict(lambda: {"llc_names": set(), "bbls": set(), "acquisitions": []})
 
     for r in rows:
-        root = _operator_root(r.party_name_normalized)
+        root = _operator_root(r.party_name_normalized, known_roots)
         if not root:
             continue
         g = groups[root]

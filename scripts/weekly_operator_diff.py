@@ -24,6 +24,7 @@ from pathlib import Path
 from sqlalchemy import text
 
 from models.database import get_scraper_db
+from scoring.operator_classification import KNOWN_OPERATOR_ALLOWLIST
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ _BANK_ROOTS = {
 }
 
 
-def _operator_root(name: str | None) -> str | None:
+def _operator_root(name: str | None, known_roots: set[str] | None = None) -> str | None:
     if not name:
         return None
     cleaned = re.sub(r"\b(LLC|L\.L\.C|CORP|INC|LTD|LP|LLP)\b\.?$", "", name).strip()
@@ -88,13 +89,14 @@ def _operator_root(name: str | None) -> str | None:
     if not first_tok:
         return None
 
-    if len(first_tok) <= 4 and first_idx + 1 < len(tokens):
+    if known_roots and len(first_tok) <= 4 and first_idx + 1 < len(tokens):
         next_tok = tokens[first_idx + 1].strip(".,;")
         if (
             3 <= len(next_tok) <= 4
             and next_tok not in _GENERIC
             and next_tok not in _BANK_ROOTS
             and not re.match(r"^\d+$", next_tok)
+            and first_tok + next_tok in known_roots
         ):
             return first_tok + next_tok
 
@@ -122,7 +124,12 @@ def _load_bbl_zips(db) -> dict[str, str]:
             SELECT bbl, zip_code FROM permits_raw   WHERE bbl IS NOT NULL AND zip_code IS NOT NULL
         ) t
     """)).fetchall()
-    return {r.bbl: r.zip_code for r in rows if r.bbl and r.zip_code}
+    zips = {r.bbl: r.zip_code for r in rows if r.bbl and r.zip_code}
+    parcel_rows = db.execute(text(
+        "SELECT bbl, zip_code FROM parcels WHERE bbl IS NOT NULL AND zip_code IS NOT NULL"
+    )).fetchall()
+    zips.update({r.bbl: r.zip_code for r in parcel_rows if r.bbl and r.zip_code})
+    return zips
 
 
 def run_full_analysis(db) -> list[dict]:
@@ -136,20 +143,33 @@ def run_full_analysis(db) -> list[dict]:
     bbl_zip  = _load_bbl_zips(db)
 
     rows = db.execute(text("""
-        SELECT party_name_normalized, bbl, doc_date, doc_amount
-        FROM ownership_raw
-        WHERE party_type = '2'
-          AND doc_date >= :cutoff
-          AND party_name_normalized IS NOT NULL
-          AND bbl IS NOT NULL
-        ORDER BY doc_date
+        SELECT o.party_name_normalized, o.bbl, o.doc_date, o.doc_amount,
+               g.party_name_normalized AS grantor_name
+        FROM ownership_raw o
+        LEFT JOIN ownership_raw g
+          ON g.document_id = o.document_id AND g.party_type = '1'
+        WHERE o.party_type = '2'
+          AND o.doc_date >= :cutoff
+          AND o.party_name_normalized IS NOT NULL
+          AND o.bbl IS NOT NULL
+        ORDER BY o.doc_date
     """), {"cutoff": cutoff}).fetchall()
 
     logger.info("%d LLC acquisition records in 18-month window", len(rows))
 
+    # Standalone brand tokens first, so compound fusion only fires for
+    # spellings that actually exist in the corpus ("ICE CAP" -> "ICECAP",
+    # but "MTEK GOLD" stays under "MTEK").
+    known_roots = {
+        root for r in rows if (root := _operator_root(r.party_name_normalized))
+    }
+
     groups: dict[str, dict] = defaultdict(lambda: {"llc_names": set(), "acquisitions": []})
     for r in rows:
-        root = _operator_root(r.party_name_normalized)
+        root = _operator_root(r.party_name_normalized, known_roots)
+        # Intra-cluster transfers are portfolio shuffles, not acquisitions.
+        if root and r.grantor_name and _operator_root(r.grantor_name, known_roots) == root:
+            continue
         if not root:
             continue
         g = groups[root]
@@ -166,17 +186,21 @@ def run_full_analysis(db) -> list[dict]:
         llc_names    = g["llc_names"]
         acquisitions = g["acquisitions"]
 
+        # Curated operators skip the noise heuristics; PHANTOM's numbered
+        # shells sit right at the surname-filter threshold by design.
+        allowlisted = root in KNOWN_OPERATOR_ALLOWLIST
+
         if len(llc_names) < 2 or len(acquisitions) < 5:
             continue
 
         avg_per_llc = len(acquisitions) / len(llc_names)
-        if avg_per_llc < 2.0:
+        if avg_per_llc < 2.0 and not allowlisted:
             continue
 
         hd_count = sum(1 for a in acquisitions if bbl_zip.get(a["bbl"]) in hd_zips)
         hd_pct   = hd_count / len(acquisitions) if acquisitions else 0.0
 
-        if hd_pct < 0.30:
+        if hd_pct < 0.30 and not allowlisted:
             continue
 
         zips_hit  = {bbl_zip[a["bbl"]] for a in acquisitions if a["bbl"] in bbl_zip}

@@ -1,5 +1,5 @@
 """
-MTEK portfolio — 37 tracked BBLs with acquisition dates.
+MTEK portfolio — 42 tracked BBLs with acquisition dates.
 
 Update when MTEK files new deeds in ACRIS.
 """
@@ -46,6 +46,11 @@ MTEK_PORTFOLIO: dict[str, dict] = {
     "4090620007": {"address": None, "entity": "MTEK FULTON LLC",          "zip_code": None, "acquired": date(2025,  5,  6)},
     "4111130040": {"address": None, "entity": "MTEK NYC LLC",             "zip_code": None, "acquired": date(2025, 11, 19)},
     "4123300034": {"address": None, "entity": "MTEK GOLD LLC",            "zip_code": None, "acquired": date(2026,  2,  5)},
+    "3048850019": {"address": "28 EAST 32 STREET",    "entity": "MTEK FULTON LLC",          "zip_code": "11226", "acquired": date(2026,  3, 17)},
+    "3013070034": {"address": "190 SULLIVAN PLACE",   "entity": "MTEK GOLD LLC",            "zip_code": "11225", "acquired": date(2026,  3, 19)},
+    "3011550007": {"address": "617 GRAND AVENUE",     "entity": "MTEK CITY LLC",            "zip_code": "11238", "acquired": date(2026,  3, 27)},
+    "3028310019": {"address": "9A NORTH HENRY STREET","entity": "MTEK HENRY LLC",           "zip_code": "11222", "acquired": date(2026,  4, 16)},
+    "3032950007": {"address": "1130 GREENE AVENUE",   "entity": "MTEK CITY LLC",            "zip_code": "11221", "acquired": date(2026,  5, 12)},
 }
 
 MTEK_BBLS: frozenset[str] = frozenset(MTEK_PORTFOLIO.keys())
