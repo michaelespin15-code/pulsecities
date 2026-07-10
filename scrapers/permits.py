@@ -247,13 +247,10 @@ class PermitsScraper(BaseScraper):
         }
 
     def _upsert_batch(self, db, batch: list[dict]) -> int:
-        stmt = (
-            insert(PermitRaw)
-            .values(batch)
-            .on_conflict_do_nothing(
-                constraint="uq_permits_raw_bbl_date_type_work"
-            )
-        )
+        # No conflict target: NULL-bbl rows bypass the named constraint
+        # (NULLs are distinct in PG unique constraints), so dedupe also relies
+        # on the COALESCE index uq_permits_raw_identity.
+        stmt = insert(PermitRaw).values(batch).on_conflict_do_nothing()
         result = db.execute(stmt)
         db.commit()
         return result.rowcount
