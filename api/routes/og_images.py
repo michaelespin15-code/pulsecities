@@ -44,10 +44,10 @@ _DIM    = (20, 32, 56)
 # Canonical bands: Low 0-33, Moderate 34-66, High 67-84, Critical 85+.
 # Must match the map legend, panel, summaries, and digest.
 def _score_color(score: float) -> tuple:
-    if score >= 85: return (220, 60, 60)
+    if score >= 85: return (239, 68, 68)
     if score >= 67: return (249, 115, 22)
-    if score >= 34: return (210, 160, 10)
-    return (30, 170, 80)
+    if score >= 34: return (192, 139, 45)
+    return (62, 107, 84)
 
 
 def _score_tier(score: float) -> str:

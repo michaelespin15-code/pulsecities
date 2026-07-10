@@ -437,8 +437,8 @@
             <!-- Map legend — bottom-left, always visible -->
             <div id="map-legend" class="absolute bottom-9 left-4 z-10 rounded-lg px-3 py-2 flex flex-col gap-1" style="background:rgba(15,23,42,0.88);backdrop-filter:blur(6px);border:1px solid rgba(148,163,184,0.15);font-size:11px;">
                 <div class="text-slate-400 font-mono uppercase tracking-wider mb-0.5" style="font-size:10px;letter-spacing:0.08em;"><span id="legend-header">displacement risk</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#16a34a;display:inline-block;flex-shrink:0;"></span><span id="legend-low" class="text-slate-300">Low 0-33</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#eab308;display:inline-block;flex-shrink:0;"></span><span id="legend-moderate" class="text-slate-300">Moderate 34-66</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#3E6B54;display:inline-block;flex-shrink:0;"></span><span id="legend-low" class="text-slate-300">Low 0-33</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#C08B2D;display:inline-block;flex-shrink:0;"></span><span id="legend-moderate" class="text-slate-300">Moderate 34-66</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#f97316;display:inline-block;flex-shrink:0;"></span><span id="legend-high" class="text-slate-300">High 67-84</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block;flex-shrink:0;"></span><span id="legend-critical" class="text-slate-300">Critical 85+</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#334155;display:inline-block;flex-shrink:0;"></span><span id="legend-no-data" class="text-slate-300">No data</span></div>
@@ -2122,8 +2122,8 @@
                         ['==', ['coalesce', ['feature-state', 'score'], ['get', 'score']], null], '#334155',
                         [
                             'step', ['coalesce', ['feature-state', 'score'], ['get', 'score']],
-                            '#16a34a',
-                            34, '#eab308',
+                            '#3E6B54',
+                            34, '#C08B2D',
                             67, '#f97316',
                             85, '#ef4444'
                         ]
@@ -2214,7 +2214,7 @@
             if (score === null) return '#94a3b8';
             if (score >= 85) return '#ef4444';
             if (score >= 67) return '#f97316';
-            if (score >= 34) return '#eab308';
+            if (score >= 34) return '#C08B2D';
             return '#94a3b8';
         }
 
@@ -2239,7 +2239,7 @@
         function signalBarColor(v) {
             if (v >= 70) return '#ef4444';
             if (v >= 55) return '#f97316';
-            if (v >= 35) return '#eab308';
+            if (v >= 35) return '#C08B2D';
             return '#64748b';
         }
 
@@ -4282,7 +4282,7 @@
                     if (n.score !== null && n.score !== undefined) {
                         const score = document.createElement('span');
                         score.className = 'font-mono text-xs shrink-0';
-                        const c = n.score >= 85 ? '#ef4444' : n.score >= 67 ? '#f97316' : n.score >= 34 ? '#eab308' : '#94a3b8';
+                        const c = n.score >= 85 ? '#ef4444' : n.score >= 67 ? '#f97316' : n.score >= 34 ? '#C08B2D' : '#94a3b8';
                         score.style.color = c;
                         score.textContent = n.score.toFixed(1);
                         top.appendChild(score);

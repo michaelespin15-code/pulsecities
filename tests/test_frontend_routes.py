@@ -354,7 +354,33 @@ class TestCanonicalTierBands:
         idx = (Path(__file__).parent.parent / "frontend" / "index.html").read_text()
         for legacy in ("score >= 70", "score >= 40) return", "score >= 15) return"):
             assert legacy not in idx, f"legacy tier threshold '{legacy}' in index.html"
-        assert "score >= 85" in idx
+
+    # Canonical tier palette, decided 2026-07-10 from real map renders:
+    # low #3E6B54, moderate #C08B2D, high #F97316, critical #EF4444.
+    # Fills and chips carry the palette; low-as-text stays slate for
+    # contrast. If a hex changes, change every surface in the same commit.
+    _STALE_TIER_HEXES = ("#16a34a", "#eab308", "#22c55e", "#4ade80")
+
+    def test_map_fill_and_legend_use_canonical_palette(self):
+        app = self._app()
+        for canon in ("#3E6B54", "#C08B2D"):
+            assert canon in app, f"canonical tier color '{canon}' missing from app.html"
+        for stale in self._STALE_TIER_HEXES:
+            assert stale not in app, f"stale tier color '{stale}' is back in app.html"
+
+    def test_landing_legend_uses_canonical_palette(self):
+        idx = (Path(__file__).parent.parent / "frontend" / "index.html").read_text()
+        for canon in ("#3E6B54", "#C08B2D", "#F97316", "#EF4444"):
+            assert canon in idx, f"canonical tier color '{canon}' missing from index.html legend"
+        for stale in self._STALE_TIER_HEXES:
+            assert stale not in idx, f"stale tier color '{stale}' in index.html"
+
+    def test_ssr_tier_colors_use_canonical_palette(self):
+        for name in ("frontend.py", "briefs.py"):
+            src = (Path(__file__).parent.parent / "api" / "routes" / name).read_text()
+            assert "#C08B2D" in src, f"canonical moderate color missing from {name}"
+            for stale in self._STALE_TIER_HEXES:
+                assert stale not in src, f"stale tier color '{stale}' in {name}"
 
 
 @pytest.mark.integration
