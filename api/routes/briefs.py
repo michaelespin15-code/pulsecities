@@ -131,13 +131,13 @@ def _nav_html() -> str:
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <span style="font-size:.85rem;color:rgba(148,163,184,.55);">PulseCities</span>
   </a>
-  <div class="nav-links"><a href="/map">Map</a><a href="/methodology">Methodology</a><a href="/about">About</a></div>
+  <div class="nav-links"><a href="/map">Map</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="/press">Press</a></div>
 </div></nav>"""
 
 
 def _footer_html() -> str:
     return """<footer><div class="footer-links">
-  <a href="/">Home</a><a href="/map">Map</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="/status">Status</a><a href="mailto:michaelespin15@gmail.com">Contact</a>
+  <a href="/">Home</a><a href="/map">Map</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="/press">Press</a><a href="/status">Status</a><a href="mailto:michaelespin15@gmail.com">Contact</a>
 </div></footer>"""
 
 

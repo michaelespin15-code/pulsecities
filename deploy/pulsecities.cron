@@ -13,3 +13,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 0 9 * * 0 root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.weekly_digest >> /var/log/pulsecities/digest.log 2>&1
 30 9 * * 0 root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.weekly_eviction_flips >> /var/log/pulsecities/flips_scan.log 2>&1
 30 4 1 * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.refresh_operator_directory >> /var/log/pulsecities/operator_refresh.log 2>&1
+# Backup restore-test — Sunday 05:00 UTC, after the nightly backup; proves the dump restores
+0 5 * * 0 root /root/pulsecities/scripts/backup_restore_test.sh >> /var/log/pulsecities/backup_restore_test.log 2>&1
+# Weekly ops-health heartbeat email — Sunday 09:45 UTC, after digest+flips, reads the restore-test result
+45 9 * * 0 root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.weekly_ops_health >> /var/log/pulsecities/ops_health.log 2>&1
