@@ -198,8 +198,8 @@ tr:last-child td { border-bottom: none; }
     <div class="dist-row" style="margin-bottom:20px;">
         <div class="dist-chip"><div class="n" style="color:#ef4444;" id="dist-critical">—</div><div class="lbl">Critical</div></div>
         <div class="dist-chip"><div class="n" style="color:#f97316;" id="dist-high">—</div><div class="lbl">High</div></div>
-        <div class="dist-chip"><div class="n" style="color:#eab308;" id="dist-moderate">—</div><div class="lbl">Moderate</div></div>
-        <div class="dist-chip"><div class="n" style="color:#22c55e;" id="dist-low">—</div><div class="lbl">Low</div></div>
+        <div class="dist-chip"><div class="n" style="color:#C08B2D;" id="dist-moderate">—</div><div class="lbl">Moderate</div></div>
+        <div class="dist-chip"><div class="n" style="color:#94a3b8;" id="dist-low">—</div><div class="lbl">Low</div></div>
     </div>
 
     <!-- Two columns: recent subs + top zips -->
@@ -271,8 +271,8 @@ let lastFetch = null;
 function scoreColor(s) {
     if (s >= 85) return '#ef4444';
     if (s >= 67) return '#f97316';
-    if (s >= 34) return '#eab308';
-    return '#22c55e';
+    if (s >= 34) return '#C08B2D';
+    return '#94a3b8';
 }
 
 function daysAgo(iso) {

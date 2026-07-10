@@ -43,13 +43,17 @@ def _now_str() -> str:
 
 
 def _score_tier(score: float) -> tuple[str, str]:
-    """Return (label, hex_color) for a displacement score."""
-    if score >= 76:
+    """Return (label, hex_color) for a displacement score.
+
+    Bands match the canonical tiers everywhere else on the site:
+    Low 0-33, Moderate 34-66, High 67-84, Critical 85+.
+    """
+    if score >= 85:
         return "Critical", "#ef4444"
-    if score >= 56:
+    if score >= 67:
         return "High", "#f97316"
     if score >= 34:
-        return "Moderate", "#eab308"
+        return "Moderate", "#C08B2D"
     return "Low", "#64748b"
 
 
@@ -57,7 +61,7 @@ def _idx_color(v: float) -> str:
     if v >= 70:
         return "#f97316"
     if v >= 45:
-        return "#eab308"
+        return "#C08B2D"
     return "rgba(148,163,184,0.45)"
 
 
