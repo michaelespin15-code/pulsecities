@@ -86,8 +86,32 @@
 
         .container { max-width: 860px; margin: 0 auto; padding: 0 20px; }
 
-        /* Hero */
-        .hero { padding: 64px 0 48px; }
+        /* Hero: the map is the product, so it shares the opening frame.
+           Left column pitches and takes the search; right column IS the map. */
+        .hero {
+            padding: 56px 0 44px;
+            display: grid;
+            grid-template-columns: 1.12fr 0.88fr;
+            gap: 32px;
+            align-items: center;
+        }
+        .hero-map {
+            position: relative;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            display: block;
+        }
+        .hero-map img { display: block; width: 100%; height: 300px; object-fit: cover; object-position: 62% 40%; }
+        .hero-map:hover { border-color: rgba(249, 115, 22, 0.45); }
+        .hero-map .map-explore { position: absolute; right: 12px; bottom: 12px; }
+        .hero-legend {
+            display: flex; gap: 12px; flex-wrap: wrap;
+            margin-top: 8px;
+            font-family: var(--mono); font-size: 10.5px; color: var(--faint);
+        }
+        .hero-legend span { display: inline-flex; align-items: center; gap: 5px; }
+        .hero-legend i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
         .pulse-trace { width: 260px; height: 24px; margin-bottom: 20px; display: block; }
         .pulse-trace polyline {
             fill: none; stroke: var(--pulse); stroke-width: 2.2;
@@ -230,33 +254,13 @@
         .sig-num { font-family: var(--mono); font-size: 17px; font-weight: 600; color: var(--text); }
         .sig-desc { font-size: 11.5px; color: var(--muted); }
 
-        /* ── Map + palette decision ──────────────────────────────────── */
-        .map-wrap { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
-        .map-wrap img { display: block; width: 100%; height: auto; }
         .map-explore {
             position: absolute; right: 14px; bottom: 14px;
             font-size: 13px; font-weight: 600; color: var(--text);
             background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(148,163,184,0.3);
             border-radius: 6px; padding: 8px 14px; backdrop-filter: blur(6px);
         }
-        .map-explore:hover { text-decoration: none; border-color: var(--pulse); }
-
-        .palette-bar {
-            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-            margin: 14px 0 8px;
-        }
-        .palette-bar .lbl { font-family: var(--mono); font-size: 11px; color: var(--faint); margin-right: 4px; }
-        .palette-btn {
-            font-family: var(--mono); font-size: 11.5px; color: var(--muted);
-            background: none; border: 1px solid var(--border); border-radius: 6px;
-            padding: 6px 12px; cursor: pointer; transition: color 0.15s, border-color 0.15s;
-        }
-        .palette-btn:hover { color: var(--text); }
-        .palette-btn.active { color: var(--pulse); border-color: rgba(249, 115, 22, 0.5); }
-        .palette-note { font-size: 12.5px; color: var(--muted); min-height: 38px; }
-        .legend-chips { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
-        .legend-chips span { display: inline-flex; align-items: center; gap: 6px; }
-        .legend-chips i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+        .hero-map:hover .map-explore { border-color: var(--pulse); }
 
         /* Footer */
         footer {
@@ -270,10 +274,13 @@
         .footer-links a { color: var(--muted); }
         .footer-links a:hover { color: var(--text); }
 
+        @media (max-width: 860px) {
+            .hero { grid-template-columns: 1fr; gap: 22px; padding: 44px 0 36px; }
+            .hero-map img { height: 220px; }
+        }
         @media (max-width: 720px) {
             .nav-links { display: none; }
             .nav-menu { display: block; }
-            .hero { padding: 44px 0 36px; }
             .search-row { flex-direction: column; }
             .search-row button { width: 100%; }
             .modules { grid-template-columns: 1fr; }
@@ -325,16 +332,30 @@
 <main id="main" class="container">
 
     <header class="hero">
-        <svg class="pulse-trace" viewBox="0 0 260 24" aria-hidden="true">
-            <polyline points="0,12 60,12 78,4 96,20 114,8 132,16 150,12 260,12"/>
-        </svg>
-        <h1>The displacement story NYC doesn't officially tell.</h1>
-        <p class="hero-sub">Search any address, ZIP, or neighborhood. Every signal comes from public records.</p>
-        <form class="search-row" action="/map" method="get">
-            <input type="text" name="q" placeholder="Enter an address, ZIP, or neighborhood" aria-label="Search an address, ZIP, or neighborhood">
-            <button type="submit">Search</button>
-        </form>
-        <p class="hero-meta" id="hero-meta"></p>
+        <div>
+            <svg class="pulse-trace" viewBox="0 0 260 24" aria-hidden="true">
+                <polyline points="0,12 60,12 78,4 96,20 114,8 132,16 150,12 260,12"/>
+            </svg>
+            <h1>The displacement story NYC doesn't officially tell.</h1>
+            <p class="hero-sub">Search any address, ZIP, or neighborhood. Every signal comes from public records.</p>
+            <form class="search-row" action="/map" method="get">
+                <input type="text" name="q" placeholder="Enter an address, ZIP, or neighborhood" aria-label="Search an address, ZIP, or neighborhood">
+                <button type="submit">Search</button>
+            </form>
+            <p class="hero-meta" id="hero-meta"></p>
+        </div>
+        <div>
+            <a class="hero-map" href="/map" aria-label="Explore the displacement risk map">
+                <img src="/preview-palette-a.jpg" width="960" height="800" alt="NYC displacement risk map">
+                <span class="map-explore">Explore the map &rarr;</span>
+            </a>
+            <div class="hero-legend">
+                <span><i style="background:#3E6B54"></i>Low</span>
+                <span><i style="background:#C08B2D"></i>Moderate</span>
+                <span><i style="background:#F97316"></i>High</span>
+                <span><i style="background:#EF4444"></i>Critical</span>
+            </div>
+        </div>
     </header>
 
     <section aria-labelledby="finding-label">
@@ -395,22 +416,6 @@
                 <div class="module-cta"><a href="/flips">Flip watch &rarr;</a> &middot; <a href="/radar">Radar &rarr;</a></div>
             </div>
         </div>
-    </section>
-
-    <section aria-labelledby="map-label">
-        <p class="eyebrow" id="map-label">The map</p>
-        <div class="map-wrap">
-            <img id="palette-img" src="/preview-palette-a.jpg" width="960" height="800" alt="NYC displacement risk map preview">
-            <a class="map-explore" href="/map">Explore the map &rarr;</a>
-        </div>
-        <div class="palette-bar" role="group" aria-label="Map palette options">
-            <span class="lbl">Low-tier palette:</span>
-            <button class="palette-btn active" data-p="a">A &middot; muted green</button>
-            <button class="palette-btn" data-p="b">B &middot; heat only</button>
-            <button class="palette-btn" data-p="current">current</button>
-        </div>
-        <p class="palette-note" id="palette-note">A keeps green for stable areas, desaturated so it sits inside the night palette instead of fighting the orange. Pressure still owns the map.</p>
-        <div class="legend-chips" id="legend-chips"></div>
     </section>
 
 </main>
@@ -502,36 +507,6 @@
         steps.forEach(s => s.classList.add('seen'));
     }
 
-    // Palette comparison
-    const PALETTES = {
-        a: {
-            img: '/preview-palette-a.jpg',
-            note: 'A keeps green for stable areas, desaturated so it sits inside the night palette instead of fighting the orange. Pressure still owns the map.',
-            chips: [['#3E6B54','Low 0-33'], ['#C08B2D','Moderate 34-66'], ['#F97316','High 67-84'], ['#EF4444','Critical 85+']],
-        },
-        b: {
-            img: '/preview-palette-b.jpg',
-            note: 'B gives all color to pressure. Stable areas read as warm sand, almost part of the basemap, so the eye goes straight to what is heating up.',
-            chips: [['#D9C79E','Low 0-33'], ['#E8A33D','Moderate 34-66'], ['#F97316','High 67-84'], ['#EF4444','Critical 85+']],
-        },
-        current: {
-            img: '/preview-palette-current.jpg',
-            note: 'The live map today. Saturated green and gold carry as much visual weight as the pressure tiers, which is where the clash with the orange identity comes from.',
-            chips: [['#16a34a','Low 0-33'], ['#eab308','Moderate 34-66'], ['#f97316','High 67-84'], ['#ef4444','Critical 85+']],
-        },
-    };
-    function setPalette(key) {
-        const p = PALETTES[key];
-        document.getElementById('palette-img').src = p.img;
-        document.getElementById('palette-note').textContent = p.note;
-        document.getElementById('legend-chips').innerHTML = p.chips.map(c =>
-            `<span><i style="background:${c[0]}"></i>${c[1]}</span>`).join('');
-        document.querySelectorAll('.palette-btn').forEach(b =>
-            b.classList.toggle('active', b.dataset.p === key));
-    }
-    document.querySelectorAll('.palette-btn').forEach(b =>
-        b.addEventListener('click', () => setPalette(b.dataset.p)));
-    setPalette('a');
 </script>
 
 </body>
