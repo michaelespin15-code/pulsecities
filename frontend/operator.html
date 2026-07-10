@@ -112,8 +112,9 @@
                             <p id="follow-status" aria-live="polite" style="display:none;font-size:0.72rem;margin-top:8px;"></p>
                         </div>
                     </div>
-                    <div style="font-size: 0.72rem; color: rgba(148,163,184,0.55); font-family: 'JetBrains Mono', monospace; padding-top: 6px;" data-i18n="source_acris">
-                        Source: NYC ACRIS
+                    <div style="font-size: 0.72rem; color: rgba(148,163,184,0.55); font-family: 'JetBrains Mono', monospace; padding-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline;">
+                        <span data-i18n="source_acris">Source: NYC ACRIS</span>
+                        <a id="paper-trail-link" href="#" style="display:none; color:#38bdf8; text-decoration:none;" data-i18n="download_csv" onclick="plausible('Paper Trail Download')">Download the paper trail (CSV)</a>
                     </div>
                 </div>
             </div>
@@ -401,6 +402,7 @@
             chip_window:         '18-month window',
             chip_public_records: 'public records',
             source_acris:        'Source: NYC ACRIS',
+            download_csv:        'Download the paper trail (CSV)',
             sig_name_embedding:  'name embedding',
             sig_shared_bbl:      'shared bbl',
             sig_shared_address:  'shared address',
@@ -472,6 +474,7 @@
             chip_window:         'ventana de 18 meses',
             chip_public_records: 'registros p\u00fablicos',
             source_acris:        'Fuente: NYC ACRIS',
+            download_csv:        'Descargar el expediente (CSV)',
             sig_name_embedding:  'similitud de nombre',
             sig_shared_bbl:      'BBL compartido',
             sig_shared_address:  'direcci\u00f3n compartida',
@@ -902,6 +905,11 @@
             document.getElementById('pattern-note-text').textContent   = note;
         }
 
+        const trailLink = document.getElementById('paper-trail-link');
+        if (trailLink && data.slug) {
+            trailLink.href = '/api/operators/' + encodeURIComponent(data.slug) + '/paper-trail.csv';
+            trailLink.style.display = 'inline';
+        }
         document.getElementById('stat-properties').textContent  = data.total_properties;
         document.getElementById('stat-acquisitions').textContent = data.total_acquisitions;
         document.getElementById('stat-llcs').textContent        = data.llc_entities.length;
