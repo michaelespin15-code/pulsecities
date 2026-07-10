@@ -186,7 +186,11 @@ def backfill() -> None:
                     "llc_entities": json.dumps(llc_entities),
                     "total_properties": op.get("total_properties", 0),
                     "total_acquisitions": op.get("total_acquisitions", 0),
-                    "operator_class": cls.operator_class.value,
+                    # Public surfaces gate on operator_class = 'operator'; the enum's
+                    # 'public_operator' value must not reach the DB.
+                    "operator_class": "operator"
+                    if cls.operator_class == OperatorClass.PUBLIC_OPERATOR
+                    else cls.operator_class.value,
                     "classification_reasons": json.dumps(cls.reasons),
                     "classification_confidence": float(cls.confidence),
                     "classified_at": now,
@@ -203,21 +207,40 @@ def backfill() -> None:
                 promoted += 1
                 continue
 
-            parcels = db.execute(
-                text("""
-                    SELECT DISTINCT ON (bbl)
-                        bbl,
-                        party_name_normalized  AS acquiring_entity,
-                        doc_date               AS acquisition_date,
-                        doc_amount             AS acquisition_price
-                    FROM ownership_raw
-                    WHERE party_type = '2'
-                      AND party_name_normalized = ANY(:llc_names)
-                    ORDER BY bbl, doc_date DESC
-                """),
-                {"llc_names": llc_entities},
-            ).fetchall()
+            # The analysis JSON carries the exact parcel set behind the headline
+            # counts. Rebuild operator_parcels from it so the page property table
+            # can never drift from total_properties. Older JSONs without a
+            # parcels list fall back to a raw ownership_raw pull.
+            parcels = op.get("parcels")
+            if parcels is None:
+                rows = db.execute(
+                    text("""
+                        SELECT DISTINCT ON (bbl)
+                            bbl,
+                            party_name_normalized  AS acquiring_entity,
+                            doc_date               AS acquisition_date,
+                            doc_amount             AS acquisition_price
+                        FROM ownership_raw
+                        WHERE party_type = '2'
+                          AND party_name_normalized = ANY(:llc_names)
+                        ORDER BY bbl, doc_date DESC
+                    """),
+                    {"llc_names": llc_entities},
+                ).fetchall()
+                parcels = [
+                    {
+                        "bbl": r.bbl,
+                        "acquiring_entity": r.acquiring_entity,
+                        "acquisition_date": r.acquisition_date,
+                        "acquisition_price": r.acquisition_price,
+                    }
+                    for r in rows
+                ]
 
+            db.execute(
+                text("DELETE FROM operator_parcels WHERE operator_id = :oid"),
+                {"oid": operator_id},
+            )
             for parcel in parcels:
                 db.execute(
                     text("""
@@ -231,10 +254,10 @@ def backfill() -> None:
                     """),
                     {
                         "operator_id": operator_id,
-                        "bbl": parcel.bbl,
-                        "acquiring_entity": parcel.acquiring_entity,
-                        "acquisition_date": parcel.acquisition_date,
-                        "acquisition_price": parcel.acquisition_price,
+                        "bbl": parcel["bbl"],
+                        "acquiring_entity": parcel["acquiring_entity"],
+                        "acquisition_date": parcel["acquisition_date"],
+                        "acquisition_price": parcel["acquisition_price"],
                         "now": now,
                     },
                 )

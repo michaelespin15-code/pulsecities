@@ -383,7 +383,12 @@ def _load_bbl_zips(db) -> dict[str, str]:
             SELECT bbl, zip_code FROM permits_raw   WHERE bbl IS NOT NULL AND zip_code IS NOT NULL
         ) t
     """)).fetchall()
-    return {r.bbl: r.zip_code for r in rows if r.bbl and r.zip_code}
+    zips = {r.bbl: r.zip_code for r in rows if r.bbl and r.zip_code}
+    parcel_rows = db.execute(text(
+        "SELECT bbl, zip_code FROM parcels WHERE bbl IS NOT NULL AND zip_code IS NOT NULL"
+    )).fetchall()
+    zips.update({r.bbl: r.zip_code for r in parcel_rows if r.bbl and r.zip_code})
+    return zips
 
 
 if __name__ == "__main__":

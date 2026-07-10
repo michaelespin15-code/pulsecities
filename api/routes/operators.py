@@ -277,7 +277,7 @@ def get_operator_profile_by_slug(
         text("""
             SELECT op.bbl, p.zip_code, ds.score AS displacement_score
             FROM operator_parcels op
-            JOIN parcels p ON p.bbl = op.bbl
+            LEFT JOIN parcels p ON p.bbl = op.bbl
             LEFT JOIN displacement_scores ds ON ds.zip_code = p.zip_code
             WHERE op.operator_id = :operator_id
             ORDER BY ds.score DESC NULLS LAST
@@ -324,6 +324,9 @@ def get_operator_profile_by_slug(
                     AND o.party_name_normalized = ANY(:llc_names)
                     AND o.doc_date > e.executed_date
                     AND o.doc_date <= e.executed_date + INTERVAL '365 days'
+                    -- $0 records are note transfers and internal shuffles, not
+                    -- purchases; showing them as buy-after-eviction overstates.
+                    AND o.doc_amount > 0
                 ORDER BY e.bbl, e.executed_date, o.doc_date
             """),
             {"llc_names": llc_names},
