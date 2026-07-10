@@ -14,8 +14,10 @@ back the feed reaches — flips are rare enough that a year keeps the list subst
 without diluting the signal.
 """
 
+import json
 import logging
 import time
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, Request, Response
 from slowapi import Limiter
@@ -143,4 +145,46 @@ def get_flips(request: Request, response: Response, db: Session = Depends(get_db
         "flip_window_days": FLIP_WINDOW_DAYS,
         "count": len(flips),
         "flips": flips,
+    }
+
+
+# Weekly eviction-flip editions, written by scripts/weekly_eviction_flips.py.
+# The scan appends editions with approved: false; flipping the flag after
+# review is the human gate between scan output and publication. The homepage
+# docket features the strongest arc of the newest approved edition and keeps
+# its built-in example when nothing is approved yet.
+_EDITIONS_PATH = Path(__file__).resolve().parents[2] / "scripts" / "eviction_flips_editions.json"
+
+_BOROUGHS = {"1": "Manhattan", "2": "Bronx", "3": "Brooklyn", "4": "Queens", "5": "Staten Island"}
+
+
+@router.get("/editions/latest")
+@limiter.limit("60/minute")
+def latest_edition(request: Request, response: Response, db: Session = Depends(get_db)):
+    """Featured arc of the newest approved eviction-flip edition."""
+    response.headers["Cache-Control"] = "public, max-age=3600"
+    try:
+        editions = json.loads(_EDITIONS_PATH.read_text()).get("editions", [])
+    except (OSError, ValueError):
+        editions = []
+
+    approved = [e for e in editions if e.get("approved") and e.get("arcs")]
+    if not approved:
+        return {"week": None, "arc": None}
+
+    edition = approved[-1]
+    arc = max(edition["arcs"], key=lambda a: a.get("gain_pct") or 0)
+    neighborhood = None
+    if arc.get("zip_code"):
+        neighborhood = db.execute(
+            text("SELECT name FROM neighborhoods WHERE zip_code = :zip"),
+            {"zip": arc["zip_code"]},
+        ).scalar()
+    return {
+        "week": edition.get("week"),
+        "arc": {
+            **arc,
+            "neighborhood": neighborhood,
+            "borough": _BOROUGHS.get(str(arc.get("bbl", ""))[:1]),
+        },
     }
