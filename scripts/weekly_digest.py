@@ -54,11 +54,14 @@ SIGNAL_LABELS = {
     "hpd_violations":       "HPD Violations",
 }
 
+# Canonical tier palette (see test_frontend_routes.py tripwires). On the
+# email's light paper these muted inks also read far better than the old
+# bright green/gold ever did.
 _RISK_DISPLAY = [
     (85, "CRITICAL",      "#ef4444"),
     (67, "HIGH RISK",     "#f97316"),
-    (34, "MODERATE RISK", "#eab308"),
-    ( 0, "LOW RISK",      "#22c55e"),
+    (34, "MODERATE RISK", "#C08B2D"),
+    ( 0, "LOW RISK",      "#3E6B54"),
 ]
 
 
@@ -66,14 +69,14 @@ def _display_risk(score: float) -> tuple[str, str]:
     for threshold, label, color in _RISK_DISPLAY:
         if score >= threshold:
             return label, color
-    return "LOW RISK", "#22c55e"
+    return "LOW RISK", "#3E6B54"
 
 
 def _score_color(score: float) -> str:
     if score >= 85: return "#ef4444"
     if score >= 67: return "#f97316"
-    if score >= 34: return "#eab308"
-    return "#22c55e"
+    if score >= 34: return "#C08B2D"
+    return "#3E6B54"
 
 
 def _send_tier(score: float) -> str:
@@ -478,7 +481,7 @@ def _delta_text(delta: float) -> str:
 
 def _delta_color(delta: float) -> str:
     if delta >= SCORE_DELTA_MIN:  return "#ef4444"
-    if delta <= -SCORE_DELTA_MIN: return "#22c55e"
+    if delta <= -SCORE_DELTA_MIN: return "#3E6B54"
     return "#94a3b8"
 
 

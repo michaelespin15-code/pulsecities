@@ -382,6 +382,13 @@ class TestCanonicalTierBands:
             for stale in self._STALE_TIER_HEXES:
                 assert stale not in src, f"stale tier color '{stale}' in {name}"
 
+    def test_digest_tier_colors_use_canonical_palette(self):
+        src = (Path(__file__).parent.parent / "scripts" / "weekly_digest.py").read_text()
+        for canon in ("#3E6B54", "#C08B2D"):
+            assert canon in src, f"canonical tier color '{canon}' missing from weekly_digest.py"
+        for stale in self._STALE_TIER_HEXES:
+            assert stale not in src, f"stale tier color '{stale}' in weekly_digest.py"
+
 
 @pytest.mark.integration
 class TestSearchResolvesDeedBbl:
