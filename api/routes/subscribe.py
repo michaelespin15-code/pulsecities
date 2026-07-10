@@ -33,6 +33,7 @@ resend.api_key = os.getenv("RESEND_API_KEY", "")
 _EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 _ZIP_RE   = re.compile(r'^\d{5}$')
 _SLUG_RE  = re.compile(r'^[a-z0-9-]+$')
+_BBL_RE   = re.compile(r'^[1-5]\d{9}$')
 
 # Welcome notes wear the same paper case-file system as the weekly digest, but
 # stay transactional where it counts for Gmail's tab classifier: no images, no
@@ -153,6 +154,27 @@ PulseCities
 You subscribed at pulsecities.com. Unsubscribe: https://pulsecities.com/api/unsubscribe?token={token}
 """.strip()
 
+_BUILDING_CONFIRMATION_HTML = _WELCOME_SHELL.replace("{title}", "You're watching {address}").replace(
+    "{file_line}", "Watch opened {opened} &middot; BBL {bbl} &middot; NYC public records"
+).replace("{note_body}", "".join([
+    _NOTE_P.format("You're watching {address}."),
+    _NOTE_P.format("When a new record lands on this building, you'll get an email the next morning: a deed transfer, a renovation permit, an executed eviction, or a housing violation. Quiet stretches send nothing, so when an email arrives it means something happened at this address."),
+    _NOTE_P.format('The building\'s record is here:<br><a href="https://pulsecities.com/property/{bbl}" style="color:#C2410C;">pulsecities.com/property/{bbl}</a>'),
+]))
+
+_BUILDING_CONFIRMATION_TEXT = """
+You're watching {address}.
+
+When a new record lands on this building, you'll get an email the next morning: a deed transfer, a renovation permit, an executed eviction, or a housing violation. Quiet stretches send nothing, so when an email arrives it means something happened at this address.
+
+The building's record: https://pulsecities.com/property/{bbl}
+
+Michael
+PulseCities
+
+You subscribed at pulsecities.com. Unsubscribe: https://pulsecities.com/api/unsubscribe?token={token}
+""".strip()
+
 _UNSUBSCRIBE_CONFIRM_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -252,6 +274,7 @@ class SubscribeRequest(BaseModel):
     zip_code: str | None = None
     is_citywide: bool = False
     operator_slug: str | None = None
+    bbl: str | None = None
 
     @field_validator('email')
     @classmethod
@@ -263,7 +286,14 @@ class SubscribeRequest(BaseModel):
 
     @model_validator(mode='after')
     def validate_single_target(self) -> 'SubscribeRequest':
-        """A subscription watches exactly one of: a ZIP, the city, an operator."""
+        """A subscription watches exactly one of: a ZIP, the city, an operator, a building."""
+        if self.bbl is not None:
+            if self.is_citywide or self.zip_code or self.operator_slug:
+                raise ValueError('bbl cannot combine with other subscription targets')
+            self.bbl = self.bbl.strip()
+            if not _BBL_RE.match(self.bbl):
+                raise ValueError('invalid bbl')
+            return self
         if self.operator_slug is not None:
             if self.is_citywide or self.zip_code:
                 raise ValueError('operator_slug cannot combine with zip_code or is_citywide')
@@ -294,6 +324,8 @@ def _send_confirmation(
     is_citywide: bool,
     operator_slug: str | None = None,
     operator_name: str | None = None,
+    bbl: str | None = None,
+    address: str | None = None,
     unsubscribe_token: str | None = None,
 ) -> None:
     if not resend.api_key:
@@ -307,7 +339,12 @@ def _send_confirmation(
         "opened": datetime.now(timezone.utc).strftime("%b %-d, %Y"),
     }
 
-    if operator_slug:
+    if bbl:
+        values.update({"bbl": bbl, "address": address or f"BBL {bbl}"})
+        subject = f"You're watching {address or bbl}"
+        html, text_body = _BUILDING_CONFIRMATION_HTML, _BUILDING_CONFIRMATION_TEXT
+        log_line = ("Building-watch confirmation sent to %s for %s", email, bbl)
+    elif operator_slug:
         name = operator_name or operator_slug
         values.update({"operator_name": name, "operator_slug": operator_slug})
         subject = f"You're following {name}"
@@ -349,7 +386,28 @@ def subscribe(
     db: Session = Depends(get_db),
 ):
     operator_name = None
-    if body.operator_slug:
+    building_address = None
+    if body.bbl:
+        # The watch must point at a real lot; an unknown BBL 404s rather
+        # than silently accepting a watch that can never fire.
+        parcel = db.execute(
+            text("SELECT address, zip_code FROM parcels WHERE bbl = :bbl"),
+            {"bbl": body.bbl},
+        ).fetchone()
+        if parcel is None:
+            raise HTTPException(status_code=404, detail='Building not found')
+        building_address = (parcel.address or "").strip().title() or None
+
+        existing = db.execute(
+            select(Subscriber).where(
+                Subscriber.email == body.email,
+                Subscriber.bbl == body.bbl,
+            )
+        ).scalar_one_or_none()
+        if existing:
+            raise HTTPException(status_code=409, detail='Already watching this building.')
+        sub = Subscriber(email=body.email, zip_code=None, is_citywide=False, bbl=body.bbl)
+    elif body.operator_slug:
         # Same classification gate as every other operator surface: only
         # rows classed 'operator' are followable; lenders and GSEs 404.
         op_row = db.execute(
@@ -403,16 +461,19 @@ def subscribe(
         db.commit()
     except IntegrityError:
         db.rollback()
+        if body.bbl:
+            raise HTTPException(status_code=409, detail='Already watching this building.')
         if body.operator_slug:
             raise HTTPException(status_code=409, detail='Already following this operator.')
         if body.is_citywide:
             raise HTTPException(status_code=409, detail='Already watching NYC-wide.')
         raise HTTPException(status_code=409, detail='Already watching this area.')
 
-    logger.info('New subscriber email=%s zip=%s citywide=%s operator=%s',
-                body.email, body.zip_code, body.is_citywide, body.operator_slug)
+    logger.info('New subscriber email=%s zip=%s citywide=%s operator=%s bbl=%s',
+                body.email, body.zip_code, body.is_citywide, body.operator_slug, body.bbl)
     _send_confirmation(body.email, body.zip_code, body.is_citywide,
                        operator_slug=body.operator_slug, operator_name=operator_name,
+                       bbl=body.bbl, address=building_address,
                        unsubscribe_token=sub.unsubscribe_token)
     return {'status': 'ok'}
 

@@ -723,6 +723,30 @@
                     <div id="block-risk-label" class="text-xs text-slate-400 mt-1">Displacement Risk</div>
                 </div>
 
+                <!-- Building watch — one email when new records land on this BBL -->
+                <div class="bg-base-300 rounded-xl p-4">
+                    <h3 id="watch-building-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Watch this building</h3>
+                    <p id="watch-building-helper" class="text-xs text-slate-400 mb-3">One email when a new deed, permit, eviction, or violation lands here. Quiet stretches send nothing.</p>
+                    <div id="watch-building-form" class="flex gap-2">
+                        <input
+                            id="watch-building-email"
+                            type="email"
+                            placeholder="Email address"
+                            aria-labelledby="watch-building-title"
+                            class="input input-sm input-bordered flex-1 min-w-0"
+                            style="min-height:36px;font-size:12px;"
+                            autocomplete="email"
+                            enterkeyhint="send"
+                        />
+                        <button
+                            id="watch-building-btn"
+                            class="btn btn-sm shrink-0"
+                            style="min-height:36px;background:#f97316;border-color:#f97316;color:#fff;font-size:12px;"
+                        >Watch</button>
+                    </div>
+                    <p id="watch-building-msg" class="hidden text-xs mt-1.5"></p>
+                </div>
+
                 <!-- Action prompts — shown conditionally based on event data -->
                 <div id="block-actions" class="hidden bg-base-300 rounded-xl p-4">
                     <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Take Action</h3>
@@ -1591,6 +1615,11 @@
                     subscribe_no_zip:        'Select an area before subscribing.',
                     subscribe_duplicate:     "You're already watching this area.",
                     subscribe_error:         'Something went wrong. Try again.',
+                    watch_building:          'Watch this building',
+                    watch_building_helper:   'One email when a new deed, permit, eviction, or violation lands here. Quiet stretches send nothing.',
+                    watch_building_btn:      'Watch',
+                    watch_building_done:     "You're watching this building. New records land in your inbox the next morning.",
+                    watch_building_dup:      "You're already watching this building.",
                     landlord_no_results:     'No properties found for "{query}" in ACRIS records.',
                     copy_success:            'Copied!',
                     copy_fail:               'Copy failed',
@@ -1821,6 +1850,11 @@
                     subscribe_no_zip:        'Seleccione un área antes de suscribirse.',
                     subscribe_duplicate:     'Ya está observando esta área.',
                     subscribe_error:         'Algo salió mal. Intente de nuevo.',
+                    watch_building:          'Observar este edificio',
+                    watch_building_helper:   'Un correo cuando llegue una nueva escritura, permiso, desalojo o violación. Los períodos tranquilos no envían nada.',
+                    watch_building_btn:      'Observar',
+                    watch_building_done:     'Está observando este edificio. Los registros nuevos llegan a su correo a la mañana siguiente.',
+                    watch_building_dup:      'Ya está observando este edificio.',
                     landlord_no_results:     'Sin propiedades encontradas para "{query}" en registros ACRIS.',
                     copy_success:            '¡Copiado!',
                     copy_fail:               'Error al copiar',
@@ -2009,6 +2043,9 @@
                 'block-risk-label':           t('ui', 'displacement_risk'),
                 'civic-events-title':         t('ui', 'civic_events'),
                 'block-empty-state':          t('ui', 'no_activity'),
+                'watch-building-title':       t('ui', 'watch_building'),
+                'watch-building-helper':      t('ui', 'watch_building_helper'),
+                'watch-building-btn':         t('ui', 'watch_building_btn'),
                 'cmp-risk-label-1':           t('ui', 'displacement_risk'),
                 'cmp-risk-label-2':           t('ui', 'displacement_risk'),
                 'cmp-signal-breakdown-title': t('ui', 'signal_breakdown'),
@@ -3419,6 +3456,15 @@
             setPanel('block');
             history.pushState(null, '', '/property/' + bbl);
 
+            // Building watch: point the form at this BBL and reset any
+            // leftover state from the previously viewed building.
+            _watchBbl = bbl;
+            document.getElementById('watch-building-form').classList.remove('hidden');
+            document.getElementById('watch-building-msg').classList.add('hidden');
+            const watchBtn = document.getElementById('watch-building-btn');
+            watchBtn.disabled = false;
+            watchBtn.textContent = t('ui', 'watch_building_btn');
+
             // Back button names the ZIP when we have one; otherwise a plain "Back"
             // (never "Back to " with a dangling destination — that surfaced on
             // direct address lookups where no ZIP context was set).
@@ -4585,6 +4631,57 @@
             if (e.key === 'Enter') document.getElementById('subscribe-btn').click();
         });
 
+        // Building watch: subscribe the email to the BBL the panel is showing.
+        let _watchBbl = null;
+        document.getElementById('watch-building-btn').addEventListener('click', async function() {
+            const emailEl = document.getElementById('watch-building-email');
+            const msgEl   = document.getElementById('watch-building-msg');
+            const email   = emailEl.value.trim();
+
+            msgEl.classList.add('hidden');
+
+            if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+                msgEl.textContent = t('ui', 'subscribe_invalid_email');
+                msgEl.className   = 'text-xs mt-1.5 text-error';
+                msgEl.classList.remove('hidden');
+                return;
+            }
+            if (!_watchBbl) return;
+
+            this.disabled    = true;
+            this.textContent = '…';
+
+            try {
+                const resp = await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, bbl: _watchBbl })
+                });
+
+                if (resp.ok || resp.status === 409) {
+                    document.getElementById('watch-building-form').classList.add('hidden');
+                    if (resp.ok) plausible('Watch Building', { props: { bbl: _watchBbl } });
+                    msgEl.textContent = resp.status === 409
+                        ? t('ui', 'watch_building_dup')
+                        : t('ui', 'watch_building_done');
+                    msgEl.className = 'text-xs mt-1.5 text-green-400';
+                    msgEl.classList.remove('hidden');
+                } else {
+                    throw new Error('server error');
+                }
+            } catch {
+                msgEl.textContent = t('ui', 'subscribe_error');
+                msgEl.className   = 'text-xs mt-1.5 text-error';
+                msgEl.classList.remove('hidden');
+                this.disabled    = false;
+                this.textContent = t('ui', 'watch_building_btn');
+            }
+        });
+
+        document.getElementById('watch-building-email').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') document.getElementById('watch-building-btn').click();
+        });
+
         document.getElementById('subscribe-citywide-btn').addEventListener('click', async function() {
             const emailEl = document.getElementById('subscribe-email');
             const msgEl   = document.getElementById('subscribe-msg');
@@ -4636,7 +4733,7 @@
 
         // On mobile, scroll inputs into view after the keyboard appears
         if ('ontouchstart' in window) {
-            ['address-input', 'landlord-input', 'subscribe-email'].forEach(function(id) {
+            ['address-input', 'landlord-input', 'subscribe-email', 'watch-building-email'].forEach(function(id) {
                 const el = document.getElementById(id);
                 if (el) el.addEventListener('focus', function() {
                     setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 350);
