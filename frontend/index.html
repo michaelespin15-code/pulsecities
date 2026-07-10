@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark" style="color-scheme: dark">
+<html lang="en" style="color-scheme: dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -28,7 +28,7 @@
     <meta name="twitter:title" content="PulseCities | NYC Displacement Signals">
     <meta name="twitter:description" content="Search NYC addresses and ZIP codes for displacement signals using public records: permits, evictions, HPD violations, 311 complaints, and ownership transfers.">
     <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-    <meta name="theme-color" content="#0a0a1a">
+    <meta name="theme-color" content="#0f172a">
 
     <script type="application/ld+json">
     {
@@ -93,9 +93,6 @@
     }
     </script>
 
-    <!-- Redirect /neighborhood/{zip} deep links to the app -->
-    <script>(function(){var m=location.pathname.match(/^\/neighborhood\/(\d{5})$/);if(m)location.replace('/map?q='+m[1]);})();</script>
-
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
     <script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>
@@ -104,1115 +101,722 @@
         plausible.init()
     </script>
 
-    <!-- Both stylesheets load async: neither is needed for first paint. The
-         critical rules for the search row are inlined below, and every font
-         has display=swap, so the page renders on system faces immediately. -->
-    <link rel="preload" href="/tailwind.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Bricolage+Grotesque:opsz,wght@12..96,600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link rel="stylesheet" href="/tailwind.min.css">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Bricolage+Grotesque:opsz,wght@12..96,600&display=swap">
-    </noscript>
+    <!-- Fonts load async: every face has display=swap, so the page renders on
+         system faces immediately. All page CSS is inline below. -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap"></noscript>
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* Critical styles for the search row so it looks finished before
-           tailwind.min.css arrives. Kept in sync with the daisyUI look. */
-        #search-row .input {
-            border-radius: 8px;
-            border: 1px solid rgba(148,163,184,0.25);
-            color: #e2e8f0;
-            width: 100%;
-            min-width: 0;
+        :root {
+            --bg:      #0f172a;
+            --surface: #131e33;
+            --border:  rgba(148, 163, 184, 0.12);
+            --text:    #e2e8f0;
+            --muted:   #94a3b8;
+            --faint:   rgba(148, 163, 184, 0.45);
+            --pulse:   #f97316;
+            --sky:     #38bdf8;
+            --stamp:   #ef4444;
+            --mono:    'JetBrains Mono', monospace;
+            --display: 'Bricolage Grotesque', 'DM Sans', sans-serif;
         }
-        #search-row .input:focus {
-            outline: 2px solid rgba(56,189,248,0.4);
-            outline-offset: 2px;
-        }
-        #search-row .btn {
-            border-radius: 8px;
-            border: 1px solid transparent;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.875rem;
-            min-height: 3rem;
-        }
-        .flex-1 { flex: 1 1 0%; }
-        .shrink-0 { flex-shrink: 0; }
 
+        html { scroll-behavior: smooth; }
         body {
             font-family: 'DM Sans', sans-serif;
-            min-height: 100dvh;
-            overflow-x: hidden;
-            background-color: #0a0a1a;
-            background-image:
-                radial-gradient(ellipse 60% 50% at 35% 65%, rgba(249,115,22,0.10) 0%, transparent 60%),
-                radial-gradient(ellipse 40% 30% at 70% 30%, rgba(239,68,68,0.07) 0%, transparent 55%),
-                linear-gradient(160deg, #0a0a1a 0%, #0f172a 55%, #1a1a2e 100%);
-        }
-
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 0.4; }
-            50%       { opacity: 1.0; }
-        }
-        .pulse-dot { animation: pulse-dot 2.5s ease-in-out infinite; }
-
-        /* Hero pulse trace draws left to right once, then holds */
-        #hero-pulse polyline {
-            stroke-dasharray: 1000;
-            stroke-dashoffset: 1000;
-            animation: hero-draw 1.4s ease-out 0.15s forwards;
-        }
-        @keyframes hero-draw {
-            to { stroke-dashoffset: 0; }
-        }
-        #nav-links a, #nav-links button, #byline-link { white-space: nowrap; }
-        #nav-links {
-            flex-wrap: wrap;
-            row-gap: 4px;
-            justify-content: flex-end;
-            margin-left: auto;
-        }
-        #site-nav { flex-wrap: wrap; row-gap: 6px; }
-
-        @media (prefers-reduced-motion: reduce) {
-            .pulse-dot { animation: none; opacity: 0.7; }
-            #hero-pulse polyline { animation: none; stroke-dashoffset: 0; }
-        }
-
-        .zip-card { transition: border-color 0.15s, background 0.15s; }
-        .zip-card:hover { border-color: rgba(148,163,184,0.5) !important; }
-
-        @media (max-width: 480px) {
-            #search-row { flex-wrap: wrap; }
-            #search-row #search-btn { width: 100%; }
-        }
-
-        @media (max-width: 540px) {
-            #site-nav {
-                flex-wrap: wrap;
-                padding: 10px 16px;
-                row-gap: 6px;
-            }
-            #wordmark-group {
-                width: 100%;
-                padding-bottom: 8px;
-                border-bottom: 1px solid rgba(51,65,85,0.25);
-            }
-            #nav-links {
-                width: 100%;
-                gap: 12px 16px;
-                justify-content: flex-start;
-            }
-        }
-
-        .hero-proof {
-            background: rgba(30,41,59,0.5);
-            border: 1px solid rgba(148,163,184,0.1);
-            border-radius: 7px;
-            padding: 12px 14px;
-        }
-        .hero-proof-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: rgba(148,163,184,0.55);
-            margin-bottom: 7px;
-        }
-        .hero-proof-zip {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            color: #e2e8f0;
-            margin-bottom: 4px;
-        }
-        .hero-proof-score {
-            font-size: 0.78rem;
-            color: rgba(148,163,184,0.8);
-            margin-bottom: 6px;
-        }
-        .hero-proof-signal {
-            font-size: 0.76rem;
-            color: rgba(148,163,184,0.75);
+            background: var(--bg);
+            color: var(--text);
             line-height: 1.65;
+            font-size: 15px;
         }
-        .hero-proof-cta {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            color: rgba(249,115,22,0.7);
-            display: inline-block;
-            margin-top: 8px;
-            text-decoration: none;
-        }
-        .hero-proof-cta:hover { color: rgba(249,115,22,1); }
+        a { color: var(--sky); text-decoration: none; }
+        a:hover { text-decoration: underline; }
 
-        .section-label {
-            font-family: 'DM Sans', sans-serif;
-            font-size: 11px;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: #94a3b8;
-            display: block;
-            margin-bottom: 2px;
+        /* Nav: brand + three links. Everything else lives behind Menu on mobile. */
+        nav {
+            position: sticky; top: 0; z-index: 20;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            height: 52px;
+            padding: 0 20px;
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
         }
-        .section-helper {
-            font-size: 12px;
-            color: #94a3b8;
-            display: block;
+        .nav-brand {
+            font-size: 14px; font-weight: 600; color: var(--pulse);
+            display: flex; align-items: center; gap: 8px; flex-shrink: 0;
         }
-        .section-head {
-            margin-bottom: 16px;
+        .nav-brand:hover { text-decoration: none; opacity: 0.85; }
+        .nav-right { display: flex; align-items: center; gap: 18px; }
+        .nav-links { display: flex; align-items: center; gap: 22px; font-size: 13px; }
+        .nav-links a { color: var(--muted); }
+        .nav-links a:hover { color: var(--text); text-decoration: none; }
+        .lang-toggle {
+            font-family: var(--mono); font-size: 11px; color: var(--faint);
+            background: none; border: none; cursor: pointer; padding: 4px 2px;
+            letter-spacing: 0.04em;
         }
+        .lang-toggle:hover { color: var(--muted); }
+        .nav-menu { position: relative; }
+        .menu-primary { display: none; }
+        .nav-menu summary {
+            list-style: none; cursor: pointer;
+            font-size: 13px; color: var(--muted);
+            padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;
+        }
+        .nav-menu summary::-webkit-details-marker { display: none; }
+        .nav-menu[open] summary { color: var(--text); }
+        .nav-menu-panel {
+            position: absolute; right: 0; top: 40px;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+            padding: 8px; min-width: 170px; display: flex; flex-direction: column;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+        }
+        .nav-menu-panel a { color: var(--muted); font-size: 14px; padding: 9px 12px; border-radius: 6px; }
+        .nav-menu-panel a:hover { color: var(--text); background: rgba(148,163,184,0.06); text-decoration: none; }
 
-        /* Featured top-risk card */
-        .featured-zip {
-            width: 100%;
-        }
+        .container { max-width: 860px; margin: 0 auto; padding: 0 20px; }
 
-        /* Compact card grid */
-        .compact-zip-grid {
+        /* Hero: the map is the product, so it shares the opening frame.
+           Left column pitches and takes the search; right column IS the map. */
+        .hero {
+            padding: 56px 0 44px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            grid-template-columns: 1.12fr 0.88fr;
+            gap: 32px;
+            align-items: center;
         }
-
-        /* Mover rows */
-        .mover-row {
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(51,65,85,0.5);
+        .hero-map {
+            position: relative;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
             display: block;
-            text-decoration: none;
+        }
+        .hero-map img { display: block; width: 100%; height: 300px; object-fit: cover; object-position: 62% 40%; }
+        .hero-map:hover { border-color: rgba(249, 115, 22, 0.45); }
+        .hero-map .map-explore { position: absolute; right: 12px; bottom: 12px; }
+        .hero-legend {
+            display: flex; gap: 12px; flex-wrap: wrap;
+            margin-top: 8px;
+            font-family: var(--mono); font-size: 10.5px; color: var(--faint);
+        }
+        .hero-legend span { display: inline-flex; align-items: center; gap: 5px; }
+        .hero-legend i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+        .pulse-trace { width: 260px; height: 24px; margin-bottom: 20px; display: block; }
+        .pulse-trace polyline {
+            fill: none; stroke: var(--pulse); stroke-width: 2.2;
+            stroke-linecap: round; stroke-linejoin: round;
+            stroke-dasharray: 480; stroke-dashoffset: 480;
+            animation: trace 0.9s ease-out 0.15s forwards;
+        }
+        @keyframes trace { to { stroke-dashoffset: 0; } }
+
+        h1 {
+            font-family: var(--display);
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: 700; line-height: 1.15;
+            letter-spacing: -0.01em;
+            max-width: 640px;
+            margin-bottom: 14px;
+        }
+        .hero-sub { font-size: 16px; color: var(--muted); max-width: 520px; margin-bottom: 26px; }
+
+        .search-row { display: flex; gap: 10px; max-width: 560px; }
+        .search-row input {
+            flex: 1; min-width: 0;
+            font-family: var(--mono); font-size: 14px;
+            color: var(--text); background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 8px;
+            padding: 13px 16px;
+        }
+        .search-row input:focus { outline: 2px solid var(--pulse); outline-offset: 1px; border-color: transparent; }
+        .search-row button {
+            font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+            color: #0f172a; background: var(--pulse);
+            border: none; border-radius: 8px; padding: 13px 26px; cursor: pointer;
             transition: opacity 0.15s;
         }
-        .mover-row:last-child { border-bottom: none; }
-        .mover-row:hover { opacity: 0.8; }
+        .search-row button:hover { opacity: 0.9; }
 
-        /* Map teaser: static shot of the live map, links to the app */
-        .map-teaser {
-            display: block;
-            position: relative;
-            border-radius: 10px;
+        .hero-meta {
+            font-family: var(--mono); font-size: 11.5px; color: var(--faint);
+            margin-top: 14px; min-height: 18px;
+        }
+        .hero-meta a { color: var(--faint); text-decoration: underline; text-underline-offset: 2px; }
+        .hero-meta a:hover { color: var(--muted); }
+
+        /* Section frame */
+        section { padding: 26px 0; }
+        .eyebrow {
+            font-family: var(--mono); font-size: 11px; font-weight: 600;
+            letter-spacing: 0.12em; text-transform: uppercase; color: var(--pulse);
+            margin-bottom: 14px;
+        }
+
+        /* ── Signature: the evidence docket ─────────────────────────── */
+        .docket {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
             overflow: hidden;
-            border: 1px solid rgba(148,163,184,0.18);
-            transition: border-color 0.15s;
         }
-        .map-teaser:hover { border-color: rgba(249,115,22,0.55); }
-        .map-teaser img { display: block; width: 100%; height: auto; }
-        .map-teaser-label {
-            position: absolute;
-            right: 12px;
-            bottom: 12px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            color: #e2e8f0;
-            background: rgba(10,10,26,0.82);
-            border: 1px solid rgba(148,163,184,0.25);
-            border-radius: 6px;
-            padding: 6px 11px;
+        .docket-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(249, 115, 22, 0.05);
+            font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+            color: var(--muted); text-transform: uppercase;
+            flex-wrap: wrap;
         }
-        .map-teaser:hover .map-teaser-label { border-color: rgba(249,115,22,0.55); }
+        .docket-head .gain {
+            color: var(--stamp); font-weight: 600; font-size: 13px;
+            border: 1.5px solid rgba(239, 68, 68, 0.55); border-radius: 4px;
+            padding: 2px 10px; letter-spacing: 0.04em;
+            transform: rotate(-1.2deg);
+        }
+        .docket-body { padding: 22px 20px 20px; }
+        .docket-place {
+            font-family: var(--display); font-size: 21px; font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .docket-sub { font-family: var(--mono); font-size: 11.5px; color: var(--faint); margin-bottom: 20px; }
 
-        /* Score bar under each ranking row */
-        .score-track {
-            height: 3px;
-            border-radius: 2px;
-            background: rgba(148,163,184,0.1);
-            overflow: hidden;
-            margin-bottom: 10px;
+        .arc { position: relative; margin-left: 6px; }
+        .arc::before {
+            content: ''; position: absolute; left: 3.5px; top: 8px; bottom: 8px;
+            width: 1px; background: rgba(148, 163, 184, 0.25);
         }
-        .score-fill { height: 100%; border-radius: 2px; }
-
-        /* Trust section */
-        .trust-section {
-            border-top: 1px solid rgba(51,65,85,0.4);
-            padding-top: 28px;
+        .arc-step {
+            position: relative; padding: 0 0 18px 26px;
+            opacity: 0; transform: translateY(6px);
+            transition: opacity 0.45s ease, transform 0.45s ease;
         }
-
-        /* Search empty message */
-        .search-empty-msg {
-            font-size: 11px;
-            color: #ef4444;
-            margin-top: 4px;
+        .arc-step.seen { opacity: 1; transform: none; }
+        .arc-step:last-child { padding-bottom: 2px; }
+        .arc-step::before {
+            content: ''; position: absolute; left: 0; top: 7px;
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--bg); border: 2px solid var(--muted);
         }
+        .arc-step.hot::before { border-color: var(--pulse); background: var(--pulse); }
+        .arc-date { font-family: var(--mono); font-size: 12px; color: var(--pulse); display: block; margin-bottom: 1px; }
+        .arc-event { font-size: 14.5px; color: var(--text); line-height: 1.55; }
+        .arc-event .amt { font-family: var(--mono); color: var(--pulse); font-weight: 600; }
 
-        /* Stat chips */
-        #stat-chips {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            color: #94a3b8;
-            opacity: 0;
-            transition: opacity 0.4s ease-out;
+        .docket-foot {
+            border-top: 1px solid var(--border);
+            padding: 13px 20px;
+            display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
         }
+        .docket-ids { font-family: var(--mono); font-size: 11px; color: var(--faint); word-break: break-word; }
+        .docket-cta {
+            font-size: 13px; font-weight: 600; color: var(--pulse); white-space: nowrap;
+        }
+        .docket-cta:hover { text-decoration: underline; }
 
-        /* Footer safe area */
+        /* ── Module row ──────────────────────────────────────────────── */
+        .modules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+        .module {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+            padding: 18px 18px 14px;
+            min-height: 240px;
+            display: flex; flex-direction: column;
+        }
+        .module-label {
+            font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+            letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+            margin-bottom: 14px;
+        }
+        .module-body { flex: 1; }
+        .module-cta { font-size: 12.5px; margin-top: 12px; }
+
+        .rank-row { display: flex; align-items: baseline; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(148,163,184,0.07); }
+        .rank-zip { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+        .rank-name { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+        .rank-score { font-family: var(--mono); font-size: 12.5px; font-weight: 600; color: var(--pulse); }
+
+        .op-row { padding: 7px 0; border-bottom: 1px solid rgba(148,163,184,0.07); }
+        .op-name { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+        .op-meta { font-size: 11.5px; color: var(--muted); }
+
+        .sig-stat { padding: 7px 0; border-bottom: 1px solid rgba(148,163,184,0.07); }
+        .sig-num { font-family: var(--mono); font-size: 17px; font-weight: 600; color: var(--text); }
+        .sig-desc { font-size: 11.5px; color: var(--muted); }
+
+        .map-explore {
+            position: absolute; right: 14px; bottom: 14px;
+            font-size: 13px; font-weight: 600; color: var(--text);
+            background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(148,163,184,0.3);
+            border-radius: 6px; padding: 8px 14px; backdrop-filter: blur(6px);
+        }
+        .hero-map:hover .map-explore { border-color: var(--pulse); }
+
+        /* Footer */
         footer {
-            padding-bottom: calc(env(safe-area-inset-bottom) + 24px);
+            border-top: 1px solid var(--border);
+            margin-top: 34px;
+            padding: 26px 20px calc(env(safe-area-inset-bottom, 0px) + 26px);
+            text-align: center; font-size: 13px; color: var(--muted);
+        }
+        .footer-byline { font-size: 13px; color: var(--text); margin-bottom: 10px; }
+        .footer-links { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; }
+        .footer-links a { color: var(--muted); }
+        .footer-links a:hover { color: var(--text); }
+
+        @media (max-width: 860px) {
+            .hero { grid-template-columns: 1fr; gap: 22px; padding: 44px 0 36px; }
+            .hero-map img { height: 220px; }
+        }
+        @media (max-width: 720px) {
+            .nav-links { display: none; }
+            .menu-primary { display: block; }
+            .search-row { flex-direction: column; }
+            .search-row button { width: 100%; }
+            .modules { grid-template-columns: 1fr; }
+            .module { min-height: 0; }
+            .docket-head { font-size: 10px; }
         }
 
-        .skip-link {
-            position: absolute;
-            top: -48px;
-            left: 0;
-            z-index: 9999;
-            background: #1e293b;
-            color: #38bdf8;
-            padding: 8px 16px;
-            font-size: 14px;
-            text-decoration: none;
-            border-radius: 0 0 4px 0;
-            transition: top 0.1s;
+        @media (prefers-reduced-motion: reduce) {
+            .pulse-trace polyline { animation: none; stroke-dashoffset: 0; }
+            .arc-step { opacity: 1; transform: none; transition: none; }
+            html { scroll-behavior: auto; }
         }
-        .skip-link:focus { top: 0; }
 
-        #nav-links a:hover, #nav-links a:focus-visible { color: #e2e8f0 !important; }
-        #nav-links a:focus-visible, #nav-links button:focus-visible {
-            outline: 2px solid rgba(56,189,248,0.6);
-            outline-offset: 2px;
-            border-radius: 3px;
-        }
-        #nav-links button:hover { color: #e2e8f0 !important; }
+        .skip-link { position:absolute;top:-48px;left:0;z-index:9999;background:#1e293b;color:#38bdf8;padding:8px 16px;font-size:14px;text-decoration:none;border-radius:0 0 4px 0;transition:top 0.1s; }
+        .skip-link:focus { top:0; }
     </style>
 </head>
 <body>
-    <a href="#main-content" class="skip-link">Skip to content</a>
+    <a href="#main" class="skip-link">Skip to content</a>
 
-    <!-- Nav -->
-    <header style="border-bottom:1px solid rgba(51,65,85,0.4);position:sticky;top:0;z-index:20;background:rgba(10,10,26,0.92);backdrop-filter:blur(8px);">
-        <nav id="site-nav" style="max-width:1200px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;">
-            <div id="wordmark-group" style="display:flex;align-items:center;gap:10px;">
-                <a href="/" style="display:inline-flex;align-items:center;gap:9px;font-size:1.25rem;font-weight:600;color:#e2e8f0;text-decoration:none;letter-spacing:-0.01em;">
-                    <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-                        <rect width="32" height="32" rx="6" fill="#1a1a2e"/>
-                        <polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    PulseCities
-                </a>
-                <a id="byline-link" href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" aria-label="by Michael Espin on LinkedIn" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;align-self:flex-end;padding-bottom:3px;" onmouseover="this.style.color='#cbd5e1'" onmouseout="this.style.color='#94a3b8'">by Michael Espin</a>
+<nav>
+    <a href="/" class="nav-brand">
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <rect width="32" height="32" rx="6" fill="#1a1a2e"/>
+            <polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        PulseCities
+    </a>
+    <div class="nav-right">
+        <div class="nav-links">
+            <a href="/map" data-i18n="nav_map">Map</a>
+            <a href="/operators" data-i18n="nav_operators">Operators</a>
+            <a href="/press" data-i18n="nav_press">Press</a>
+            <a href="/methodology" data-i18n="nav_methodology">Methodology</a>
+        </div>
+        <details class="nav-menu">
+            <summary aria-label="Open menu" data-i18n="nav_more">More</summary>
+            <div class="nav-menu-panel">
+                <a href="/map" class="menu-primary" data-i18n="nav_map">Map</a>
+                <a href="/operators" class="menu-primary" data-i18n="nav_operators">Operators</a>
+                <a href="/press" class="menu-primary" data-i18n="nav_press">Press</a>
+                <a href="/methodology" class="menu-primary" data-i18n="nav_methodology">Methodology</a>
+                <a href="/flips" data-i18n="nav_flips">Flip Watch</a>
+                <a href="/radar" data-i18n="nav_radar">Radar</a>
+                <a href="/neighborhoods" data-i18n="nav_neighborhoods">Neighborhoods</a>
+                <a href="/about" data-i18n="nav_about">About</a>
+                <a href="/status" data-i18n="nav_status">Status</a>
             </div>
-            <div id="nav-links" style="display:flex;align-items:center;gap:20px;">
-                <a href="/map" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;">Map</a>
-                <a href="/operators" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;">Operators</a>
-                <a href="/flips" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;">Flip Watch</a>
-                <a href="/radar" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;">Radar</a>
-                <a href="/methodology" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;">Methodology</a>
-                <a href="/about" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;">About</a><a href="/press" style="font-size:12px;color:#94a3b8;text-decoration:none;transition:color 0.15s;">Press</a>
-                <button id="lang-toggle"
-                        aria-label="Switch to Spanish"
-                        style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#94a3b8;background:none;border:none;cursor:pointer;min-height:36px;padding:0;">
-                    EN / ES
-                </button>
+        </details>
+        <button class="lang-toggle" id="lang-toggle" aria-label="Cambiar idioma">EN / ES</button>
+    </div>
+</nav>
+
+<main id="main" class="container">
+
+    <header class="hero">
+        <div>
+            <svg class="pulse-trace" viewBox="0 0 260 24" aria-hidden="true">
+                <polyline points="0,12 60,12 78,4 96,20 114,8 132,16 150,12 260,12"/>
+            </svg>
+            <h1 data-i18n="tagline">The displacement story NYC doesn't officially tell.</h1>
+            <p class="hero-sub" data-i18n="hero_sub">Search any address, ZIP, or neighborhood. Every signal comes from public records.</p>
+            <form class="search-row" action="/map" method="get" id="search-form">
+                <input type="text" name="q" placeholder="Enter an address, ZIP, or neighborhood" aria-label="Search an address, ZIP, or neighborhood" id="search-input">
+                <button type="submit" data-i18n="search_btn">Search</button>
+            </form>
+            <p class="hero-meta" id="hero-meta"></p>
+        </div>
+        <div>
+            <a class="hero-map" href="/map" id="cta-explore" aria-label="Explore the displacement risk map">
+                <picture>
+                    <source srcset="/map-preview-560.webp?v=3 560w, /map-preview.webp?v=3 1120w" sizes="(max-width: 860px) calc(100vw - 40px), 340px" type="image/webp">
+                    <img src="/map-preview.jpg?v=3" srcset="/map-preview-560.jpg?v=3 560w, /map-preview.jpg?v=3 1120w" sizes="(max-width: 860px) calc(100vw - 40px), 340px" width="1120" height="600" alt="NYC displacement risk map" loading="eager" fetchpriority="high" decoding="async">
+                </picture>
+                <span class="map-explore" data-i18n="explore_map">Explore the map &rarr;</span>
+            </a>
+            <div class="hero-legend">
+                <span><i style="background:#3E6B54"></i><span data-i18n="legend_low">Low</span></span>
+                <span><i style="background:#C08B2D"></i><span data-i18n="legend_moderate">Moderate</span></span>
+                <span><i style="background:#F97316"></i><span data-i18n="legend_high">High</span></span>
+                <span><i style="background:#EF4444"></i><span data-i18n="legend_critical">Critical</span></span>
             </div>
-        </nav>
+        </div>
     </header>
 
-    <!-- Main content -->
-    <main id="main-content" style="max-width:680px;margin:0 auto;padding:48px 20px 0;">
+    <section aria-labelledby="finding-label">
+        <p class="eyebrow" id="finding-label" data-i18n="finding_eyebrow">This week's finding</p>
 
-        <!-- Hero -->
-        <section style="margin-bottom:48px;">
-            <!-- Signature: the city's pulse, drawn once on load -->
-            <svg id="hero-pulse" viewBox="0 0 680 44" width="100%" height="44" preserveAspectRatio="none" aria-hidden="true" focusable="false" style="display:block;margin-bottom:18px;">
-                <polyline pathLength="1000"
-                          points="0,28 140,28 152,28 163,8 176,40 187,16 198,32 208,28 680,28"
-                          fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-
-            <h1 data-i18n="tagline" style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:clamp(1.6rem,4.8vw,2.3rem);font-weight:600;color:#e2e8f0;letter-spacing:-0.015em;line-height:1.22;margin-bottom:16px;">The displacement story NYC doesn't officially tell.</h1>
-
-            <!-- Search support line -->
-            <p style="font-size:13px;color:#94a3b8;margin-bottom:14px;line-height:1.55;" data-i18n="hero_subhead">Search any NYC address, ZIP, or neighborhood using public records.</p>
-
-            <!-- Search: primary action -->
-            <div style="position:relative;margin-bottom:10px;">
-                <div id="search-row" style="display:flex;gap:8px;width:100%;">
-                    <input id="search-input"
-                           type="text"
-                           inputmode="search"
-                           placeholder="Enter an address, ZIP, or neighborhood"
-                           class="input input-bordered flex-1 font-mono"
-                           style="background:rgba(30,41,59,0.9);font-size:1rem;padding:14px 16px;height:auto;"
-                           autocomplete="off" />
-                    <button id="search-btn"
-                            class="btn shrink-0"
-                            style="background-color:#f97316;border-color:#f97316;color:#1a1a2e;font-weight:600;padding:0 20px;"
-                            data-i18n="search_btn">
-                        Search
-                    </button>
+        <!-- Signature element: a real paper trail, rendered as the docket it is.
+             Fed by the newest approved weekly eviction-flip edition; the arc
+             below is the verified fallback shown until one exists (see /press). -->
+        <article class="docket" id="docket">
+            <div class="docket-head">
+                <span data-i18n="docket_head">Eviction &rarr; purchase &rarr; resale</span>
+                <span class="gain" data-i18n="docket_gain">+100% in 84 days</span>
+            </div>
+            <div class="docket-body">
+                <p class="docket-place">4575 Furman Avenue, Wakefield, Bronx</p>
+                <p class="docket-sub" data-i18n="docket_sub">BBL 2050840054 &middot; ZIP 10470 &middot; every step below is a public record</p>
+                <div class="arc">
+                    <div class="arc-step">
+                        <span class="arc-date" data-i18n="arc_d1">Jan 13, 2025</span>
+                        <span class="arc-event" data-i18n="arc_e1">A city marshal executes a residential eviction.</span>
+                    </div>
+                    <div class="arc-step">
+                        <span class="arc-date" data-i18n="arc_d2">Apr 21, 2025</span>
+                        <span class="arc-event" data-i18n="arc_e2">A second eviction is executed, separate date and docket.</span>
+                    </div>
+                    <div class="arc-step hot">
+                        <span class="arc-date" data-i18n="arc_d3">Jul 8, 2025</span>
+                        <span class="arc-event" data-i18n-html="arc_e3">PHANTOM CAPITAL 161 LLC buys the house for <span class="amt">$500,000</span>, directly from the owner of record.</span>
+                    </div>
+                    <div class="arc-step hot">
+                        <span class="arc-date" data-i18n="arc_d4">Sep 30, 2025</span>
+                        <span class="arc-event" data-i18n-html="arc_e4">The LLC resells for <span class="amt">$999,000</span>.</span>
+                    </div>
                 </div>
-                <div id="search-dropdown" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:#1e293b;border:1px solid rgba(148,163,184,0.15);border-radius:0 0 8px 8px;z-index:50;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4);"></div>
             </div>
-
-            <!-- Freshness chip: data-through date from /api/status, links to /status. Hidden until populated, and stays hidden if the fetch fails. -->
-            <a id="freshness-chip" href="/status" aria-label="Data source freshness and status" style="display:none;align-items:center;gap:6px;margin-bottom:14px;font-size:11px;color:#64748b;font-family:'JetBrains Mono',monospace;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"></a>
-
-            <!-- Example searches -->
-            <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;">
-                <span style="font-size:11px;color:#64748b;font-family:'JetBrains Mono',monospace;line-height:1.8;">Try:</span>
-                <a href="/map?q=11216" style="font-size:11px;color:#94a3b8;text-decoration:none;font-family:'JetBrains Mono',monospace;line-height:1.8;border-bottom:1px solid rgba(148,163,184,0.3);" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Crown Heights (11216)</a>
-                <a href="/map?q=10026" style="font-size:11px;color:#94a3b8;text-decoration:none;font-family:'JetBrains Mono',monospace;line-height:1.8;border-bottom:1px solid rgba(148,163,184,0.3);" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Harlem (10026)</a>
-                <a href="/map?q=11221" style="font-size:11px;color:#94a3b8;text-decoration:none;font-family:'JetBrains Mono',monospace;line-height:1.8;border-bottom:1px solid rgba(148,163,184,0.3);" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Bushwick (11221)</a>
+            <div class="docket-foot">
+                <span class="docket-ids">ACRIS 2025071500436001 &middot; 2025101300240002</span>
+                <a class="docket-cta" href="/press" data-i18n="docket_cta">Read the paper trail &rarr;</a>
             </div>
+        </article>
+    </section>
 
-            <div id="empty-search-msg" class="search-empty-msg" data-i18n="search_empty_msg" aria-live="polite" style="display:none;">Enter an address, ZIP, or landlord name.</div>
-
-            <!-- Live records line: appears after data loads -->
-            <p id="stat-chips" style="margin-top:4px;margin-bottom:12px;font-size:11px;color:#94a3b8;font-family:'JetBrains Mono',monospace;"></p>
-
-            <!-- The map itself is the pitch: static shot, click through to the app -->
-            <a href="/map" id="cta-explore" class="map-teaser" aria-label="Explore the live displacement risk map">
-                <picture>
-                    <source srcset="/map-preview-560.webp?v=2 560w, /map-preview.webp?v=2 1120w" sizes="(max-width: 680px) calc(100vw - 40px), 640px" type="image/webp">
-                    <img src="/map-preview.jpg?v=2" srcset="/map-preview-560.jpg?v=2 560w, /map-preview.jpg?v=2 1120w" sizes="(max-width: 680px) calc(100vw - 40px), 640px" width="1120" height="600" alt="Live displacement risk map of NYC. Stable areas in green, moderate pressure in gold, high-pressure neighborhoods glowing orange." loading="eager" fetchpriority="high" decoding="async">
-                </picture>
-                <span class="map-teaser-label" data-i18n="explore_map">Explore the map &rarr;</span>
-            </a>
-            <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:10px;">
-                <a href="/map?replay=1"
-                   id="cta-replay"
-                   style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#f97316;text-decoration:none;opacity:0.7;transition:opacity 0.15s;"
-                   onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'"
-                   data-i18n="watch_replay">&#9654; Watch 6 months of movement</a>
+    <section aria-label="Live signals">
+        <div class="modules">
+            <div class="module">
+                <p class="module-label" data-i18n="mod_rankings">Highest risk right now</p>
+                <div class="module-body" id="mod-rankings"></div>
+                <a class="module-cta" href="/neighborhoods" data-i18n="mod_rankings_cta">Full rankings &rarr;</a>
             </div>
-        </section>
-
-        <!-- Watchlist: returning users only -->
-        <div id="watchlist-section" style="display:none;margin-bottom:40px;">
-            <div class="section-head">
-                <span class="section-label" data-i18n="your_watchlist">Your Watchlist</span>
+            <div class="module">
+                <p class="module-label" data-i18n="mod_operators">Operators on record</p>
+                <div class="module-body" id="mod-operators"></div>
+                <a class="module-cta" href="/operators" data-i18n="mod_operators_cta">All operators &rarr;</a>
             </div>
-            <div id="watchlist-cards" class="compact-zip-grid"></div>
-        </div>
-
-        <!-- Highest-risk areas right now -->
-        <section style="margin-bottom:40px;">
-            <div class="section-head">
-                <span class="section-label" data-i18n="top_risk_label">Highest-risk areas</span>
-                <span class="section-helper" data-i18n="top_risk_helper">Current displacement-pressure score</span>
-            </div>
-            <div id="zip-cards">
-                <div id="zip-loading" class="font-mono" style="font-size:11px;color:#334155;padding:20px 0;text-align:center;">Loading…</div>
-            </div>
-        </section>
-
-        <!-- Changed this week -->
-        <div id="movers-section" style="display:none;margin-bottom:40px;">
-            <div class="section-head">
-                <span class="section-label" data-i18n="changed_this_week">Rising this week</span>
-                <span class="section-helper" data-i18n="movers_helper">Recent score increases from new records</span>
-            </div>
-            <div id="movers-cards"></div>
-            <a href="/this-week" class="font-mono" data-i18n="weekly_review_cta" style="display:inline-block;margin-top:12px;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Full weekly review &rarr;</a>
-        </div>
-
-        <!-- Recent operator findings -->
-        <div id="operators-outer" style="margin-bottom:40px;">
-            <div class="section-head">
-                <span class="section-label" data-i18n="recent_findings">Operators</span>
-                <span class="section-helper" data-i18n="operators_helper">Ownership clusters worth reviewing.</span>
-            </div>
-            <div id="operator-cards">
-                <div id="operator-loading" class="font-mono" style="font-size:11px;color:#334155;padding:16px 0;text-align:center;">Loading…</div>
-            </div>
-            <p style="margin-top:8px;font-size:11px;color:#64748b;">
-                Tracked profiles:
-                <a href="/operator/MTEK" style="color:#94a3b8;text-decoration:none;">MTEK</a>,
-                <a href="/operator/PHANTOM" style="color:#94a3b8;text-decoration:none;">PHANTOM</a>,
-                <a href="/operator/BREDIF" style="color:#94a3b8;text-decoration:none;">BREDIF</a>
-            </p>
-        </div>
-
-        <!-- Flip Watch -->
-        <section style="margin-bottom:40px;">
-            <div class="section-head">
-                <span class="section-label" data-i18n="flipwatch_label">Flip Watch</span>
-                <span class="section-helper" data-i18n="flipwatch_helper">An LLC buys, then files to renovate within 60 days.</span>
-            </div>
-            <div id="flip-cards"></div>
-            <a href="/flips" class="font-mono" style="display:inline-block;margin-top:12px;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" data-i18n="flipwatch_cta">See recent flips &rarr;</a>
-        </section>
-
-        <!-- Speculation Radar -->
-        <section style="margin-bottom:48px;">
-            <div class="section-head">
-                <span class="section-label" data-i18n="radar_label">Speculation Radar</span>
-                <span class="section-helper" data-i18n="radar_helper">One buyer, three or more buildings, one ZIP, within 90 days.</span>
-            </div>
-            <div id="radar-cards"></div>
-            <a href="/radar" class="font-mono" style="display:inline-block;margin-top:12px;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" data-i18n="radar_cta">Open the radar &rarr;</a>
-        </section>
-
-        <!-- Methodology trust section -->
-        <section class="trust-section" style="margin-bottom:48px;">
-            <span class="section-label" style="margin-bottom:6px;">Methodology</span>
-            <p style="font-size:13px;color:#94a3b8;margin-bottom:10px;line-height:1.55;" data-i18n="trust_body">Six public-record signals normalized across NYC ZIP codes.</p>
-            <a href="/methodology" class="font-mono" style="font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" data-i18n="read_methodology">How scores work &rarr;</a>
-        </section>
-
-    </main>
-
-    <!-- Footer -->
-    <footer style="border-top:1px solid rgba(51,65,85,0.3);margin-top:16px;padding-top:20px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px);text-align:center;font-size:12px;color:#64748b;font-family:'DM Sans',sans-serif;">
-        <div style="max-width:680px;margin:0 auto;padding:0 20px 20px;">
-            <div style="font-size:11px;color:#64748b;margin-bottom:10px;">
-                Built by Michael Espin
-            </div>
-            <div id="footer-nav" style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;align-items:center;">
-                <a href="/" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
-                <a href="/neighborhoods" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Neighborhoods</a>
-                <a href="/methodology" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
-                <a href="/about" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a><a href="/press" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Press</a>
-                <a href="/status" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
-                <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
-                <a href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">LinkedIn</a>
-                <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="color:#64748b;text-decoration:none;display:inline-flex;align-items:center;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+            <div class="module">
+                <p class="module-label" data-i18n="mod_signals">Live signals</p>
+                <div class="module-body" id="mod-signals"></div>
+                <div class="module-cta"><a href="/flips" data-i18n="mod_flips_cta">Flip watch &rarr;</a> &middot; <a href="/radar" data-i18n="mod_radar_cta">Radar &rarr;</a></div>
             </div>
         </div>
-    </footer>
+    </section>
 
-    <script>
-        let _lang = localStorage.getItem('pc-lang') || 'en';
-        let _liveLlc = 0, _liveEvictions = 0;
-        let _cachedStats = null, _cachedMovers = null, _cachedOperators = null, _cachedFlips = null, _cachedRadar = null;
+</main>
 
-        function getCurrentLanguage() {
-            return localStorage.getItem('pc-lang') || 'en';
-        }
+<footer>
+    <p class="footer-byline">Built by Michael Espin</p>
+    <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/neighborhoods">Neighborhoods</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/about">About</a>
+        <a href="/press">Press</a>
+        <a href="/status">Status</a>
+        <a href="mailto:nycdisplacement@gmail.com">Contact</a>
+        <a href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="display:inline-flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+    </div>
+</footer>
 
-        const ALLOWED_OPERATOR_ROOTS = new Set(['MTEK', 'PHANTOM', 'RIDGEWOOD', 'CROSS', 'BREDIF']);
+<script>
+    function esc(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
 
-        const i18n = {
-            en: {
-                tagline:              "The displacement story NYC doesn't officially tell.",
-                hero_subhead:         'Search any NYC address, ZIP, or neighborhood using public records.',
-                search_empty_msg:     'Enter an address, ZIP, or landlord name.',
-                llc_label:            'LLC transfers (30d)',
-                eviction_label:       'evictions (30d)',
-                search_placeholder:   'Enter an address, ZIP, or neighborhood',
-                search_btn:           'Search',
-                explore_map:          'Explore the map →',
-                watch_replay:         '\u25B6 Watch 6 months of movement',
-                recent_findings:      'Operators',
-                operator_profile:     'View operator profile →',
-                op_acquisitions:      'acquisitions',
-                your_watchlist:       'Your Watchlist',
-                changed_this_week:    'Rising this week',
-                sig_llc:              'LLC acquisitions',
-                sig_llc_s:            'LLC acquisition',
-                sig_evictions:        'evictions',
-                sig_evictions_s:      'eviction',
-                sig_permits:          'permit filings',
-                sig_permits_s:        'permit filing',
-                sig_complaints:       'tenant complaints',
-                sig_complaints_s:     'tenant complaint',
-                sig_hpd:              'housing violations',
-                sig_hpd_s:            'housing violation',
-                top_risk_label:       'Highest-risk areas',
-                top_risk_helper:      'Current displacement-pressure score',
-                movers_helper:        'Recent score increases from new records',
-                weekly_review_cta:    'Full weekly review \u2192',
-                operators_helper:     'Ownership clusters worth reviewing.',
-                flipwatch_label:      'Flip Watch',
-                flipwatch_helper:     'An LLC buys, then files to renovate within 60 days.',
-                flipwatch_cta:        'See recent flips →',
-                flip_days_label:      'deed to permit',
-                radar_label:          'Speculation Radar',
-                radar_helper:         'One buyer, three or more buildings, one ZIP, within 90 days.',
-                radar_cta:            'Open the radar →',
-                radar_bldgs:          'buildings',
-                radar_bldgs_s:        'building',
-                trust_body:           'Six public-record signals normalized across NYC ZIP codes.',
-                read_methodology:     'How scores work →',
-                stats_llc_unit:       'LLC transfers',
-                stats_llc_unit_s:     'LLC transfer',
-                stats_eviction_unit:  'eviction filings',
-                stats_eviction_unit_s:'eviction filing',
-                stats_prefix:         'Recently on record:',
-                stats_through:        'through',
-                stats_conjunction:    'and',
-            },
-            es: {
-                tagline:              'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
-                hero_subhead:         'Busca cualquier dirección, código postal o vecindario de NYC con registros públicos.',
-                search_empty_msg:     'Ingresa una dirección, código postal o nombre del propietario.',
-                llc_label:            'transferencias LLC (30d)',
-                eviction_label:       'desalojos (30d)',
-                search_placeholder:   'Dirección, código postal o vecindario',
-                search_btn:           'Buscar',
-                explore_map:          'Explorar el mapa →',
-                watch_replay:         '\u25B6 Mira 6 meses de movimiento',
-                recent_findings:      'Operadores',
-                operator_profile:     'Ver perfil del operador →',
-                op_acquisitions:      'adquisiciones',
-                your_watchlist:       'Tu Lista de Seguimiento',
-                changed_this_week:    'En aumento esta semana',
-                sig_llc:              'adquisiciones LLC',
-                sig_llc_s:            'adquisición LLC',
-                sig_evictions:        'desalojos',
-                sig_evictions_s:      'desalojo',
-                sig_permits:          'permisos de obra',
-                sig_permits_s:        'permiso de obra',
-                sig_complaints:       'quejas de inquilinos',
-                sig_complaints_s:     'queja de inquilinos',
-                sig_hpd:              'violaciones de vivienda',
-                sig_hpd_s:            'violación de vivienda',
-                top_risk_label:       'Áreas de mayor riesgo',
-                top_risk_helper:      'Puntuación de presión de desplazamiento actual',
-                movers_helper:        'Aumentos recientes de puntuación',
-                weekly_review_cta:    'Resumen semanal completo \u2192',
-                operators_helper:     'Grupos de propietarios con actividad de interés.',
-                flipwatch_label:      'Vigilancia de reventas',
-                flipwatch_helper:     'Una LLC compra y solicita renovar en un plazo de 60 días.',
-                flipwatch_cta:        'Ver reventas recientes →',
-                flip_days_label:      'de escritura a permiso',
-                radar_label:          'Radar de especulación',
-                radar_helper:         'Un comprador, tres o más edificios, un mismo ZIP, en 90 días.',
-                radar_cta:            'Abrir el radar →',
-                radar_bldgs:          'edificios',
-                radar_bldgs_s:        'edificio',
-                trust_body:           'Seis señales de registros públicos normalizadas para los ZIP de NYC.',
-                read_methodology:     'Cómo funcionan las puntuaciones →',
-                stats_llc_unit:       'transferencias LLC',
-                stats_llc_unit_s:     'transferencia LLC',
-                stats_eviction_unit:  'desalojos registrados',
-                stats_eviction_unit_s:'desalojo registrado',
-                stats_prefix:         'Recientemente en registro:',
-                stats_through:        'hasta',
-                stats_conjunction:    'y',
+    // One dict per language, same key set. English is also the markup, so a
+    // missing en key would surface immediately as an untranslated element.
+    const i18n = {
+        en: {
+            nav_map: 'Map', nav_operators: 'Operators', nav_press: 'Press',
+            nav_methodology: 'Methodology', nav_more: 'More', nav_flips: 'Flip Watch',
+            nav_radar: 'Radar', nav_neighborhoods: 'Neighborhoods', nav_about: 'About',
+            nav_status: 'Status',
+            tagline: "The displacement story NYC doesn't officially tell.",
+            hero_sub: 'Search any address, ZIP, or neighborhood. Every signal comes from public records.',
+            search_btn: 'Search',
+            search_ph: 'Enter an address, ZIP, or neighborhood',
+            explore_map: 'Explore the map →',
+            legend_low: 'Low', legend_moderate: 'Moderate', legend_high: 'High', legend_critical: 'Critical',
+            finding_eyebrow: "This week's finding",
+            docket_head: 'Eviction → purchase → resale',
+            docket_gain: '+100% in 84 days',
+            docket_sub: 'BBL 2050840054 · ZIP 10470 · every step below is a public record',
+            arc_d1: 'Jan 13, 2025', arc_e1: 'A city marshal executes a residential eviction.',
+            arc_d2: 'Apr 21, 2025', arc_e2: 'A second eviction is executed, separate date and docket.',
+            arc_d3: 'Jul 8, 2025',
+            arc_e3: 'PHANTOM CAPITAL 161 LLC buys the house for <span class="amt">$500,000</span>, directly from the owner of record.',
+            arc_d4: 'Sep 30, 2025',
+            arc_e4: 'The LLC resells for <span class="amt">$999,000</span>.',
+            docket_cta: 'Read the paper trail →',
+            mod_rankings: 'Highest risk right now', mod_rankings_cta: 'Full rankings →',
+            mod_operators: 'Operators on record', mod_operators_cta: 'All operators →',
+            mod_signals: 'Live signals',
+            mod_flips_cta: 'Flip watch →', mod_radar_cta: 'Radar →',
+            data_through: 'Data through', through: 'through',
+            llc_on_record: 'LLC transfers on record', status: 'Status',
+            acquisitions: 'acquisitions', llc_entities: 'LLC entities',
+            sig_flips: 'buy-then-renovate flips flagged',
+            sig_clusters: 'multi-building buying clusters',
+            sig_nightly: 'neighborhoods scored nightly',
+            ed_sub: 'every step below is a public record',
+            ed_ev_one: 'A city marshal executes a residential eviction.',
+            ed_ev_many: 'The latest of {n} residential evictions on record is executed.',
+            ed_buy: '{buyer} buys the property for {amt}.',
+            ed_sell: 'The LLC resells for {amt}.',
+            ed_gain: '+{pct}% in {days} days',
+        },
+        es: {
+            nav_map: 'Mapa', nav_operators: 'Operadores', nav_press: 'Prensa',
+            nav_methodology: 'Metodología', nav_more: 'Más', nav_flips: 'Flip Watch',
+            nav_radar: 'Radar', nav_neighborhoods: 'Vecindarios', nav_about: 'Acerca de',
+            nav_status: 'Estado',
+            tagline: 'La historia del desplazamiento en NYC que oficialmente no se cuenta.',
+            hero_sub: 'Busca cualquier dirección, código postal o vecindario. Cada señal viene de registros públicos.',
+            search_btn: 'Buscar',
+            search_ph: 'Escribe una dirección, código postal o vecindario',
+            explore_map: 'Explorar el mapa →',
+            legend_low: 'Bajo', legend_moderate: 'Moderado', legend_high: 'Alto', legend_critical: 'Crítico',
+            finding_eyebrow: 'El hallazgo de la semana',
+            docket_head: 'Desalojo → compra → reventa',
+            docket_gain: '+100% en 84 días',
+            docket_sub: 'BBL 2050840054 · ZIP 10470 · cada paso es un registro público',
+            arc_d1: '13 ene 2025', arc_e1: 'Un alguacil de la ciudad ejecuta un desalojo residencial.',
+            arc_d2: '21 abr 2025', arc_e2: 'Se ejecuta un segundo desalojo, con fecha y expediente distintos.',
+            arc_d3: '8 jul 2025',
+            arc_e3: 'PHANTOM CAPITAL 161 LLC compra la casa por <span class="amt">$500,000</span>, directamente al dueño registrado.',
+            arc_d4: '30 sep 2025',
+            arc_e4: 'La LLC la revende por <span class="amt">$999,000</span>.',
+            docket_cta: 'Ver el expediente →',
+            mod_rankings: 'Mayor riesgo ahora', mod_rankings_cta: 'Ranking completo →',
+            mod_operators: 'Operadores registrados', mod_operators_cta: 'Todos los operadores →',
+            mod_signals: 'Señales en vivo',
+            mod_flips_cta: 'Flip watch →', mod_radar_cta: 'Radar →',
+            data_through: 'Datos hasta', through: 'hasta',
+            llc_on_record: 'transferencias LLC registradas', status: 'Estado',
+            acquisitions: 'adquisiciones', llc_entities: 'entidades LLC',
+            sig_flips: 'reventas de compra y renovación detectadas',
+            sig_clusters: 'grupos de compra de varios edificios',
+            sig_nightly: 'vecindarios puntuados cada noche',
+            ed_sub: 'cada paso es un registro público',
+            ed_ev_one: 'Un alguacil de la ciudad ejecuta un desalojo residencial.',
+            ed_ev_many: 'Se ejecuta el último de {n} desalojos residenciales registrados.',
+            ed_buy: '{buyer} compra la propiedad por {amt}.',
+            ed_sell: 'La LLC la revende por {amt}.',
+            ed_gain: '+{pct}% en {days} días',
+        },
+    };
+
+    let _lang = localStorage.getItem('pc-lang') || 'en';
+    let _stats = null, _flipCount = null, _radarCount = null, _ops = null, _arc = null;
+
+    function t(key) {
+        return (i18n[_lang] || i18n.en)[key] || i18n.en[key] || '';
+    }
+
+    function fmtDate(iso, opts) {
+        return new Date(iso + 'T00:00:00Z').toLocaleDateString(
+            _lang === 'es' ? 'es' : 'en-US', Object.assign({ timeZone: 'UTC' }, opts));
+    }
+
+    function fmtMoney(n) {
+        return '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 });
+    }
+
+    // Hero meta: real freshness, honestly windowed. Deed watermark is named
+    // whenever the upstream feed is paused.
+    function renderMeta() {
+        if (!_stats) return;
+        const parts = [];
+        const fresh = _stats.data_freshness || {};
+        const latest = Object.values(fresh).map(f => f.through).filter(Boolean).sort().pop();
+        if (latest) parts.push(t('data_through') + ' ' + fmtDate(latest, { month: 'short', day: 'numeric', year: 'numeric' }));
+        if (_stats.llc_transfers_recent) {
+            let s = _stats.llc_transfers_recent.toLocaleString() + ' ' + t('llc_on_record');
+            if (fresh.acris && fresh.acris.stale && fresh.acris.through) {
+                s += ' ' + t('through') + ' ' + fmtDate(fresh.acris.through, { month: 'short', day: 'numeric' });
             }
-        };
-
-        function applyTranslations(lang) {
-            const s = i18n[lang] || i18n.en;
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.dataset.i18n;
-                if (s[key] !== undefined) el.textContent = s[key];
-            });
-            document.querySelectorAll('[data-signal]').forEach(el => {
-                const cnt   = el.dataset.count ? parseInt(el.dataset.count) : null;
-                const label = moverSignalLabel(el.dataset.signal, cnt);
-                el.textContent = cnt != null ? `${cnt.toLocaleString()} ${label}` : label;
-            });
-            const inp = document.getElementById('search-input');
-            if (inp) inp.placeholder = s.search_placeholder;
+            parts.push(s);
         }
+        document.getElementById('hero-meta').innerHTML =
+            esc(parts.join(' · ')) + ' · <a href="/status">' + esc(t('status')) + '</a>';
+    }
 
-        // ACRIS buyer names and addresses are free text anyone can put on a
-        // deed. Everything API-sourced goes through here before innerHTML.
-        function esc(v) {
-            return String(v == null ? '' : v)
-                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        }
+    function renderRankings() {
+        if (!_stats) return;
+        const list = (_stats.top_risk_list || []).slice(0, 4);
+        document.getElementById('mod-rankings').innerHTML = list.map(n => `
+            <a class="rank-row" href="/neighborhood/${esc(n.zip_code)}" style="text-decoration:none;">
+                <span class="rank-zip">${esc(n.zip_code)}</span>
+                <span class="rank-name">${esc(n.name || '')}</span>
+                <span class="rank-score">${n.score != null ? Number(n.score).toFixed(1) : ''}</span>
+            </a>`).join('');
+    }
 
-        // One dot per LLC shell around the operator, capped where it stops
-        // reading at this size. Mirrors the full network graph on the profile.
-        function miniNetworkGlyph(llcCount) {
-            const spokes = Math.max(3, Math.min(llcCount || 3, 9));
-            let inner = '';
-            for (let i = 0; i < spokes; i++) {
-                const a = (i / spokes) * 2 * Math.PI - Math.PI / 2;
-                const x = (18 + Math.cos(a) * 9).toFixed(1);
-                const y = (10 + Math.sin(a) * 7.5).toFixed(1);
-                inner += `<line x1="18" y1="10" x2="${x}" y2="${y}" stroke="rgba(148,163,184,0.35)" stroke-width="1"/>`
-                       + `<circle cx="${x}" cy="${y}" r="1.6" fill="#94a3b8"/>`;
-            }
-            return `<svg width="36" height="20" viewBox="0 0 36 20" aria-hidden="true" focusable="false" style="flex-shrink:0;display:block;">${inner}<circle cx="18" cy="10" r="2.6" fill="#f97316"/></svg>`;
-        }
+    function renderOperators() {
+        if (!Array.isArray(_ops)) return;
+        document.getElementById('mod-operators').innerHTML = _ops.map(o => `
+            <div class="op-row">
+                <div class="op-name">${esc(o.operator_root)}</div>
+                <div class="op-meta">${o.total_acquisitions} ${esc(t('acquisitions'))} · ${o.llc_count} ${esc(t('llc_entities'))}</div>
+            </div>`).join('');
+    }
 
-        function scoreColor(score) {
-            if (score == null) return '#94a3b8';
-            if (score >= 85) return '#ef4444';
-            if (score >= 67) return '#f97316';
-            if (score >= 34) return '#eab308';
-            return '#94a3b8';
-        }
+    function renderSignals() {
+        const rows = [];
+        if (_flipCount != null) rows.push({ n: _flipCount, d: t('sig_flips') });
+        if (_radarCount != null) rows.push({ n: _radarCount, d: t('sig_clusters') });
+        rows.push({ n: 177, d: t('sig_nightly') });
+        document.getElementById('mod-signals').innerHTML = rows.map(r => `
+            <div class="sig-stat"><div class="sig-num">${r.n}</div><div class="sig-desc">${esc(r.d)}</div></div>`).join('');
+    }
 
-        function scoreBorder(score) {
-            if (score == null) return 'rgba(51,65,85,0.8)';
-            if (score >= 85) return 'rgba(239,68,68,0.4)';
-            if (score >= 67) return 'rgba(249,115,22,0.3)';
-            if (score >= 34) return 'rgba(234,179,8,0.2)';
-            return 'rgba(51,65,85,0.8)';
-        }
+    // Featured finding. When an approved weekly edition exists the docket
+    // rebuilds from its strongest arc; otherwise the verified example in the
+    // markup stays. Rebuilt content carries no data-i18n attributes, so
+    // applyLang re-renders it through this function instead.
+    function titleCase(s) {
+        return String(s || '').toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase());
+    }
 
-        function moverSignalLabel(dominant, count) {
-            const s = i18n[getCurrentLanguage()] || i18n.en;
-            const plural   = { llc_acquisitions: s.sig_llc,   evictions: s.sig_evictions,   permits: s.sig_permits,   complaint_rate: s.sig_complaints,   hpd_violations: s.sig_hpd   };
-            const singular = { llc_acquisitions: s.sig_llc_s, evictions: s.sig_evictions_s, permits: s.sig_permits_s, complaint_rate: s.sig_complaints_s, hpd_violations: s.sig_hpd_s };
-            return (count === 1 ? singular[dominant] : plural[dominant]) || plural[dominant] || '';
-        }
+    function renderDocket() {
+        if (!_arc) return;
+        const a = _arc;
+        const days = Math.round((new Date(a.sell_date) - new Date(a.buy_date)) / 86400000);
+        const place = [titleCase(a.address), a.neighborhood, a.borough].filter(Boolean).join(', ');
+        const evText = a.eviction_count > 1
+            ? t('ed_ev_many').replace('{n}', a.eviction_count)
+            : t('ed_ev_one');
+        const dateOpts = { month: 'short', day: 'numeric', year: 'numeric' };
+        const steps = [
+            { date: fmtDate(a.eviction_date, dateOpts), html: esc(evText), hot: false },
+            { date: fmtDate(a.buy_date, dateOpts),
+              html: esc(t('ed_buy')).replace('{buyer}', () => esc(a.buyer))
+                  .replace('{amt}', () => '<span class="amt">' + esc(fmtMoney(a.buy_amt)) + '</span>'), hot: true },
+            { date: fmtDate(a.sell_date, dateOpts),
+              html: esc(t('ed_sell'))
+                  .replace('{amt}', () => '<span class="amt">' + esc(fmtMoney(a.sell_amt)) + '</span>'), hot: true },
+        ];
+        document.getElementById('docket').innerHTML = `
+            <div class="docket-head">
+                <span>${esc(t('docket_head'))}</span>
+                <span class="gain">${esc(t('ed_gain')).replace('{pct}', Number(a.gain_pct)).replace('{days}', days)}</span>
+            </div>
+            <div class="docket-body">
+                <p class="docket-place">${esc(place)}</p>
+                <p class="docket-sub">BBL ${esc(a.bbl)} · ZIP ${esc(a.zip_code || '')} · ${esc(t('ed_sub'))}</p>
+                <div class="arc">${steps.map(s => `
+                    <div class="arc-step${s.hot ? ' hot' : ''}">
+                        <span class="arc-date">${esc(s.date)}</span>
+                        <span class="arc-event">${s.html}</span>
+                    </div>`).join('')}
+                </div>
+            </div>
+            <div class="docket-foot">
+                <span class="docket-ids">ACRIS ${esc(a.buy_doc)} · ${esc(a.sell_doc)}</span>
+                <a class="docket-cta" href="/flips">${esc(t('docket_cta'))}</a>
+            </div>`;
+        observeArc();
+    }
 
-        function populateStats(data) {
-            const llc       = data.llc_transfers_recent || 0;
-            const evictions = data.evictions_30d        || 0;
-            _liveLlc        = llc;
-            _liveEvictions  = evictions;
+    function applyLang(lang) {
+        _lang = lang;
+        const dict = i18n[lang] || i18n.en;
+        document.documentElement.lang = lang;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const v = dict[el.dataset.i18n];
+            if (v != null) el.textContent = v;
+        });
+        document.querySelectorAll('[data-i18n-html]').forEach(el => {
+            const v = dict[el.dataset.i18nHtml];
+            if (v != null) el.innerHTML = v;
+        });
+        document.getElementById('search-input').placeholder = dict.search_ph || i18n.en.search_ph;
+        const toggle = document.getElementById('lang-toggle');
+        toggle.textContent = lang === 'es' ? 'ES / EN' : 'EN / ES';
+        renderMeta(); renderOperators(); renderSignals(); renderDocket();
+    }
+    document.getElementById('lang-toggle').addEventListener('click', () => {
+        const next = (localStorage.getItem('pc-lang') || 'en') === 'es' ? 'en' : 'es';
+        localStorage.setItem('pc-lang', next);
+        applyLang(next);
+    });
+    applyLang(_lang);
 
-            const chips = document.getElementById('stat-chips');
-            if (!chips || !llc) return;
+    fetch('/api/stats').then(r => r.ok ? r.json() : null).then(data => {
+        if (!data) return;
+        _stats = data;
+        renderMeta();
+        renderRankings();
+    }).catch(() => {});
 
-            // Only the LLC transfer count is shown here. We avoid naming a fixed
-            // window ("last 90 days"): ACRIS pauses upstream at NYC Open Data for
-            // weeks at a time, so a today-anchored window would overstate recency.
-            // When the feed IS paused, name the real watermark so "recently"
-            // never reads as current.
-            const lang = getCurrentLanguage();
-            const s = i18n[lang] || i18n.en;
-            const unit = llc === 1 ? s.stats_llc_unit_s : s.stats_llc_unit;
-            let suffix = '';
-            const acris = (data.data_freshness || {}).acris;
-            if (acris && acris.stale && acris.through) {
-                const d = new Date(acris.through + 'T00:00:00Z');
-                if (!isNaN(d)) {
-                    const ds = d.toLocaleDateString(lang === 'es' ? 'es' : 'en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
-                    suffix = ` ${s.stats_through} ${ds}`;
-                }
-            }
-            chips.textContent = `${s.stats_prefix} ${llc.toLocaleString()} ${unit}${suffix}`;
-            chips.style.opacity = '1';
-        }
+    fetch('/api/operators/top?limit=3').then(r => r.ok ? r.json() : null).then(ops => {
+        if (!Array.isArray(ops)) return;
+        _ops = ops;
+        renderOperators();
+    }).catch(() => {});
 
-        function renderZipCards(list) {
-            const container = document.getElementById('zip-cards');
-            const loading   = document.getElementById('zip-loading');
-            if (loading) loading.remove();
-            if (!container || !list || !list.length) return;
+    fetch('/api/flips/editions/latest').then(r => r.ok ? r.json() : null).then(data => {
+        if (!data || !data.arc || !data.arc.buy_date || !data.arc.sell_date) return;
+        _arc = data.arc;
+        renderDocket();
+    }).catch(() => {});
 
-            list.forEach(n => {
-                const color    = scoreColor(n.score);
-                const scoreStr = n.score != null ? n.score.toFixed(1) : 'N/A';
-                const barPct   = n.score != null ? Math.max(2, Math.min(100, n.score)) : 0;
-                const nameLine = esc([n.name, n.borough].filter(Boolean).join(', '));
-                const row      = document.createElement('a');
-                row.href            = `/map?q=${encodeURIComponent(n.zip_code)}`;
-                row.style.cssText   = 'display:block;text-decoration:none;border-bottom:1px solid rgba(51,65,85,0.4);';
-                row.innerHTML = `
-                    <div style="display:flex;align-items:baseline;justify-content:space-between;padding:10px 0 6px;">
-                        <div style="display:flex;align-items:baseline;gap:8px;min-width:0;overflow:hidden;">
-                            <span class="font-mono" style="font-size:11px;color:#64748b;flex-shrink:0;">${n.rank}.</span>
-                            <span class="font-mono" style="font-size:14px;font-weight:700;color:#f1f5f9;flex-shrink:0;">${n.zip_code}</span>
-                            <span style="font-size:12px;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nameLine}</span>
-                        </div>
-                        <span class="font-mono" style="font-size:13px;font-weight:600;color:${color};flex-shrink:0;margin-left:12px;">${scoreStr}</span>
-                    </div>
-                    <div class="score-track"><div class="score-fill" style="width:${barPct}%;background:${color};"></div></div>
-                `;
-                container.appendChild(row);
-            });
+    Promise.all([
+        fetch('/api/flips').then(r => r.ok ? r.json() : null).catch(() => null),
+        fetch('/api/radar').then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([flips, radar]) => {
+        if (flips && flips.count != null) _flipCount = flips.count;
+        if (radar && radar.count != null) _radarCount = radar.count;
+        renderSignals();
+    });
 
-            const cta = document.createElement('a');
-            cta.href      = '/neighborhoods';
-            cta.className = 'font-mono';
-            cta.style.cssText = 'display:inline-block;margin-top:12px;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;';
-            cta.textContent = 'View full rankings →';
-            cta.addEventListener('mouseover', () => { cta.style.opacity = '1'; });
-            cta.addEventListener('mouseout',  () => { cta.style.opacity = '0.7'; });
-            container.appendChild(cta);
-        }
-
-        function renderMovers(list) {
-            if (!list || list.length < 2) return;
-            const section   = document.getElementById('movers-section');
-            const container = document.getElementById('movers-cards');
-            if (!section || !container) return;
-
-            const qualified = list.filter(n => n.delta >= 1.0 && n.raw_count > 0);
-            if (qualified.length < 2) return;
-            qualified.slice(0, 5).forEach(n => {
-                const row     = document.createElement('a');
-                row.href      = `/map?q=${encodeURIComponent(n.zip_code)}`;
-                row.className = 'mover-row';
-
-                const deltaStr = n.delta > 0 ? `+${n.delta.toFixed(1)} pts` : `${n.delta.toFixed(1)} pts`;
-                const label    = moverSignalLabel(n.dominant_signal, n.raw_count);
-                const driver   = n.raw_count && label ? `${n.raw_count.toLocaleString()} ${label}` : '';
-                const nameStr  = esc([n.name, n.borough].filter(Boolean).join(', '));
-
-                row.innerHTML = `
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-                        <div style="min-width:0;">
-                            <div style="display:flex;align-items:baseline;gap:10px;">
-                                <span class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;">${n.zip_code}</span>
-                                <span class="font-mono" style="font-size:11px;font-weight:600;color:#ef4444;">${deltaStr}</span>
-                            </div>
-                            <div style="font-size:11px;color:#64748b;margin-top:2px;">${nameStr}</div>
-                            ${driver ? `<div style="font-size:11px;color:#94a3b8;margin-top:2px;" data-signal="${n.dominant_signal || ''}" data-count="${n.raw_count || 0}">${driver}</div>` : ''}
-                        </div>
-                        <span id="spark-${n.zip_code}" style="flex-shrink:0;display:inline-flex;align-items:center;"></span>
-                    </div>
-                `;
-                container.appendChild(row);
-                loadSpark(n.zip_code);
-            });
-
-            section.style.display = '';
-        }
-
-        // 90-day trace for a rising ZIP. Quiet neutral line with the brand dot
-        // at today: the red delta text already carries the direction.
-        function loadSpark(zip) {
-            fetch(`/api/score-history/${encodeURIComponent(zip)}?days=90`)
-                .then(r => r.ok ? r.json() : null)
-                .then(hist => {
-                    const holder = document.getElementById(`spark-${zip}`);
-                    if (!holder || !hist || hist.length < 7) return;
-                    const scores = hist.map(p => p.score).filter(s => s != null);
-                    if (scores.length < 7) return;
-                    const w = 72, h = 24, pad = 2;
-                    const min = Math.min(...scores), max = Math.max(...scores);
-                    const range = max - min || 1;
-                    const pts = scores.map((v, i) => {
-                        const x = pad + (i / (scores.length - 1)) * (w - pad * 2);
-                        const y = pad + (1 - (v - min) / range) * (h - pad * 2);
-                        return `${x.toFixed(1)},${y.toFixed(1)}`;
-                    });
-                    const last = pts[pts.length - 1].split(',');
-                    holder.innerHTML = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true" focusable="false"><polyline points="${pts.join(' ')}" fill="none" stroke="rgba(148,163,184,0.75)" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${last[0]}" cy="${last[1]}" r="2.2" fill="#f97316"/></svg>`;
-                })
-                .catch(() => {});
-        }
-
-        function money(n) {
-            if (n == null) return '';
-            if (n >= 1e6) return `$${(n / 1e6).toFixed(1).replace(/\.0$/, '')}M`;
-            if (n >= 1e3) return `$${Math.round(n / 1e3)}K`;
-            return `$${Math.round(n)}`;
-        }
-
-        function renderFlips(data) {
-            const container = document.getElementById('flip-cards');
-            if (!container || !data || !data.flips || !data.flips.length) return;
-            container.innerHTML = '';
-            const s = i18n[getCurrentLanguage()] || i18n.en;
-            data.flips.slice(0, 2).forEach(f => {
-                const row = document.createElement('a');
-                row.href      = '/flips';
-                row.className = 'mover-row';
-                const place = esc([f.neighborhood, f.zip_code].filter(Boolean).join(' · '));
-                row.innerHTML = `
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-                        <div style="min-width:0;">
-                            <div class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(f.address)}</div>
-                            <div style="font-size:11px;color:#64748b;margin-top:2px;">${place}</div>
-                        </div>
-                        <div style="flex-shrink:0;text-align:right;">
-                            <div class="font-mono" style="font-size:12px;font-weight:600;color:#f97316;">+${f.days_between}d <span style="color:#64748b;font-weight:400;" data-i18n="flip_days_label">${s.flip_days_label}</span></div>
-                            <div class="font-mono" style="font-size:11px;color:#94a3b8;margin-top:2px;">${money(f.doc_amount)}</div>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(row);
-            });
-        }
-
-        function renderRadar(data) {
-            const container = document.getElementById('radar-cards');
-            if (!container || !data || !data.clusters || !data.clusters.length) return;
-            container.innerHTML = '';
-            const s = i18n[getCurrentLanguage()] || i18n.en;
-            data.clusters.slice(0, 2).forEach(c => {
-                const row = document.createElement('a');
-                row.href      = '/radar';
-                row.className = 'mover-row';
-                const place = esc([c.neighborhood, c.zip_code].filter(Boolean).join(' · '));
-                const bldgs = c.building_count === 1 ? s.radar_bldgs_s : s.radar_bldgs;
-                row.innerHTML = `
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-                        <div style="min-width:0;">
-                            <div class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(c.buyer)}</div>
-                            <div style="font-size:11px;color:#64748b;margin-top:2px;">${place}</div>
-                        </div>
-                        <div style="flex-shrink:0;text-align:right;">
-                            <div class="font-mono" style="font-size:12px;font-weight:600;color:#f97316;">${c.building_count} <span style="color:#64748b;font-weight:400;">${bldgs}</span></div>
-                            <div class="font-mono" style="font-size:11px;color:#94a3b8;margin-top:2px;">${money(c.total_amount)}</div>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(row);
-            });
-        }
-
-        function renderOperators(ops) {
-            const loading   = document.getElementById('operator-loading');
-            const outer     = document.getElementById('operators-outer');
-            const container = document.getElementById('operator-cards');
-            if (loading) loading.remove();
-            if (!ops || !ops.length) {
-                if (outer) outer.style.display = 'none';
-                return;
-            }
-            if (!container) return;
-
-            const s        = i18n[getCurrentLanguage()] || i18n.en;
-            const acqLabel = s.op_acquisitions || 'acquisitions';
-
-            ops = (ops || []).filter(op => ALLOWED_OPERATOR_ROOTS.has(op.operator_root));
-            if (!ops.length) { if (outer) outer.style.display = 'none'; return; }
-            container.innerHTML = '';
-            ops.forEach(op => {
-                const row = document.createElement('a');
-                row.href          = `/operator/${encodeURIComponent(op.operator_root)}`;
-                row.style.cssText = 'display:block;text-decoration:none;';
-                const acqStr = `${op.total_acquisitions} ${acqLabel}`;
-                const llcStr = `${op.llc_count} LLC${op.llc_count !== 1 ? 's' : ''}`;
-                row.innerHTML = `
-                    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(51,65,85,0.4);">
-                        <span class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;">${op.operator_root}</span>
-                        <span style="display:inline-flex;align-items:center;gap:10px;flex-shrink:0;margin-left:12px;">
-                            ${miniNetworkGlyph(op.llc_count)}
-                            <span style="font-size:11px;color:#94a3b8;">${acqStr}, ${llcStr}</span>
-                        </span>
-                    </div>
-                `;
-                container.appendChild(row);
-            });
-
-            const cta = document.createElement('a');
-            cta.href      = '/operators';
-            cta.className = 'font-mono';
-            cta.style.cssText = 'display:inline-block;margin-top:12px;font-size:12px;color:#38bdf8;text-decoration:none;opacity:0.7;transition:opacity 0.15s;';
-            cta.textContent = 'View operators →';
-            cta.addEventListener('mouseover', () => { cta.style.opacity = '1'; });
-            cta.addEventListener('mouseout',  () => { cta.style.opacity = '0.7'; });
-            container.appendChild(cta);
-        }
-
-        // Freshness chip: show the most recent data-through date and link to /status.
-        // Stays hidden if the endpoint is unavailable or returns no date.
-        fetch('/api/status')
-            .then(r => r.ok ? r.json() : null)
-            .then(data => {
-                const chip = document.getElementById('freshness-chip');
-                if (!chip || !data || !data.data_through) return;
-                const d = new Date(data.data_through + 'T00:00:00Z');
-                if (isNaN(d)) return;
-                const date = d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
-                chip.textContent = 'Data through ' + date + ' · Status';
-                chip.style.display = 'inline-flex';
-            })
-            .catch(() => {});
-
-        // Fetch citywide stats
-        fetch('/api/stats')
-            .then(r => r.ok ? r.json() : null)
-            .then(data => {
-                if (!data) return;
-                _cachedStats = data;
-                populateStats(data);
-                renderZipCards(data.top_risk_list || []);
-            })
-            .catch(() => {
-                const loading = document.getElementById('zip-loading');
-                if (loading) loading.remove();
-            });
-
-        // Fetch top movers
-        fetch('/api/neighborhoods/top-movers?limit=8')
-            .then(r => r.ok ? r.json() : null)
-            .then(data => { if (data) { _cachedMovers = data.neighborhoods || []; renderMovers(_cachedMovers); } })
-            .catch(() => {});
-
-        // Fetch recent flips and radar clusters. Sections keep their CTA links
-        // even when these fail, so nothing on the page dead-ends.
-        fetch('/api/flips')
-            .then(r => r.ok ? r.json() : null)
-            .then(data => { if (data) { _cachedFlips = data; renderFlips(data); } })
-            .catch(() => {});
-
-        fetch('/api/radar')
-            .then(r => r.ok ? r.json() : null)
-            .then(data => { if (data) { _cachedRadar = data; renderRadar(data); } })
-            .catch(() => {});
-
-        // Fetch top operators
-        fetch('/api/operators/top?limit=3')
-            .then(r => r.ok ? r.json() : null)
-            .then(ops => { _cachedOperators = ops; renderOperators(ops); })
-            .catch(() => {
-                const outer = document.getElementById('operators-outer');
-                if (outer) outer.style.display = 'none';
-            });
-
-        // Watchlist (returning users)
-        (function loadWatchlist() {
-            let zips;
-            try { zips = JSON.parse(localStorage.getItem('pc-watchlist') || '[]'); } catch { zips = []; }
-            if (!zips.length) return;
-            Promise.all(zips.map(zip =>
-                fetch(`/api/neighborhoods/${zip}/score`).then(r => r.ok ? r.json() : null).catch(() => null)
-            )).then(results => {
-                const section   = document.getElementById('watchlist-section');
-                const container = document.getElementById('watchlist-cards');
-                if (!section || !container) return;
-                let rendered = 0;
-                results.forEach((data, i) => {
-                    const zip   = zips[i];
-                    const score = data ? data.score : null;
-                    const name  = esc(data ? (data.name || zip) : zip);
-                    const color = scoreColor(score);
-                    const card  = document.createElement('a');
-                    card.href   = `/map?q=${encodeURIComponent(zip)}`;
-                    card.className = 'zip-card block rounded-lg border border-slate-700 relative';
-                    card.style.cssText = 'background:rgba(30,41,59,0.7);padding:14px 16px;text-decoration:none;';
-                    card.innerHTML = `
-                        <button class="watch-remove" data-zip="${zip}"
-                                style="position:absolute;top:8px;right:8px;font-size:12px;color:#334155;background:none;border:none;cursor:pointer;min-height:36px;min-width:36px;line-height:1;"
-                                aria-label="Remove">&#10005;</button>
-                        <div class="font-mono" style="font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:2px;padding-right:24px;">${zip}</div>
-                        <div style="font-size:11px;color:#64748b;margin-bottom:6px;">${name}</div>
-                        <div class="font-mono" style="font-size:13px;font-weight:600;color:${color};">${score != null ? score.toFixed(1) : 'N/A'}</div>
-                    `;
-                    card.querySelector('.watch-remove').addEventListener('click', e => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        let list;
-                        try { list = JSON.parse(localStorage.getItem('pc-watchlist') || '[]'); } catch { list = []; }
-                        list = list.filter(z => z !== zip);
-                        localStorage.setItem('pc-watchlist', JSON.stringify(list));
-                        card.remove();
-                        if (!container.children.length) section.style.display = 'none';
-                    });
-                    container.appendChild(card);
-                    rendered++;
+    // Docket arc reveal
+    function observeArc() {
+        const steps = document.querySelectorAll('.arc-step');
+        if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        const idx = Array.from(steps).indexOf(e.target);
+                        setTimeout(() => e.target.classList.add('seen'), idx * 110);
+                        io.unobserve(e.target);
+                    }
                 });
-                if (rendered) section.style.display = '';
-            });
-        })();
-
-        // Search
-        function handleSearch() {
-            const input = document.getElementById('search-input');
-            const q     = input.value.trim();
-            const msg   = document.getElementById('empty-search-msg');
-            if (!q) {
-                if (msg) {
-                    msg.style.display = 'block';
-                    setTimeout(() => { if (msg) msg.style.display = 'none'; }, 3000);
-                }
-                input.focus();
-                return;
-            }
-            if (msg) msg.style.display = 'none';
-            plausible('Search', { props: { source: 'landing' } });
-            window.location.href = `/map?q=${encodeURIComponent(q)}`;
+            }, { threshold: 0.4 });
+            steps.forEach(s => io.observe(s));
+        } else {
+            steps.forEach(s => s.classList.add('seen'));
         }
+    }
+    observeArc();
 
-        document.getElementById('search-btn').addEventListener('click', handleSearch);
+    // Analytics: same event names the previous landing page reported.
+    document.getElementById('search-form').addEventListener('submit', () => {
+        if (window.plausible) plausible('Search', { props: { source: 'landing' } });
+    });
+    document.getElementById('cta-explore').addEventListener('click', () => {
+        if (window.plausible) plausible('Explore Map');
+    });
 
-        var _ddTimer = null, _ddIdx = -1, _ddItems = [];
+</script>
 
-        function _clearDd() {
-            var el = document.getElementById('search-dropdown');
-            if (el) el.style.display = 'none';
-            _ddIdx = -1; _ddItems = [];
-        }
-
-        function _renderDd(groups) {
-            var dd = document.getElementById('search-dropdown');
-            if (!dd) return;
-            var html = '', items = [];
-            var nbhds = groups.neighborhoods || [], ops = groups.operators || [];
-            if (!nbhds.length && !ops.length) {
-                dd.innerHTML = '<div style="padding:11px 14px;font-size:12px;color:rgba(148,163,184,0.4);">No results</div>';
-                dd.style.display = 'block'; _ddItems = []; _ddIdx = -1; return;
-            }
-            if (nbhds.length) {
-                html += '<div style="padding:6px 12px 2px;font-size:10px;color:rgba(148,163,184,0.45);text-transform:uppercase;letter-spacing:0.08em;">Neighborhoods</div>';
-                nbhds.forEach(function(n) {
-                    items.push(n);
-                    var score = n.score != null ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:#38bdf8;">' + esc(n.score) + '</span>' : '';
-                    html += '<a class="dd-row" href="' + esc(n.href) + '" style="padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(148,163,184,0.05);text-decoration:none;">'
-                        + '<span style="font-size:13px;color:#e2e8f0;"><span style="font-family:\'JetBrains Mono\',monospace;">' + esc(n.zip) + '</span>'
-                        + (n.name ? ' <span style="color:#94a3b8;font-size:12px;">' + esc(n.name) + (n.borough ? ', ' + esc(n.borough) : '') + '</span>' : '')
-                        + '</span>' + score + '</a>';
-                });
-            }
-            if (ops.length) {
-                html += '<div style="padding:6px 12px 2px;font-size:10px;color:rgba(148,163,184,0.45);text-transform:uppercase;letter-spacing:0.08em;">Operators</div>';
-                ops.forEach(function(o) {
-                    items.push(o);
-                    html += '<a class="dd-row" href="' + esc(o.href) + '" style="padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(148,163,184,0.05);text-decoration:none;">'
-                        + '<span style="font-size:13px;color:#e2e8f0;">' + esc(o.name) + '</span>'
-                        + '<span style="font-size:11px;color:#94a3b8;">' + esc(o.portfolio_size || '') + (o.portfolio_size ? ' props' : '') + '</span></a>';
-                });
-            }
-            _ddItems = items; _ddIdx = -1;
-            dd.innerHTML = html; dd.style.display = 'block';
-            dd.querySelectorAll('.dd-row').forEach(function(row) {
-                row.addEventListener('mouseenter', function() { dd.querySelectorAll('.dd-row').forEach(function(r){ r.style.background=''; }); row.style.background = 'rgba(148,163,184,0.06)'; });
-                row.addEventListener('mouseleave', function() { row.style.background = ''; });
-            });
-        }
-
-        document.getElementById('search-input').addEventListener('input', function() {
-            var q = this.value.trim();
-            clearTimeout(_ddTimer);
-            if (q.length < 3) { _clearDd(); return; }
-            _ddTimer = setTimeout(function() {
-                fetch('/api/search/?q=' + encodeURIComponent(q))
-                    .then(function(r) { return r.ok ? r.json() : null; })
-                    .then(function(d) { if (d) _renderDd(d.groups); else _clearDd(); })
-                    .catch(function() { _clearDd(); });
-            }, 250);
-        });
-
-        document.getElementById('search-input').addEventListener('keydown', function(e) {
-            var dd = document.getElementById('search-dropdown');
-            var rows = dd ? dd.querySelectorAll('.dd-row') : [];
-            if (e.key === 'Escape') { _clearDd(); return; }
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                if (!rows.length) return;
-                _ddIdx = Math.min(_ddIdx + 1, rows.length - 1);
-                rows.forEach(function(r, i) { r.style.background = i === _ddIdx ? 'rgba(56,189,248,0.1)' : ''; });
-                return;
-            }
-            if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                if (!rows.length) return;
-                _ddIdx = Math.max(_ddIdx - 1, -1);
-                rows.forEach(function(r, i) { r.style.background = i === _ddIdx ? 'rgba(56,189,248,0.1)' : ''; });
-                return;
-            }
-            if (e.key === 'Enter') {
-                if (_ddItems.length) { e.preventDefault(); window.location.href = _ddItems[_ddIdx >= 0 ? _ddIdx : 0].href; return; }
-                handleSearch();
-            }
-        });
-
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('#search-row') && !e.target.closest('#search-dropdown')) _clearDd();
-        });
-        if (window.innerWidth >= 768) { document.getElementById('search-input').focus(); }
-
-        document.getElementById('cta-explore').addEventListener('click', function() {
-            plausible('Explore Map');
-        });
-
-        // Language toggle
-        const langToggle = document.getElementById('lang-toggle');
-        langToggle.textContent = _lang === 'es' ? 'ES / EN' : 'EN / ES';
-        langToggle.setAttribute('aria-label', _lang === 'es' ? 'Switch to English' : 'Switch to Spanish');
-        langToggle.addEventListener('click', () => {
-            _lang = _lang === 'en' ? 'es' : 'en';
-            localStorage.setItem('pc-lang', _lang);
-            langToggle.textContent = _lang === 'es' ? 'ES / EN' : 'EN / ES';
-            langToggle.setAttribute('aria-label', _lang === 'es' ? 'Switch to English' : 'Switch to Spanish');
-            applyTranslations(_lang);
-            if (_cachedStats) populateStats(_cachedStats);
-            if (_cachedOperators) renderOperators(_cachedOperators);
-            if (_cachedFlips) renderFlips(_cachedFlips);
-            if (_cachedRadar) renderRadar(_cachedRadar);
-        });
-
-        applyTranslations(_lang);
-    </script>
-
-<style>@media(max-width:767px){footer{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)!important;}}</style>
 </body>
 </html>
