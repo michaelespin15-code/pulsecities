@@ -25,8 +25,11 @@ class Subscriber(TimestampMixin, Base):
     is_citywide: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, server_default="false")
 
     # Operator follow: weekly alert when this cluster records new acquisitions.
-    # A row watches exactly one of: a ZIP, the city, or an operator.
+    # A row watches exactly one of: a ZIP, the city, an operator, or a building.
     operator_slug: Mapped[str | None] = mapped_column(String(120), nullable=True)
+
+    # Building watch: alert when new records land on this BBL.
+    bbl: Mapped[str | None] = mapped_column(String(10), nullable=True)
 
     # Single opt-in: set True at creation. The digest sends only to
     # confirmed rows, so an unconfirmed row never receives anything.
@@ -43,13 +46,14 @@ class Subscriber(TimestampMixin, Base):
 
     __table_args__ = (
         UniqueConstraint("email", "zip_code", name="uq_subscribers_email_zip"),
-        # Partial unique indexes for citywide (migration 6aa0c3e6ef29) and
-        # operator follows (migration a9c4d2e7b8f1). Not declared here because
-        # SQLAlchemy can't express partial indexes inline.
+        # Partial unique indexes for citywide (migration 6aa0c3e6ef29), operator
+        # follows (a9c4d2e7b8f1), and building watches (e6b1c8d3f2a4). Not
+        # declared here because SQLAlchemy can't express partial indexes inline.
         Index("idx_subscribers_email", "email"),
         Index("idx_subscribers_zip_code", "zip_code"),
         Index("idx_subscribers_confirmed", "confirmed"),
         Index("idx_subscribers_operator_slug", "operator_slug"),
+        Index("idx_subscribers_bbl", "bbl"),
     )
 
     def __repr__(self) -> str:
