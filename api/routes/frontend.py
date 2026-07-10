@@ -113,14 +113,33 @@ def _tier_info(score: float) -> tuple[str, str]:
     """
     if score >= 85: return "Critical", "#ef4444"
     if score >= 67: return "High",     "#f97316"
-    if score >= 34: return "Moderate", "#eab308"
+    if score >= 34: return "Moderate", "#C08B2D"
     return "Low", "#64748b"
 
 
 def _idx_color(v: float) -> str:
     if v >= 70: return "#f97316"
-    if v >= 45: return "#eab308"
+    if v >= 45: return "#C08B2D"
     return "rgba(148,163,184,0.55)"
+
+
+# One footer for every SSR page, same link set as the static pages.
+# test_footer_consistency.py fails the suite if the two drift apart.
+# Interpolate as {_FOOTER_HTML} inside the page f-strings.
+_FOOTER_HTML = """<footer>
+  <div style="font-size:11px;color:#64748b;margin-bottom:8px;text-align:center;">Built by Michael Espin</div>
+  <div class="footer-links">
+    <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
+    <a href="/neighborhoods" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Neighborhoods</a>
+    <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
+    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
+    <a href="/press" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Press</a>
+    <a href="/status" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
+    <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
+    <a href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">LinkedIn</a>
+    <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="color:#64748b;text-decoration:none;display:inline-flex;align-items:center;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+  </div>
+</footer>"""
 
 
 def _trend_svg(history: list[tuple[str, float]]) -> str:
@@ -482,9 +501,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
     <a href="/brief/zip/{zip_code}" class="btn-copy">Evidence brief</a>
   </div>
 </div></main>
-<footer><div style="font-size:11px;color:var(--faint);margin-bottom:8px;text-align:center;">Built by Michael Espin</div><div class="footer-links">
-  <a href="/">Home</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="/press">Press</a><a href="/status">Status</a><a href="mailto:nycdisplacement@gmail.com">Contact</a><a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="display:inline-flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-</div></footer>
+{_FOOTER_HTML}
 <script>
 function copyLink() {{
   var url = 'https://pulsecities.com/neighborhood/{zip_code}';
@@ -1165,17 +1182,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <ul class="op-list">
 {rows_html}  </ul>
 </div>
-<footer>
-  <div style="font-size:11px;color:#64748b;margin-bottom:8px;text-align:center;">Built by Michael Espin</div>
-  <div class="footer-links">
-    <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
-    <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
-    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a><a href="/press" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Press</a>
-    <a href="/status" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
-    <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
-    <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="color:#64748b;text-decoration:none;display:inline-flex;align-items:center;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-  </div>
-</footer>
+{_FOOTER_HTML}
 <script>
 (function() {{
   var lang = localStorage.getItem('pc-lang') || 'en';
@@ -1379,16 +1386,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.55);margin-bottom:28px;">{n} ZIP codes scored nightly from public records.</p>
   {sections_html}
 </div>
-<footer>
-  <div style="font-size:11px;color:#64748b;margin-bottom:8px;text-align:center;">Built by Michael Espin</div>
-  <div class="footer-links">
-    <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
-    <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
-    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a><a href="/press" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Press</a>
-    <a href="/status" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
-    <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
-  </div>
-</footer>
+{_FOOTER_HTML}
 </body>
 </html>"""
 
@@ -1578,16 +1576,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 {rows_html}  </ul>
   <p style="font-size:0.75rem;color:rgba(148,163,184,0.5);margin-top:24px;">Other boroughs: {others}</p>
 </div>
-<footer>
-  <div style="font-size:11px;color:#64748b;margin-bottom:8px;text-align:center;">Built by Michael Espin</div>
-  <div class="footer-links">
-    <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
-    <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
-    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a><a href="/press" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Press</a>
-    <a href="/status" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
-    <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
-  </div>
-</footer>
+{_FOOTER_HTML}
 </body>
 </html>"""
 
@@ -1778,17 +1767,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     A renovation permit alone is not wrongdoing. This page reports the public-record pattern, not a conclusion about any owner. <a href="/methodology" style="color:rgba(249,115,22,0.75);">How this is measured &rarr;</a>
   </p>
 </div>
-<footer>
-  <div style="font-size:11px;color:#64748b;margin-bottom:8px;text-align:center;">Built by Michael Espin</div>
-  <div class="footer-links">
-    <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
-    <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
-    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a><a href="/press" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Press</a>
-    <a href="/status" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
-    <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
-    <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="color:#64748b;text-decoration:none;display:inline-flex;align-items:center;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-  </div>
-</footer>
+{_FOOTER_HTML}
 <script>
 (function() {{
   var lang = localStorage.getItem('pc-lang') || 'en';
@@ -2021,17 +2000,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     Buying several buildings is not wrongdoing. This page reports the public-record pattern, not a conclusion about any buyer. <a href="/methodology" style="color:rgba(249,115,22,0.75);">How this is measured &rarr;</a>
   </p>
 </div>
-<footer>
-  <div style="font-size:11px;color:#64748b;margin-bottom:8px;text-align:center;">Built by Michael Espin</div>
-  <div class="footer-links">
-    <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
-    <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
-    <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a><a href="/press" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Press</a>
-    <a href="/status" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
-    <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
-    <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="color:#64748b;text-decoration:none;display:inline-flex;align-items:center;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-  </div>
-</footer>
+{_FOOTER_HTML}
 <script>
 (function() {{
   var lang = localStorage.getItem('pc-lang') || 'en';
@@ -2252,17 +2221,6 @@ def _week_nav_html() -> str:
     )
 
 
-_WEEK_FOOTER_HTML = (
-    '<footer>\n'
-    '  <div style="font-size:11px;color:#64748b;margin-bottom:8px;text-align:center;">Built by Michael Espin</div>\n'
-    '  <div class="footer-links">'
-    '<a href="/" style="color:#64748b;">Home</a>'
-    '<a href="/this-week" style="color:#64748b;">This week</a>'
-    '<a href="/methodology" style="color:#64748b;">Methodology</a>'
-    '<a href="/about" style="color:#64748b;">About</a><a href="/press" style="color:#64748b;">Press</a>'
-    '<a href="/status" style="color:#64748b;">Status</a>'
-    '</div>\n</footer>'
-)
 
 
 @router.get("/week/{slug}", include_in_schema=False)
@@ -2394,7 +2352,7 @@ def week_edition_page(slug: str, db: Session = Depends(get_db)):
     Counts reflect records published by NYC agencies, which can lag the events they describe. Scores are risk indicators, not claims of wrongdoing. <a href="/methodology" style="color:rgba(249,115,22,0.75);">How scores work &rarr;</a>
   </p>
 </div>
-{_WEEK_FOOTER_HTML}
+{_FOOTER_HTML}
 </body>
 </html>"""
 
@@ -2480,7 +2438,7 @@ def week_archive_index(db: Session = Depends(get_db)):
   <ul class="wk-idx">
 {rows_html}  </ul>
 </div>
-{_WEEK_FOOTER_HTML}
+{_FOOTER_HTML}
 </body>
 </html>"""
 
@@ -2690,16 +2648,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     <span id="tw-note">Counts reflect records published by NYC agencies, which can lag the events they describe. Scores are risk indicators, not claims of wrongdoing.</span> <a id="tw-meth-link" href="/methodology" style="color:rgba(249,115,22,0.75);">How scores work &rarr;</a>
   </p>
 </div>
-<footer>
-  <div style="font-size:11px;color:#64748b;margin-bottom:8px;text-align:center;">Built by Michael Espin</div>
-  <div class="footer-links">
-    <a href="/" style="color:#64748b;">Home</a>
-    <a href="/methodology" style="color:#64748b;">Methodology</a>
-    <a href="/about" style="color:#64748b;">About</a><a href="/press" style="color:#64748b;">Press</a>
-    <a href="/status" style="color:#64748b;">Status</a>
-    <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;">Contact</a>
-  </div>
-</footer>
+{_FOOTER_HTML}
 <script>
 (function() {{
   var lang = localStorage.getItem('pc-lang') || 'en';
