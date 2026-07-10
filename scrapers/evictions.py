@@ -188,13 +188,10 @@ class EvictionsScraper(BaseScraper):
         }
 
     def _upsert_batch(self, db, batch: list[dict]) -> int:
-        stmt = (
-            insert(EvictionRaw)
-            .values(batch)
-            .on_conflict_do_nothing(
-                constraint="uq_evictions_raw_bbl_date_docket"
-            )
-        )
+        # No conflict target: NULL-bbl rows bypass the named constraint
+        # (NULLs are distinct in PG unique constraints), so dedupe also relies
+        # on the COALESCE index uq_evictions_raw_identity.
+        stmt = insert(EvictionRaw).values(batch).on_conflict_do_nothing()
         result = db.execute(stmt)
         db.commit()
         return result.rowcount

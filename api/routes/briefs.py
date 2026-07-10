@@ -438,9 +438,10 @@ def operator_brief(slug: str, db: Session = Depends(get_db)):
         ORDER BY yr
     """), {"names": llc_names}).fetchall() if llc_names else []
 
-    # ZIP count
-    zip_count = op_row.borough_spread or 0
-    if not zip_count and bbl_list:
+    # ZIP count. Always computed from parcels; borough_spread is a different
+    # metric and was masquerading as this one when set.
+    zip_count = 0
+    if bbl_list:
         zip_row = db.execute(text("""
             SELECT COUNT(DISTINCT p.zip_code)
             FROM operator_parcels op
