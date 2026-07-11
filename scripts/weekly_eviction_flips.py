@@ -19,6 +19,7 @@ import argparse
 import json
 import logging
 import os
+import sys
 from datetime import date
 from pathlib import Path
 
@@ -135,7 +136,7 @@ def format_arc(arc: dict, scale: int) -> str:
         + (f" ({arc['eviction_count']} dockets)" if arc["eviction_count"] > 1 else ""),
         f"  bought {arc['buy_date']} for {_money(arc['buy_amt'])} by {arc['buyer']}"
         + (f" (entity holds {scale} BBLs)" if scale > 1 else ""),
-        f"  sold {arc['sell_date']} for {_money(arc['sell_amt'])} — {arc['gain_pct']}% gain",
+        f"  sold {arc['sell_date']} for {_money(arc['sell_amt'])}, a {arc['gain_pct']}% gain",
         f"  ACRIS docs: {arc['buy_doc']} / {arc['sell_doc']}",
     ]
     return "\n".join(lines)
@@ -181,11 +182,17 @@ def build_report(new_arcs: list[dict], scales: dict, total: int) -> str:
 def run(dry_run: bool = False) -> None:
     if not dry_run and not resend.api_key:
         logger.error("RESEND_API_KEY not set. Aborting flips scan email.")
-        return
+        sys.exit(1)
 
     seen: set = set()
     if STATE_PATH.exists():
-        seen = set(json.loads(STATE_PATH.read_text()).get("seen_keys", []))
+        try:
+            seen = set(json.loads(STATE_PATH.read_text()).get("seen_keys", []))
+        except (json.JSONDecodeError, OSError) as exc:
+            # A torn or corrupt state file must not kill the scan permanently.
+            # Starting from an empty seen-set re-reports old arcs once, which is
+            # recoverable; a weekly crash loop is not.
+            logger.warning("State file unreadable (%s); rescanning from scratch", exc)
 
     with get_scraper_db() as db:
         arcs = scan(db)
@@ -213,7 +220,14 @@ def run(dry_run: bool = False) -> None:
         if new_arcs:
             editions = []
             if EDITIONS_PATH.exists():
-                editions = json.loads(EDITIONS_PATH.read_text()).get("editions", [])
+                try:
+                    editions = json.loads(EDITIONS_PATH.read_text()).get("editions", [])
+                except (json.JSONDecodeError, OSError) as exc:
+                    # Never overwrite the editions archive based on a bad read:
+                    # appending to [] would silently drop every approved edition.
+                    logger.error("Editions file unreadable (%s); aborting so the "
+                                 "archive is not clobbered", exc)
+                    sys.exit(1)
             editions.append({
                 "week": date.today().strftime("%G-W%V"),
                 "generated": date.today().isoformat(),
@@ -228,10 +242,14 @@ def run(dry_run: bool = False) -> None:
             logger.info("Edition %s recorded (%d arcs, awaiting review)",
                         editions[-1]["week"], len(new_arcs))
 
-        STATE_PATH.write_text(json.dumps({
+        # Atomic replace, same as the editions file: a crash mid-write must not
+        # tear the state and kill every future weekly run.
+        tmp = STATE_PATH.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps({
             "updated": date.today().isoformat(),
             "seen_keys": sorted(seen | {a["key"] for a in arcs}),
         }, indent=1))
+        os.replace(tmp, STATE_PATH)
         logger.info("State updated: %d keys", len(seen | {a['key'] for a in arcs}))
 
 

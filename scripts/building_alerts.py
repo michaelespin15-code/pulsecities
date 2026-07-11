@@ -18,6 +18,7 @@ import argparse
 import json
 import logging
 import os
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -209,10 +210,41 @@ def build_email(alert: dict) -> tuple[str, str, str]:
     return subject, html, "\n".join(text_lines)
 
 
+def _wait_for_pipeline(max_wait_s: int = 2700, poll_s: int = 60) -> bool:
+    """
+    The 03:25 cron slot assumes the 02:00 pipeline has finished. When a backlog
+    run overshoots (an upstream source unfreezing, say), scanning mid-ingest
+    advances the watermark past rows that commit minutes later, and a watcher
+    permanently misses the deed on their building. Wait for the lock to clear;
+    give up after max_wait_s so a wedged pipeline can't hang the cron forever.
+    """
+    import time
+    lock = Path("/tmp/pulsecities_pipeline.lock")
+    waited = 0
+    while waited <= max_wait_s:
+        if not lock.exists():
+            return True
+        try:
+            pid = int(lock.read_text().strip())
+            os.kill(pid, 0)
+        except (ValueError, OSError, ProcessLookupError):
+            return True  # stale lock; the pipeline itself cleans these up
+        if waited == 0:
+            logger.info("Nightly pipeline still running (lock pid %s); waiting", pid)
+        time.sleep(poll_s)
+        waited += poll_s
+    logger.error("Pipeline lock still held after %ds; skipping this alert run "
+                 "(watermark not advanced, tomorrow's run covers the gap)", max_wait_s)
+    return False
+
+
 def run(dry_run: bool = False) -> None:
     if not dry_run and not resend.api_key:
         logger.error("RESEND_API_KEY not set. Aborting building alerts.")
-        return
+        sys.exit(1)
+
+    if not _wait_for_pipeline():
+        sys.exit(1)
 
     now = datetime.now(timezone.utc)
     since = now - timedelta(hours=24)

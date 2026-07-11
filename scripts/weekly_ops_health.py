@@ -23,6 +23,7 @@ import argparse
 import json
 import logging
 import os
+import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
 
@@ -115,9 +116,14 @@ def gather(db) -> dict:
             attention.append("newest backup older than 48h")
 
     if RESTORE_RESULT.exists():
-        r = json.loads(RESTORE_RESULT.read_text())
+        # The producer builds this JSON with shell interpolation; treat a bad
+        # parse as a failing check, not a crash that kills the whole report.
+        try:
+            r = json.loads(RESTORE_RESULT.read_text())
+        except (json.JSONDecodeError, OSError):
+            r = {"status": "unreadable", "detail": f"could not parse {RESTORE_RESULT}"}
         status = r.get("status", "unknown")
-        lines.append(f"  restore-test: {status.upper()} — {r.get('detail', '')}")
+        lines.append(f"  restore-test: {status.upper()}: {r.get('detail', '')}")
         if status not in ("pass", "skipped"):
             attention.append(f"backup restore-test {status}")
         elif status == "skipped":
@@ -135,7 +141,7 @@ def run(dry_run: bool = False) -> None:
 
     attention = report["attention"]
     header = (
-        "ALL CLEAR — no ops issues this week."
+        "ALL CLEAR. No ops issues this week."
         if not attention
         else "NEEDS ATTENTION:\n" + "\n".join(f"  - {a}" for a in attention)
     )
@@ -153,4 +159,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Weekly ops-health email")
     parser.add_argument("--dry-run", action="store_true", help="print, do not email")
     args = parser.parse_args()
-    run(dry_run=args.dry_run)
+    try:
+        run(dry_run=args.dry_run)
+    except Exception as exc:  # noqa: BLE001
+        # A silently missing heartbeat is the weakest possible failure signal
+        # for the health system itself. Say so instead.
+        logger.error("ops-health report crashed: %s", exc, exc_info=True)
+        send_ops_email(
+            "Weekly ops health: report FAILED to generate",
+            f"weekly_ops_health.py crashed before it could report:\n\n{exc}\n\n"
+            f"  tail -50 /var/log/pulsecities/ops_health.log",
+        )
+        sys.exit(1)

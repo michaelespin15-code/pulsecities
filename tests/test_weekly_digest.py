@@ -431,7 +431,11 @@ class TestRunOrchestration:
             patch("scripts.weekly_digest.resend.api_key", ""),
             patch("scripts.weekly_digest.resend.Emails.send") as mock_send,
         ):
-            run(dry_run=False)
+            # Exits non-zero so cron records the failure; a plain return made
+            # a missing key look like a successful quiet week (May-Jul 2026).
+            with pytest.raises(SystemExit) as excinfo:
+                run(dry_run=False)
+            assert excinfo.value.code == 1
         mock_send.assert_not_called()
 
 
