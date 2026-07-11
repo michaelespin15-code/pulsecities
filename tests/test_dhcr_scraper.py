@@ -10,7 +10,6 @@ Tests cover:
   - signal_breakdown includes rs_unit_loss key
 """
 
-import json
 import pytest
 from unittest.mock import MagicMock, patch
 from datetime import datetime, timezone
@@ -213,20 +212,12 @@ class TestSignalBreakdownRsUnitLoss:
             try:
                 from sqlalchemy import text
 
-                # Save the original score row so we can restore it after the test.
-                # compute_scores upserts displacement_scores and propagates to
-                # neighborhoods — both need to be left in their pre-test state.
-                original = db.execute(
-                    text(
-                        "SELECT score, signal_breakdown, permit_intensity, eviction_rate, "
-                        "llc_acquisition_rate, assessment_spike, complaint_rate, "
-                        "cache_generated_at, signal_last_updated, created_at "
-                        "FROM displacement_scores WHERE zip_code = :z"
-                    ),
-                    {"z": zip_code},
-                ).fetchone()
-
-                count = compute_scores(db, force=True)  # synthetic data — guard bypassed
+                # This runs against the live database: dry_run keeps every write
+                # (displacement_scores upsert, score_history snapshot, the
+                # neighborhoods propagation) flushed but uncommitted, the
+                # assertions read the session's own writes, and the rollback in
+                # finally leaves production untouched.
+                count = compute_scores(db, force=True, dry_run=True)  # synthetic data — guard bypassed
 
                 # Fetch the breakdown written by the test run
                 row = db.execute(
@@ -240,47 +231,5 @@ class TestSignalBreakdownRsUnitLoss:
                         f"'rs_unit_loss' missing from signal_breakdown: {breakdown.keys()}"
                     )
             finally:
-                if original is not None:
-                    # Restore the pre-test row exactly so production data is unchanged.
-                    db.execute(
-                        text(
-                            "INSERT INTO displacement_scores "
-                            "(zip_code, score, signal_breakdown, permit_intensity, "
-                            "eviction_rate, llc_acquisition_rate, assessment_spike, "
-                            "complaint_rate, cache_generated_at, signal_last_updated, "
-                            "created_at, updated_at) "
-                            "VALUES (:z, :score, CAST(:breakdown AS jsonb), :pi, :er, "
-                            ":llc, :asp, :cr, :cga, CAST(:slu AS jsonb), :ca, NOW()) "
-                            "ON CONFLICT ON CONSTRAINT uq_displacement_scores_zip_code "
-                            "DO UPDATE SET score=EXCLUDED.score, "
-                            "signal_breakdown=EXCLUDED.signal_breakdown, "
-                            "permit_intensity=EXCLUDED.permit_intensity, "
-                            "eviction_rate=EXCLUDED.eviction_rate, "
-                            "llc_acquisition_rate=EXCLUDED.llc_acquisition_rate, "
-                            "assessment_spike=EXCLUDED.assessment_spike, "
-                            "complaint_rate=EXCLUDED.complaint_rate, "
-                            "cache_generated_at=EXCLUDED.cache_generated_at, "
-                            "signal_last_updated=EXCLUDED.signal_last_updated, "
-                            "updated_at=NOW()"
-                        ),
-                        {
-                            "z":    zip_code,
-                            "score": original[0],
-                            "breakdown": json.dumps(original[1]) if original[1] else "{}",
-                            "pi":  original[2],
-                            "er":  original[3],
-                            "llc": original[4],
-                            "asp": original[5],
-                            "cr":  original[6],
-                            "cga": original[7],
-                            "slu": json.dumps(original[8]) if original[8] else "{}",
-                            "ca":  original[9],
-                        },
-                    )
-                else:
-                    db.execute(
-                        text("DELETE FROM displacement_scores WHERE zip_code = :z"),
-                        {"z": zip_code},
-                    )
-                db.commit()
+                db.rollback()
                 db.close()
