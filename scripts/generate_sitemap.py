@@ -9,6 +9,8 @@ Run manually or from cron after the nightly scoring pass:
     python -m scripts.generate_sitemap
 """
 
+import os
+import tempfile
 from datetime import date
 from pathlib import Path
 
@@ -116,6 +118,13 @@ def build() -> str:
 
 if __name__ == "__main__":
     xml = build()
-    _OUT.write_text(xml)
+    # Atomic replace: nginx serves this file straight from disk, so a crawler
+    # must never catch it half-written.
+    fd, tmp_path = tempfile.mkstemp(dir=_OUT.parent, prefix=".sitemap.", suffix=".tmp")
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        fh.write(xml)
+    # mkstemp creates 0600; nginx workers need world-read or they serve 403.
+    os.chmod(tmp_path, 0o644)
+    os.replace(tmp_path, _OUT)
     count = xml.count("<url>")
     print(f"wrote {_OUT} with {count} urls")

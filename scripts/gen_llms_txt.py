@@ -10,10 +10,14 @@ scoring run:
     PYTHONPATH=. venv/bin/python scripts/gen_llms_txt.py
 """
 
+import os
+import tempfile
 from pathlib import Path
 
 from sqlalchemy import text
 
+from api.routes.frontend import _tier_info
+from api.routes.stats import compute_top_risk
 from models.database import get_scraper_db
 from scoring.compute import (
     WEIGHT_LLC_ACQUISITIONS,
@@ -58,29 +62,12 @@ def _active_keys(db):
 
 
 def _top_risk(db, limit=5):
-    """The published top-risk list. Prefer /api/stats so this file can never
-    disagree with what the site shows (the API filters out ZIPs whose dominant
-    signal has no recent raw records); fall back to a plain score sort if the
-    app is down while cron runs."""
-    try:
-        import urllib.request
-        with urllib.request.urlopen("https://pulsecities.com/api/stats", timeout=15) as resp:
-            import json as _json
-            data = _json.load(resp)
-        entries = (data.get("top_risk_list") or [])[:limit]
-        if entries:
-            return [(e["zip_code"], e["name"], e["score"]) for e in entries]
-    except Exception:
-        pass
-    rows = db.execute(text("""
-        SELECT n.zip_code, n.name, round(ds.score::numeric, 1) AS score
-        FROM displacement_scores ds
-        JOIN neighborhoods n ON n.zip_code = ds.zip_code
-        WHERE ds.score IS NOT NULL
-        ORDER BY ds.score DESC
-        LIMIT :lim
-    """), {"lim": limit}).fetchall()
-    return [(r.zip_code, r.name, r.score) for r in rows]
+    """The published top-risk list, straight from the same function the
+    /api/stats route uses. The old version fetched the HTTP endpoint, whose
+    one-hour cache meant this file quoted yesterday's scores for up to an hour
+    after every scoring run; a direct call can never drift."""
+    _, entries = compute_top_risk(db)
+    return [(e["zip_code"], e["name"], e["score"]) for e in entries[:limit]]
 
 
 def _scored_count(db) -> int:
@@ -102,7 +89,8 @@ def build():
         n_scored = _scored_count(db)
 
     nbhd = "\n".join(
-        f"- {name} ({zip_code}, {_borough(zip_code)}) - score {score}, high displacement pressure"
+        f"- {name} ({zip_code}, {_borough(zip_code)}) - score {score}, "
+        f"{_tier_info(float(score))[0].lower()} displacement pressure"
         for zip_code, name, score in top
     )
     dormant_note = (
@@ -126,7 +114,7 @@ PulseCities tracks housing displacement pressure across New York City by aggrega
 - Block-level investigation tools: address search, renovation-flip pattern detection, civic event timelines
 - Weekly email digests for subscribers tracking specific neighborhoods
 
-## Current high-risk neighborhoods (as of latest scoring run)
+## Current top-risk neighborhoods (as of latest scoring run)
 
 {nbhd}
 
@@ -178,7 +166,14 @@ Built by Michael Espin. PulseCities is a free public tool. The underlying data p
 
 
 def main():
-    _OUT.write_text(build(), encoding="utf-8")
+    # Atomic replace: nginx serves this file straight from disk, so a crawler
+    # must never catch it half-written.
+    fd, tmp_path = tempfile.mkstemp(dir=_OUT.parent, prefix=".llms.", suffix=".tmp")
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        fh.write(build())
+    # mkstemp creates 0600; nginx workers need world-read or they serve 403.
+    os.chmod(tmp_path, 0o644)
+    os.replace(tmp_path, _OUT)
     print("wrote", _OUT)
 
 
