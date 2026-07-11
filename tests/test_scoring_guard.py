@@ -317,12 +317,16 @@ class TestOrphanCleanup:
         from sqlalchemy import text
         from scoring.compute import compute_scores
 
+        # This suite runs against the live database, so the sentinel insert, the
+        # scoring pass, and every assertion stay inside one uncommitted
+        # transaction. dry_run makes compute_scores flush instead of commit, the
+        # session sees its own writes, and the rollback in finally leaves
+        # production exactly as it was.
         db = SessionLocal()
         try:
             db.execute(text(
                 "DELETE FROM displacement_scores WHERE zip_code IN ('99998', '99999')"
             ))
-            db.commit()
 
             db.execute(text("""
                 INSERT INTO displacement_scores
@@ -331,14 +335,13 @@ class TestOrphanCleanup:
                 VALUES ('99998', 50.0, '{}', '{}', NOW(), NOW(), NOW())
                 ON CONFLICT ON CONSTRAINT uq_displacement_scores_zip_code DO NOTHING
             """))
-            db.commit()
 
             before = db.execute(text(
                 "SELECT COUNT(*) FROM displacement_scores WHERE zip_code = '99998'"
             )).scalar()
             assert before == 1
 
-            compute_scores(db, force=True)
+            compute_scores(db, force=True, dry_run=True)
 
             after = db.execute(text(
                 "SELECT COUNT(*) FROM displacement_scores WHERE zip_code = '99998'"
@@ -352,10 +355,7 @@ class TestOrphanCleanup:
             """)).scalar()
             assert leftover == 0, f"{leftover} orphan ZIP(s) still present after cleanup"
         finally:
-            db.execute(text(
-                "DELETE FROM displacement_scores WHERE zip_code IN ('99998', '99999')"
-            ))
-            db.commit()
+            db.rollback()
             db.close()
 
 
@@ -428,11 +428,13 @@ class TestGuardBlocksBeforeWrites:
         db = SessionLocal()
         try:
             today = date.today()
-            # Delete any existing history for today so we can detect a fresh write.
+            # Clear today's history inside the transaction so a fresh write is
+            # detectable. The delete is never committed: the guard raises before
+            # compute_scores reaches a commit, and the rollback in finally puts
+            # the production snapshot back untouched.
             db.execute(
                 text("DELETE FROM score_history WHERE scored_at = :d"), {"d": today}
             )
-            db.commit()
 
             fake_prior = {
                 "max": 9999.0, "avg": 9999.0,
@@ -452,4 +454,5 @@ class TestGuardBlocksBeforeWrites:
                 f"score_history gained {count_today} rows despite guard blocking the run"
             )
         finally:
+            db.rollback()
             db.close()
