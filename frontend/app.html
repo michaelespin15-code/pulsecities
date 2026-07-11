@@ -1049,7 +1049,7 @@
                     const relX = e.clientX - rect.left;
                     const idx = Math.max(0, Math.min(scores.length - 1, Math.round((relX / rect.width) * (scores.length - 1))));
                     const label = dateLabels && dateLabels[idx] ? dateLabels[idx] : `Day ${idx + 1}`;
-                    tip.textContent = `Score: ${scores[idx].toFixed(1)} \u2014 ${label}`;
+                    tip.textContent = `Score: ${scores[idx].toFixed(1)} \u00b7 ${label}`;
                     tip.style.left = `${e.pageX + 8}px`;
                     tip.style.top  = `${e.pageY - 24}px`;
                     tip.style.display = 'block';
@@ -2620,7 +2620,7 @@
                         detail.className = 'text-xs text-slate-400';
                         const transferDate = p.transfer_date ? new Date(p.transfer_date + 'T00:00:00').toLocaleDateString(_locale(), {month:'short',day:'numeric'}) : '';
                         const days = p.days_between != null ? t('ui', 'reno_flip_days').replace('{n}', p.days_between) : '';
-                        detail.textContent = `${p.buyer || ''}` + (transferDate ? ` \u2014 ${transferDate}` : '') + (days ? ` \u2014 ${t('ui', 'reno_flip_permit')} ${days}` : '');
+                        detail.textContent = `${p.buyer || ''}` + (transferDate ? ` \u00b7 ${transferDate}` : '') + (days ? ` \u00b7 ${t('ui', 'reno_flip_permit')} ${days}` : '');
                         el.appendChild(addr);
                         el.appendChild(detail);
                         list.appendChild(el);
@@ -4280,7 +4280,7 @@
 
                 const bottom = document.createElement('div');
                 bottom.className = 'text-xs text-slate-400 mt-0.5 truncate';
-                bottom.textContent = `${r.zip_code || ''} \u2014 ${titleCase(r.buyer_name) || ''}`;
+                bottom.textContent = `${r.zip_code || ''} \u00b7 ${titleCase(r.buyer_name) || ''}`;
 
                 row.appendChild(top);
                 row.appendChild(bottom);
@@ -4503,7 +4503,7 @@
             const propLabel = s.total_properties === 1 ? 'property' : 'properties';
             const zipLabel  = s.unique_zip_codes  === 1 ? 'zip code' : 'zip codes';
             const lines = [
-                `${q.toUpperCase()} Portfolio \u2014 ${s.total_properties} ${propLabel} across ${s.unique_zip_codes} ${zipLabel}`,
+                `${q.toUpperCase()} Portfolio: ${s.total_properties} ${propLabel} across ${s.unique_zip_codes} ${zipLabel}`,
                 'Identified via NYC ACRIS public records by PulseCities (pulsecities.com)',
                 ''
             ];
@@ -4511,9 +4511,9 @@
                 const dateStr = r.doc_date
                     ? new Date(r.doc_date + 'T00:00:00').toLocaleDateString(_locale(), {month: 'short', day: 'numeric', year: 'numeric'})
                     : '';
-                let line = `${titleCase(r.address)}, ${r.zip_code} \u2014 ${titleCase(r.buyer_name)} \u2014 ${dateStr}`;
+                let line = `${titleCase(r.address)}, ${r.zip_code} \u00b7 ${titleCase(r.buyer_name)} \u00b7 ${dateStr}`;
                 if (r.doc_amount != null) {
-                    line += ` \u2014 $${r.doc_amount.toLocaleString(_locale(), {maximumFractionDigits: 0})}`;
+                    line += ` \u00b7 $${r.doc_amount.toLocaleString(_locale(), {maximumFractionDigits: 0})}`;
                 }
                 lines.push(line);
             });

@@ -349,6 +349,7 @@
 
     const i18n = {
         en: {
+            load_error:          'Live records could not be loaded just now. Refresh to try again.',
             back_map:            '\u2190 Home',
             stat_properties:     'Properties',
             stat_acquisitions:   'Acquisitions',
@@ -427,6 +428,7 @@
             buyer_label:         'Buyer',
         },
         es: {
+            load_error:          'No se pudieron cargar los registros en este momento. Actualiza la p\u00e1gina para reintentar.',
             back_map:            '\u2190 Inicio',
             stat_properties:     'Propiedades',
             stat_acquisitions:   'Adquisiciones',
@@ -1291,10 +1293,20 @@
     }
 
     // The server returns 404 for unknown operators and full SSR content for real
-    // ones, so a client hydrate failure should keep the server-rendered page
-    // rather than blanking it. Log and leave the SSR content in place.
+    // ones, so a client hydrate failure keeps the server-rendered page rather
+    // than blanking it. The stat cards stay empty in that state, so say so
+    // instead of leaving the reader staring at blank numbers.
     function showError(msg) {
         console.warn('[PulseCities] operator hydrate issue:', msg);
+        if (document.getElementById('op-load-error')) return;
+        const anchor = document.querySelector('main') || document.body;
+        const note = document.createElement('p');
+        note.id = 'op-load-error';
+        note.textContent = t('load_error');
+        note.style.cssText = 'margin:12px auto;max-width:960px;padding:10px 16px;'
+            + 'font-size:14px;color:#92400e;background:#fef3c7;'
+            + 'border:1px solid #fcd34d;border-radius:6px;';
+        anchor.insertBefore(note, anchor.firstChild);
     }
 
     // Operator data loading
@@ -1307,8 +1319,9 @@
         // Anything else (e.g. "MTEK", "PHANTOM CAPITAL") is treated as an operator_root.
         const isSlugFormat = /^[a-z0-9-]+$/.test(rawParam);
 
-        document.title = rawParam.toUpperCase() + ' | PulseCities Operator Profile';
-        document.getElementById('canonical-url').href = 'https://pulsecities.com/operator/' + encodeURIComponent(rawParam);
+        // Title and canonical wait for resolution below: setting them from the
+        // raw URL param clobbered the SSR title and pointed the canonical at
+        // /operator/MTEK instead of the resolved /operator/mtek-nyc slug.
 
         let _opFetch;
         if (isSlugFormat) {
@@ -1352,6 +1365,12 @@
 
         Promise.all([_opFetch, _namesFetch, _healthFetch])
             .then(([data, zipNames, health]) => {
+                if (data.operator_root) {
+                    document.title = data.operator_root + ' LLC Network | NYC Property Acquisitions | PulseCities';
+                }
+                if (data.slug) {
+                    document.getElementById('canonical-url').href = 'https://pulsecities.com/operator/' + encodeURIComponent(data.slug);
+                }
                 try {
                     render(data, zipNames);
                 } catch (e) {

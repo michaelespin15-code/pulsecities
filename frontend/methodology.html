@@ -262,6 +262,12 @@
         }
 
         /* ---- Signals table ---- */
+        /* The page body clips horizontal overflow, so the table scrolls in its
+           own wrapper on narrow screens instead of truncating. */
+        .signals-table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
         .signals-table {
             width: 100%;
             border-collapse: collapse;
@@ -613,6 +619,7 @@
 
         <h3>Six signals</h3>
 
+        <div class="signals-table-wrap">
         <table class="signals-table">
             <thead>
                 <tr>
@@ -673,6 +680,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
 
         <p style="font-size:13px;color:var(--muted);margin-top:16px;">When a signal is dormant, its weight is redistributed proportionally to the active signals so the composite always sums to 100%.</p>
 
