@@ -701,9 +701,64 @@ def _fetch_raw_counts(db: Session, zip_code: str) -> dict[str, int]:
     }
 
 
-def _build_summary(score: float | None, breakdown: dict[str, Any], raw_counts: dict[str, int] | None = None) -> str:
+# Spanish driver names for the summary sentence; keys mirror _SIGNAL_LABELS.
+_SIGNAL_LABELS_ES = {
+    "permits": "solicitudes de permisos de renovación",
+    "evictions": "casos de desalojo",
+    "llc_acquisitions": "adquisiciones de propiedades por LLC",
+    "complaint_rate": "quejas de inquilinos",
+    "rs_unit_loss": "pérdida de unidades de renta estabilizada",
+    "hpd_violations": "violaciones de vivienda de HPD",
+    "assessment_spike": "aumentos de tasación fiscal",
+}
+
+# Everything a reader sees in the generated summary, per language. The count
+# phrase lambdas handle pluralization; openings interpolate the score.
+_SUMMARY_L = {
+    "en": {
+        "no_data": "Displacement risk data is not yet available for this neighborhood.",
+        "open_critical": "This neighborhood shows critical displacement pressure (score {s}).",
+        "open_high": "This neighborhood shows high displacement pressure (score {s}).",
+        "open_moderate": "This neighborhood shows moderate displacement pressure (score {s}).",
+        "open_low": "This neighborhood shows low displacement pressure relative to the rest of NYC (score {s}).",
+        "counts": {
+            "llc_acquisitions": lambda n: f"{n} LLC acquisition{'s' if n != 1 else ''}",
+            "evictions":        lambda n: f"{n} residential eviction{'s' if n != 1 else ''}",
+            "permits":          lambda n: f"{n} alteration permit{'s' if n != 1 else ''}",
+            "complaint_rate":   lambda n: f"{n} housing complaint{'s' if n != 1 else ''}",
+        },
+        "detail_low": "No individual signal stands out above citywide averages.",
+        "detail_none": "Signals are present but no single factor dominates.",
+        "detail_counts": "In the past year: {parts}.",
+        "detail_one": "The primary driver is {a}.",
+        "detail_two": "The dominant drivers are {a} and {b}.",
+        "labels": _SIGNAL_LABELS,
+    },
+    "es": {
+        "no_data": "Los datos de riesgo de desplazamiento aún no están disponibles para este vecindario.",
+        "open_critical": "Este vecindario muestra presión de desplazamiento crítica (puntuación {s}).",
+        "open_high": "Este vecindario muestra presión de desplazamiento alta (puntuación {s}).",
+        "open_moderate": "Este vecindario muestra presión de desplazamiento moderada (puntuación {s}).",
+        "open_low": "Este vecindario muestra presión de desplazamiento baja en comparación con el resto de NYC (puntuación {s}).",
+        "counts": {
+            "llc_acquisitions": lambda n: f"{n} adquisici{'ones' if n != 1 else 'ón'} LLC",
+            "evictions":        lambda n: f"{n} desalojo{'s' if n != 1 else ''} residencial{'es' if n != 1 else ''}",
+            "permits":          lambda n: f"{n} permiso{'s' if n != 1 else ''} de alteración",
+            "complaint_rate":   lambda n: f"{n} queja{'s' if n != 1 else ''} de vivienda",
+        },
+        "detail_low": "Ninguna señal individual sobresale por encima de los promedios de la ciudad.",
+        "detail_none": "Hay señales presentes pero ningún factor domina.",
+        "detail_counts": "En el último año: {parts}.",
+        "detail_one": "El factor principal es {a}.",
+        "detail_two": "Los factores dominantes son {a} y {b}.",
+        "labels": _SIGNAL_LABELS_ES,
+    },
+}
+
+
+def _build_summary(score: float | None, breakdown: dict[str, Any], raw_counts: dict[str, int] | None = None, lang: str = "en") -> str:
     """
-    Generate a 1–2 sentence plain-English summary from score + signal breakdown.
+    Generate a 1–2 sentence plain-language summary from score + signal breakdown.
 
     Tier thresholds — must mirror the map legend (app.html) and weekly digest, or a
     neighborhood reads as one tier in the summary and a different color on the map:
@@ -715,24 +770,25 @@ def _build_summary(score: float | None, breakdown: dict[str, Any], raw_counts: d
     Top signals are the breakdown keys with values above 30 (non-trivial),
     sorted descending. Up to 2 are named in the sentence.
     """
+    T = _SUMMARY_L.get(lang, _SUMMARY_L["en"])
     if score is None:
-        return "Displacement risk data is not yet available for this neighborhood."
+        return T["no_data"]
 
     s = round(score, 1)
 
     # Tier label and opening clause
     if s >= 85:
         tier = "Critical"
-        opening = f"This neighborhood shows critical displacement pressure (score {s})."
+        opening = T["open_critical"].format(s=s)
     elif s >= 67:
         tier = "High"
-        opening = f"This neighborhood shows high displacement pressure (score {s})."
+        opening = T["open_high"].format(s=s)
     elif s >= 34:
         tier = "Moderate"
-        opening = f"This neighborhood shows moderate displacement pressure (score {s})."
+        opening = T["open_moderate"].format(s=s)
     else:
         tier = "Low"
-        opening = f"This neighborhood shows low displacement pressure relative to the rest of NYC (score {s})."
+        opening = T["open_low"].format(s=s)
 
     # Find top signals above threshold
     active = sorted(
@@ -743,31 +799,24 @@ def _build_summary(score: float | None, breakdown: dict[str, Any], raw_counts: d
 
     counts = raw_counts or {}
 
-    # Build count phrases for the top active signals
-    _count_labels = {
-        "llc_acquisitions": lambda n: f"{n} LLC acquisition{'s' if n != 1 else ''}",
-        "evictions":        lambda n: f"{n} residential eviction{'s' if n != 1 else ''}",
-        "permits":          lambda n: f"{n} alteration permit{'s' if n != 1 else ''}",
-        "complaint_rate":   lambda n: f"{n} housing complaint{'s' if n != 1 else ''}",
-    }
-
     count_parts = []
     for key, _ in active[:3]:
         n = counts.get(key, 0)
-        if n > 0 and key in _count_labels:
-            count_parts.append(_count_labels[key](n))
+        if n > 0 and key in T["counts"]:
+            count_parts.append(T["counts"][key](n))
 
+    labels = T["labels"]
     if tier == "Low":
-        detail = "No individual signal stands out above citywide averages."
+        detail = T["detail_low"]
     elif not active:
-        detail = "Signals are present but no single factor dominates."
+        detail = T["detail_none"]
     elif count_parts:
-        detail = "In the past year: " + ", ".join(count_parts) + "."
+        detail = T["detail_counts"].format(parts=", ".join(count_parts))
     elif len(active) == 1:
-        detail = f"The primary driver is {_SIGNAL_LABELS.get(active[0][0], active[0][0])}."
+        detail = T["detail_one"].format(a=labels.get(active[0][0], active[0][0]))
     else:
-        top = [_SIGNAL_LABELS.get(k, k) for k, _ in active[:2]]
-        detail = f"The dominant drivers are {top[0]} and {top[1]}."
+        top = [labels.get(k, k) for k, _ in active[:2]]
+        detail = T["detail_two"].format(a=top[0], b=top[1])
 
     return f"{opening} {detail}"
 
