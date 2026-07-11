@@ -168,3 +168,61 @@ class TestViolationsFailurePath:
             "HPD run() must write status='failure' when _upsert_batch() raises DataError"
         )
         assert fresh_run.error_message is not None
+
+
+# ---------------------------------------------------------------------------
+# Class I: ingested for display and alerts, never scored
+# ---------------------------------------------------------------------------
+
+class TestClassIGate:
+    """
+    Class I (informational; mostly vacate orders) ingests as of 2026-07-11 so
+    building timelines and watch alerts can show it. It must never leak into
+    the composite score or any surface labeled "B/C": these checks pin the
+    filter at every consumer that makes that promise.
+    """
+
+    def test_class_i_accepted_by_parser(self, violations_scraper):
+        from unittest.mock import MagicMock, patch
+        db = MagicMock()
+        quarantined = []
+        raw = {
+            "violationid": "999001",
+            "bbl": "1000010001",
+            "housenumber": "1",
+            "streetname": "MAIN ST",
+            "zip": "10001",
+            "boro": "MANHATTAN",
+            "class": "I",
+            "novdescription": "VACATE ORDER ISSUED",
+            "inspectiondate": "2026-06-01T00:00:00.000",
+            "novissueddate": None,
+            "currentstatus": "Open",
+        }
+        with patch.object(violations_scraper, "quarantine",
+                          side_effect=lambda db, r, reason: quarantined.append(reason)):
+            result = violations_scraper._parse(db, raw)
+        assert result is not None, "class I must ingest, not quarantine"
+        assert result["violation_class"] == "I"
+        assert not quarantined
+
+    def test_scoring_and_bc_labeled_surfaces_keep_the_filter(self):
+        """Every consumer that scores violations or labels them B/C must carry
+        an explicit class filter, or ingesting class I inflates it silently."""
+        from pathlib import Path
+        repo = Path(__file__).parent.parent
+        must_filter = [
+            "scoring/compute.py",        # the composite score itself
+            "api/routes/stats.py",       # hpd_violation_counts CTE
+            "api/routes/neighborhoods.py",  # raw counts fed to panels + AI read
+            "api/routes/briefs.py",      # printable evidence briefs
+            "api/routes/frontend.py",    # SSR neighborhood signal tables
+            "scripts/weekly_digest.py",  # digest violation counts
+        ]
+        for rel in must_filter:
+            src = (repo / rel).read_text()
+            assert "violation_class IN ('B', 'C')" in src or \
+                   "violation_class IN ('B','C')" in src, (
+                f"{rel} queries violations_raw without the B/C filter; "
+                f"class I now exists in the table and would be counted"
+            )

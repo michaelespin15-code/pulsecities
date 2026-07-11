@@ -13,7 +13,7 @@ Field mapping (Socrata → model):
   housenumber + streetname → address
   zip               → zip_code
   boro              → borough
-  class             → violation_class  (A / B / C)
+  class             → violation_class  (A / B / C / I)
   novdescription    → description
   inspectiondate    → inspection_date  (watermark)
   novissueddate     → nov_issued_date
@@ -151,8 +151,11 @@ class ViolationsScraper(BaseScraper):
         borough = (record.boro or "").strip() or None
         violation_class = (record.violation_class or "").strip().upper() or None
 
-        # Class must be A, B, or C — anything else is quarantined
-        if violation_class and violation_class not in ("A", "B", "C"):
+        # A/B/C are graded hazard classes; I is HPD's informational class and
+        # carries vacate orders (64% of it), the most on-mission record in the
+        # dataset for a displacement tracker. All four ingest. Scoring stays
+        # B/C only — class I is display and alerts, never the composite.
+        if violation_class and violation_class not in ("A", "B", "C", "I"):
             self.quarantine(db, raw, f"invalid_violation_class:{violation_class}")
             return None
 
