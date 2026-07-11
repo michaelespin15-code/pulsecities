@@ -13,28 +13,28 @@
     <title>Explore | PulseCities</title>
 
     <!-- SEO -->
-    <meta name="description" content="NYC displacement risk scores for 178 neighborhoods, built from ACRIS deeds, HPD violations, DOB permits, evictions, and rent stabilization data.">
+    <meta name="description" content="NYC displacement risk scores for 177 neighborhoods, built from ACRIS deeds, HPD violations, DOB permits, evictions, and rent stabilization data.">
     <link rel="canonical" href="https://pulsecities.com/map">
     <meta name="google-site-verification" content="MKaKepk4Gh2qgqwZKg-1LM2xY2awVz_oolaH9-aCy8s">
     <meta name="msvalidate.01" content="95DE30DECA6461151C9E62CD73DB2358">
 
     <!-- Open Graph -->
     <meta property="og:title" content="PulseCities | NYC Displacement Risk Map">
-    <meta property="og:description" content="Displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and DHCR rent-stabilized unit loss.">
+    <meta property="og:description" content="Displacement risk scores for all 177 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and DHCR rent-stabilized unit loss.">
     <meta property="og:url" content="https://pulsecities.com/map">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="PulseCities">
     <meta property="og:image" content="https://pulsecities.com/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="PulseCities displacement risk map showing heat scores across all 178 NYC neighborhoods">
+    <meta property="og:image:alt" content="PulseCities displacement risk map showing heat scores across all 177 NYC neighborhoods">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="PulseCities | NYC Displacement Risk Map">
-    <meta name="twitter:description" content="Displacement risk scores for all 178 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and DHCR rent-stabilized unit loss.">
+    <meta name="twitter:description" content="Displacement risk scores for all 177 NYC neighborhoods, built on six public data signals: ACRIS deed transfers, HPD violations, DOB permits, eviction filings, rent stabilization loss, and DHCR rent-stabilized unit loss.">
     <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-    <meta name="twitter:image:alt" content="PulseCities displacement risk map showing heat scores across all 178 NYC neighborhoods">
+    <meta name="twitter:image:alt" content="PulseCities displacement risk map showing heat scores across all 177 NYC neighborhoods">
 
     <!-- Structured data -->
     <script type="application/ld+json">
@@ -42,7 +42,7 @@
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "PulseCities",
-        "description": "Displacement risk scores for all 178 NYC neighborhoods, built on six public data signals.",
+        "description": "Displacement risk scores for all 177 NYC neighborhoods, built on six public data signals.",
         "url": "https://pulsecities.com",
         "applicationCategory": "DataVisualization",
         "operatingSystem": "Web",
@@ -933,17 +933,17 @@
                     onclick="closeMethodologyModal()"
                 >&#10005;</button>
             </div>
-            <p class="text-sm text-slate-400 mb-4">PulseCities scores each NYC ZIP using six public-record signals, normalized by residential units and refreshed nightly.</p>
+            <p id="meth-modal-intro" class="text-sm text-slate-400 mb-4">PulseCities scores each NYC ZIP using six public-record signals, normalized by residential units and refreshed nightly.</p>
             <ul class="flex flex-col gap-2 mb-4 text-sm" style="list-style:none;padding:0;">
-                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#fbbf24;flex-shrink:0;display:inline-block;"></span>LLC acquisitions</li>
-                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#38bdf8;flex-shrink:0;display:inline-block;"></span>Permit filings</li>
-                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#38bdf8;flex-shrink:0;display:inline-block;"></span>311 complaints</li>
-                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#f87171;flex-shrink:0;display:inline-block;"></span>Evictions</li>
-                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#f87171;flex-shrink:0;display:inline-block;"></span>HPD violations</li>
-                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#94a3b8;flex-shrink:0;display:inline-block;"></span>Rent-stabilized unit loss</li>
+                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#fbbf24;flex-shrink:0;display:inline-block;"></span><span id="meth-sig-llc">LLC acquisitions</span></li>
+                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#38bdf8;flex-shrink:0;display:inline-block;"></span><span id="meth-sig-permits">Permit filings</span></li>
+                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#38bdf8;flex-shrink:0;display:inline-block;"></span><span id="meth-sig-complaints">311 complaints</span></li>
+                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#f87171;flex-shrink:0;display:inline-block;"></span><span id="meth-sig-evictions">Evictions</span></li>
+                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#f87171;flex-shrink:0;display:inline-block;"></span><span id="meth-sig-hpd">HPD violations</span></li>
+                <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#94a3b8;flex-shrink:0;display:inline-block;"></span><span id="meth-sig-rs">Rent-stabilized unit loss</span></li>
             </ul>
-            <p class="text-xs text-slate-500 mb-3">Higher scores mean more displacement-pressure signals. They are not predictions about any individual tenant or building.</p>
-            <p class="text-xs text-slate-500 mb-5">Sources include NYC DOB, HPD, ACRIS, 311, eviction records, DHCR, and MapPLUTO.</p>
+            <p id="meth-modal-note" class="text-xs text-slate-500 mb-3">Higher scores mean more displacement-pressure signals. They are not predictions about any individual tenant or building.</p>
+            <p id="meth-modal-sources" class="text-xs text-slate-500 mb-5">Sources include NYC DOB, HPD, ACRIS, 311, eviction records, DHCR, and MapPLUTO.</p>
             <a id="methodology-full-link" href="/methodology" class="block text-center text-xs text-sky-400 hover:text-sky-300 underline">Read full methodology &rarr;</a>
         </div>
     </div>
@@ -1620,6 +1620,23 @@
                     watch_building_btn:      'Watch',
                     watch_building_done:     "You're watching this building. New records land in your inbox the next morning.",
                     watch_building_dup:      "You're already watching this building.",
+                    meth_modal_intro:        'PulseCities scores each NYC ZIP using six public-record signals, normalized by residential units and refreshed nightly.',
+                    meth_sig_llc:            'LLC acquisitions',
+                    meth_sig_permits:        'Permit filings',
+                    meth_sig_complaints:     '311 complaints',
+                    meth_sig_evictions:      'Evictions',
+                    meth_sig_hpd:            'HPD violations',
+                    meth_sig_rs:             'Rent-stabilized unit loss',
+                    meth_modal_note:         'Higher scores mean more displacement-pressure signals. They are not predictions about any individual tenant or building.',
+                    meth_modal_sources:      'Sources include NYC DOB, HPD, ACRIS, 311, eviction records, DHCR, and MapPLUTO.',
+                    meth_full_link:          'Read full methodology →',
+                    act_legal_label:         'Get free legal help',
+                    act_legal_one:           '1 eviction on record for this building',
+                    act_legal_many:          '{n} evictions on record',
+                    act_report_label:        'Report illegal construction to 311',
+                    act_report_detail:       '{n} construction permits filed',
+                    act_rs_label:            'Check rent stabilization history',
+                    act_rs_detail:           'Check if your unit is rent-stabilized on the official state registry',
                     landlord_no_results:     'No properties found for "{query}" in ACRIS records.',
                     copy_success:            'Copied!',
                     copy_fail:               'Copy failed',
@@ -1855,6 +1872,23 @@
                     watch_building_btn:      'Observar',
                     watch_building_done:     'Está observando este edificio. Los registros nuevos llegan a su correo a la mañana siguiente.',
                     watch_building_dup:      'Ya está observando este edificio.',
+                    meth_modal_intro:        'PulseCities califica cada ZIP de NYC con seis señales de registros públicos, normalizadas por unidades residenciales y actualizadas cada noche.',
+                    meth_sig_llc:            'Adquisiciones por LLC',
+                    meth_sig_permits:        'Solicitudes de permisos',
+                    meth_sig_complaints:     'Quejas al 311',
+                    meth_sig_evictions:      'Desalojos',
+                    meth_sig_hpd:            'Violaciones de HPD',
+                    meth_sig_rs:             'Pérdida de unidades de renta estabilizada',
+                    meth_modal_note:         'Puntuaciones más altas significan más señales de presión de desplazamiento. No son predicciones sobre ningún inquilino o edificio individual.',
+                    meth_modal_sources:      'Las fuentes incluyen NYC DOB, HPD, ACRIS, 311, registros de desalojo, DHCR y MapPLUTO.',
+                    meth_full_link:          'Leer la metodología completa →',
+                    act_legal_label:         'Obtenga ayuda legal gratuita',
+                    act_legal_one:           '1 desalojo registrado para este edificio',
+                    act_legal_many:          '{n} desalojos registrados',
+                    act_report_label:        'Reporte construcción ilegal al 311',
+                    act_report_detail:       '{n} permisos de construcción presentados',
+                    act_rs_label:            'Consulte el historial de renta estabilizada',
+                    act_rs_detail:           'Verifique si su unidad tiene renta estabilizada en el registro estatal oficial',
                     landlord_no_results:     'Sin propiedades encontradas para "{query}" en registros ACRIS.',
                     copy_success:            '¡Copiado!',
                     copy_fail:               'Error al copiar',
@@ -2046,6 +2080,20 @@
                 'watch-building-title':       t('ui', 'watch_building'),
                 'watch-building-helper':      t('ui', 'watch_building_helper'),
                 'watch-building-btn':         t('ui', 'watch_building_btn'),
+                'pulse-last-days':            t('pulse', 'last_n_days'),
+                'pulse-permits-header':       t('pulse', 'permits_header'),
+                'pulse-evictions-header':     t('pulse', 'evictions_header'),
+                'eviction-lag-note':          t('ui', 'eviction_lag'),
+                'meth-modal-intro':           t('ui', 'meth_modal_intro'),
+                'meth-sig-llc':               t('ui', 'meth_sig_llc'),
+                'meth-sig-permits':           t('ui', 'meth_sig_permits'),
+                'meth-sig-complaints':        t('ui', 'meth_sig_complaints'),
+                'meth-sig-evictions':         t('ui', 'meth_sig_evictions'),
+                'meth-sig-hpd':               t('ui', 'meth_sig_hpd'),
+                'meth-sig-rs':                t('ui', 'meth_sig_rs'),
+                'meth-modal-note':            t('ui', 'meth_modal_note'),
+                'meth-modal-sources':         t('ui', 'meth_modal_sources'),
+                'methodology-full-link':      t('ui', 'meth_full_link'),
                 'cmp-risk-label-1':           t('ui', 'displacement_risk'),
                 'cmp-risk-label-2':           t('ui', 'displacement_risk'),
                 'cmp-signal-breakdown-title': t('ui', 'signal_breakdown'),
@@ -3577,20 +3625,22 @@
 
             const actions = [];
             if (evictionCount > 0) actions.push({
-                label:  'Get free legal help',
-                detail: evictionCount === 1 ? '1 eviction on record for this building' : `${evictionCount} evictions on record`,
+                label:  t('ui', 'act_legal_label'),
+                detail: evictionCount === 1
+                    ? t('ui', 'act_legal_one')
+                    : t('ui', 'act_legal_many').replace('{n}', evictionCount),
                 url:    'https://www.righttocounselnyc.org',
                 color:  'text-red-400'
             });
             if (permitCount >= 3) actions.push({
-                label:  'Report illegal construction to 311',
-                detail: `${permitCount} construction permits filed`,
+                label:  t('ui', 'act_report_label'),
+                detail: t('ui', 'act_report_detail').replace('{n}', permitCount),
                 url:    'https://portal.311.nyc.gov',
                 color:  'text-orange-400'
             });
             actions.push({
-                label:  'Check rent stabilization history',
-                detail: 'Check if your unit is rent-stabilized on the official state registry',
+                label:  t('ui', 'act_rs_label'),
+                detail: t('ui', 'act_rs_detail'),
                 url:    'https://apps.hcr.ny.gov/BuildingSearch',
                 color:  'text-sky-400'
             });

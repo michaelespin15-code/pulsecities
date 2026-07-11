@@ -448,7 +448,8 @@ h1{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.45rem;fon
 .summary{{font-size:.92rem;color:var(--muted);line-height:1.7;margin-bottom:32px}}
 h2{{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}}
 .section-sub{{font-size:.82rem;color:var(--muted);margin-bottom:14px}}
-table{{width:100%;border-collapse:collapse;margin-bottom:12px}}
+.table-wrap{{overflow-x:auto;margin-bottom:12px}}
+table{{width:100%;border-collapse:collapse}}
 th{{font-size:.64rem;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:6px 0;border-bottom:1px solid var(--border)}}
 th:not(:first-child){{text-align:right}}
 td{{padding:12px 0;border-bottom:1px solid rgba(148,163,184,.06);vertical-align:top}}
@@ -494,10 +495,12 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
   <section style="margin-bottom:32px;">
     <h2>Signal breakdown</h2>
     <p class="section-sub">Public-record signals used in the neighborhood score.</p>
+    <div class="table-wrap">
     <table>
       <thead><tr><th>Signal</th><th>Count</th><th>Index</th></tr></thead>
       <tbody>{rows_html}</tbody>
     </table>
+    </div>
     <p class="data-note">All counts from NYC public records. Index values are normalized across 177 NYC ZIP codes. Data is refreshed nightly.</p>
   </section>
 {petitions_section}  <section style="margin-bottom:32px;">
@@ -1230,7 +1233,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <p id="dir-desc" style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px;line-height:1.6;">
     Ownership clusters identified in NYC deed records. Each groups LLCs by naming patterns and acquisition activity. Public records only.
   </p>
-  <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.55);margin-bottom:28px;">{n_visible} clusters tracked across an 18-month public records window.</p>
+  <p id="dir-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.55);margin-bottom:28px;">{n_visible} clusters tracked across an 18-month public records window.</p>
   <ul class="op-list">
 {rows_html}  </ul>
 </div>
@@ -1242,13 +1245,17 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     en: {{
       heading: 'NYC Operator Networks',
       desc: 'Ownership clusters identified in NYC deed records. Each groups LLCs by naming patterns and acquisition activity. Public records only.',
+      sub: '{n_visible} clusters tracked across an 18-month public records window.',
       acq: 'acquisitions',
+      cta: 'View profile \\u2192',
       toggle: 'EN / ES'
     }},
     es: {{
       heading: 'Redes de operadores de NYC',
       desc: 'Grupos de propiedad identificados en registros de escrituras de NYC. Cada uno agrupa LLC por patrones de nombres y actividad de adquisición. Solo registros públicos.',
+      sub: '{n_visible} grupos rastreados en una ventana de registros públicos de 18 meses.',
       acq: 'adquisiciones',
+      cta: 'Ver perfil \\u2192',
       toggle: 'ES / EN'
     }}
   }};
@@ -1258,8 +1265,13 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     if (h) h.textContent = s.heading;
     var d = document.getElementById('dir-desc');
     if (d) d.textContent = s.desc;
+    var sub = document.getElementById('dir-sub');
+    if (sub) sub.textContent = s.sub;
     document.querySelectorAll('.op-label-acq').forEach(function(el) {{
       el.textContent = s.acq;
+    }});
+    document.querySelectorAll('.op-cta').forEach(function(el) {{
+      el.textContent = s.cta;
     }});
     var btn = document.getElementById('lang-toggle');
     if (btn) btn.textContent = s.toggle;
