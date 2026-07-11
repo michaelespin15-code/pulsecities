@@ -1,5 +1,21 @@
 # PulseCities checkpoint, 2026-07-11 (early morning) — full audit #2 closed
 
+## Post-audit batch (~04:30–04:50 UTC, Michael approved)
+
+- **HPD class-I violations now ingest** (ed66cb1): scraper accepts A/B/C/I;
+  365-day backfill landed 68,898 rows incl. 1,742 vacate orders. Scoring
+  stays B/C only — TestClassIGate pins the filter at every B/C-labeled
+  surface. Watch alerts and operator monitors now include class I, so a
+  vacate order on a watched building emails the watcher.
+- **AI-read failure cooldown** (30db10f): 10 min per worker after a failed
+  model call; panels get an instant 503 instead of a 3.5s doomed round-trip.
+  /week/{current} 302s to /this-week.
+- **Incident, 90s**: the cooldown's first deploy had `global` after use;
+  gunicorn crash-looped 04:39:50–04:41. The NEW health probe caught the 502
+  at 04:40:03 and escalated (first real proof the alert path delivers; a
+  recovery all-clear follows). Rule reaffirmed: import-check every touched
+  module BEFORE `systemctl reload pulsecities`.
+
 Suite green (884 passed / 2 skipped before the fixes; re-run green after, plus 18
 new guard tests). Site verified live end to end after every change. Box was
 resized: 4GB RAM / 2 vCPU now (hostname still says 1gb). Tests still run in two
@@ -81,8 +97,9 @@ halves by convention.
 2. **`git push`** — 40+ commits ahead of origin (env blocks the agent's push).
 3. **Search Console submission**, then the press pitch (ACRIS thaw makes the
    data fresher than any time in 6 weeks — good week to send).
-4. Decide: ingest HPD class-I violations (informational; currently quarantined
-   ~80/day by design) or keep excluding.
+4. ~~Class-I decision~~ — RESOLVED: ingested + displayed, never scored (see
+   post-audit batch above). Press angle now available: vacate-order counts
+   by ZIP are quotable numbers nothing else on the site captured before.
 
 ## News
 
