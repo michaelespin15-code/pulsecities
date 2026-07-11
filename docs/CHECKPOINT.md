@@ -1,5 +1,30 @@
 # PulseCities checkpoint, 2026-07-11 (early morning) — full audit #2 closed
 
+## Build sessions (~05:00–06:00 UTC, Michael approved "lets do the next build sessions")
+
+1. **LLC-to-LLC filter: already shipped 2026-04-20** (77d9419). v2_roadmap.md was
+   stale and is now marked; the 38% churn figure describes what the live filter
+   excludes. No re-score happened or was needed.
+2. **Offsite backups LIVE** (225d4a4): backup_offsite.sh pushes the newest dump
+   to R2 nightly 04:10 (vs-archive bucket, pulsecities-backups/ prefix, borrowed
+   violation-leads token; PULSECITIES_R2_* env vars switch to a dedicated bucket).
+   Weekday slots + monthly pin = zero-maintenance retention. Uploads via rclone
+   (apt-installed): curl 7.81 cannot sign streamed bodies and cannot slurp 1.6GB.
+   First push byte-verified. False-alarm ops email fired during testing from the
+   sandboxed shell; the real push succeeded.
+3. **Vacate orders surfaced** (in f26e489): "Vacated by city order" section on
+   neighborhood pages (distinct buildings + orders + latest month, 365d window,
+   display-only). Bed-Stuy shows 8 buildings / 10 orders at launch.
+4. **Spanish SSR shipped for the whole ranking funnel** (f26e489, f94faa0):
+   /neighborhood/{zip}, /neighborhoods, and all five borough pages render fully
+   in Spanish at ?lang=es (titles, metas, generated summary via bilingual
+   _build_summary, FAQ + FAQPage JSON-LD, dates, footer). English is the
+   parameterless canonical; hreflang en/es/x-default on both; EN/ES toggle
+   stores pc-lang (site-wide key) and English pages honor a stored 'es'.
+   /this-week already had a client-side ES layer on the same key; nothing needed.
+   nginx borough proxy now forwards query strings ($is_args$args) — it was
+   silently dropping them.
+
 ## Post-audit batch (~04:30–04:50 UTC, Michael approved)
 
 - **HPD class-I violations now ingest** (ed66cb1): scraper accepts A/B/C/I;
