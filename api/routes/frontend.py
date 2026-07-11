@@ -1556,19 +1556,21 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     return HTMLResponse(page)
 
 
-_nbhd_index_cache: tuple[str, float] | None = None  # cleared on restart
+_nbhd_index_cache: dict[str, tuple[str, float]] = {}  # lang -> (html, expires); cleared on restart
 
 
 @router.get("/neighborhoods", include_in_schema=False)
-def neighborhoods_directory(db: Session = Depends(get_db)):
+def neighborhoods_directory(lang: str = "en", db: Session = Depends(get_db)):
     """Every scored ZIP page, grouped by borough, ranked by score.
 
     One crawlable hop from the homepage to all 177 neighborhood pages, and a
     scannable answer to "how does my area compare" without opening the map.
     """
-    global _nbhd_index_cache
-    if _nbhd_index_cache and time.monotonic() < _nbhd_index_cache[1]:
-        return HTMLResponse(_nbhd_index_cache[0])
+    lang = "es" if lang == "es" else "en"
+    LL = _LIST_L[lang]
+    cached = _nbhd_index_cache.get(lang)
+    if cached and time.monotonic() < cached[1]:
+        return HTMLResponse(cached[0])
 
     from api.routes.neighborhoods import _borough_from_zip
 
@@ -1585,6 +1587,9 @@ def neighborhoods_directory(db: Session = Depends(get_db)):
         b = _borough_from_zip(r.zip_code) or "Other"
         boroughs.setdefault(b, []).append(r)
 
+    # ES readers keep their language while drilling into ZIP and borough pages.
+    lsuf = "" if lang == "en" else "?lang=es"
+
     sections_html = ""
     list_items = []
     pos = 0
@@ -1600,7 +1605,7 @@ def neighborhoods_directory(db: Session = Depends(get_db)):
             width = max(2, min(100, score))
             pos += 1
             rows_html += (
-                f'<li class="nb-row"><a href="/neighborhood/{r.zip_code}">'
+                f'<li class="nb-row"><a href="/neighborhood/{r.zip_code}{lsuf}">'
                 f'<span class="nb-zip">{r.zip_code}</span>'
                 f'<span class="nb-name">{name}</span>'
                 f'<span class="nb-score" style="color:{color};">{score:.1f}</span>'
@@ -1615,7 +1620,7 @@ def neighborhoods_directory(db: Session = Depends(get_db)):
             })
         slug = borough.lower().replace(" ", "-")
         heading = (
-            f'<a href="/{slug}" style="color:inherit;">{borough}</a>'
+            f'<a href="/{slug}{lsuf}" style="color:inherit;">{borough}</a>'
             if borough != "Other" else borough
         )
         sections_html += (
@@ -1626,32 +1631,35 @@ def neighborhoods_directory(db: Session = Depends(get_db)):
         )
 
     n = len(rows)
-    title = "NYC Neighborhoods by Displacement Score | PulseCities"
-    desc = (
-        f"Displacement-pressure scores for all {n} scored NYC ZIP codes, grouped by borough "
-        f"and ranked by current score. Built from public records, refreshed nightly."
-    )
+    title = LL["dir_title"]
+    desc = LL["dir_desc"].format(n=n)
+    base_url = "https://pulsecities.com/neighborhoods"
+    canonical = base_url if lang == "en" else f"{base_url}?lang=es"
+    alt_url = f"{base_url}?lang=es" if lang == "en" else base_url
     jsonld = _jsonld({
         "@context": "https://schema.org",
         "@type": "ItemList",
-        "name": "NYC neighborhoods by displacement score",
+        "name": LL["dir_h1"],
         "description": desc,
-        "url": "https://pulsecities.com/neighborhoods",
+        "url": canonical,
         "numberOfItems": n,
         "itemListElement": list_items,
     })
 
     page = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="{lang}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{_html.escape(title)}</title>
 <meta name="description" content="{_html.escape(desc)}">
-<link rel="canonical" href="https://pulsecities.com/neighborhoods">
+<link rel="canonical" href="{canonical}">
+<link rel="alternate" hreflang="en" href="{base_url}">
+<link rel="alternate" hreflang="es" href="{base_url}?lang=es">
+<link rel="alternate" hreflang="x-default" href="{base_url}">
 <meta property="og:title" content="{_html.escape(title)}">
 <meta property="og:description" content="{_html.escape(desc)}">
-<meta property="og:url" content="https://pulsecities.com/neighborhoods">
+<meta property="og:url" content="{canonical}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
 <meta property="og:image" content="https://pulsecities.com/og-image.png">
@@ -1695,30 +1703,44 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
       <span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span>
     </a>
     <div style="display:flex;align-items:center;gap:16px;">
-      <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Map</a>
-      <a href="/operators" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Operators</a>
-      <a href="/flips" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Flips</a>
-      <a href="/radar" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Radar</a>
-      <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Methodology</a>
+      <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_map']}</a>
+      <a href="/operators" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_operators']}</a>
+      <a href="/flips" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_flips']}</a>
+      <a href="/radar" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_radar']}</a>
+      <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_meth']}</a>
+      <a href="{alt_url}" id="lang-toggle" aria-label="{LL['toggle_aria']}" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['toggle']}</a>
     </div>
   </div>
 </nav>
 <div class="container">
   <div style="margin-bottom:8px;">
-    <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Home</a>
+    <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">{LL['back_home']}</a>
   </div>
-  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.4rem;font-weight:600;margin-bottom:6px;">NYC neighborhoods by displacement score</h1>
+  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.4rem;font-weight:600;margin-bottom:6px;">{LL['dir_h1']}</h1>
   <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px;line-height:1.6;">
-    Every scored ZIP in the city, grouped by borough and ranked by current displacement pressure. Each page shows the signal breakdown, the six-month trend, and an embeddable score badge.
+    {LL['dir_intro']}
   </p>
-  <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.55);margin-bottom:28px;">{n} ZIP codes scored nightly from public records.</p>
+  <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.55);margin-bottom:28px;">{LL['dir_count'].format(n=n)}</p>
   {sections_html}
 </div>
-{_FOOTER_HTML}
+{_FOOTERS.get(lang, _FOOTER_HTML)}
+<script>
+(function() {{
+  var toggle = document.getElementById('lang-toggle');
+  if (toggle) toggle.addEventListener('click', function() {{
+    try {{ localStorage.setItem('pc-lang', '{lang}' === 'en' ? 'es' : 'en'); }} catch (err) {{}}
+  }});
+  if ('{lang}' === 'en' && location.search.indexOf('lang=') === -1) {{
+    try {{
+      if (localStorage.getItem('pc-lang') === 'es') location.replace('{base_url}?lang=es');
+    }} catch (err) {{}}
+  }}
+}})();
+</script>
 </body>
 </html>"""
 
-    _nbhd_index_cache = (page, time.monotonic() + _PAGE_TTL)
+    _nbhd_index_cache[lang] = (page, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page)
 
 
@@ -1730,11 +1752,68 @@ _BOROUGH_SLUGS = {
     "staten-island": "Staten Island",
 }
 
+# Copy for the two ranking-list pages (/neighborhoods and the borough pages).
+# NYC Spanish usage says "condado" for borough (nyc.gov's own convention).
+_LIST_L = {
+    "en": {
+        "dir_title": "NYC Neighborhoods by Displacement Score | PulseCities",
+        "dir_desc": ("Displacement-pressure scores for all {n} scored NYC ZIP codes, grouped by "
+                     "borough and ranked by current score. Built from public records, refreshed nightly."),
+        "dir_h1": "NYC neighborhoods by displacement score",
+        "dir_intro": ("Every scored ZIP in the city, grouped by borough and ranked by current "
+                      "displacement pressure. Each page shows the signal breakdown, the six-month "
+                      "trend, and an embeddable score badge."),
+        "dir_count": "{n} ZIP codes scored nightly from public records.",
+        "back_home": "&#8592; Home",
+        "back_all": "&#8592; All neighborhoods",
+        "nav_map": "Map", "nav_operators": "Operators", "nav_flips": "Flips",
+        "nav_radar": "Radar", "nav_meth": "Methodology", "nav_nbhds": "Neighborhoods",
+        "b_title": "{borough} Displacement Risk by ZIP Code | PulseCities",
+        "b_desc": ("Displacement-pressure scores for all {n} scored ZIP codes in {borough}, "
+                   "ranked by current score. Highest right now: {top} ({zip}) at {s}/100. "
+                   "Public records, refreshed nightly."),
+        "b_h1": "{borough} displacement risk by ZIP",
+        "b_intro": ("Every scored ZIP in {borough}, ranked by current displacement pressure. "
+                    "Scores come from six public-record signals and refresh nightly. Open any "
+                    "ZIP for its signal breakdown and six-month trend."),
+        "b_stat_zips": "ZIPs scored", "b_stat_avg": "Borough average", "b_stat_top": "Highest: {name}",
+        "b_others": "Other boroughs:",
+        "toggle": "ES", "toggle_aria": "Ver esta página en español",
+    },
+    "es": {
+        "dir_title": "Vecindarios de NYC por puntuación de desplazamiento | PulseCities",
+        "dir_desc": ("Puntuaciones de presión de desplazamiento para los {n} códigos postales "
+                     "puntuados de NYC, agrupados por condado y ordenados por puntuación actual. "
+                     "Construido con registros públicos, actualizado cada noche."),
+        "dir_h1": "Vecindarios de NYC por puntuación de desplazamiento",
+        "dir_intro": ("Cada ZIP puntuado de la ciudad, agrupado por condado y ordenado por la "
+                      "presión de desplazamiento actual. Cada página muestra el desglose de "
+                      "señales, la tendencia de seis meses y una insignia insertable."),
+        "dir_count": "{n} códigos postales puntuados cada noche con registros públicos.",
+        "back_home": "&#8592; Inicio",
+        "back_all": "&#8592; Todos los vecindarios",
+        "nav_map": "Mapa", "nav_operators": "Operadores", "nav_flips": "Flips",
+        "nav_radar": "Radar", "nav_meth": "Metodología", "nav_nbhds": "Vecindarios",
+        "b_title": "Riesgo de desplazamiento en {borough} por código postal | PulseCities",
+        "b_desc": ("Puntuaciones de presión de desplazamiento para los {n} códigos postales "
+                   "puntuados de {borough}, ordenados por puntuación actual. El más alto ahora: "
+                   "{top} ({zip}) con {s}/100. Registros públicos, actualizados cada noche."),
+        "b_h1": "Riesgo de desplazamiento en {borough} por ZIP",
+        "b_intro": ("Cada ZIP puntuado en {borough}, ordenado por la presión de desplazamiento "
+                    "actual. Las puntuaciones provienen de seis señales de registros públicos y "
+                    "se actualizan cada noche. Abre cualquier ZIP para ver su desglose de señales "
+                    "y su tendencia de seis meses."),
+        "b_stat_zips": "ZIPs puntuados", "b_stat_avg": "Promedio del condado", "b_stat_top": "Más alto: {name}",
+        "b_others": "Otros condados:",
+        "toggle": "EN", "toggle_aria": "View this page in English",
+    },
+}
+
 _borough_page_cache: dict[str, tuple[str, float]] = {}  # slug -> (html, expires)
 
 
 @router.get("/borough/{slug}", include_in_schema=False)
-def borough_page(slug: str, db: Session = Depends(get_db)):
+def borough_page(slug: str, lang: str = "en", db: Session = Depends(get_db)):
     """Borough-level ranking page, served at /brooklyn etc. via nginx.
 
     Matches how people actually search ("brooklyn displacement data") and
@@ -1744,7 +1823,11 @@ def borough_page(slug: str, db: Session = Depends(get_db)):
     if not borough:
         return _not_found()
 
-    cached = _borough_page_cache.get(slug)
+    lang = "es" if lang == "es" else "en"
+    LL = _LIST_L[lang]
+    lsuf = "" if lang == "en" else "?lang=es"
+    cache_key = f"{slug}:{lang}"
+    cached = _borough_page_cache.get(cache_key)
     if cached and time.monotonic() < cached[1]:
         return HTMLResponse(cached[0])
 
@@ -1776,7 +1859,7 @@ def borough_page(slug: str, db: Session = Depends(get_db)):
         name = _html.escape(r.name or r.zip_code)
         width = max(2, min(100, score))
         rows_html += (
-            f'<li class="nb-row"><a href="/neighborhood/{r.zip_code}">'
+            f'<li class="nb-row"><a href="/neighborhood/{r.zip_code}{lsuf}">'
             f'<span class="nb-zip">{r.zip_code}</span>'
             f'<span class="nb-name">{name}</span>'
             f'<span class="nb-score" style="color:{color};">{score:.1f}</span>'
@@ -1790,12 +1873,12 @@ def borough_page(slug: str, db: Session = Depends(get_db)):
             "url": f"https://pulsecities.com/neighborhood/{r.zip_code}",
         })
 
-    title = f"{borough} Displacement Risk by ZIP Code | PulseCities"
-    desc = (
-        f"Displacement-pressure scores for all {n} scored ZIP codes in {borough}, "
-        f"ranked by current score. Highest right now: {top.name or top.zip_code} "
-        f"({top.zip_code}) at {float(top.score):.1f}/100. Public records, refreshed nightly."
-    )
+    title = LL["b_title"].format(borough=borough)
+    desc = LL["b_desc"].format(n=n, borough=borough, top=top.name or top.zip_code,
+                               zip=top.zip_code, s=f"{float(top.score):.1f}")
+    base_url = canonical
+    page_url = base_url if lang == "en" else f"{base_url}?lang=es"
+    alt_url = f"{base_url}?lang=es" if lang == "en" else base_url
     jsonld = _jsonld({
         "@context": "https://schema.org",
         "@graph": [
@@ -1819,21 +1902,24 @@ def borough_page(slug: str, db: Session = Depends(get_db)):
     })
 
     others = " · ".join(
-        f'<a href="/{s}" style="color:rgba(148,163,184,0.6);">{b}</a>'
+        f'<a href="/{s}{lsuf}" style="color:rgba(148,163,184,0.6);">{b}</a>'
         for s, b in _BOROUGH_SLUGS.items() if s != slug
     )
 
     page = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="{lang}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{_html.escape(title)}</title>
 <meta name="description" content="{_html.escape(desc)}">
-<link rel="canonical" href="{canonical}">
+<link rel="canonical" href="{page_url}">
+<link rel="alternate" hreflang="en" href="{base_url}">
+<link rel="alternate" hreflang="es" href="{base_url}?lang=es">
+<link rel="alternate" hreflang="x-default" href="{base_url}">
 <meta property="og:title" content="{_html.escape(title)}">
 <meta property="og:description" content="{_html.escape(desc)}">
-<meta property="og:url" content="{canonical}">
+<meta property="og:url" content="{page_url}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
 <meta property="og:image" content="https://pulsecities.com/og-image.png">
@@ -1879,36 +1965,50 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
       <span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span>
     </a>
     <div style="display:flex;align-items:center;gap:16px;">
-      <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Map</a>
-      <a href="/neighborhoods" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Neighborhoods</a>
-      <a href="/flips" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Flips</a>
-      <a href="/radar" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Radar</a>
-      <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Methodology</a>
+      <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_map']}</a>
+      <a href="/neighborhoods{lsuf}" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_nbhds']}</a>
+      <a href="/flips" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_flips']}</a>
+      <a href="/radar" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_radar']}</a>
+      <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_meth']}</a>
+      <a href="{alt_url}" id="lang-toggle" aria-label="{LL['toggle_aria']}" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['toggle']}</a>
     </div>
   </div>
 </nav>
 <div class="container">
   <div style="margin-bottom:8px;">
-    <a href="/neighborhoods" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; All neighborhoods</a>
+    <a href="/neighborhoods{lsuf}" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">{LL['back_all']}</a>
   </div>
-  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.4rem;font-weight:600;margin-bottom:6px;">{borough} displacement risk by ZIP</h1>
+  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.4rem;font-weight:600;margin-bottom:6px;">{LL['b_h1'].format(borough=borough)}</h1>
   <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:20px;line-height:1.6;">
-    Every scored ZIP in {borough}, ranked by current displacement pressure. Scores come from six public-record signals and refresh nightly. Open any ZIP for its signal breakdown and six-month trend.
+    {LL['b_intro'].format(borough=borough)}
   </p>
   <div class="stat-row">
-    <div class="stat"><span class="stat-num">{n}</span><span class="stat-label">ZIPs scored</span></div>
-    <div class="stat"><span class="stat-num">{avg:.1f}</span><span class="stat-label">Borough average</span></div>
-    <div class="stat"><span class="stat-num">{float(top.score):.1f}</span><span class="stat-label">Highest: {_html.escape(top.name or top.zip_code)}</span></div>
+    <div class="stat"><span class="stat-num">{n}</span><span class="stat-label">{LL['b_stat_zips']}</span></div>
+    <div class="stat"><span class="stat-num">{avg:.1f}</span><span class="stat-label">{LL['b_stat_avg']}</span></div>
+    <div class="stat"><span class="stat-num">{float(top.score):.1f}</span><span class="stat-label">{LL['b_stat_top'].format(name=_html.escape(top.name or top.zip_code))}</span></div>
   </div>
   <ul class="nb-list">
 {rows_html}  </ul>
-  <p style="font-size:0.75rem;color:rgba(148,163,184,0.5);margin-top:24px;">Other boroughs: {others}</p>
+  <p style="font-size:0.75rem;color:rgba(148,163,184,0.5);margin-top:24px;">{LL['b_others']} {others}</p>
 </div>
-{_FOOTER_HTML}
+{_FOOTERS.get(lang, _FOOTER_HTML)}
+<script>
+(function() {{
+  var toggle = document.getElementById('lang-toggle');
+  if (toggle) toggle.addEventListener('click', function() {{
+    try {{ localStorage.setItem('pc-lang', '{lang}' === 'en' ? 'es' : 'en'); }} catch (err) {{}}
+  }});
+  if ('{lang}' === 'en' && location.search.indexOf('lang=') === -1) {{
+    try {{
+      if (localStorage.getItem('pc-lang') === 'es') location.replace('{base_url}?lang=es');
+    }} catch (err) {{}}
+  }}
+}})();
+</script>
 </body>
 </html>"""
 
-    _borough_page_cache[slug] = (page, time.monotonic() + _PAGE_TTL)
+    _borough_page_cache[cache_key] = (page, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page)
 
 
