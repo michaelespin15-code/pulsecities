@@ -15,7 +15,7 @@ import sys
 import socket
 
 from config.logging_config import configure_logging
-from scheduler.alerts import send_ops_email
+from scheduler.alerts import flush_alerts, send_ops_email
 from scheduler.pipeline import run_nightly_pipeline
 
 _LOCK_FILE = "/tmp/pulsecities_pipeline.lock"
@@ -90,6 +90,10 @@ def main() -> None:
         )
         sys.exit(1)
     finally:
+        # If the pipeline crashed mid-run, anomalies it had already buffered
+        # still reach the ops inbox. No-op on the normal path, which flushes
+        # at the end of run_nightly_pipeline.
+        flush_alerts()
         _release_lock()
 
 
