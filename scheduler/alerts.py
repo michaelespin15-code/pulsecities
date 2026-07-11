@@ -8,14 +8,21 @@ Sends fire-and-forget POST notifications to a configured webhook URL
 - Scoring engine returns 0 zip codes (systemic scoring failure)
 
 Configuration:
-    ALERT_WEBHOOK_URL — Slack or Discord incoming webhook URL.
-                        If empty or absent, alerts are logged as WARNING only.
+    ALERT_WEBHOOK_URL — Slack or Discord incoming webhook URL. Optional; alerts
+                        also buffer for a single end-of-run ops email, so they
+                        reach a human even with no webhook configured.
     ALERT_WEBHOOK_FORMAT — "slack" (default) or "discord".
                            Slack uses {"text": ...}, Discord uses {"content": ...}.
+    ALERT_SNOOZE — comma-separated substrings. Alerts whose subject or body
+                   matches one are logged but not emailed or webhooked. For
+                   acknowledged, long-running upstream conditions (a stalled
+                   source that would otherwise warn every night). Remove the
+                   entry when the condition clears.
 
 Failure contract:
-    send_alert() NEVER raises an exception. Webhook failure is always logged
-    as WARNING and silently swallowed — it must never cause a pipeline failure.
+    send_alert(), flush_alerts(), and notify_ops() NEVER raise. Delivery
+    failure is always logged as WARNING and swallowed — alerting must never
+    cause a pipeline failure.
 """
 import logging
 import os
@@ -27,12 +34,23 @@ logger = logging.getLogger(__name__)
 ALERT_WEBHOOK_URL: str = os.getenv("ALERT_WEBHOOK_URL", "")
 ALERT_WEBHOOK_FORMAT: str = os.getenv("ALERT_WEBHOOK_FORMAT", "slack")
 
+# Anomalies raised during a pipeline run, drained by flush_alerts() into one
+# ops email. Batching keeps a run with several warnings to a single message.
+_pending: list[tuple[str, str]] = []
+
+
+def _snoozed(subject: str, body: str) -> bool:
+    patterns = [p.strip() for p in os.getenv("ALERT_SNOOZE", "").split(",") if p.strip()]
+    haystack = f"{subject}\n{body}"
+    return any(p in haystack for p in patterns)
+
 
 def send_alert(subject: str, body: str) -> None:
     """
-    POST a JSON alert payload to ALERT_WEBHOOK_URL.
+    Report a pipeline anomaly. Posts to ALERT_WEBHOOK_URL when configured, and
+    always buffers the alert for the end-of-run ops email (see flush_alerts),
+    so anomalies reach a human either way.
 
-    If ALERT_WEBHOOK_URL is not configured, logs a WARNING instead.
     Never raises — all exceptions are caught and logged.
 
     Args:
@@ -43,12 +61,20 @@ def send_alert(subject: str, body: str) -> None:
     webhook_url = os.getenv("ALERT_WEBHOOK_URL", "")
     webhook_format = os.getenv("ALERT_WEBHOOK_FORMAT", "slack")
 
-    message = f"*PulseCities Alert* — {subject}\n{body}"
-
-    if not webhook_url:
-        logger.warning("ALERT (no webhook configured): %s — %s", subject, body)
+    if _snoozed(subject, body):
+        logger.info("ALERT (snoozed via ALERT_SNOOZE): %s — %s", subject, body)
         return
 
+    _pending.append((subject, body))
+    logger.warning("ALERT: %s — %s", subject, body)
+    _post_webhook(subject, body, webhook_url, webhook_format)
+
+
+def _post_webhook(subject: str, body: str, webhook_url: str, webhook_format: str) -> None:
+    if not webhook_url:
+        return
+
+    message = f"*PulseCities Alert* — {subject}\n{body}"
     if webhook_format == "discord":
         payload = {"content": message}
     else:
@@ -66,6 +92,44 @@ def send_alert(subject: str, body: str) -> None:
             "Failed to send webhook alert (non-fatal): %s",
             exc,
         )
+
+
+def flush_alerts() -> None:
+    """Email every alert buffered by send_alert() during this run as one ops
+    message, then clear the buffer. Call once at the end of a pipeline run.
+    No-ops when nothing was buffered. Never raises."""
+    if not _pending:
+        return
+    try:
+        count = len(_pending)
+        lines = []
+        for subject, body in _pending:
+            lines.append(f"- {subject}\n  {body}")
+        send_ops_email(
+            f"{count} pipeline {'anomaly' if count == 1 else 'anomalies'} this run",
+            "The nightly pipeline raised the following alerts:\n\n"
+            + "\n\n".join(lines)
+            + "\n\nFull context: tail -200 /var/log/pulsecities/scraper.log",
+        )
+    except Exception as exc:  # noqa: BLE001 — alerting must never break the pipeline
+        logger.warning("Failed to flush buffered alerts (non-fatal): %s", exc)
+    finally:
+        _pending.clear()
+
+
+def notify_ops(subject: str, body: str) -> None:
+    """Severe-path escalation: webhook (when configured) plus an immediate ops
+    email. For failures that must reach a human tonight, not in tomorrow's
+    batch — scoring crashes, probe outages. Skips the flush buffer so the
+    message is never sent twice, and deliberately ignores ALERT_SNOOZE.
+    Never raises."""
+    logger.warning("ALERT (escalated): %s — %s", subject, body)
+    _post_webhook(
+        subject, body,
+        os.getenv("ALERT_WEBHOOK_URL", ""),
+        os.getenv("ALERT_WEBHOOK_FORMAT", "slack"),
+    )
+    send_ops_email(subject, body)
 
 
 def send_ops_email(subject: str, body: str) -> None:

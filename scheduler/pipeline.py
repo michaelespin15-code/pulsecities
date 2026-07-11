@@ -29,7 +29,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from models.database import get_scraper_db
 from models.scraper import ScraperRun
-from scheduler.alerts import send_alert
+from scheduler.alerts import flush_alerts, notify_ops, send_alert
 from scrapers.complaints import ComplaintsScraper
 from scrapers.dcwp_licenses import DcwpScraper
 from scrapers.dhcr_rs import DhcrRsScraper
@@ -75,6 +75,21 @@ def _cleanup_stale_runs(db) -> None:
         )
 
 
+def _prune_quarantine(db) -> None:
+    """
+    Quarantine is a triage buffer, not an archive: rows older than 90 days have
+    either been acted on or accepted as noise, and the table otherwise grows
+    without bound (it hit 284 MB of one known-benign HPD class-I pattern before
+    retention existed, bloating every nightly backup).
+    """
+    result = db.execute(
+        text("DELETE FROM scraper_quarantine WHERE created_at < NOW() - INTERVAL '90 days'")
+    )
+    db.commit()
+    if result.rowcount:
+        logger.info("Pruned %d quarantine rows older than 90 days", result.rowcount)
+
+
 def run_nightly_pipeline() -> bool:
     """
     Entry point called by the nightly cron job at 2:00 AM UTC.
@@ -87,6 +102,7 @@ def run_nightly_pipeline() -> bool:
 
     with get_scraper_db() as db:
         _cleanup_stale_runs(db)
+        _prune_quarantine(db)
 
     with get_scraper_db() as db:
         if not _run_pluto_if_due(db):
@@ -111,10 +127,14 @@ def run_nightly_pipeline() -> bool:
             had_failures = True
 
     # Scoring engine runs after all scrapers complete
-    _run_scoring()
+    if not _run_scoring():
+        had_failures = True
 
     # MTEK portfolio monitor — needs fresh violations/permits/evictions data
     _run_mtek_monitor()
+
+    # One combined ops email for every anomaly the run raised.
+    flush_alerts()
 
     elapsed = (datetime.now(timezone.utc) - started).total_seconds()
     logger.info("=== Nightly pipeline complete in %.0fs ===", elapsed)
@@ -220,11 +240,13 @@ def _run_dof_if_due(db) -> bool:
     return _run_scraper_with_retry("dof_assessments", DOFScraper)
 
 
-def _run_scoring() -> None:
+def _run_scoring() -> bool:
     """
     Trigger the scoring engine after all scrapers complete.
     compute_scores() handles both displacement_scores upsert and score_history
     snapshot in a single pass (Step 6 and Step 7 of compute.py).
+    Returns False on crash, zero-scored batch, or a missing snapshot — all
+    three leave the site serving stale data and must fail the pipeline loudly.
     """
     try:
         logger.info("Scoring engine: starting...")
@@ -232,14 +254,36 @@ def _run_scoring() -> None:
         with get_scraper_db() as db:
             n = compute_scores(db)
             if n == 0:
-                send_alert(
+                notify_ops(
                     "Scoring engine: zero zip codes scored",
                     "compute_scores() returned 0. Either no data in DB or >50% of zips "
                     "failed sanity checks. Check scoring/compute.py logs for details.",
                 )
+                return False
+            # Snapshot invariant: every scored zip must have landed in today's
+            # score_history. A shortfall means the snapshot was lost or partial
+            # (history charts and digest trends silently go stale from there).
+            snapshotted = db.execute(
+                text("SELECT COUNT(*) FROM score_history WHERE scored_at = CURRENT_DATE")
+            ).scalar() or 0
+            if snapshotted < n:
+                notify_ops(
+                    "Scoring engine: score_history snapshot incomplete",
+                    f"Scored {n} zips but score_history has {snapshotted} rows for "
+                    f"today. Recover by re-running the scorer (idempotent same-day): "
+                    f"cd /root/pulsecities && venv/bin/python -m scoring.compute",
+                )
+                return False
         logger.info("Scoring engine: scored and snapshotted %d zip codes", n)
+        return True
     except Exception as exc:
-        logger.error("Scoring engine failed: %s", exc)
+        logger.error("Scoring engine failed: %s", exc, exc_info=True)
+        notify_ops(
+            "Scoring engine crashed",
+            f"compute_scores() raised and the site is now serving yesterday's "
+            f"scores:\n\n{exc}\n\n  tail -200 /var/log/pulsecities/scraper.log",
+        )
+        return False
 
 
 def _run_mtek_monitor() -> None:
