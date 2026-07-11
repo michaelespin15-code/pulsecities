@@ -73,16 +73,21 @@ def _key_lookups_exhausted(client_ip: str) -> bool:
 
 def _prune_key_cache() -> None:
     """Drop expired entries; if still over the cap, drop the oldest. Never
-    wholesale-clears, so a junk-key flood can't evict valid partner entries."""
+    wholesale-clears, so a junk-key flood can't evict valid partner entries.
+    Iterates over snapshots throughout: other threadpool threads mutate the
+    cache concurrently, and min() over a live dict can raise mid-iteration."""
     if len(_API_KEY_CACHE) <= 256:
         return
     now = time.monotonic()
     for k, (_, exp) in list(_API_KEY_CACHE.items()):
         if now >= exp:
-            del _API_KEY_CACHE[k]
+            _API_KEY_CACHE.pop(k, None)
     while len(_API_KEY_CACHE) > 256:
-        oldest = min(_API_KEY_CACHE, key=lambda k: _API_KEY_CACHE[k][1])
-        del _API_KEY_CACHE[oldest]
+        snapshot = list(_API_KEY_CACHE.items())
+        if not snapshot:
+            break
+        oldest = min(snapshot, key=lambda kv: kv[1][1])[0]
+        _API_KEY_CACHE.pop(oldest, None)
 
 
 def _resolve_api_key(raw_key: str) -> dict | None:
@@ -93,21 +98,27 @@ def _resolve_api_key(raw_key: str) -> dict | None:
 
     from sqlalchemy import text
     from models.database import SessionLocal
-    db = SessionLocal()
     try:
-        row = db.execute(
-            text("SELECT label, tier FROM api_keys WHERE key_hash = :h AND active"),
-            {"h": key_hash},
-        ).fetchone()
-        info = {"label": row.label, "tier": row.tier} if row else None
-        if row:
-            db.execute(
-                text("UPDATE api_keys SET last_used_at = now() WHERE key_hash = :h"),
+        db = SessionLocal()
+        try:
+            row = db.execute(
+                text("SELECT label, tier FROM api_keys WHERE key_hash = :h AND active"),
                 {"h": key_hash},
-            )
-            db.commit()
-    finally:
-        db.close()
+            ).fetchone()
+            info = {"label": row.label, "tier": row.tier} if row else None
+            if row:
+                db.execute(
+                    text("UPDATE api_keys SET last_used_at = now() WHERE key_hash = :h"),
+                    {"h": key_hash},
+                )
+                db.commit()
+        finally:
+            db.close()
+    except Exception:
+        # A DB outage must degrade keyed requests to 401, not surface a raw
+        # 500 from inside middleware. Not cached: the next attempt retries.
+        logger.exception("api-key lookup failed; treating key as unresolvable")
+        return None
 
     _prune_key_cache()
     _API_KEY_CACHE[key_hash] = (info, time.monotonic() + _API_KEY_TTL)
@@ -149,7 +160,9 @@ async def api_key_middleware(request, call_next):
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Tighten to specific origins before launch
+    # Deliberately open: this is a public, credential-free read API and
+    # /developers invites third-party pages to call it from the browser.
+    allow_origins=["*"],
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )

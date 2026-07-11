@@ -7,6 +7,7 @@ GET /api/ops/summary?t={token}   — returns JSON for the dashboard
 Both return 404 on missing/wrong token so the endpoint is invisible to scanners.
 """
 
+import hmac
 import logging
 import os
 import shutil
@@ -30,21 +31,26 @@ _SCRAPER_LOG = Path("/var/log/pulsecities/scraper.log")
 _DIGEST_LOG = Path("/var/log/pulsecities/digest.log")
 
 
+def _token_ok(t: str) -> bool:
+    # Constant-time comparison; a plain != leaks match length through timing.
+    return bool(_TOKEN) and hmac.compare_digest(t, _TOKEN)
+
+
 def _auth(t: str = Query(default="")) -> None:
-    if not _TOKEN or t != _TOKEN:
+    if not _token_ok(t):
         raise HTTPException(status_code=404)
 
 
 @router.get("/ops", include_in_schema=False)
 def ops_page(t: str = Query(default="")):
-    if not _TOKEN or t != _TOKEN:
+    if not _token_ok(t):
         raise HTTPException(status_code=404)
     return FileResponse(str(_FRONTEND / "ops.html"), media_type="text/html")
 
 
 @router.get("/api/ops/summary", include_in_schema=False)
 def ops_summary(t: str = Query(default=""), db: Session = Depends(get_db)):
-    if not _TOKEN or t != _TOKEN:
+    if not _token_ok(t):
         raise HTTPException(status_code=404)
 
     # --- Subscribers ---
@@ -117,10 +123,15 @@ def ops_summary(t: str = Query(default=""), db: Session = Depends(get_db)):
 
     # --- Recent log tail ---
     def _tail(path: Path, n: int = 10) -> list[str]:
+        # Bounded read from the end; read_text() pulled whole multi-MB logs
+        # into memory on every dashboard refresh.
         if not path.exists():
             return []
         try:
-            lines = path.read_text(errors="replace").splitlines()
+            with open(path, "rb") as fh:
+                fh.seek(0, os.SEEK_END)
+                fh.seek(max(0, fh.tell() - 64 * 1024))
+                lines = fh.read().decode(errors="replace").splitlines()
             return [l for l in lines if l.strip()][-n:]
         except Exception:
             return []
