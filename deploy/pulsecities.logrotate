@@ -11,6 +11,7 @@
 /var/log/pulsecities/building_alerts.log
 /var/log/pulsecities/oca_ingest.log
 /var/log/pulsecities/backup.log
+/var/log/pulsecities/backup_offsite.log
 /var/log/pulsecities/digest.log
 /var/log/pulsecities/flips_scan.log
 /var/log/pulsecities/ops_health.log
