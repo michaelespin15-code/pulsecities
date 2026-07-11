@@ -97,6 +97,54 @@ _FAQ_A3 = (
     "The score shows neighborhood-level public-record indicators that may be worth reviewing."
 )
 
+# Spanish FAQ, terminology consistent with the client-side dicts in app.html
+# and index.html (vecindario, desalojo, puntuación, registros públicos).
+_FAQS = {
+    "en": [(_FAQ_Q1, _FAQ_A1), (_FAQ_Q2, _FAQ_A2), (_FAQ_Q3, _FAQ_A3)],
+    "es": [
+        ("¿Qué significa esta puntuación de desplazamiento?",
+         "La puntuación es un índice de 0 a 100 que muestra dónde se elevan varias señales "
+         "de desplazamiento en registros públicos a nivel de código postal. Cada señal se "
+         "normaliza entre los 177 códigos postales de NYC, así que las zonas densas no se "
+         "puntúan solo por conteos brutos."),
+        ("¿Qué registros públicos se incluyen?",
+         "PulseCities usa registros públicos de NYC: permisos de construcción de DOB, "
+         "violaciones de vivienda de HPD, quejas de vivienda al 311, casos de desalojo, "
+         "transferencias de escrituras de ACRIS, datos de renta estabilizada de DHCR y "
+         "conteos de unidades residenciales de MapPLUTO."),
+        ("¿Es esto una predicción de desalojo?",
+         "No. PulseCities no predice desalojos individuales y no es asesoría legal. La "
+         "puntuación muestra indicadores de registros públicos a nivel de vecindario que "
+         "pueden merecer revisión."),
+    ],
+}
+
+_ES_MONTHS = ["enero", "febrero", "marzo", "abril", "mayo", "junio",
+              "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+
+
+def _long_date(d: date, lang: str) -> str:
+    if lang == "es":
+        return f"{d.day} de {_ES_MONTHS[d.month - 1]} de {d.year}"
+    return d.strftime("%B %-d, %Y")
+
+
+def _month_year(d, lang: str) -> str:
+    if lang == "es":
+        return f"{_ES_MONTHS[d.month - 1]} de {d.year}"
+    return d.strftime("%B %Y")
+
+
+# Display words for the score tier. _tier_info stays the internal canonical
+# (English) label; these are presentation only. Spanish adjectives agree with
+# "presión" (feminine).
+_TIER_WORDS = {
+    "en": {"Critical": "CRITICAL", "High": "HIGH", "Moderate": "MODERATE",
+           "Low": "LOW", "Unknown": "UNKNOWN"},
+    "es": {"Critical": "CRÍTICA", "High": "ALTA", "Moderate": "MODERADA",
+           "Low": "BAJA", "Unknown": "DESCONOCIDA"},
+}
+
 
 
 def _jsonld(obj) -> str:
@@ -140,6 +188,159 @@ _FOOTER_HTML = """<footer>
     <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="color:#64748b;text-decoration:none;display:inline-flex;align-items:center;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
   </div>
 </footer>"""
+
+_FOOTERS = {
+    "en": _FOOTER_HTML,
+    "es": (_FOOTER_HTML
+           .replace('>Home<', '>Inicio<')
+           .replace('>Neighborhoods<', '>Vecindarios<')
+           .replace('>Methodology<', '>Metodología<')
+           .replace('>About<', '>Acerca de<')
+           .replace('>Press<', '>Prensa<')
+           .replace('>Status<', '>Estado<')
+           .replace('>Contact<', '>Contacto<')
+           .replace('Built by Michael Espin', 'Creado por Michael Espin')),
+}
+
+# Neighborhood-page copy, both languages. Data (names, numbers, dates) flows
+# in via format slots; everything a reader sees as prose lives here.
+_NB_L = {
+    "en": {
+        "title_scored": "{name} ({zip}), {borough} | Displacement Score {s}/100 | PulseCities",
+        "social_scored": "{name} ({zip}) | Displacement Score {s}/100 | PulseCities",
+        "title_unscored": "{name} ({zip}), {borough} | NYC Displacement Signals | PulseCities",
+        "desc_scored": ("{name} shows {tier} displacement-pressure signals based on NYC public records, "
+                        "including LLC acquisitions, eviction filings, 311 complaints, HPD violations, "
+                        "permits, and rent-stabilized housing data."),
+        "desc_unscored": ("Track displacement-pressure signals in {name} ({zip}) from NYC public records: "
+                          "LLC acquisitions, eviction filings, 311 complaints, HPD violations, permits, "
+                          "and rent-stabilized housing data."),
+        "nav": [("/map", "Map"), ("/methodology", "Methodology"), ("/about", "About"), ("/press", "Press")],
+        "back_map": "&#8592; Back to map",
+        "all_borough": "All {borough} ZIPs",
+        "h1": "Displacement Signals | {name} ({zip})",
+        "updated": "{borough}. Updated {date}.",
+        "updated_recently": "recently",
+        "tier_line": "{tier} DISPLACEMENT PRESSURE",
+        "no_score": "Score data not yet available.",
+        "trend_h": "Score trend",
+        "trend_sub": "Daily composite score, past {n} days. Change over the window: ",
+        "trend_flat": "flat",
+        "signals_h": "Signal breakdown",
+        "signals_sub": "Public-record signals used in the neighborhood score.",
+        "th": ("Signal", "Count", "Index"),
+        "sig_labels": {
+            "llc_acquisitions": "LLC property acquisitions",
+            "permits": "Building permits (residential, 3+ units)",
+            "evictions": "Residential eviction filings",
+            "hpd_violations": "HPD violations (Class B+C)",
+            "complaint_rate": "311 housing complaints",
+            "rs_unit_loss": "Rent-stabilized unit loss",
+        },
+        "win_365": "past 365 days", "win_90": "past 90 days", "win_annual": "annual comparison",
+        "rs_none": "No annual loss recorded in current data",
+        "signals_note": ("All counts from NYC public records. Index values are normalized across "
+                         "177 NYC ZIP codes. Data is refreshed nightly."),
+        "pet_h": "Early warning: housing-court petitions",
+        "pet_sub": ("Residential eviction cases filed in housing court for {zip}. Filings lead "
+                    "executed evictions by months, so rising volume is the earliest public signal available."),
+        "pet_stat": "petitions filed {window}",
+        "pet_vs": "vs the prior three months ({n} filed)",
+        "pet_note": ("Source: NYS Office of Court Administration via the OCA Data Collective "
+                     "(Housing Data Coalition), CC BY-NC-SA. The extract is ZIP-level by design and "
+                     "does not identify tenants or buildings. Shown for context only; not part of "
+                     "the composite score."),
+        "vac_h": "Vacated by city order",
+        "vac_sub": ("Buildings in {zip} that HPD has ordered vacated in the past 12 months. A vacate "
+                    "order is displacement already carried out: the city has ordered residents out of "
+                    "the building."),
+        "vac_one": "building", "vac_many": "buildings",
+        "vac_orders": " across {n} orders", "vac_latest": ", most recent {date}",
+        "vac_note": ("Source: HPD housing maintenance code violations, class I informational orders, "
+                     "via NYC Open Data. Shown for context only; not part of the composite score."),
+        "faq_h": "About this data",
+        "embed_h": "Embed this score",
+        "embed_sub": ("A live badge for articles and community pages. It stays current as the score "
+                      "changes and links back to this page."),
+        "embed_alt": "PulseCities displacement score badge for {name} ({zip})",
+        "embed_aria": "Embed code",
+        "embed_btn": "Copy embed code",
+        "meth_link": "Read the methodology &#8594;",
+        "cta_map": "Open {zip} on the map &#8594;",
+        "cta_copy": "Copy link", "cta_brief": "Evidence brief",
+        "copied": "Copied!",
+        "lang_toggle_label": "ES", "lang_toggle_aria": "Ver esta página en español",
+    },
+    "es": {
+        "title_scored": "{name} ({zip}), {borough} | Puntuación de desplazamiento {s}/100 | PulseCities",
+        "social_scored": "{name} ({zip}) | Puntuación de desplazamiento {s}/100 | PulseCities",
+        "title_unscored": "{name} ({zip}), {borough} | Señales de desplazamiento en NYC | PulseCities",
+        "desc_scored": ("{name} muestra señales de presión de desplazamiento {tier} según registros "
+                        "públicos de NYC, incluyendo adquisiciones LLC, casos de desalojo, quejas al "
+                        "311, violaciones HPD, permisos y datos de renta estabilizada."),
+        "desc_unscored": ("Sigue las señales de presión de desplazamiento en {name} ({zip}) desde "
+                          "registros públicos de NYC: adquisiciones LLC, casos de desalojo, quejas al "
+                          "311, violaciones HPD, permisos y datos de renta estabilizada."),
+        "nav": [("/map", "Mapa"), ("/methodology", "Metodología"), ("/about", "Acerca de"), ("/press", "Prensa")],
+        "back_map": "&#8592; Volver al mapa",
+        "all_borough": "Todos los ZIP de {borough}",
+        "h1": "Señales de desplazamiento | {name} ({zip})",
+        "updated": "{borough}. Actualizado el {date}.",
+        "updated_recently": "recientemente",
+        "tier_line": "PRESIÓN DE DESPLAZAMIENTO {tier}",
+        "no_score": "La puntuación aún no está disponible.",
+        "trend_h": "Tendencia de la puntuación",
+        "trend_sub": "Puntuación compuesta diaria, últimos {n} días. Cambio en el período: ",
+        "trend_flat": "sin cambio",
+        "signals_h": "Desglose de señales",
+        "signals_sub": "Señales de registros públicos usadas en la puntuación del vecindario.",
+        "th": ("Señal", "Conteo", "Índice"),
+        "sig_labels": {
+            "llc_acquisitions": "Adquisiciones de propiedades por LLC",
+            "permits": "Permisos de construcción (residencial, 3+ unidades)",
+            "evictions": "Desalojos residenciales",
+            "hpd_violations": "Violaciones HPD (Clase B+C)",
+            "complaint_rate": "Quejas de vivienda al 311",
+            "rs_unit_loss": "Pérdida de unidades de renta estabilizada",
+        },
+        "win_365": "últimos 365 días", "win_90": "últimos 90 días", "win_annual": "comparación anual",
+        "rs_none": "Sin pérdida anual registrada en los datos actuales",
+        "signals_note": ("Todos los conteos provienen de registros públicos de NYC. Los valores del "
+                         "índice se normalizan entre 177 códigos postales de NYC. Los datos se "
+                         "actualizan cada noche."),
+        "pet_h": "Alerta temprana: peticiones en la corte de vivienda",
+        "pet_sub": ("Casos de desalojo residencial presentados en la corte de vivienda para {zip}. "
+                    "Las presentaciones anticipan por meses a los desalojos ejecutados, así que un "
+                    "volumen creciente es la señal pública más temprana disponible."),
+        "pet_stat": "peticiones presentadas {window}",
+        "pet_vs": "vs los tres meses anteriores ({n} presentadas)",
+        "pet_note": ("Fuente: NYS Office of Court Administration vía el OCA Data Collective (Housing "
+                     "Data Coalition), CC BY-NC-SA. El extracto es a nivel de código postal por diseño "
+                     "y no identifica inquilinos ni edificios. Solo para contexto; no forma parte de "
+                     "la puntuación compuesta."),
+        "vac_h": "Desalojados por orden de la ciudad",
+        "vac_sub": ("Edificios en {zip} que HPD ordenó desalojar en los últimos 12 meses. Una orden "
+                    "de desalojo del edificio es desplazamiento ya ejecutado: la ciudad ordenó la "
+                    "salida de los residentes."),
+        "vac_one": "edificio", "vac_many": "edificios",
+        "vac_orders": " en {n} órdenes", "vac_latest": ", la más reciente en {date}",
+        "vac_note": ("Fuente: violaciones del código de mantenimiento de vivienda de HPD, órdenes "
+                     "informativas clase I, vía NYC Open Data. Solo para contexto; no forma parte de "
+                     "la puntuación compuesta."),
+        "faq_h": "Sobre estos datos",
+        "embed_h": "Inserta esta puntuación",
+        "embed_sub": ("Una insignia en vivo para artículos y páginas comunitarias. Se mantiene al día "
+                      "cuando cambia la puntuación y enlaza de vuelta a esta página."),
+        "embed_alt": "Insignia de puntuación de desplazamiento de PulseCities para {name} ({zip})",
+        "embed_aria": "Código para insertar",
+        "embed_btn": "Copiar código",
+        "meth_link": "Lee la metodología &#8594;",
+        "cta_map": "Abrir {zip} en el mapa &#8594;",
+        "cta_copy": "Copiar enlace", "cta_brief": "Expediente de evidencia",
+        "copied": "¡Copiado!",
+        "lang_toggle_label": "EN", "lang_toggle_aria": "View this page in English",
+    },
+}
 
 
 def _trend_svg(history: list[tuple[str, float]]) -> str:
@@ -217,58 +418,57 @@ def _build_neighborhood_page(
     last_updated: str | None,
     history: list[tuple[str, float]] | None = None,
     petitions: dict | None = None,
+    vacates: dict | None = None,
+    lang: str = "en",
 ) -> str:
     e = _html.escape
+    L = _NB_L.get(lang, _NB_L["en"])
 
     borough_disp = borough or "New York City"
-    canonical    = f"https://pulsecities.com/neighborhood/{zip_code}"
+    base_url     = f"https://pulsecities.com/neighborhood/{zip_code}"
+    canonical    = base_url if lang == "en" else f"{base_url}?lang=es"
     og_image     = f"https://pulsecities.com/og/{zip_code}.png"
 
     if last_updated:
         try:
-            updated_disp = date.fromisoformat(last_updated).strftime("%B %-d, %Y")
+            updated_disp = _long_date(date.fromisoformat(last_updated), lang)
         except ValueError:
             updated_disp = last_updated
     else:
-        updated_disp = "recently"
+        updated_disp = L["updated_recently"]
 
     if score is not None:
         tier_label, tier_color = _tier_info(score)
         score_str    = f"{score:.1f}"
-        page_title   = f"{name} ({zip_code}), {borough_disp} | Displacement Score {score_str}/100 | PulseCities"
-        social_title = f"{name} ({zip_code}) | Displacement Score {score_str}/100 | PulseCities"
-        meta_desc    = (
-            f"{name} shows {tier_label.lower()} displacement-pressure signals based on NYC public records, "
-            f"including LLC acquisitions, eviction filings, 311 complaints, HPD violations, "
-            f"permits, and rent-stabilized housing data."
-        )
+        page_title   = L["title_scored"].format(name=name, zip=zip_code, borough=borough_disp, s=score_str)
+        social_title = L["social_scored"].format(name=name, zip=zip_code, borough=borough_disp, s=score_str)
+        meta_desc    = L["desc_scored"].format(name=name, zip=zip_code,
+                                               tier=_TIER_WORDS[lang][tier_label].lower())
     else:
         tier_label, tier_color = "Unknown", "#64748b"
         score_str    = "N/A"
-        page_title   = f"{name} ({zip_code}), {borough_disp} | NYC Displacement Signals | PulseCities"
+        page_title   = L["title_unscored"].format(name=name, zip=zip_code, borough=borough_disp)
         social_title = page_title
-        meta_desc    = (
-            f"Track displacement-pressure signals in {name} ({zip_code}) from NYC public records: LLC acquisitions, "
-            f"eviction filings, 311 complaints, HPD violations, permits, and rent-stabilized housing data."
-        )
+        meta_desc    = L["desc_unscored"].format(name=name, zip=zip_code)
 
-    # (breakdown_key, display_label, window_label, raw_count or None for dormant signals)
+    # (breakdown_key, window_label, raw_count or None for dormant signals)
     _signals = [
-        ("llc_acquisitions", "LLC property acquisitions",               "past 365 days",     raw_counts.get("llc_acquisitions", 0)),
-        ("permits",          "Building permits (residential, 3+ units)", "past 365 days",     raw_counts.get("permits", 0)),
-        ("evictions",        "Residential eviction filings",             "past 365 days",     raw_counts.get("evictions", 0)),
-        ("hpd_violations",   "HPD violations (Class B+C)",               "past 90 days",      raw_hpd),
-        ("complaint_rate",   "311 housing complaints",                   "past 365 days",     raw_counts.get("complaint_rate", 0)),
-        ("rs_unit_loss",     "Rent-stabilized unit loss",                "annual comparison", None),
+        ("llc_acquisitions", L["win_365"],    raw_counts.get("llc_acquisitions", 0)),
+        ("permits",          L["win_365"],    raw_counts.get("permits", 0)),
+        ("evictions",        L["win_365"],    raw_counts.get("evictions", 0)),
+        ("hpd_violations",   L["win_90"],     raw_hpd),
+        ("complaint_rate",   L["win_365"],    raw_counts.get("complaint_rate", 0)),
+        ("rs_unit_loss",     L["win_annual"], None),
     ]
 
     rows_html = ""
-    for key, label, window, count in _signals:
+    for key, window, count in _signals:
+        label = L["sig_labels"][key]
         idx   = breakdown.get(key)
         idx_s = f"{idx:.1f}" if idx is not None else "&mdash;"
         i_col = _idx_color(float(idx) if idx is not None else 0.0)
         if key == "rs_unit_loss":
-            cnt_s = "No annual loss recorded in current data"
+            cnt_s = L["rs_none"]
             c_col = "rgba(148,163,184,0.4)"
         elif count == 0:
             cnt_s = "0"
@@ -284,14 +484,15 @@ def _build_neighborhood_page(
             f'</tr>'
         )
 
+    tier_line = L["tier_line"].format(tier=_TIER_WORDS[lang][tier_label])
     score_block = (
         f'<div class="score-block">'
         f'<span class="score-num" style="color:{tier_color};">{score_str}</span>'
         f'<span class="score-denom">/100</span>'
-        f'<span class="score-tier" style="color:{tier_color};">{tier_label.upper()} DISPLACEMENT PRESSURE</span>'
+        f'<span class="score-tier" style="color:{tier_color};">{tier_line}</span>'
         f'</div>'
         if score is not None
-        else '<div class="score-block"><p style="color:rgba(148,163,184,0.5);font-size:0.9rem;">Score data not yet available.</p></div>'
+        else f'<div class="score-block"><p style="color:rgba(148,163,184,0.5);font-size:0.9rem;">{L["no_score"]}</p></div>'
     )
     summary_html = f'<p class="summary">{e(summary)}</p>' if summary else ""
 
@@ -300,12 +501,12 @@ def _build_neighborhood_page(
     if svg:
         n_days = len(history)
         delta = history[-1][1] - history[0][1]
-        delta_s = f"{delta:+.1f}" if abs(delta) >= 0.05 else "flat"
+        delta_s = f"{delta:+.1f}" if abs(delta) >= 0.05 else L["trend_flat"]
         trend_section = (
             f'<section style="margin-bottom:32px;">'
-            f'<h2>Score trend</h2>'
-            f'<p class="section-sub">Daily composite score, past {n_days} days. '
-            f'Change over the window: <span style="font-family:\'JetBrains Mono\',monospace;color:#f1f5f9;">{delta_s}</span></p>'
+            f'<h2>{L["trend_h"]}</h2>'
+            f'<p class="section-sub">{L["trend_sub"].format(n=n_days)}'
+            f'<span style="font-family:\'JetBrains Mono\',monospace;color:#f1f5f9;">{delta_s}</span></p>'
             f'<div style="border:1px solid var(--border);border-radius:8px;padding:14px 12px 8px;background:rgba(255,255,255,.02);">{svg}</div>'
             f'</section>'
         )
@@ -356,18 +557,23 @@ def _build_neighborhood_page(
         ],
     })
 
+    faqs = _FAQS.get(lang, _FAQS["en"])
     faq_ld = _jsonld({
         "@context": "https://schema.org",
         "@type": "FAQPage",
+        "inLanguage": lang,
         "mainEntity": [
-            {"@type": "Question", "name": _FAQ_Q1, "acceptedAnswer": {"@type": "Answer", "text": _FAQ_A1}},
-            {"@type": "Question", "name": _FAQ_Q2, "acceptedAnswer": {"@type": "Answer", "text": _FAQ_A2}},
-            {"@type": "Question", "name": _FAQ_Q3, "acceptedAnswer": {"@type": "Answer", "text": _FAQ_A3}},
+            {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}}
+            for q, a in faqs
         ],
     })
+    faq_html = "".join(
+        f'<div class="faq-item"><p class="faq-q">{e(q)}</p><p class="faq-a">{e(a)}</p></div>'
+        for q, a in faqs
+    )
 
     breadcrumb_borough = (
-        f' &middot; <a href="/{_bslug}">All {e(borough_disp)} ZIPs</a>'
+        f' &middot; <a href="/{_bslug}">{L["all_borough"].format(borough=e(borough_disp))}</a>'
         if _bslug in ("brooklyn", "manhattan", "queens", "bronx", "staten-island") else ""
     )
 
@@ -387,19 +593,43 @@ def _build_neighborhood_page(
         if petitions.get("prior"):
             change = (petitions["recent"] - petitions["prior"]) / petitions["prior"] * 100
             arrow_color = "#ef4444" if change >= 10 else ("#3E6B54" if change <= -10 else "var(--muted)")
+            prior_s = f"{petitions['prior']:,}"
             pct = (f' <span style="font-family:\'JetBrains Mono\',monospace;color:{arrow_color};">'
-                   f'{change:+.0f}%</span> <span style="color:var(--faint);">vs the prior three months '
-                   f'({petitions["prior"]:,} filed)</span>')
+                   f'{change:+.0f}%</span> <span style="color:var(--faint);">'
+                   f'{L["pet_vs"].format(n=prior_s)}</span>')
         petitions_section = f"""  <section style="margin-bottom:32px;">
-    <h2>Early warning: housing-court petitions</h2>
-    <p class="section-sub">Residential eviction cases filed in housing court for {zip_code}. Filings lead executed evictions by months, so rising volume is the earliest public signal available.</p>
-    <p style="font-size:.95rem;margin-bottom:8px;"><span style="font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:600;">{petitions["recent"]:,}</span> <span style="color:var(--muted);">petitions filed {e(petitions["window"])}</span>{pct}</p>
-    <p class="data-note">Source: NYS Office of Court Administration via the OCA Data Collective (Housing Data Coalition), CC BY-NC-SA. The extract is ZIP-level by design and does not identify tenants or buildings. Shown for context only; not part of the composite score.</p>
+    <h2>{L["pet_h"]}</h2>
+    <p class="section-sub">{L["pet_sub"].format(zip=zip_code)}</p>
+    <p style="font-size:.95rem;margin-bottom:8px;"><span style="font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:600;">{petitions["recent"]:,}</span> <span style="color:var(--muted);">{L["pet_stat"].format(window=e(petitions["window"]))}</span>{pct}</p>
+    <p class="data-note">{L["pet_note"]}</p>
   </section>
 """
 
+    # Buildings vacated by HPD order: not a leading indicator like petitions,
+    # but displacement already executed and on the record. Rendered only when
+    # the past year has any; most ZIPs stay quiet.
+    vacates_section = ""
+    if vacates and vacates.get("buildings"):
+        n_b, n_o = vacates["buildings"], vacates["orders"]
+        latest = vacates.get("latest")
+        latest_txt = L["vac_latest"].format(date=_month_year(latest, lang)) if latest else ""
+        orders_txt = L["vac_orders"].format(n=n_o) if n_o > n_b else ""
+        noun = L["vac_many"] if n_b != 1 else L["vac_one"]
+        vacates_section = f"""  <section style="margin-bottom:32px;">
+    <h2>{L["vac_h"]}</h2>
+    <p class="section-sub">{L["vac_sub"].format(zip=zip_code)}</p>
+    <p style="font-size:.95rem;margin-bottom:8px;"><span style="font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:600;">{n_b:,}</span> <span style="color:var(--muted);">{noun}{orders_txt}{latest_txt}</span></p>
+    <p class="data-note">{L["vac_note"]}</p>
+  </section>
+"""
+
+    # The alternate-language URL for the toggle and hreflang pair. English is
+    # the parameterless canonical form; Spanish lives at ?lang=es.
+    alt_url = f"{base_url}?lang=es" if lang == "en" else base_url
+    nav_links = "".join(f'<a href="{href}">{label}</a>' for href, label in L["nav"])
+
     return f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="{lang}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -407,6 +637,9 @@ def _build_neighborhood_page(
 <title>{e(page_title)}</title>
 <meta name="description" content="{e(meta_desc)}">
 <link rel="canonical" href="{e(canonical)}">
+<link rel="alternate" hreflang="en" href="{e(base_url)}">
+<link rel="alternate" hreflang="es" href="{e(base_url)}?lang=es">
+<link rel="alternate" hreflang="x-default" href="{e(base_url)}">
 <meta property="og:title" content="{e(social_title)}">
 <meta property="og:description" content="{e(meta_desc)}">
 <meta property="og:url" content="{e(canonical)}">
@@ -483,56 +716,67 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <span style="font-size:.85rem;color:rgba(148,163,184,.55);">PulseCities</span>
   </a>
-  <div class="nav-links"><a href="/map">Map</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="/press">Press</a></div>
+  <div class="nav-links">{nav_links}<a href="{e(alt_url)}" id="lang-toggle" aria-label="{L['lang_toggle_aria']}">{L['lang_toggle_label']}</a></div>
 </div></nav>
 <main><div class="container">
-  <p class="breadcrumb"><a href="/map">&#8592; Back to map</a>{breadcrumb_borough}</p>
-  <h1>Displacement Signals | {e(name)} ({zip_code})</h1>
-  <p class="subline">{e(borough_disp)}. Updated {e(updated_disp)}.</p>
+  <p class="breadcrumb"><a href="/map">{L['back_map']}</a>{breadcrumb_borough}</p>
+  <h1>{L['h1'].format(name=e(name), zip=zip_code)}</h1>
+  <p class="subline">{L['updated'].format(borough=e(borough_disp), date=e(updated_disp))}</p>
   {score_block}
   {summary_html}
   {trend_section}
   <section style="margin-bottom:32px;">
-    <h2>Signal breakdown</h2>
-    <p class="section-sub">Public-record signals used in the neighborhood score.</p>
+    <h2>{L['signals_h']}</h2>
+    <p class="section-sub">{L['signals_sub']}</p>
     <div class="table-wrap">
     <table>
-      <thead><tr><th>Signal</th><th>Count</th><th>Index</th></tr></thead>
+      <thead><tr><th>{L['th'][0]}</th><th>{L['th'][1]}</th><th>{L['th'][2]}</th></tr></thead>
       <tbody>{rows_html}</tbody>
     </table>
     </div>
-    <p class="data-note">All counts from NYC public records. Index values are normalized across 177 NYC ZIP codes. Data is refreshed nightly.</p>
+    <p class="data-note">{L['signals_note']}</p>
   </section>
-{petitions_section}  <section style="margin-bottom:32px;">
-    <h2>About this data</h2>
+{petitions_section}{vacates_section}  <section style="margin-bottom:32px;">
+    <h2>{L['faq_h']}</h2>
     <div class="faq-list">
-      <div class="faq-item"><p class="faq-q">{e(_FAQ_Q1)}</p><p class="faq-a">{e(_FAQ_A1)}</p></div>
-      <div class="faq-item"><p class="faq-q">{e(_FAQ_Q2)}</p><p class="faq-a">{e(_FAQ_A2)}</p></div>
-      <div class="faq-item"><p class="faq-q">{e(_FAQ_Q3)}</p><p class="faq-a">{e(_FAQ_A3)}</p></div>
+      {faq_html}
     </div>
   </section>
   <section style="margin-bottom:32px;">
-    <h2>Embed this score</h2>
-    <p class="section-sub">A live badge for articles and community pages. It stays current as the score changes and links back to this page.</p>
-    <p style="margin-bottom:12px;"><img src="/badge/{zip_code}.svg" alt="PulseCities displacement score badge for {e(name)} ({zip_code})" width="320" height="64" style="display:block;"></p>
-    <textarea id="embed-code" readonly rows="3" aria-label="Embed code" style="width:100%;max-width:560px;background:var(--surface);color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px;font-family:SFMono-Regular,Menlo,Consolas,monospace;line-height:1.5;resize:none;">{e(embed_code)}</textarea>
-    <p style="margin-top:8px;"><button class="btn-copy" id="copy-embed-btn" onclick="copyEmbed()">Copy embed code</button></p>
+    <h2>{L['embed_h']}</h2>
+    <p class="section-sub">{L['embed_sub']}</p>
+    <p style="margin-bottom:12px;"><img src="/badge/{zip_code}.svg" alt="{L['embed_alt'].format(name=e(name), zip=zip_code)}" width="320" height="64" style="display:block;"></p>
+    <textarea id="embed-code" readonly rows="3" aria-label="{L['embed_aria']}" style="width:100%;max-width:560px;background:var(--surface);color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px;font-family:SFMono-Regular,Menlo,Consolas,monospace;line-height:1.5;resize:none;">{e(embed_code)}</textarea>
+    <p style="margin-top:8px;"><button class="btn-copy" id="copy-embed-btn" onclick="copyEmbed()">{L['embed_btn']}</button></p>
   </section>
-  <p class="meth-link"><a href="/methodology">Read the methodology &#8594;</a></p>
+  <p class="meth-link"><a href="/methodology">{L['meth_link']}</a></p>
   <div class="cta-row">
-    <a href="/map?q={zip_code}" class="btn-map">Open {zip_code} on the map &#8594;</a>
-    <button class="btn-copy" id="copy-btn" onclick="copyLink()">Copy link</button>
-    <a href="/brief/zip/{zip_code}" class="btn-copy">Evidence brief</a>
+    <a href="/map?q={zip_code}" class="btn-map">{L['cta_map'].format(zip=zip_code)}</a>
+    <button class="btn-copy" id="copy-btn" onclick="copyLink()">{L['cta_copy']}</button>
+    <a href="/brief/zip/{zip_code}" class="btn-copy">{L['cta_brief']}</a>
   </div>
 </div></main>
-{_FOOTER_HTML}
+{_FOOTERS.get(lang, _FOOTER_HTML)}
 <script>
+// The toggle remembers the choice; pages honor a stored 'es' on arrival so a
+// Spanish reader stays in Spanish while sharing links that default to English.
+(function() {{
+  var toggle = document.getElementById('lang-toggle');
+  if (toggle) toggle.addEventListener('click', function() {{
+    try {{ localStorage.setItem('pc-lang', '{lang}' === 'en' ? 'es' : 'en'); }} catch (err) {{}}
+  }});
+  if ('{lang}' === 'en' && location.search.indexOf('lang=') === -1) {{
+    try {{
+      if (localStorage.getItem('pc-lang') === 'es') location.replace('{base_url}?lang=es');
+    }} catch (err) {{}}
+  }}
+}})();
 function copyLink() {{
   var url = 'https://pulsecities.com/neighborhood/{zip_code}';
   var btn = document.getElementById('copy-btn');
   function onDone() {{
-    btn.textContent = 'Copied!';
-    setTimeout(function() {{ btn.textContent = 'Copy link'; }}, 2000);
+    btn.textContent = '{L['copied']}';
+    setTimeout(function() {{ btn.textContent = '{L['cta_copy']}'; }}, 2000);
   }}
   if (navigator.clipboard && navigator.clipboard.writeText) {{
     navigator.clipboard.writeText(url).then(onDone).catch(function() {{ fallback(url, onDone); }});
@@ -544,8 +788,8 @@ function copyEmbed() {{
   var ta = document.getElementById('embed-code');
   var btn = document.getElementById('copy-embed-btn');
   function onDone() {{
-    btn.textContent = 'Copied!';
-    setTimeout(function() {{ btn.textContent = 'Copy embed code'; }}, 2000);
+    btn.textContent = '{L['copied']}';
+    setTimeout(function() {{ btn.textContent = '{L['embed_btn']}'; }}, 2000);
   }}
   ta.select();
   if (navigator.clipboard && navigator.clipboard.writeText) {{
@@ -586,11 +830,16 @@ def about_page():
 
 
 @router.get("/neighborhood/{zip_code}", include_in_schema=False)
-def neighborhood_page(zip_code: str, db: Session = Depends(get_db)):
+def neighborhood_page(zip_code: str, lang: str = "en", db: Session = Depends(get_db)):
     if not (len(zip_code) == 5 and zip_code.isdigit()):
         return _not_found()
 
-    cached = _page_cache.get(zip_code)
+    # English is the parameterless canonical; anything that isn't exactly
+    # ?lang=es renders English.
+    lang = "es" if lang == "es" else "en"
+
+    cache_key = f"{zip_code}:{lang}"
+    cached = _page_cache.get(cache_key)
     if cached and time.monotonic() < cached[1]:
         return HTMLResponse(cached[0])
 
@@ -624,7 +873,7 @@ def neighborhood_page(zip_code: str, db: Session = Depends(get_db)):
     """), {"zip": zip_code}).fetchone()
     raw_hpd = int(hpd_row[0] or 0)
 
-    summary = _build_summary(score, breakdown, raw_counts)
+    summary = _build_summary(score, breakdown, raw_counts, lang=lang)
 
     history_rows = db.execute(text("""
         SELECT scored_at, composite_score
@@ -665,11 +914,26 @@ def neighborhood_page(zip_code: str, db: Session = Depends(get_db)):
         )
         petitions = {"recent": recent, "prior": prior, "window": window}
 
+    # Buildings vacated by HPD order in the past year. Class-I violations
+    # ingest as of 2026-07-11; display-only, never part of the composite.
+    vacates = None
+    vac_row = db.execute(text("""
+        SELECT COUNT(DISTINCT bbl) AS buildings, COUNT(*) AS orders,
+               MAX(COALESCE(nov_issued_date, inspection_date)) AS latest
+        FROM violations_raw
+        WHERE zip_code = :zip AND violation_class = 'I'
+          AND description ILIKE '%VACATE%'
+          AND COALESCE(nov_issued_date, inspection_date) >= CURRENT_DATE - INTERVAL '365 days'
+    """), {"zip": zip_code}).fetchone()
+    if vac_row and vac_row.buildings:
+        vacates = {"buildings": int(vac_row.buildings), "orders": int(vac_row.orders),
+                   "latest": vac_row.latest}
+
     page_html = _build_neighborhood_page(
         zip_code, name, borough, score, breakdown, raw_counts, raw_hpd, summary, last_updated, history,
-        petitions=petitions,
+        petitions=petitions, vacates=vacates, lang=lang,
     )
-    _page_cache[zip_code] = (page_html, time.monotonic() + _PAGE_TTL)
+    _page_cache[cache_key] = (page_html, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page_html)
 
 
