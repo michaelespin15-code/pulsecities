@@ -155,7 +155,7 @@
 
             <!-- What this shows -->
             <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:6px;line-height:1.65;" data-i18n="what_this_shows">Properties grouped by LLC naming patterns in public deed records. Scores reflect neighborhood displacement risk, not a claim of wrongdoing by any individual actor.</p>
-            <p style="font-size:0.78rem;color:#94a3b8;margin-bottom:20px;line-height:1.55;">Derived from public deed records; indicates ownership structure, not legal conclusions.</p>
+            <p style="font-size:0.78rem;color:#94a3b8;margin-bottom:20px;line-height:1.55;" data-i18n="network_disclaimer">Derived from public deed records; indicates ownership structure, not legal conclusions.</p>
 
             <!-- LLC network graph -->
             <div id="network-section" style="display:none; margin-bottom: 24px;">
@@ -377,6 +377,11 @@
             pattern_note_header: 'Analyst note',
             recent_acq_header:   'Recent Acquisitions',
             acq_verify_note:     'Each row shows its ACRIS document ID under the date. Verify any record at',
+            network_disclaimer:  'Derived from public deed records; indicates ownership structure, not legal conclusions.',
+            lot_no_address:      'Lot {bbl} (no address on record)',
+            chip_score:          'Score',
+            chip_rs:             'RS units',
+            chip_bc:             'B/C violations',
             recent_acq_window:   '(last 18 months, up to 50)',
             th_address:          'Address',
             th_zip:              'Zip',
@@ -450,6 +455,11 @@
             pattern_note_header: 'Nota del analista',
             recent_acq_header:   'Adquisiciones Recientes',
             acq_verify_note:     'Cada fila muestra su ID de documento ACRIS bajo la fecha. Verifique cualquier registro en',
+            network_disclaimer:  'Derivado de registros públicos de escrituras; indica estructura de propiedad, no conclusiones legales.',
+            lot_no_address:      'Lote {bbl} (sin dirección registrada)',
+            chip_score:          'Puntuación',
+            chip_rs:             'Unidades RS',
+            chip_bc:             'Violaciones B/C',
             recent_acq_window:   '(\u00faltimos 18 meses, hasta 50)',
             th_address:          'Direcci\u00f3n',
             th_zip:              'ZIP',
@@ -526,7 +536,7 @@
     // Properties and evictions rows with no address show the lot, not a bare BBL.
     function addrOrLot(address, bbl) {
         if (address) return address;
-        if (bbl) return 'Lot ' + bbl + ' (no address on record)';
+        if (bbl) return t('lot_no_address').replace('{bbl}', bbl);
         return '';
     }
 
@@ -568,12 +578,12 @@
         scorePill.className = 'mob-score';
         scorePill.style.background = sc.bg;
         scorePill.style.color = sc.text;
-        scorePill.textContent = 'Score ' + fmtScore(p.displacement_score);
+        scorePill.textContent = t('chip_score') + ' ' + fmtScore(p.displacement_score);
         statsRow.appendChild(scorePill);
 
         const statParts = [];
-        if (rs) statParts.push('RS units ' + rs.rs_unit_count);
-        statParts.push('B/C violations ' + (bcCount > 0 ? bcCount : '0'));
+        if (rs) statParts.push(t('chip_rs') + ' ' + rs.rs_unit_count);
+        statParts.push(t('chip_bc') + ' ' + (bcCount > 0 ? bcCount : '0'));
         const statSpan = document.createElement('span');
         statSpan.className = 'mob-meta';
         statSpan.style.marginTop = '0';
