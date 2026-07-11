@@ -15,6 +15,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 # OCA housing-court petition aggregates — weekly; the upstream extract updates on its own cadence
 15 4 * * 1 root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.oca_ingest >> /var/log/pulsecities/oca_ingest.log 2>&1
 30 3 * * * root cd /root/pulsecities && /root/pulsecities/scripts/backup_db.sh >> /var/log/pulsecities/backup.log 2>&1
+# Off-box copy of the newest dump — R2 weekday slots + monthly pin; loud on failure
+10 4 * * * root cd /root/pulsecities && /root/pulsecities/scripts/backup_offsite.sh >> /var/log/pulsecities/backup_offsite.log 2>&1
 0 9 * * 0 root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.weekly_digest >> /var/log/pulsecities/digest.log 2>&1
 30 9 * * 0 root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.weekly_eviction_flips >> /var/log/pulsecities/flips_scan.log 2>&1
 30 4 1 * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.refresh_operator_directory >> /var/log/pulsecities/operator_refresh.log 2>&1
