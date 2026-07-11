@@ -29,7 +29,15 @@ fi
 
 OUT="$BACKUP_DIR/pulsecities_$(date +%F).sql.gz"
 
-pg_dump "$DATABASE_URL" | gzip > "$OUT"
+# Dump to a temp name and move into place only when the whole pipeline
+# succeeded. Writing $OUT directly meant a mid-dump failure left a truncated
+# file as the newest "backup" until Sunday's restore test noticed.
+TMP="$OUT.tmp"
+trap 'rm -f "$TMP"' EXIT
+pg_dump "$DATABASE_URL" | gzip > "$TMP"
+gzip -t "$TMP"
+mv "$TMP" "$OUT"
+trap - EXIT
 
 # Drop anything older than the retention window so the disk doesn't fill.
 find "$BACKUP_DIR" -name 'pulsecities_*.sql.gz' -mtime "+$RETENTION_DAYS" -delete

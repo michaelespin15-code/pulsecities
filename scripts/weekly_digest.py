@@ -830,7 +830,8 @@ def is_meaningful_citywide_update(db) -> tuple[bool, list[str]]:
         if movers >= 3:
             reasons.append(f"{movers} ZIP codes moved by 3+ points this week")
 
-        new_high = [r for r in rows if float(r[1] or 0) >= 75 and float(r[2] or 0) < 75]
+        # 67 is the canonical High threshold (map legend, _tier_info, ai_summary).
+        new_high = [r for r in rows if float(r[1] or 0) >= 67 and float(r[2] or 0) < 67]
         if new_high:
             names = ", ".join(r[0] for r in new_high[:3])
             reasons.append(f"{len(new_high)} ZIP(s) entered High tier: {names}")
@@ -1404,7 +1405,7 @@ def render_operator_digest(subscription: dict, update: dict) -> dict:
 def run(dry_run: bool = False, limit: int | None = None, email_filter: str | None = None) -> None:
     if not dry_run and not resend.api_key:
         logger.error("RESEND_API_KEY not set. Aborting digest.")
-        return
+        sys.exit(1)
 
     db = SessionLocal()
     try:

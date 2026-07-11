@@ -59,7 +59,12 @@ def _download(workdir: Path) -> None:
 
 
 def _nyc_zips(db) -> set[str]:
-    return {r[0] for r in db.execute(text("SELECT zip_code FROM neighborhoods"))}
+    # The 99999 row is the unmatched-ZIP sentinel, not a neighborhood; letting it
+    # through would re-create phantom aggregate rows every weekly ingest.
+    return {
+        r[0]
+        for r in db.execute(text("SELECT zip_code FROM neighborhoods WHERE zip_code != '99999'"))
+    }
 
 
 def build_spill(addresses_csv: Path, zips: set[str], spill_path: Path) -> int:
@@ -145,6 +150,22 @@ def run(keep_downloads: bool = False) -> None:
 
         if not counts:
             logger.error("Zero rows aggregated; refusing to truncate the existing table.")
+            sys.exit(1)
+
+        # A truncated upstream extract still parses and passes the zero-row check.
+        # Refuse to replace the table when the new total collapses versus what we
+        # already hold: the archive only grows month over month.
+        with get_scraper_db() as db:
+            current_total = db.execute(
+                text("SELECT COALESCE(SUM(filings), 0) FROM oca_petitions_monthly")
+            ).scalar() or 0
+        if current_total and total < current_total * 0.8:
+            logger.error(
+                "New extract has %s filings vs %s stored (%.0f%%); refusing to "
+                "replace the table with a shrunken dataset. Inspect the upstream "
+                "extract and re-run.",
+                f"{total:,}", f"{current_total:,}", 100 * total / current_total,
+            )
             sys.exit(1)
 
         with get_scraper_db() as db:
