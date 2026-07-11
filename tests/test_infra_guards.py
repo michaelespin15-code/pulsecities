@@ -70,6 +70,7 @@ _DEPLOY_PAIRS = [
     ("deploy/nginx-security-headers.conf",
      "/etc/nginx/snippets/pulsecities-security-headers.conf"),
     ("deploy/pulsecities.cron", "/etc/cron.d/pulsecities"),
+    ("deploy/pulsecities-probe.cron", "/etc/cron.d/pulsecities-probe"),
     ("deploy/pulsecities.logrotate", "/etc/logrotate.d/pulsecities"),
     ("deploy/pulsecities.service", "/etc/systemd/system/pulsecities.service"),
 ]
