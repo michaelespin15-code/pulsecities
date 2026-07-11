@@ -19,7 +19,7 @@ if not DATABASE_URL:
 
 # pool_size=5, max_overflow=10 — shared across scrapers and API workers
 # pool_pre_ping=True — avoids stale connection errors after idle periods
-# On 2GB VPS: PostgreSQL max_connections=100, so 2 workers × 15 = 30 max connections
+# Box is 4GB / 2 vCPU: PostgreSQL max_connections=100, so 2 workers × 15 = 30 max connections
 engine = create_engine(
     DATABASE_URL,
     pool_size=5,

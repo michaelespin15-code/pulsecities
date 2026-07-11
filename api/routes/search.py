@@ -53,6 +53,13 @@ from config.nyc import ACRIS_TRANSFER_DOC_TYPES
 from models.database import get_db
 
 logger = logging.getLogger(__name__)
+def _like_pattern(q: str) -> str:
+    """Contains-match pattern with user-typed %, _, and \\ escaped, so "50%"
+    searches for a literal percent sign instead of acting as a wildcard."""
+    escaped = q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    return f"%{escaped}%"
+
+
 router = APIRouter(prefix="/search", tags=["search"])
 limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
@@ -79,7 +86,7 @@ def search_grouped(
     if len(q) < 3:
         raise HTTPException(status_code=400, detail="Query too short")
 
-    pattern = f"%{q}%"
+    pattern = _like_pattern(q)
     is_zip = q.isdigit() and len(q) == 5
 
     # ── Neighborhoods ──────────────────────────────────────────────────────────
@@ -209,7 +216,7 @@ def search_landlord(
     if len(q) < 3:
         raise HTTPException(status_code=400, detail="Query too short")
 
-    pattern = f"%{q}%"
+    pattern = _like_pattern(q)
 
     # --- Summary --- aggregates over ALL matching records, not capped at 50
     summary_row = db.execute(

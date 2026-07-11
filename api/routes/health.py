@@ -30,11 +30,13 @@ SCRAPER_NAMES = [
 ]
 
 
-@router.get("/health")
+@router.api_route("/health", methods=["GET", "HEAD"])
 def health(db: Session = Depends(get_db)):
     """
     Returns 200 with scraper status if DB is reachable.
     Returns 503 if DB connection fails.
+    HEAD is accepted because third-party uptime monitors default to it;
+    a 405 there reads as an outage.
     """
     try:
         db.execute(text("SELECT 1"))
