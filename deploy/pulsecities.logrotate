@@ -1,0 +1,43 @@
+# Log rotation for PulseCities.
+# Deploy: cp deploy/pulsecities.logrotate /etc/logrotate.d/pulsecities
+#
+# The gunicorn unit is pulsecities.service; USR1 makes gunicorn reopen its log
+# files after rotation. The old config signalled a nonexistent gunicorn.service
+# (masked by || true), which would have silently ended all access/error logging
+# on the first 50M rotation.
+
+/var/log/pulsecities/scraper.log
+/var/log/pulsecities/sitemap.log
+/var/log/pulsecities/building_alerts.log
+/var/log/pulsecities/oca_ingest.log
+/var/log/pulsecities/backup.log
+/var/log/pulsecities/digest.log
+/var/log/pulsecities/flips_scan.log
+/var/log/pulsecities/ops_health.log
+/var/log/pulsecities/backup_restore_test.log
+/var/log/pulsecities/operator_refresh.log
+/var/log/pulsecities/health_probe.log {
+    weekly
+    size 20M
+    rotate 3
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0644 root root
+}
+
+/var/log/pulsecities/gunicorn-access.log
+/var/log/pulsecities/gunicorn-error.log {
+    weekly
+    size 50M
+    rotate 2
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0644 root root
+    postrotate
+        systemctl kill -s USR1 pulsecities.service 2>/dev/null || true
+    endscript
+}
