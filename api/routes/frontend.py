@@ -16,7 +16,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from fastapi import APIRouter, Depends
-from fastapi.responses import FileResponse, HTMLResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -2584,6 +2584,11 @@ def week_edition_page(slug: str, db: Session = Depends(get_db)):
 
     weeks = _completed_weeks(db)
     if (monday, sunday) not in weeks:
+        # The in-progress week lives at /this-week; hand-edited URLs for it
+        # should land there instead of a 404.
+        today = date.today()
+        if monday <= today <= sunday:
+            return RedirectResponse("/this-week", status_code=302)
         return _not_found()
 
     cached = _week_page_cache.get(slug)

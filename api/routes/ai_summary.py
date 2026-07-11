@@ -88,6 +88,12 @@ _gen_day: date | None = None
 _gen_count = 0
 _gen_lock = threading.Lock()
 
+# After a model-call failure (exhausted credits, provider outage), skip the
+# API entirely for a while: every panel open was otherwise paying a ~3.5s
+# doomed round-trip, and the panel flashed a spinner before hiding.
+_FAILURE_COOLDOWN = 600.0  # seconds
+_cooldown_until = 0.0
+
 # Lazily constructed Anthropic client (reused across requests).
 _client = None
 _client_lock = threading.Lock()
@@ -160,6 +166,7 @@ def get_neighborhood_summary(
     db: Session = Depends(get_db),
 ):
     """Plain-English AI read of a ZIP's displacement signals. Cached per scoring run."""
+    global _cooldown_until
     if not (len(zip_code) == 5 and zip_code.isdigit()):
         raise HTTPException(status_code=400, detail="zip_code must be 5 digits")
 
@@ -186,6 +193,9 @@ def get_neighborhood_summary(
         # No key configured — the page falls back to the deterministic summary.
         raise HTTPException(status_code=503, detail="AI summary is not available right now.")
 
+    if time.monotonic() < _cooldown_until:
+        raise HTTPException(status_code=503, detail="AI summary is not available right now.")
+
     if not _under_daily_cap():
         logger.warning("AI summary daily cap reached; serving 503 for %s", zip_code)
         raise HTTPException(status_code=503, detail="AI summary is not available right now.")
@@ -208,7 +218,9 @@ def get_neighborhood_summary(
             messages=[{"role": "user", "content": facts}],
         )
     except Exception as exc:  # noqa: BLE001 — any SDK/network failure degrades gracefully
-        logger.warning("AI summary generation failed for %s: %r", zip_code, exc)
+        _cooldown_until = time.monotonic() + _FAILURE_COOLDOWN
+        logger.warning("AI summary generation failed for %s (cooling down %ds): %r",
+                       zip_code, int(_FAILURE_COOLDOWN), exc)
         raise HTTPException(status_code=503, detail="AI summary is not available right now.")
 
     if message.stop_reason == "refusal":
