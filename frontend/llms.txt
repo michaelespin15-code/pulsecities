@@ -13,13 +13,13 @@ PulseCities tracks housing displacement pressure across New York City by aggrega
 - Block-level investigation tools: address search, renovation-flip pattern detection, civic event timelines
 - Weekly email digests for subscribers tracking specific neighborhoods
 
-## Current high-risk neighborhoods (as of latest scoring run)
+## Current top-risk neighborhoods (as of latest scoring run)
 
-- Bedford-Stuyvesant (11216, Brooklyn) - score 69.7, high displacement pressure
-- Hunts Point (10474, Bronx) - score 63.9, high displacement pressure
-- Harlem (10026, Manhattan) - score 61.2, high displacement pressure
-- Wakefield (10470, Bronx) - score 58.9, high displacement pressure
-- Longwood (10459, Bronx) - score 56.9, high displacement pressure
+- Bedford-Stuyvesant (11216, Brooklyn) - score 70.6, high displacement pressure
+- Hunts Point (10474, Bronx) - score 65.6, moderate displacement pressure
+- Harlem (10026, Manhattan) - score 61.2, moderate displacement pressure
+- Wakefield (10466, Bronx) - score 60.8, moderate displacement pressure
+- East Flatbush (11203, Brooklyn) - score 59.8, moderate displacement pressure
 
 ## Data sources
 

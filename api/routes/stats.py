@@ -93,35 +93,13 @@ def _compute_freshness(db):
     return signals
 
 
-@router.get("")
-@limiter.limit("60/minute")
-def get_citywide_stats(request: Request, response: Response, db: Session = Depends(get_db)):
+def compute_top_risk(db) -> tuple[dict | None, list[dict]]:
     """
-    Citywide 30-day LLC transfers, eviction filings, and the current top-risk ZIP.
-    Consumed by the homepage hero overlay stat chips.
+    The canonical top-risk list: highest-scored ZIPs whose dominant signal has
+    recent raw records to show. Shared by the /api/stats route and the llms.txt
+    generator so the two surfaces can never disagree.
+    Returns (top_risk, top_risk_list) — the single headline entry and the list.
     """
-    response.headers["Cache-Control"] = "public, max-age=3600"
-    cached = _STATS_CACHE.get("data")
-    if cached and _time.monotonic() < cached[1]:
-        return cached[0]
-    llc_count = db.execute(text("""
-        SELECT COUNT(DISTINCT bbl) FROM ownership_raw
-        WHERE party_type = '2'
-          AND doc_type IN ('DEED', 'DEEDP', 'ASST')
-          AND party_name_normalized LIKE '%LLC%'
-          AND doc_date >= CURRENT_DATE - INTERVAL '90 days'
-          AND party_name_normalized NOT ILIKE '%MORTGAGE%'
-          AND party_name_normalized NOT ILIKE '%LOAN SERVICING%'
-          AND party_name_normalized NOT ILIKE '%LOAN SERVICE%'
-          AND party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
-          AND party_name_normalized NOT ILIKE '%CREDIT UNION%'
-    """)).scalar() or 0
-
-    eviction_count = db.execute(text("""
-        SELECT COUNT(*) FROM evictions_raw
-        WHERE executed_date >= CURRENT_DATE - INTERVAL '30 days'
-    """)).scalar() or 0
-
     top_rows = db.execute(text(f"""
         WITH
         llc_counts AS (
@@ -245,6 +223,41 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
             }
         if len(top_risk_list) >= 5:
             break
+
+    return top_risk, top_risk_list
+
+
+@router.get("")
+@limiter.limit("60/minute")
+def get_citywide_stats(request: Request, response: Response, db: Session = Depends(get_db)):
+    """
+    Citywide 30-day LLC transfers, eviction filings, and the current top-risk ZIP.
+    Consumed by the homepage hero overlay stat chips.
+    """
+    response.headers["Cache-Control"] = "public, max-age=3600"
+    cached = _STATS_CACHE.get("data")
+    if cached and _time.monotonic() < cached[1]:
+        return cached[0]
+
+    llc_count = db.execute(text("""
+        SELECT COUNT(DISTINCT bbl) FROM ownership_raw
+        WHERE party_type = '2'
+          AND doc_type IN ('DEED', 'DEEDP', 'ASST')
+          AND party_name_normalized LIKE '%LLC%'
+          AND doc_date >= CURRENT_DATE - INTERVAL '90 days'
+          AND party_name_normalized NOT ILIKE '%MORTGAGE%'
+          AND party_name_normalized NOT ILIKE '%LOAN SERVICING%'
+          AND party_name_normalized NOT ILIKE '%LOAN SERVICE%'
+          AND party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
+          AND party_name_normalized NOT ILIKE '%CREDIT UNION%'
+    """)).scalar() or 0
+
+    eviction_count = db.execute(text("""
+        SELECT COUNT(*) FROM evictions_raw
+        WHERE executed_date >= CURRENT_DATE - INTERVAL '30 days'
+    """)).scalar() or 0
+
+    top_risk, top_risk_list = compute_top_risk(db)
 
     result = {
         "llc_transfers_recent": int(llc_count),
