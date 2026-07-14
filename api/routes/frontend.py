@@ -281,6 +281,15 @@ _NB_L = {
         "cta_map": "Open {zip} on the map &#8594;",
         "cta_copy": "Copy link", "cta_brief": "Evidence brief",
         "copied": "Copied!",
+        "watch_h": "Watch this block",
+        "watch_sub": ("Get a one-page email whenever the public record for this neighborhood moves: "
+                      "deeds, evictions, permits, violations. Quiet weeks send nothing."),
+        "watch_placeholder": "you@email.com",
+        "watch_btn": "Watch",
+        "watch_ok": "You're watching this neighborhood. We'll email you when the record moves.",
+        "watch_dupe": "You're already watching this neighborhood.",
+        "watch_invalid": "Enter a valid email address.",
+        "watch_err": "Something went wrong. Please try again.",
         "lang_toggle_label": "ES", "lang_toggle_aria": "Ver esta página en español",
     },
     "es": {
@@ -350,6 +359,16 @@ _NB_L = {
         "cta_map": "Abrir {zip} en el mapa &#8594;",
         "cta_copy": "Copiar enlace", "cta_brief": "Expediente de evidencia",
         "copied": "¡Copiado!",
+        "watch_h": "Observa esta zona",
+        "watch_sub": ("Recibe un correo de una página cuando el registro público de este vecindario "
+                      "cambie: escrituras, desalojos, permisos, violaciones. Las semanas tranquilas "
+                      "no envían nada."),
+        "watch_placeholder": "tu@correo.com",
+        "watch_btn": "Observar",
+        "watch_ok": "Estás observando este vecindario. Te avisaremos cuando el registro cambie.",
+        "watch_dupe": "Ya estás observando este vecindario.",
+        "watch_invalid": "Ingresa un correo electrónico válido.",
+        "watch_err": "Algo salió mal. Inténtalo de nuevo.",
         "lang_toggle_label": "EN", "lang_toggle_aria": "View this page in English",
     },
 }
@@ -640,6 +659,49 @@ def _build_neighborhood_page(
     alt_url = f"{base_url}?lang=es" if lang == "en" else base_url
     nav_links = "".join(f'<a href="{href}">{label}</a>' for href, label in L["nav"])
 
+    # Watch-this-block CTA: subscribes the reader's email to this ZIP straight
+    # from the organic landing page, closing the search -> view -> watch funnel.
+    # Copy is bilingual (L[...]); JS strings go through json.dumps so quotes and
+    # the ZIP interpolate safely into the inline script.
+    watch_card = (
+        '<section class="watch-card">'
+        f'<h2 class="watch-h">{L["watch_h"]}</h2>'
+        f'<p class="section-sub">{L["watch_sub"]}</p>'
+        '<div class="watch-row">'
+        f'<input id="watch-email" type="email" inputmode="email" autocomplete="email" '
+        f'placeholder="{e(L["watch_placeholder"])}" aria-label="{e(L["watch_h"])}">'
+        f'<button id="watch-btn" class="btn-map" type="button">{L["watch_btn"]}</button>'
+        '</div>'
+        '<p id="watch-msg" class="watch-msg" aria-live="polite" style="display:none;"></p>'
+        '</section>'
+    )
+    _j = json.dumps
+    watch_js = (
+        "<script>(function(){"
+        "var b=document.getElementById('watch-btn'),m=document.getElementById('watch-msg'),"
+        "el=document.getElementById('watch-email');"
+        "if(!b)return;"
+        "function show(t,ok){m.textContent=t;m.style.color=ok?'#3E6B54':'#ef4444';m.style.display='block';}"
+        "async function go(){var v=(el.value||'').trim();"
+        "if(!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(v)){show(" + _j(L["watch_invalid"]) + ",false);return;}"
+        "b.disabled=true;b.textContent='\\u2026';"
+        "try{var r=await fetch('/api/subscribe',{method:'POST',"
+        "headers:{'Content-Type':'application/json'},"
+        "body:JSON.stringify({email:v,zip_code:" + _j(zip_code) + "})});"
+        "if(r.ok){plausible('Subscribe',{props:{zip_code:" + _j(zip_code) + "}});"
+        "plausible('Neighborhood Watch Submit');"
+        "document.querySelector('.watch-row').style.display='none';"
+        "show(" + _j(L["watch_ok"]) + ",true);}"
+        "else if(r.status===409){show(" + _j(L["watch_dupe"]) + ",true);"
+        "b.disabled=false;b.textContent=" + _j(L["watch_btn"]) + ";}"
+        "else{throw new Error();}}"
+        "catch(err){show(" + _j(L["watch_err"]) + ",false);"
+        "b.disabled=false;b.textContent=" + _j(L["watch_btn"]) + ";}}"
+        "b.addEventListener('click',go);"
+        "el.addEventListener('keydown',function(ev){if(ev.key==='Enter')go();});"
+        "})();</script>"
+    )
+
     return f"""<!DOCTYPE html>
 <html lang="{lang}">
 <head>
@@ -715,6 +777,13 @@ td{{padding:12px 0;border-bottom:1px solid rgba(148,163,184,.06);vertical-align:
 .btn-map:hover{{opacity:.88}}
 .btn-copy{{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:6px;font-size:.85rem;cursor:pointer;font-family:inherit;transition:color .15s,border-color .15s}}
 .btn-copy:hover{{color:var(--text);border-color:rgba(148,163,184,.3)}}
+.watch-card{{background:rgba(249,115,22,.05);border:1px solid rgba(249,115,22,.22);border-radius:10px;padding:20px 22px;margin-bottom:32px}}
+.watch-h{{color:var(--accent);font-size:.95rem;font-weight:600;text-transform:none;letter-spacing:0;margin-bottom:6px}}
+.watch-row{{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}}
+.watch-row input{{flex:1;min-width:180px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:inherit;font-size:.85rem}}
+.watch-row input:focus{{outline:none;border-color:var(--accent)}}
+.watch-row .btn-map{{border:none;cursor:pointer;font-family:inherit}}
+.watch-msg{{font-size:.8rem;margin-top:10px;line-height:1.5}}
 footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-inset-bottom) + 24px);text-align:center}}
 .footer-links{{max-width:720px;margin:0 auto;display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
 .footer-links a{{font-size:.75rem;color:var(--faint)}}
@@ -736,6 +805,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
   <p class="subline">{L['updated'].format(borough=e(borough_disp), date=e(updated_disp))}</p>
   {score_block}
   {summary_html}
+  {watch_card}
   {trend_section}
   <section style="margin-bottom:32px;">
     <h2>{L['signals_h']}</h2>
@@ -769,6 +839,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
   </div>
 </div></main>
 {_FOOTERS.get(lang, _FOOTER_HTML)}
+{watch_js}
 <script>
 // The toggle remembers the choice; pages honor a stored 'es' on arrival so a
 // Spanish reader stays in Spanish while sharing links that default to English.
