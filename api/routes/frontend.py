@@ -1112,6 +1112,264 @@ def neighborhood_page(zip_code: str, lang: str = "en", db: Session = Depends(get
     return HTMLResponse(page_html)
 
 
+_BOROUGH_SLUGS = {
+    "Manhattan": "manhattan", "Brooklyn": "brooklyn", "Queens": "queens",
+    "Bronx": "bronx", "Staten Island": "staten-island",
+}
+
+
+def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str:
+    """Server-rendered content body for a single building: its public-record
+    history (deeds, evictions, permits, complaints) plus links up to the ZIP,
+    borough, and owning operator. Replaces the old map-shell body so the page is
+    real content, not a near-duplicate JS app. Thin buildings (no records, no
+    score) are rendered noindex so they don't dilute the index."""
+    e = _html.escape
+    _MO = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+    def _d(iso):
+        if not iso:
+            return ""
+        try:
+            y, m, d = iso[:10].split("-")
+            return f"{_MO[int(m)]} {int(d)}, {y}"
+        except (ValueError, IndexError):
+            return ""
+
+    def _money(v):
+        try:
+            v = float(v)
+        except (TypeError, ValueError):
+            return ""
+        if v <= 0:
+            return ""
+        if v >= 1_000_000:
+            return f"${v / 1e6:.1f}M"
+        if v >= 1000:
+            return f"${v / 1000:.0f}K"
+        return f"${v:.0f}"
+
+    owners = sig.get("ownership_transfers") or []
+    evicts = sig.get("evictions_last_12mo") or []
+    permits = sig.get("permits_last_12mo") or []
+    complaints = sig.get("complaints_last_12mo") or []
+    has_signals = bool(owners or evicts or permits) or score is not None
+
+    def _section(h2, note, heads, rows):
+        if not rows:
+            return ""
+        th = "".join(f"<th>{c}</th>" for c in heads)
+        return (f'<section style="margin-bottom:30px;"><h2>{h2}</h2>'
+                f'<div class="table-wrap"><table><thead><tr>{th}</tr></thead>'
+                f'<tbody>{rows}</tbody></table></div>'
+                f'<p class="data-note">{note}</p></section>')
+
+    own_rows = "".join(
+        f'<tr><td class="sc">{e(o.get("buyer") or "")}<span class="sw">{e(o.get("doc_type") or "")}</span></td>'
+        f'<td class="sr">{_d(o.get("date"))}</td><td class="si">{_money(o.get("amount"))}</td></tr>'
+        for o in owners
+    )
+    own_sec = _section(
+        "Ownership transfers",
+        "Deeds recorded in ACRIS. Amount is the stated consideration; $0 often marks a "
+        "non-arms-length transfer.",
+        ("Buyer", "Recorded", "Amount"), own_rows,
+    )
+
+    ev_rows = "".join(
+        f'<tr><td class="sc">{e(ev.get("type") or "Residential")}'
+        f'<span class="sw">{e("docket " + ev["docket"] if ev.get("docket") else "")}</span></td>'
+        f'<td class="sr">{_d(ev.get("date"))}</td><td class="si"></td></tr>'
+        for ev in evicts
+    )
+    ev_sec = _section(
+        "Executed evictions",
+        "Marshal-executed residential evictions from the NYC evictions dataset, past 12 months.",
+        ("Type", "Executed", ""), ev_rows,
+    )
+
+    pm_rows = "".join(
+        f'<tr><td class="sc">{e(p.get("work_type") or p.get("type") or "Permit")}'
+        f'<span class="sw">{e((p.get("description") or "")[:80])}</span></td>'
+        f'<td class="sr">{_d(p.get("filed"))}</td><td class="si">{e(p.get("type") or "")}</td></tr>'
+        for p in permits
+    )
+    pm_sec = _section(
+        "Building permits",
+        "DOB job filings on this lot, past 12 months.",
+        ("Work", "Filed", "Type"), pm_rows,
+    )
+
+    comp_sec = ""
+    if complaints:
+        comp_sec = (
+            '<section style="margin-bottom:30px;"><h2>311 housing complaints</h2>'
+            f'<p style="font-size:.95rem;margin-bottom:8px;"><span style="font-family:\'JetBrains Mono\','
+            f'monospace;font-size:1.3rem;font-weight:600;">{len(complaints)}</span> '
+            '<span style="color:var(--muted);">complaints in the past 12 months</span></p>'
+            '<p class="data-note">NYC 311 housing and building complaints logged for this address.</p></section>'
+        )
+
+    score_block = ""
+    if score is not None:
+        tier, color = _tier_info(score)
+        score_block = (
+            f'<div class="score-block"><span class="score-num" style="color:{color}">{score:.1f}</span>'
+            f'<span class="score-denom">/100</span>'
+            f'<span class="score-tier" style="color:{color}">{tier.upper()} AREA PRESSURE</span></div>'
+        )
+
+    # Up-links: ZIP, owning operator, borough. These turn the property page from
+    # a dead-end into a hub node and give crawlers a path back to the money pages.
+    links = []
+    if zip_code:
+        links.append(f'<a href="/neighborhood/{e(zip_code)}" class="btn-map">Displacement signals for {e(zip_code)} &rarr;</a>')
+    if op is not None:
+        links.append(f'<a href="/operator/{e(op.slug)}" class="btn-copy">Owner network: {e(op.display_name or op.operator_root)} &rarr;</a>')
+    links.append('<a href="/map" class="btn-copy">Open the map &rarr;</a>')
+    links_html = "".join(links)
+
+    # Breadcrumb (visible + schema): Home > Borough > ZIP > Address.
+    crumb_items = [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://pulsecities.com/"}]
+    crumb_html = '<a href="/">Home</a>'
+    pos = 2
+    bslug = _BOROUGH_SLUGS.get(borough)
+    if bslug:
+        crumb_items.append({"@type": "ListItem", "position": pos, "name": borough, "item": f"https://pulsecities.com/borough/{bslug}"})
+        crumb_html += f' &middot; <a href="/borough/{bslug}">{e(borough)}</a>'
+        pos += 1
+    if zip_code:
+        crumb_items.append({"@type": "ListItem", "position": pos, "name": zip_code, "item": f"https://pulsecities.com/neighborhood/{zip_code}"})
+        crumb_html += f' &middot; <a href="/neighborhood/{e(zip_code)}">{e(zip_code)}</a>'
+        pos += 1
+    crumb_items.append({"@type": "ListItem", "position": pos, "name": address, "item": f"https://pulsecities.com/property/{bbl}"})
+
+    url = f"https://pulsecities.com/property/{bbl}"
+    score_part = f" | Displacement Score {score:.1f}/100" if score is not None else ""
+    title = f"{address}, {borough}{score_part} | PulseCities"
+    zloc = f" ({zip_code})" if zip_code else ""
+    desc = (f"{address}, {borough}{zloc}: deed transfers, eviction filings, and renovation "
+            f"permits from NYC public records"
+            + (f", displacement score {score:.1f}/100." if score is not None else "."))
+    if len(desc) > 165:
+        desc = desc[:162].rsplit(" ", 1)[0] + "."
+
+    og_image = f"https://pulsecities.com/og/{zip_code}.png" if zip_code else "https://pulsecities.com/og-image.png"
+    robots = "index, follow" if has_signals else "noindex, follow"
+
+    place_ld = _jsonld({
+        "@context": "https://schema.org",
+        "@type": "Place",
+        "name": address,
+        "url": url,
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": address,
+            "addressLocality": borough,
+            "addressRegion": "NY",
+            "postalCode": zip_code,
+            "addressCountry": "US",
+        },
+    })
+    bc_ld = _jsonld({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": crumb_items})
+
+    body_note = ("Sourced from NYC public records: ACRIS deeds, DOB permits, the NYC evictions dataset, "
+                 "and 311. Records reflect what agencies have published and can lag events.")
+    empty = "" if has_signals else (
+        '<p class="section-sub" style="margin-top:8px;">No deed transfers, evictions, or permits are on '
+        'record for this building in the current window. It is shown for reference.</p>'
+    )
+
+    head = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="{robots}">
+<title>{e(title)}</title>
+<meta name="description" content="{e(desc)}">
+<link rel="canonical" href="{url}">
+<meta property="og:title" content="{e(title)}">
+<meta property="og:description" content="{e(desc)}">
+<meta property="og:url" content="{url}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PulseCities">
+<meta property="og:image" content="{og_image}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{e(title)}">
+<meta name="twitter:description" content="{e(desc)}">
+<meta name="twitter:image" content="{og_image}">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<script type="application/ld+json">{place_ld}</script>
+<script type="application/ld+json">{bc_ld}</script>{_PLAUSIBLE}
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap"></noscript>
+"""
+
+    css = """<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f172a;--border:rgba(148,163,184,.1);--text:#f1f5f9;--muted:rgba(148,163,184,.65);--faint:rgba(148,163,184,.35);--accent:#f97316}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+nav{border-bottom:1px solid var(--border);padding:12px 0}
+.nav-inner{max-width:720px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:8px}
+.brand{font-size:.85rem;color:rgba(148,163,184,.55)}
+.container{max-width:720px;margin:0 auto;padding:28px 20px 72px}
+.breadcrumb{font-size:.78rem;color:var(--muted);margin-bottom:18px}
+.breadcrumb a:hover{color:var(--text)}
+h1{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;font-weight:600;line-height:1.25;margin-bottom:6px}
+.subline{font-size:.82rem;color:var(--muted);margin-bottom:22px;font-family:'JetBrains Mono',monospace}
+.score-block{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;padding:16px 20px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;margin-bottom:26px}
+.score-num{font-size:2.2rem;font-weight:700;font-family:'JetBrains Mono',monospace;line-height:1}
+.score-denom{font-size:.9rem;color:var(--muted);font-family:'JetBrains Mono',monospace;align-self:flex-end;padding-bottom:3px}
+.score-tier{font-size:.62rem;font-weight:600;letter-spacing:.08em;align-self:flex-end;padding-bottom:5px;margin-left:8px}
+h2{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
+.section-sub{font-size:.82rem;color:var(--muted)}
+.table-wrap{overflow-x:auto;margin-bottom:10px}
+table{width:100%;border-collapse:collapse}
+th{font-size:.64rem;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:6px 0;border-bottom:1px solid var(--border);text-align:left}
+th:not(:first-child){text-align:right}
+td{padding:11px 0;border-bottom:1px solid rgba(148,163,184,.06);vertical-align:top}
+.sc{font-size:.86rem}
+.sw{display:block;font-size:.71rem;color:var(--faint);margin-top:2px}
+.sr,.si{font-size:.85rem;font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap}
+.data-note{font-size:.73rem;color:var(--faint);margin-top:8px;line-height:1.5}
+.cta-row{display:flex;gap:10px;flex-wrap:wrap;margin:28px 0 4px}
+.btn-map{display:inline-flex;align-items:center;padding:10px 18px;background:var(--accent);color:#fff;border-radius:6px;font-size:.84rem;font-weight:500}
+.btn-map:hover{opacity:.9}
+.btn-copy{display:inline-flex;align-items:center;padding:10px 18px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:6px;font-size:.84rem}
+.btn-copy:hover{color:var(--text);border-color:rgba(148,163,184,.3)}
+.foot-note{font-size:.72rem;color:var(--faint);margin-top:20px;line-height:1.5}
+footer{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-inset-bottom,0px) + 24px);text-align:center;margin-top:20px;font-size:12px;color:#64748b}
+.footer-links{display:flex;justify-content:center;gap:20px;flex-wrap:wrap}
+</style>
+"""
+
+    body = f"""</head>
+<body>
+<nav><div class="nav-inner">
+<a href="/" style="display:flex;align-items:center;gap:8px;">
+<svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<span class="brand">PulseCities</span></a>
+</div></nav>
+<main><div class="container">
+<p class="breadcrumb">{crumb_html}</p>
+<h1>{e(address)}</h1>
+<p class="subline">{e(borough)}{(" &middot; " + e(zip_code)) if zip_code else ""} &middot; BBL {e(bbl)}</p>
+{score_block}
+{empty}{own_sec}{ev_sec}{pm_sec}{comp_sec}
+<div class="cta-row">{links_html}</div>
+<p class="foot-note">{body_note}</p>
+</div></main>
+{_FOOTER_HTML}
+</body>
+</html>"""
+
+    return head + css + body
+
+
 @router.get("/property/{bbl}", include_in_schema=False)
 def property_page(bbl: str, db: Session = Depends(get_db)):
     clean = bbl.strip()
@@ -1148,44 +1406,14 @@ def property_page(bbl: str, db: Session = Depends(get_db)):
     borough  = row.borough or "NYC"
     score    = float(row.score) if row.score is not None else None
 
-    url = f"https://pulsecities.com/property/{clean}"
-    score_part = f" | Displacement Score {score:.1f}/100" if score is not None else ""
-    title = f"{address}, {borough}{score_part} | PulseCities"
-
-    if score is not None:
-        tier_label, _ = _tier_info(score)
-        desc = (
-            f"{address} in {borough} shows {tier_label.lower()} displacement pressure with a "
-            f"score of {score:.1f}/100. View eviction filings, construction permits, and "
-            f"ownership transfers from NYC public records."
-        )
-    else:
-        desc = (
-            f"View displacement risk data for {address} in {borough}, NYC. "
-            f"Eviction filings, construction permits, and ownership transfers from public records."
-        )
-
-    e_title = _html.escape(title, quote=True)
-    e_desc  = _html.escape(desc,  quote=True)
-    e_url   = _html.escape(url,   quote=True)
-
-    og_image_url = (
-        f"https://pulsecities.com/og/{zip_code}.png?d={date.today().strftime('%Y%m%d')}"
-        if zip_code else "https://pulsecities.com/og-image.png"
-    )
-    e_og_image = _html.escape(og_image_url, quote=True)
-
-    html = _template()
-    html = html.replace('<title>Explore | PulseCities</title>', f'<title>{e_title}</title>', 1)
-    html = html.replace('<link rel="canonical" href="https://pulsecities.com/map">', f'<link rel="canonical" href="{e_url}">', 1)
-    html = _set_meta(html, "name",     "description",          e_desc)
-    html = _set_meta(html, "property", "og:title",             e_title)
-    html = _set_meta(html, "property", "og:description",       e_desc)
-    html = _set_meta(html, "property", "og:url",               e_url)
-    html = _set_meta(html, "property", "og:image",             e_og_image)
-    html = _set_meta(html, "name",     "twitter:title",        e_title)
-    html = _set_meta(html, "name",     "twitter:description",  e_desc)
-    html = _set_meta(html, "name",     "twitter:image",        e_og_image)
+    from api.routes.properties import _get_property_data
+    sig = _get_property_data(clean, db).get("signals", {})
+    op = db.execute(text(
+        "SELECT o.slug, o.display_name, o.operator_root "
+        "FROM operators o JOIN operator_parcels op ON op.operator_id = o.id "
+        "WHERE op.bbl = :bbl AND o.operator_class = 'operator' LIMIT 1"
+    ), {"bbl": clean}).fetchone()
+    html = _build_property_page(clean, address, zip_code, borough, score, sig, op)
 
     # Parcels number in the hundreds of thousands; without a cap a crawler
     # walking /property/ URLs grows this dict until the box runs out of memory.
