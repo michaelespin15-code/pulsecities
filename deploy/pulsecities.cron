@@ -17,7 +17,10 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 30 3 * * * root cd /root/pulsecities && /root/pulsecities/scripts/backup_db.sh >> /var/log/pulsecities/backup.log 2>&1
 # Off-box copy of the newest dump — R2 weekday slots + monthly pin; loud on failure
 10 4 * * * root cd /root/pulsecities && /root/pulsecities/scripts/backup_offsite.sh >> /var/log/pulsecities/backup_offsite.log 2>&1
-0 9 * * 0 root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.weekly_digest >> /var/log/pulsecities/digest.log 2>&1
+# Weekly digest email — Sunday 6:00 PM ET, the evening catch-up window. DST-pinned:
+# fire at both UTC slots that straddle 18:00 Eastern and guard on the Eastern clock
+# so the send stays 6 PM ET year-round (see config/schedule.py).
+0 22,23 * * 0 root [ "$(TZ=America/New_York date +\%H)" = "18" ] && cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.weekly_digest >> /var/log/pulsecities/digest.log 2>&1
 30 9 * * 0 root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.weekly_eviction_flips >> /var/log/pulsecities/flips_scan.log 2>&1
 30 4 1 * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.refresh_operator_directory >> /var/log/pulsecities/operator_refresh.log 2>&1
 # Backup restore-test — Sunday 05:00 UTC, after the nightly backup; proves the dump restores
