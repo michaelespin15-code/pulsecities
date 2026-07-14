@@ -33,6 +33,18 @@ _op_page_cache: dict[str, tuple[str, float]] = {}  # root -> (html, expires_at)
 _prop_page_cache: dict[str, tuple[str, float]] = {}  # bbl -> (html, expires_at)
 _PAGE_TTL = 3600
 
+# Plausible analytics, injected into every SSR page head right after the JSON-LD
+# block. The server-rendered pages build their own <head> and were previously
+# untracked, so the highest-intent pages (neighborhood, flips, radar, operators)
+# reported nothing. Interpolated as {_PLAUSIBLE}; the braces are literal here
+# because this is a plain string, not an f-string.
+_PLAUSIBLE = (
+    '\n<script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>'
+    '\n<script>window.plausible=window.plausible||function(){(plausible.q=plausible.q||[])'
+    '.push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};'
+    'plausible.init()</script>'
+)
+
 
 def _template() -> str:
     global _app_html
@@ -654,7 +666,7 @@ def _build_neighborhood_page(
 <meta name="twitter:image" content="{e(og_image)}">
 <script type="application/ld+json">{dataset_ld}</script>
 <script type="application/ld+json">{faq_ld}</script>
-<script type="application/ld+json">{breadcrumb_ld}</script>
+<script type="application/ld+json">{breadcrumb_ld}</script>{_PLAUSIBLE}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&family=JetBrains+Mono:wght@400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -1446,7 +1458,7 @@ def operators_directory(db: Session = Depends(get_db)):
 <meta name="twitter:title" content="NYC Operator Networks | PulseCities">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-<script type="application/ld+json">{jsonld}</script>
+<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap"></noscript>
 <style>
@@ -1667,7 +1679,7 @@ def neighborhoods_directory(lang: str = "en", db: Session = Depends(get_db)):
 <meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-<script type="application/ld+json">{jsonld}</script>
+<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>
@@ -1927,7 +1939,7 @@ def borough_page(slug: str, lang: str = "en", db: Session = Depends(get_db)):
 <meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-<script type="application/ld+json">{jsonld}</script>
+<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>
@@ -2132,7 +2144,7 @@ def flip_watch_page(db: Session = Depends(get_db)):
 <meta name="twitter:title" content="Flip Watch | PulseCities">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-<script type="application/ld+json">{jsonld}</script>
+<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>
@@ -2399,7 +2411,7 @@ def flips_editions_page(db: Session = Depends(get_db)):
 <meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-<script type="application/ld+json">{jsonld}</script>
+<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>
@@ -2645,7 +2657,7 @@ def speculation_radar_page(db: Session = Depends(get_db)):
 <meta name="twitter:title" content="Speculation Radar | PulseCities">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-<script type="application/ld+json">{jsonld}</script>
+<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>
@@ -3035,7 +3047,7 @@ def week_edition_page(slug: str, db: Session = Depends(get_db)):
 <meta name="twitter:description" content="{e(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
-<script type="application/ld+json">{jsonld}</script>
+<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>{_WEEK_CSS}</style>
@@ -3134,7 +3146,7 @@ def week_archive_index(db: Session = Depends(get_db)):
 <meta name="twitter:description" content="{e(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
-<script type="application/ld+json">{jsonld}</script>
+<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>{_WEEK_CSS}</style>
@@ -3277,7 +3289,7 @@ def this_week_page(db: Session = Depends(get_db)):
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
-<link rel="canonical" href="https://pulsecities.com/this-week">
+<link rel="canonical" href="https://pulsecities.com/this-week">{_PLAUSIBLE}
 <meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(desc)}">
 <meta property="og:url" content="https://pulsecities.com/this-week">
@@ -3620,9 +3632,7 @@ def displacement_page(db: Session = Depends(get_db)):
 <meta name="twitter:description" content="{esc(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<script type="application/ld+json">{jsonld}</script>
-<script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>
-<script>window.plausible=window.plausible||function(){{(plausible.q=plausible.q||[]).push(arguments)}},plausible.init=plausible.init||function(i){{plausible.o=i||{{}}}};plausible.init()</script>
+<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap"></noscript>
 """
