@@ -23,20 +23,40 @@ Progress this session, tracked in the task list (#1 done, #2-#5 pending):
     deploy/nginx-pulsecities.conf, cp'd to /etc, nginx -t, reloaded. Registered
     in generate_sitemap.py (priority 0.9).
 - **Homepage links to it** (04cd936): nav_displacement in desktop nav + More
-  menu, EN + ES. It was otherwise an orphan (sitemap-only).
+  menu, EN + ES. Later also added to the shared SSR footer, EN + ES (b9f6649),
+  so all 13 SSR pages link it. Was otherwise an orphan (sitemap-only).
 
-**Remaining growth tasks (pending in task list, NOT started):**
-- #2 Plausible on the other SSR money pages + full funnel. Deferred: 12 SSR page
-  heads each build their own <!DOCTYPE>; only 1 (displacement) has Plausible.
-  operator.html/app.html/index.html already load it; neighborhood/flips/radar/
-  operators-directory/borough/week pages do NOT. A shared `_PLAUSIBLE` head const
-  injected per page (or a guarded HTML-response middleware) is the fix; it's a
-  multi-edit job, do it as its own unit.
-- #3 watch-your-block CTA + per-page share/OG. #4 per-ZIP biggest-flips pages
-  (WATCH: avoid thin/doorway pages — only emit for ZIPs with real flips, or fold
-  as a section into existing neighborhood pages). #5 sitewide SEO pass (footer
-  is test-enforced consistent across static + SSR: adding /displacement to
-  _FOOTER_HTML means updating every static page footer too).
+- **#2 Plausible on every SSR page DONE** (e06b55a). All 12 SSR page heads build
+  their own <!DOCTYPE> and were untracked; now a shared `_PLAUSIBLE` head const
+  is injected after the JSON-LD line across all of them (+ /this-week via its
+  canonical anchor, no JSON-LD block). test_ssr_analytics.py fails if any SSR
+  page ships without analytics or double-injects. Funnel events live on the
+  showcase; the subscribe conversion event ships with #3.
+- **#3 watch-this-block CTA DONE** (8f05615). Bilingual (EN/ES) subscribe card
+  on the neighborhood SSR pages, the organic landing surface. POSTs the page ZIP
+  to /api/subscribe, fires plausible('Subscribe') + 'Neighborhood Watch Submit',
+  closing search -> view -> subscribe. JS built with json.dumps for safe ZIP/copy
+  interpolation; success uses canonical #3E6B54 (the stale-green palette guard
+  test_ssr_tier_colors caught #4ade80 on the first pass). test_watch_cta.py
+  guards presence/wiring/localization/palette. OG cards + copy-link already
+  existed on these pages, so per-page share/OG was already covered.
+
+**Remaining growth tasks:**
+- **#4 per-ZIP biggest-flips pages** (pending). WATCH the thin/doorway-page SEO
+  risk: recommend folding "recent flips in {neighborhood}" as a section into the
+  existing (strong, indexed) neighborhood pages rather than emitting new pages
+  for ZIPs with little/no flip data. Renovation flips (query_flips, public) have
+  broader coverage than the gated eviction-flip arcs.
+- **#5 sitewide SEO pass** (in progress). Done: /displacement in homepage nav +
+  SSR footer (internal linking). Remaining: JSON-LD coverage audit across pages,
+  canonical/hreflang spot-check, breadcrumbs, title/description quality pass,
+  robots.txt review, per-page OG coverage. NOTE: static-page footers already
+  vary (only the CANON subset {/, /methodology, /about, /press, /status} is
+  test-enforced); they are NOT identical to the SSR footer, so /displacement is
+  on SSR footers only for now.
+
+Session commits: e39f58b, 04cd936, 2c1021f, e06b55a, 8f05615, b9f6649. All live
+(working tree is prod); nginx conf cp'd to /etc and reloaded; not pushed.
 
 ## Earlier session (three questions -> drop automation)
 
