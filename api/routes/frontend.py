@@ -3394,3 +3394,358 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 
     _this_week_cache = (page, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page)
+
+
+# ---------------------------------------------------------------------------
+# /displacement — the citywide findings showcase. One page that pulls the
+# strongest signals into a single narrative destination: hottest neighborhoods,
+# eviction-to-resale flips (approved editions only, so the human review gate
+# still holds), the largest landlords, and speculative buying clusters. Every
+# section links out to its deep page. Rebuilt nightly, cached like the others.
+# ---------------------------------------------------------------------------
+_displacement_cache: tuple[str, float] | None = None
+
+
+def _approved_flip_arcs() -> list[dict]:
+    """Eviction-to-resale arcs cleared for publication (approved editions only).
+
+    The raw weekly scan stays behind a human gate; naming a building as an
+    eviction-flip is a review decision, not an automatic one. Only arcs a person
+    has approved (the same set /flips/editions publishes) surface here.
+    """
+    path = _FRONTEND.parent / "scripts" / "eviction_flips_editions.json"
+    try:
+        editions = json.loads(path.read_text()).get("editions", [])
+    except (json.JSONDecodeError, OSError):
+        return []
+    arcs: list[dict] = []
+    for ed in editions:
+        if ed.get("approved"):
+            arcs.extend(ed.get("arcs", []))
+    # De-dupe by arc key in case a building appears across editions; keep the first.
+    seen: set = set()
+    unique = []
+    for a in arcs:
+        k = a.get("key") or a.get("bbl")
+        if k in seen:
+            continue
+        seen.add(k)
+        unique.append(a)
+    return unique
+
+
+@router.get("/displacement", include_in_schema=False)
+def displacement_page(db: Session = Depends(get_db)):
+    global _displacement_cache
+    if _displacement_cache and time.monotonic() < _displacement_cache[1]:
+        return HTMLResponse(_displacement_cache[0])
+
+    from api.routes.flips import query_flips
+    from api.routes.radar import query_radar
+    from api.routes.operators import OPERATOR_NOISE_ROOTS
+
+    _MONTHS = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+    def _my(iso: str | None) -> str:
+        if not iso:
+            return ""
+        try:
+            y, m, _ = iso.split("-")
+            return f"{_MONTHS[int(m)]} {y}"
+        except (ValueError, IndexError):
+            return ""
+
+    def _m(v) -> str:
+        v = float(v or 0)
+        if v >= 1_000_000:
+            return f"${v / 1_000_000:.1f}M"
+        if v >= 1_000:
+            return f"${v / 1_000:.0f}K"
+        return f"${v:.0f}"
+
+    # ---- data ----
+    agg = db.execute(text(
+        "SELECT AVG(score) AS avg, MAX(score) AS max, COUNT(*) AS n "
+        "FROM displacement_scores WHERE score IS NOT NULL"
+    )).first()
+    avg_score = float(agg.avg) if agg and agg.avg is not None else 0.0
+    max_score = float(agg.max) if agg and agg.max is not None else 0.0
+    n_hoods = int(agg.n) if agg and agg.n else 0
+
+    arcs = sorted(_approved_flip_arcs(), key=lambda a: a.get("gain_pct", 0), reverse=True)
+    flips = query_flips(db)
+    clusters = query_radar(db)
+
+    hot = db.execute(text("""
+        SELECT n.zip_code, n.name, ds.score
+        FROM neighborhoods n
+        JOIN displacement_scores ds ON ds.zip_code = n.zip_code
+        WHERE ds.score IS NOT NULL
+        ORDER BY ds.score DESC
+        LIMIT 8
+    """)).fetchall()
+
+    op_rows = db.execute(text(
+        "SELECT operator_root, slug, display_name, "
+        "COALESCE(total_acquisitions, 0) AS acqs, "
+        "COALESCE(jsonb_array_length(llc_entities), 0) AS entities "
+        "FROM operators WHERE operator_class = 'operator' "
+        "AND COALESCE(jsonb_array_length(llc_entities), 0) > 0 "
+        "ORDER BY COALESCE(total_acquisitions, 0) DESC, operator_root LIMIT 12"
+    )).fetchall()
+    ops = [o for o in op_rows if o.operator_root not in OPERATOR_NOISE_ROOTS][:5]
+
+    esc = _html.escape
+
+    # ---- sections ----
+    def _stat(num: str, label: str) -> str:
+        return f'<div class="stat"><div class="stat-num">{num}</div><div class="stat-label">{label}</div></div>'
+
+    stats_html = (
+        _stat(f"{avg_score:.0f}<span class=\"stat-unit\">/100</span>", f"avg pressure across {n_hoods} neighborhoods")
+        + _stat(str(len(arcs)), "eviction-to-resale arcs documented")
+        + _stat(str(len(flips)), "renovation flips flagged")
+        + _stat(str(len(clusters)), "active buying clusters")
+    )
+
+    # Eviction -> flip arcs
+    arc_items = ""
+    for a in arcs[:6]:
+        bbl = esc(str(a.get("bbl", "")))
+        addr = esc((a.get("address") or f"BBL {a.get('bbl')}").title())
+        zc = esc(str(a.get("zip_code") or ""))
+        line = (
+            f"Evicted {_my(a.get('eviction_date'))} &middot; bought {_my(a.get('buy_date'))} "
+            f"for {_m(a.get('buy_amt'))} &middot; sold {_my(a.get('sell_date'))} for {_m(a.get('sell_amt'))}"
+        )
+        gain = int(a.get("gain_pct", 0))
+        arc_items += (
+            f'<li class="arc" onclick="location.href=\'/property/{bbl}\'">'
+            f'<a href="/property/{bbl}">'
+            f'<div class="arc-main"><div class="arc-addr">{addr}</div>'
+            f'<div class="arc-sub">{zc}</div>'
+            f'<div class="arc-line">{line}</div></div>'
+            f'<div class="arc-gain">+{gain}%</div>'
+            f'</a></li>'
+        )
+    if not arc_items:
+        arc_items = '<li class="empty">The latest arcs are under review. Check back after the next edition.</li>'
+
+    # Hottest ZIPs
+    hot_items = ""
+    for i, r in enumerate(hot, 1):
+        label, color = _tier_info(float(r.score))
+        name = esc(r.name or r.zip_code)
+        hot_items += (
+            f'<li class="row" onclick="location.href=\'/neighborhood/{esc(r.zip_code)}\'">'
+            f'<a href="/neighborhood/{esc(r.zip_code)}">'
+            f'<span class="rank">#{i}</span>'
+            f'<span class="row-name">{name}<span class="row-sub">{esc(r.zip_code)}</span></span>'
+            f'<span class="row-val" style="color:{color}">{float(r.score):.0f}'
+            f'<span class="row-tier">{label}</span></span>'
+            f'</a></li>'
+        )
+
+    # Top operators
+    op_items = ""
+    for i, o in enumerate(ops, 1):
+        name = esc(o.display_name or o.operator_root)
+        meta = []
+        if o.acqs:
+            meta.append(f"{o.acqs} acquisitions")
+        if o.entities:
+            meta.append(f'{o.entities} LLC{"s" if o.entities != 1 else ""}')
+        op_items += (
+            f'<li class="row" onclick="location.href=\'/operator/{esc(o.slug)}\'">'
+            f'<a href="/operator/{esc(o.slug)}">'
+            f'<span class="rank">#{i}</span>'
+            f'<span class="row-name">{name}<span class="row-sub">{esc(" &middot; ".join(meta))}</span></span>'
+            f'<span class="row-arrow">&rarr;</span>'
+            f'</a></li>'
+        )
+
+    # Speculation clusters
+    cl_items = ""
+    for c in clusters[:5]:
+        buyer = esc(c["buyer"] or "")
+        zc = esc(str(c["zip_code"]))
+        hood = esc(c["neighborhood"] or zc)
+        span = c.get("span_days")
+        span_txt = f"{span} days" if span is not None else "recent"
+        amt = f" &middot; {_m(c['total_amount'])}" if c.get("total_amount") else ""
+        cl_items += (
+            f'<li class="row" onclick="location.href=\'/radar\'">'
+            f'<a href="/radar">'
+            f'<span class="row-name">{buyer}'
+            f'<span class="row-sub">{c["building_count"]} buildings in {hood} ({zc}) over {span_txt}{amt}</span>'
+            f'</span><span class="row-arrow">&rarr;</span>'
+            f'</a></li>'
+        )
+    if not cl_items:
+        cl_items = '<li class="empty">No active clusters in the current window.</li>'
+
+    title = "The State of NYC Displacement | PulseCities"
+    desc = (
+        "A live read of displacement pressure across New York City, rebuilt nightly from "
+        "public records: the hottest neighborhoods, the largest landlords, eviction-to-resale "
+        "flips, and speculative buying clusters."
+    )
+    jsonld = _jsonld({
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "The State of NYC Displacement",
+        "description": desc,
+        "url": "https://pulsecities.com/displacement",
+        "isPartOf": {"@type": "WebSite", "name": "PulseCities", "url": "https://pulsecities.com"},
+        "dateModified": date.today().isoformat(),
+    })
+
+    head = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{esc(title)}</title>
+<meta name="description" content="{esc(desc)}">
+<link rel="canonical" href="https://pulsecities.com/displacement">
+<meta property="og:title" content="{esc(title)}">
+<meta property="og:description" content="{esc(desc)}">
+<meta property="og:url" content="https://pulsecities.com/displacement">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PulseCities">
+<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{esc(title)}">
+<meta name="twitter:description" content="{esc(desc)}">
+<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<script type="application/ld+json">{jsonld}</script>
+<script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>
+<script>window.plausible=window.plausible||function(){{(plausible.q=plausible.q||[]).push(arguments)}},plausible.init=plausible.init||function(i){{plausible.o=i||{{}}}};plausible.init()</script>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap"></noscript>
+"""
+
+    css = """<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+nav{border-bottom:1px solid rgba(148,163,184,0.08);padding:12px 0;position:sticky;top:0;background:rgba(15,23,42,0.92);backdrop-filter:blur(8px);z-index:5}
+.nav-inner{max-width:900px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;letter-spacing:-0.01em;color:#f1f5f9}
+.nav-links{display:flex;gap:18px;font-size:0.82rem;color:#94a3b8;flex-wrap:wrap}
+.nav-links a:hover{color:#f97316}
+.wrap{max-width:900px;margin:0 auto;padding:40px 20px 72px}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.18em;color:#f97316;text-transform:uppercase;margin-bottom:14px}
+h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(2rem,5.4vw,3.1rem);line-height:1.04;letter-spacing:-0.02em;margin-bottom:14px}
+.lede{font-size:1.05rem;color:#94a3b8;max-width:620px;line-height:1.5}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:34px 0 8px}
+.stat{border:1px solid rgba(148,163,184,0.12);border-radius:12px;padding:16px 14px;background:rgba(148,163,184,0.03)}
+.stat-num{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.9rem;line-height:1;color:#f1f5f9}
+.stat-unit{font-size:0.9rem;color:#64748b;font-weight:600}
+.stat-label{font-size:0.72rem;color:#94a3b8;margin-top:8px;line-height:1.3}
+@media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
+.section{margin-top:44px}
+.sec-h{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:1.3rem;letter-spacing:-0.01em;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.sec-more{font-family:'JetBrains Mono',monospace;font-size:0.74rem;color:#f97316;white-space:nowrap}
+.sec-more:hover{text-decoration:underline}
+.sec-sub{font-size:0.86rem;color:#64748b;margin-top:5px;margin-bottom:14px;max-width:640px;line-height:1.45}
+ul{list-style:none}
+.arc{border-bottom:1px solid rgba(148,163,184,0.08);cursor:pointer}
+.arc:hover{background:rgba(148,163,184,0.04)}
+.arc a{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 0}
+.arc-addr{font-family:'JetBrains Mono',monospace;font-size:0.9rem;color:#e2e8f0;font-weight:600;letter-spacing:0.02em}
+.arc:hover .arc-addr{color:#f97316}
+.arc-sub{font-size:0.74rem;color:#64748b;margin-top:2px}
+.arc-line{font-size:0.78rem;color:#94a3b8;margin-top:5px;line-height:1.4}
+.arc-gain{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.35rem;color:#ef4444;white-space:nowrap}
+.row{border-bottom:1px solid rgba(148,163,184,0.08);cursor:pointer}
+.row:hover{background:rgba(148,163,184,0.04)}
+.row a{display:flex;align-items:center;gap:14px;padding:13px 0}
+.rank{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:#64748b;min-width:26px}
+.row-name{flex:1;min-width:0;font-size:0.92rem;color:#e2e8f0;font-weight:500}
+.row:hover .row-name{color:#f97316}
+.row-sub{display:block;font-size:0.74rem;color:#64748b;font-weight:400;margin-top:2px}
+.row-val{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.15rem;display:flex;flex-direction:column;align-items:flex-end;line-height:1}
+.row-tier{font-family:'DM Sans',sans-serif;font-size:0.62rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-top:4px;opacity:0.85}
+.row-arrow{color:#475569;font-size:1.1rem}
+.row:hover .row-arrow{color:#f97316}
+.empty{padding:16px 0;color:#64748b;font-size:0.86rem}
+.cta{margin-top:52px;border:1px solid rgba(249,115,22,0.25);border-radius:14px;padding:26px 22px;background:rgba(249,115,22,0.04);text-align:center}
+.cta-h{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:1.2rem;margin-bottom:6px}
+.cta-sub{font-size:0.88rem;color:#94a3b8;margin-bottom:16px}
+.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{padding:10px 20px;border-radius:8px;font-size:0.88rem;font-weight:600}
+.btn-primary{background:#f97316;color:#0f172a}
+.btn-primary:hover{background:#fb8c3a}
+.btn-secondary{border:1px solid rgba(148,163,184,0.25);color:#e2e8f0}
+.btn-secondary:hover{border-color:#f97316;color:#f97316}
+.note{margin-top:26px;font-size:0.72rem;color:#475569;line-height:1.5;text-align:center}
+.note a{color:rgba(249,115,22,0.75)}
+footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(148,163,184,0.08);margin-top:40px;font-size:12px;color:#64748b}
+.footer-links{display:flex;justify-content:center;gap:20px;flex-wrap:wrap}
+</style>
+"""
+
+    body = f"""</head>
+<body>
+<nav><div class="nav-inner">
+<a href="/" class="brand">PulseCities</a>
+<div class="nav-links">
+<a href="/flips" onclick="plausible('Showcase Nav',{{props:{{to:'flips'}}}})">Flips</a>
+<a href="/radar" onclick="plausible('Showcase Nav',{{props:{{to:'radar'}}}})">Radar</a>
+<a href="/operators" onclick="plausible('Showcase Nav',{{props:{{to:'operators'}}}})">Landlords</a>
+<a href="/neighborhoods" onclick="plausible('Showcase Nav',{{props:{{to:'neighborhoods'}}}})">Neighborhoods</a>
+<a href="/map" onclick="plausible('Showcase Nav',{{props:{{to:'map'}}}})">Map</a>
+</div>
+</div></nav>
+<div class="wrap">
+<div class="eyebrow">PulseCities &middot; Citywide &middot; NYC public records</div>
+<h1>The State of NYC Displacement</h1>
+<p class="lede">What the public record shows right now. Every number below is rebuilt nightly from NYC open data: deeds, evictions, permits, violations, and complaints.</p>
+
+<div class="stats">{stats_html}</div>
+
+<div class="section">
+<div class="sec-h">Evicted, then flipped <a class="sec-more" href="/flips/editions" onclick="plausible('Showcase Section',{{props:{{sec:'arcs'}}}})">All editions &rarr;</a></div>
+<div class="sec-sub">Buildings where tenants were evicted, an LLC bought in, and the building resold at a markup within a year. Reviewed before listing. Every step is a public deed.</div>
+<ul>{arc_items}</ul>
+</div>
+
+<div class="section">
+<div class="sec-h">Highest pressure this week <a class="sec-more" href="/neighborhoods" onclick="plausible('Showcase Section',{{props:{{sec:'hot'}}}})">All neighborhoods &rarr;</a></div>
+<div class="sec-sub">The neighborhoods with the strongest combined displacement signals across {n_hoods} scored ZIP codes.</div>
+<ul>{hot_items}</ul>
+</div>
+
+<div class="section">
+<div class="sec-h">The largest landlords <a class="sec-more" href="/operators" onclick="plausible('Showcase Section',{{props:{{sec:'operators'}}}})">All landlords &rarr;</a></div>
+<div class="sec-sub">Owner networks with the most acquisitions across the city, resolved from ACRIS deeds through their LLC shells.</div>
+<ul>{op_items}</ul>
+</div>
+
+<div class="section">
+<div class="sec-h">Buying clusters <a class="sec-more" href="/radar" onclick="plausible('Showcase Section',{{props:{{sec:'radar'}}}})">Speculation radar &rarr;</a></div>
+<div class="sec-sub">A single LLC taking the deed on several buildings in one ZIP within 90 days. Concentrated buying often precedes turnover.</div>
+<ul>{cl_items}</ul>
+</div>
+
+<div class="cta">
+<div class="cta-h">Watch your own block</div>
+<div class="cta-sub">Get a weekly read on any NYC neighborhood or building, straight from the record.</div>
+<div class="cta-btns">
+<a href="/neighborhoods" class="btn btn-primary" onclick="plausible('Showcase CTA',{{props:{{act:'browse'}}}})">Find your neighborhood</a>
+<a href="/map" class="btn btn-secondary" onclick="plausible('Showcase CTA',{{props:{{act:'map'}}}})">Open the map</a>
+</div>
+</div>
+
+<div class="note">Counts reflect records published by NYC agencies, which can lag the events they describe. Scores are risk indicators, not claims of wrongdoing. <a href="/methodology">How this works &rarr;</a></div>
+</div>
+{_FOOTER_HTML}
+</body>
+</html>"""
+
+    page = head + css + body
+    _displacement_cache = (page, time.monotonic() + _PAGE_TTL)
+    return HTMLResponse(page)
