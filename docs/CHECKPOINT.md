@@ -1,4 +1,44 @@
-# PulseCities checkpoint, 2026-07-14 — digest retime, evictions anomaly guard, drop automation
+# PulseCities checkpoint, 2026-07-14 — digest retime, evictions guard, drop automation, /displacement showcase
+
+## Growth build (later session): /displacement + SEO push
+
+Michael picked "build, don't post" and asked to build the three growth levers
+plus optimize SEO all around. Standing prefs honored (autonomous, no prompts).
+Progress this session, tracked in the task list (#1 done, #2-#5 pending):
+
+- **/displacement flagship SHIPPED** (e39f58b). One SSR destination pulling the
+  strongest signals into a narrative: eviction-to-resale arcs, highest-pressure
+  neighborhoods, largest landlords, buying clusters. Each section deep-links out
+  (/flips/editions, /neighborhoods, /operators, /radar). Live at
+  https://pulsecities.com/displacement. Full meta/OG/JSON-LD (CollectionPage),
+  dark editorial theme matching the other SSR pages, cached _PAGE_TTL.
+  - **Approval gate held**: named eviction-flip arcs come only from APPROVED
+    editions via `_approved_flip_arcs()` (17 approved arcs today); the 3 pending
+    W28 arcs stay off. test_displacement_page.py guards this + rendering.
+  - **Plausible wired on this page** (nav/section/CTA events) as the first SSR
+    page with funnel tracking. Data queries reuse existing shapes: displacement_
+    scores for hot ZIPs, operators table for landlords, query_flips/query_radar.
+  - New route needed a **nginx `location = /displacement` proxy block** (SSR
+    pages are individually allow-listed; unknown paths 404 as static). Edited
+    deploy/nginx-pulsecities.conf, cp'd to /etc, nginx -t, reloaded. Registered
+    in generate_sitemap.py (priority 0.9).
+- **Homepage links to it** (04cd936): nav_displacement in desktop nav + More
+  menu, EN + ES. It was otherwise an orphan (sitemap-only).
+
+**Remaining growth tasks (pending in task list, NOT started):**
+- #2 Plausible on the other SSR money pages + full funnel. Deferred: 12 SSR page
+  heads each build their own <!DOCTYPE>; only 1 (displacement) has Plausible.
+  operator.html/app.html/index.html already load it; neighborhood/flips/radar/
+  operators-directory/borough/week pages do NOT. A shared `_PLAUSIBLE` head const
+  injected per page (or a guarded HTML-response middleware) is the fix; it's a
+  multi-edit job, do it as its own unit.
+- #3 watch-your-block CTA + per-page share/OG. #4 per-ZIP biggest-flips pages
+  (WATCH: avoid thin/doorway pages — only emit for ZIPs with real flips, or fold
+  as a section into existing neighborhood pages). #5 sitewide SEO pass (footer
+  is test-enforced consistent across static + SSR: adding /displacement to
+  _FOOTER_HTML means updating every static page footer too).
+
+## Earlier session (three questions -> drop automation)
 
 Michael opened with three questions (where to post the flip email, why the weekly
 digest sends 5am Sunday, why a pipeline-anomaly email fired), then "what else can
