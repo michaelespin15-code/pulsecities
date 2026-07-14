@@ -142,26 +142,182 @@ def format_arc(arc: dict, scale: int) -> str:
     return "\n".join(lines)
 
 
+def _article(pct: int) -> str:
+    """'an' before gains that read as a vowel sound (80s, 11, 18), else 'a'."""
+    return "an" if str(pct).startswith("8") or pct in (11, 18) else "a"
+
+
+def _months_held(arc: dict) -> int:
+    days = (date.fromisoformat(arc["sell_date"]) - date.fromisoformat(arc["buy_date"])).days
+    return max(1, round(days / 30.4))
+
+
+def _months_phrase(n: int) -> str:
+    return f"{n} month" + ("s" if n != 1 else "")
+
+
 def draft_post(arc: dict) -> str:
     """Draft social copy for one arc. Reviewed by a human before posting anywhere."""
     addr = arc["address"] or f"lot {arc['bbl']}"
-    months_held = max(
-        1,
-        round(
-            (date.fromisoformat(arc["sell_date"]) - date.fromisoformat(arc["buy_date"])).days / 30.4
-        ),
-    )
     pct = arc["gain_pct"]
-    article = "an" if str(pct).startswith("8") or pct in (11, 18) else "a"
     return (
         f"Tenants were evicted at {addr.title()} in "
         f"{date.fromisoformat(arc['eviction_date']).strftime('%B %Y')}. "
         f"An LLC then bought the building for {_money(arc['buy_amt'])} and resold it "
-        f"{months_held} month{'s' if months_held != 1 else ''} later for "
-        f"{_money(arc['sell_amt'])}. That is {article} {pct}% gain. "
+        f"{_months_phrase(_months_held(arc))} later for "
+        f"{_money(arc['sell_amt'])}. That is {_article(pct)} {pct}% gain. "
         f"Every step is public record: ACRIS docs {arc['buy_doc']} and {arc['sell_doc']}. "
         f"Found with pulsecities.com"
     )
+
+
+# ---------------------------------------------------------------------------
+# Ready-to-post pack: turns the week's arcs into copy that ships as-is.
+# Nothing here posts on its own; it lands in the review email so a human can
+# paste it. Char budgets: X 280, Bluesky 300. Each block is length-annotated so
+# a too-long line is obvious before it goes out.
+# ---------------------------------------------------------------------------
+
+MAX_TWEET = 280
+MAX_BLUESKY = 300
+
+# Outlets that run displacement/landlord-accountability tips. Order is a rough
+# fit-for-this-beat ranking, not a mandate.
+TIP_OUTLETS = "Hell Gate, THE CITY, Gothamist, City Limits, Documented"
+
+
+def _loc(arc: dict) -> str:
+    addr = (arc["address"] or f"lot {arc['bbl']}").title()
+    zip_ = arc["zip_code"] or ""
+    return f"{addr}, {zip_}".rstrip(", ").strip()
+
+
+def _top_arc(new_arcs: list[dict]) -> dict:
+    """The most newsworthy arc: biggest gain, then biggest sale price."""
+    return max(new_arcs, key=lambda a: (a["gain_pct"], a["sell_amt"]))
+
+
+def _arc_tweet(arc: dict, reserve: int = 0) -> str:
+    """One arc as a tweet body. `reserve` is room to leave for the (k/N) suffix
+    the thread builder appends, so the numbered tweet still fits inside 280."""
+    ev = date.fromisoformat(arc["eviction_date"]).strftime("%b %Y")
+    buy = date.fromisoformat(arc["buy_date"]).strftime("%b %Y")
+    pct = arc["gain_pct"]
+    core = (
+        f"{_loc(arc)}. Tenants evicted {ev}. An LLC bought it {buy} for "
+        f"{_money(arc['buy_amt'])}, resold it {_months_phrase(_months_held(arc))} "
+        f"later for {_money(arc['sell_amt'])}. That is {_article(pct)} {pct}% gain."
+    )
+    docs = f" ACRIS: {arc['buy_doc']}, {arc['sell_doc']}."
+    # Keep the receipts when they fit; they are the credibility. Drop them first
+    # if the address pushes the tweet over the limit.
+    return core + docs if len(core + docs) <= MAX_TWEET - reserve else core
+
+
+_THREAD_LEAD = (
+    "{n} NYC buildings this week, one playbook: evict the tenants, buy the "
+    "building through an LLC, flip it for a fast markup. Every step is public "
+    "record. Here is what the deeds show."
+)
+_THREAD_CLOSE = (
+    "Every eviction and deed here comes straight from NYC open records. I built "
+    "pulsecities.com to surface these patterns automatically, every night. "
+    "Search any block."
+)
+
+
+def build_x_thread(new_arcs: list[dict]) -> list[str]:
+    # Order the bodies first, then number and budget together: the (k/N) suffix
+    # is known only once the thread length is, and it has to count against 280.
+    bodies: list[dict | str] = []
+    if len(new_arcs) > 1:
+        bodies.append(_THREAD_LEAD.format(n=len(new_arcs)))
+    bodies.extend(new_arcs)
+    bodies.append(_THREAD_CLOSE)
+
+    total = len(bodies)
+    tweets = []
+    for i, body in enumerate(bodies, 1):
+        suffix = f" ({i}/{total})"
+        text_body = _arc_tweet(body, reserve=len(suffix)) if isinstance(body, dict) else body
+        tweets.append(text_body + suffix)
+    return tweets
+
+
+def build_bluesky_post(new_arcs: list[dict]) -> str:
+    arc = _top_arc(new_arcs)
+    ev = date.fromisoformat(arc["eviction_date"]).strftime("%B %Y")
+    pct = arc["gain_pct"]
+    full = (
+        f"Tenants were evicted at {_loc(arc)} in {ev}. An LLC bought the building "
+        f"for {_money(arc['buy_amt'])} and flipped it {_months_phrase(_months_held(arc))} "
+        f"later for {_money(arc['sell_amt'])}. That is {_article(pct)} {pct}% gain, "
+        f"every step in NYC public record. Found with pulsecities.com"
+    )
+    if len(full) <= MAX_BLUESKY:
+        return full
+    # Shed the eviction month first, then fall back to the shorter draft copy.
+    trimmed = full.replace(f" in {ev}", "")
+    return trimmed if len(trimmed) <= MAX_BLUESKY else draft_post(arc)
+
+
+def build_reporter_pitch(new_arcs: list[dict], scales: dict, total: int) -> str:
+    arc = _top_arc(new_arcs)
+    pct = arc["gain_pct"]
+    ev_full = date.fromisoformat(arc["eviction_date"]).strftime("%B %Y")
+    dockets = f" ({arc['eviction_count']} dockets)" if arc["eviction_count"] > 1 else ""
+    scale = scales.get(arc["key"], 0)
+    buyer = arc["buyer"] or "an LLC"
+    buyer_clause = (
+        f"An LLC, {buyer} (an entity that holds {scale} NYC buildings), "
+        if scale > 1
+        else f"An LLC, {buyer}, "
+    )
+    where = f"{arc['zip_code']} " if arc["zip_code"] else ""
+    subject = f"Tip: {where}building resold for {pct}% after its tenants were evicted (public record)"
+    body = (
+        "Hi [name],\n\n"
+        "A quick tip from NYC public records that may be worth a look.\n\n"
+        f"{_loc(arc)}. Tenants were evicted in {ev_full}{dockets}. "
+        f"{buyer_clause}bought the building on {arc['buy_date']} for {_money(arc['buy_amt'])} "
+        f"and resold it on {arc['sell_date']} for {_money(arc['sell_amt'])}, "
+        f"{_months_phrase(_months_held(arc))} later. That is {_article(pct)} {pct}% gain. "
+        f"The paper trail is two ACRIS deeds: {arc['buy_doc']} and {arc['sell_doc']}.\n\n"
+        "I run pulsecities.com, which reads NYC open data nightly and surfaces "
+        f"eviction-to-resale patterns like this citywide. There are {total} such arcs "
+        "on record so far. Happy to send the full list or walk through the records.\n\n"
+        "Best,\nMichael\npulsecities.com"
+    )
+    return f"Suggested outlets: {TIP_OUTLETS}\n\nSubject: {subject}\n\n{body}"
+
+
+def build_post_pack(new_arcs: list[dict], scales: dict, total: int) -> str:
+    thread = build_x_thread(new_arcs)
+    bsky = build_bluesky_post(new_arcs)
+    parts = [
+        "=" * 60,
+        "READY-TO-POST PACK (copy-paste, review before sending)",
+        "=" * 60,
+        "",
+        "X / TWITTER THREAD",
+        "-" * 20,
+    ]
+    for i, t in enumerate(thread, 1):
+        flag = "" if len(t) <= MAX_TWEET else "  <- over 280, trim before posting"
+        parts.append(f"[{len(t)} chars]{flag}")
+        parts.append(t)
+        parts.append("")
+    parts.append("BLUESKY")
+    parts.append("-" * 20)
+    bsky_flag = "" if len(bsky) <= MAX_BLUESKY else "  <- over 300, trim before posting"
+    parts.append(f"[{len(bsky)} chars]{bsky_flag}")
+    parts.append(bsky)
+    parts.append("")
+    parts.append("REPORTER TIP")
+    parts.append("-" * 20)
+    parts.append(build_reporter_pitch(new_arcs, scales, total))
+    parts.append("")
+    return "\n".join(parts)
 
 
 def build_report(new_arcs: list[dict], scales: dict, total: int) -> str:
@@ -176,6 +332,7 @@ def build_report(new_arcs: list[dict], scales: dict, total: int) -> str:
         parts.append("Draft post (review before publishing):")
         parts.append(f"  {draft_post(arc)}")
         parts.append("")
+    parts.append(build_post_pack(new_arcs, scales, total))
     return "\n".join(parts)
 
 
