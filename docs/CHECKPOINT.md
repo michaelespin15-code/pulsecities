@@ -41,22 +41,50 @@ Progress this session, tracked in the task list (#1 done, #2-#5 pending):
   guards presence/wiring/localization/palette. OG cards + copy-link already
   existed on these pages, so per-page share/OG was already covered.
 
-**Remaining growth tasks:**
-- **#4 per-ZIP biggest-flips pages** (pending). WATCH the thin/doorway-page SEO
-  risk: recommend folding "recent flips in {neighborhood}" as a section into the
-  existing (strong, indexed) neighborhood pages rather than emitting new pages
-  for ZIPs with little/no flip data. Renovation flips (query_flips, public) have
-  broader coverage than the gated eviction-flip arcs.
-- **#5 sitewide SEO pass** (in progress). Done: /displacement in homepage nav +
-  SSR footer (internal linking). Remaining: JSON-LD coverage audit across pages,
-  canonical/hreflang spot-check, breadcrumbs, title/description quality pass,
-  robots.txt review, per-page OG coverage. NOTE: static-page footers already
-  vary (only the CANON subset {/, /methodology, /about, /press, /status} is
-  test-enforced); they are NOT identical to the SSR footer, so /displacement is
-  on SSR footers only for now.
+- **#4 recent-renovation-flips section DONE** (484b4d5). Folded per-ZIP flips
+  (LLC deed + A1/A2 permit within 60d, past 365d) into neighborhood SSR pages as
+  unique indexable content + /property internal links, bilingual, renders only
+  when non-empty. Chose this over new per-ZIP pages precisely for the doorway
+  risk: flips are sparse (top ZIP ~2). test_neighborhood_flips.py guards it.
+- **#5 sitewide SEO pass — partial** (b9f6649, 466e85d). See audit below.
 
-Session commits: e39f58b, 04cd936, 2c1021f, e06b55a, 8f05615, b9f6649. All live
-(working tree is prod); nginx conf cp'd to /etc and reloaded; not pushed.
+## Full SEO audit (3 parallel agents, 2026-07-14) + fixes applied
+
+Michael: "do as much SEO as needed, use agents, full audit." Dispatched 3
+general-purpose agents (technical / on-page+schema / content+internal-linking),
+all verified against live pages + source. Headline: **technical SEO is healthy**
+(no criticals — robots/canonicals/hreflang/redirects/404s/sitemap all correct).
+The real wins are on-page schema and internal linking.
+
+Applied this session (466e85d):
+- Neighborhood <title> dropped borough: 73 -> ~68 chars, stops SERP truncation
+  across 177 pages (EN+ES). /displacement desc 204 -> 167. /map title
+  'Explore' -> 'NYC Displacement Risk Map | PulseCities'. /status noindex.
+  /map sitemap priority 0.9 -> 0.6.
+
+Queued as tasks #6-#9 (agent findings, with the fix recipes):
+- **#6 /property/{bbl} SSR bodies** (P1, both agents). Serves the app.html map
+  shell: H1 "PulseCities", body identical across all parcels, only
+  SoftwareApplication schema, absent from sitemap, yet hundreds of internal
+  links point at it. Needs real SSR body + Place/BreadcrumbList schema + up-links.
+- **#7 operator pages** (P1): ZERO structured data; acquisition addresses are
+  plain text. Add Dataset+BreadcrumbList (agent gave the snippet), link addresses
+  to /property, add "active in these neighborhoods" ZIP links + breadcrumb.
+- **#8 shared SSR nav constant + /this-week schema + breadcrumbs** (P1/P2):
+  per-page navs are inconsistent and omit /displacement; /this-week emits no
+  schema (regression vs /week); many pages lack BreadcrumbList.
+- **#9 neighborhood lateral links + homepage Organization schema + footers**
+  (P1/P2): neighborhood pages are outbound dead-ends (add operators-here,
+  nearby-neighborhoods, /displacement CTA); homepage has no Organization schema;
+  4 static footers omit /displacement+LinkedIn; homepage operator rows are
+  non-links; nginx trailing-slash routes 404 instead of 301.
+- Minor/P3 (not ticketed): dynamic OG images for borough/this-week; og:image
+  dimensions on ~11 pages; /displacement sec-h divs -> h2; keyword nits
+  ("biggest NYC landlords" vs "operator networks").
+
+Session commits: e39f58b, 04cd936, 2c1021f, e06b55a, 8f05615, b9f6649, 484b4d5,
+466e85d (+ checkpoints). All live (working tree is prod); nginx cp'd to /etc and
+reloaded; NOT pushed (Michael runs git push).
 
 ## Earlier session (three questions -> drop automation)
 
