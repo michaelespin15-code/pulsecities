@@ -1652,12 +1652,19 @@ def operator_page(root: str, db: Session = Depends(get_db)):
     acq_body = ""
     for r in acq_rows:
         addr = _e(r.address) if r.address else f"Lot {_e(r.bbl)} (no address on record)"
+        # Link each acquisition out to its property page and ZIP page: turns the
+        # operator table into internal links crawlers can follow into the money pages.
+        addr_cell = f'<a href="/property/{_e(r.bbl)}" style="color:inherit;text-decoration:none;">{addr}</a>'
+        zip_cell = (
+            f'<a href="/neighborhood/{_e(r.zip_code)}" style="color:inherit;text-decoration:none;">{_e(r.zip_code)}</a>'
+            if r.zip_code else ""
+        )
         doc_date = r.doc_date.isoformat() if r.doc_date else ""
         amount = f"${int(r.doc_amount):,}" if r.doc_amount and float(r.doc_amount) > 0 else "N/A"
         acq_body += (
             "<tr>"
-            f'<td style="padding:8px 16px;color:rgba(241,245,249,0.85);">{addr}</td>'
-            f'<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;">{_e(r.zip_code or "")}</td>'
+            f'<td style="padding:8px 16px;color:rgba(241,245,249,0.85);">{addr_cell}</td>'
+            f'<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;">{zip_cell}</td>'
             f'<td class="mono" style="padding:8px 16px;color:#94a3b8;font-size:0.7rem;">{_e(r.buyer or "")}</td>'
             f'<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;">{_e(doc_date)}</td>'
             f'<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:#94a3b8;font-size:0.72rem;">{_e(amount)}</td>'
@@ -1695,7 +1702,29 @@ def operator_page(root: str, db: Session = Depends(get_db)):
         f'    <meta name="twitter:description" content="{e_desc}">\n'
         f'    <meta name="twitter:image" content="{e_op_og}">'
     )
-    html = html.replace('</head>', f'{og_block}\n</head>', 1)
+    # Structured data: the operator page previously emitted none. A Dataset (the
+    # acquisition record set) plus a BreadcrumbList make it eligible for rich
+    # results and give the page an explicit place in the site hierarchy.
+    op_ld = _jsonld({
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        "name": f"{root_upper} NYC property acquisitions",
+        "description": desc,
+        "url": url,
+        "creator": {"@type": "Person", "name": "Michael Espin", "url": "https://pulsecities.com"},
+        "isBasedOn": "https://data.cityofnewyork.us/City-Government/ACRIS-Real-Property-Master/bnx9-e6tj",
+    })
+    bc_ld = _jsonld({
+        "@context": "https://schema.org", "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://pulsecities.com/"},
+            {"@type": "ListItem", "position": 2, "name": "Operators", "item": "https://pulsecities.com/operators"},
+            {"@type": "ListItem", "position": 3, "name": root_upper, "item": url},
+        ],
+    })
+    op_schema = (f'    <script type="application/ld+json">{op_ld}</script>\n'
+                 f'    <script type="application/ld+json">{bc_ld}</script>')
+    html = html.replace('</head>', f'{og_block}\n{op_schema}\n</head>', 1)
 
     # Inject the real operator data into the body so the served HTML is
     # substantive on first byte. The client JS overwrites these on hydration.
