@@ -1012,7 +1012,7 @@
             tr.style.borderTop = '1px solid rgba(148,163,184,0.05)';
             if (i % 2 === 0) tr.style.background = 'rgba(15,23,42,0.18)';
             tr.innerHTML =
-                '<td style="padding:7px 16px;color:rgba(241,245,249,0.85);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(addrOrLot(acq.address, p.bbl)) + '</td>' +
+                '<td style="padding:7px 16px;color:rgba(241,245,249,0.85);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><a href="/property/' + encodeURIComponent(p.bbl) + '" style="color:inherit;text-decoration:none;">' + esc(addrOrLot(acq.address, p.bbl)) + '</a></td>' +
                 '<td class="mono" style="padding:7px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;white-space:nowrap;">' +
                     esc(p.zip_code || '') +
                     (p.zip_code && zipNames[p.zip_code] ? '<br><span style="font-size:0.63rem;color:rgba(148,163,184,0.5);font-family:inherit;">' + esc(zipNames[p.zip_code]) + '</span>' : '') +
