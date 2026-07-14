@@ -1,3 +1,64 @@
+# PulseCities checkpoint, 2026-07-14 — digest retime, evictions anomaly guard, drop automation
+
+Michael opened with three questions (where to post the flip email, why the weekly
+digest sends 5am Sunday, why a pipeline-anomaly email fired), then "what else can
+we optimize"; he chose "automate the drop." Three shipped, two commits.
+
+## Shipped
+
+1. **Digest retimed to Sunday 6:00 PM ET** (f48d7e6). Was `0 9 * * 0` UTC = 5am
+   EDT, the worst open window. Now DST-pinned like the donna cron: fires at the
+   22:00/23:00 UTC slots that straddle 18:00 Eastern and guards on the Eastern
+   clock, so it stays 6pm ET across DST. config/schedule.py (DIGEST_CRON
+   `0 18 * * 0`, tz America/New_York) and deploy/pulsecities.cron updated in
+   step; deployed to /etc/cron.d, gunicorn reloaded, /api/schedule verified live.
+   Only the digest moved; flips scan (09:30) and ops-health (09:45) are internal
+   emails and stayed put.
+2. **Evictions "0 records" anomaly was a false positive, now suppressed**
+   (f48d7e6). Not a break: source has 961 records/30d, max executed_date 07-07;
+   we pulled ~189/night 07-06..10 draining a catch-up backfill and are now caught
+   up, so on_conflict_do_nothing returns 0 new. base.run() now compares
+   new_watermark to the last successful watermark: a 0-record run whose watermark
+   did not advance is steady state (INFO, status success, no page); a 0-record
+   run with no evidence the source advanced still warns. Generic in base.py, so
+   any lookback scraper benefits; no evictions.py change. **ACRIS still alerts by
+   design** (genuine 14-day upstream freeze, watermark stuck at 06-30; that is a
+   real outage worth surfacing, not weekly-cadence quiet).
+3. **Drop automation** (05b59d6). The weekly flip email now appends a
+   ready-to-post pack: X thread (numbered, budgeted under 280 incl. the k/N
+   suffix, ACRIS docs dropped first on overflow), Bluesky post on the biggest
+   gain (under 300), reporter tip with the deed numbers + buyer portfolio scale.
+   Ships in the existing Sunday 09:30 flips cron, only when there are new arcs.
+   Nothing auto-posts; it lands in the review email. test_flips_postpack.py
+   guards char limits, thread shape, receipts, and the no-em-dash rule.
+
+## Traffic reality check (the real bottleneck)
+
+- **~4 real external subscribers.** 8 distinct rows in `subscribers`; the rest
+  are Michael (michaelespin15 x2, michael.e@caprium, mespin@caprium) and one
+  mailinator audit account. Real external: jhonsassler, hbpmes0730, jvxnyc,
+  pulgarinkevin73.
+- **Near-zero human traffic.** Today's requests are dominated by /api/health and
+  bots; a handful of real content page views. Googlebot IS crawling (38 hits),
+  so SEO plumbing works. The product out-features every competitor; the missing
+  piece is attention, not another signal.
+- Directions Michael did NOT pick this session (parked): **ship the proof**
+  (make repo public after a git-history secrets scrub, builder write-up, reporter
+  pitch) and **fix conversion** (funnel events via the wired Plausible, a
+  watch-your-block hook, per-page share/OG).
+- **On Michael:** confirm the Anthropic credit balance. The AI read degrades to
+  503 on a failed model call; if credits are exhausted the headline feature is
+  dark to any visitor who clicks it. Not re-verified this session (billing).
+
+## Verification
+
+test_base_scraper.py 7 pass, test_flips_postpack.py 7 pass, evictions+ownership
+88 pass, pipeline_health+status 75 pass. Post-pack rendered end-to-end against
+this week's three real arcs (all tweets 168-205 chars, Bluesky 232). Nothing
+else touched.
+
+---
+
 # PulseCities checkpoint, 2026-07-11 (early morning) — full audit #2 closed
 
 ## Build sessions (~05:00–06:00 UTC, Michael approved "lets do the next build sessions")
