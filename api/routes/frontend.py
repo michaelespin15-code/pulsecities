@@ -220,9 +220,9 @@ _FOOTERS = {
 # in via format slots; everything a reader sees as prose lives here.
 _NB_L = {
     "en": {
-        "title_scored": "{name} ({zip}), {borough} | Displacement Score {s}/100 | PulseCities",
+        "title_scored": "{name} ({zip}) Displacement Score {s}/100 | PulseCities",
         "social_scored": "{name} ({zip}) | Displacement Score {s}/100 | PulseCities",
-        "title_unscored": "{name} ({zip}), {borough} | NYC Displacement Signals | PulseCities",
+        "title_unscored": "{name} ({zip}) NYC Displacement Signals | PulseCities",
         "desc_scored": ("{name} shows {tier} displacement-pressure signals based on NYC public records, "
                         "including LLC acquisitions, eviction filings, 311 complaints, HPD violations, "
                         "permits, and rent-stabilized housing data."),
@@ -302,9 +302,9 @@ _NB_L = {
         "lang_toggle_label": "ES", "lang_toggle_aria": "Ver esta página en español",
     },
     "es": {
-        "title_scored": "{name} ({zip}), {borough} | Puntuación de desplazamiento {s}/100 | PulseCities",
+        "title_scored": "{name} ({zip}) Puntuación de desplazamiento {s}/100 | PulseCities",
         "social_scored": "{name} ({zip}) | Puntuación de desplazamiento {s}/100 | PulseCities",
-        "title_unscored": "{name} ({zip}), {borough} | Señales de desplazamiento en NYC | PulseCities",
+        "title_unscored": "{name} ({zip}) Señales de desplazamiento en NYC | PulseCities",
         "desc_scored": ("{name} muestra señales de presión de desplazamiento {tier} según registros "
                         "públicos de NYC, incluyendo adquisiciones LLC, casos de desalojo, quejas al "
                         "311, violaciones HPD, permisos y datos de renta estabilizada."),
@@ -3762,9 +3762,8 @@ def displacement_page(db: Session = Depends(get_db)):
 
     title = "The State of NYC Displacement | PulseCities"
     desc = (
-        "A live read of displacement pressure across New York City, rebuilt nightly from "
-        "public records: the hottest neighborhoods, the largest landlords, eviction-to-resale "
-        "flips, and speculative buying clusters."
+        "A live read of NYC displacement pressure, rebuilt nightly from public records: "
+        "hottest neighborhoods, largest landlords, eviction-to-resale flips, and buying clusters."
     )
     jsonld = _jsonld({
         "@context": "https://schema.org",
