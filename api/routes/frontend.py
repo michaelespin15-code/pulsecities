@@ -292,6 +292,13 @@ _NB_L = {
         "watch_dupe": "You're already watching this neighborhood.",
         "watch_invalid": "Enter a valid email address.",
         "watch_err": "Something went wrong. Please try again.",
+        "flip_h": "Recent renovation flips",
+        "flip_sub": ("Buildings in {zip} where an LLC took the deed and filed a major renovation "
+                     "permit within 60 days. A fast buy-to-permit turn is an early sign of repositioning."),
+        "flip_th": ("Building", "Bought", "To permit"),
+        "flip_days": "{n}d",
+        "flip_note": ("Source: ACRIS deeds and DOB permits via NYC Open Data, past 365 days. "
+                      "Shown for context; not part of the composite score."),
         "lang_toggle_label": "ES", "lang_toggle_aria": "Ver esta página en español",
     },
     "es": {
@@ -371,6 +378,14 @@ _NB_L = {
         "watch_dupe": "Ya estás observando este vecindario.",
         "watch_invalid": "Ingresa un correo electrónico válido.",
         "watch_err": "Algo salió mal. Inténtalo de nuevo.",
+        "flip_h": "Reformas y reventas recientes",
+        "flip_sub": ("Edificios en {zip} donde una LLC tomó la escritura y presentó un permiso de "
+                     "renovación mayor dentro de 60 días. Un giro rápido de compra a permiso es una "
+                     "señal temprana de reposicionamiento."),
+        "flip_th": ("Edificio", "Comprado", "Al permiso"),
+        "flip_days": "{n}d",
+        "flip_note": ("Fuente: escrituras ACRIS y permisos DOB vía NYC Open Data, últimos 365 días. "
+                      "Mostrado como contexto; no forma parte de la puntuación compuesta."),
         "lang_toggle_label": "EN", "lang_toggle_aria": "View this page in English",
     },
 }
@@ -452,6 +467,7 @@ def _build_neighborhood_page(
     history: list[tuple[str, float]] | None = None,
     petitions: dict | None = None,
     vacates: dict | None = None,
+    flips: list | None = None,
     lang: str = "en",
 ) -> str:
     e = _html.escape
@@ -656,6 +672,32 @@ def _build_neighborhood_page(
   </section>
 """
 
+    # Recent renovation flips in this ZIP. Renders only when there are matches,
+    # so quiet neighborhoods do not get a thin, near-empty section.
+    flips_section = ""
+    if flips:
+        flip_items = ""
+        for f in flips:
+            bought = _month_year(date.fromisoformat(f["transfer_date"]), lang) if f.get("transfer_date") else ""
+            days = f.get("days_between")
+            gap = L["flip_days"].format(n=days) if days is not None else ""
+            flip_items += (
+                f'<tr onclick="location.href=\'/property/{e(str(f["bbl"]))}\'" style="cursor:pointer;">'
+                f'<td class="sc">{e(f["address"])}<span class="sw">{e(f.get("buyer") or "")}</span></td>'
+                f'<td class="sr">{bought}</td>'
+                f'<td class="si">{gap}</td></tr>'
+            )
+        flips_section = f"""  <section style="margin-bottom:32px;">
+    <h2>{L["flip_h"]}</h2>
+    <p class="section-sub">{L["flip_sub"].format(zip=zip_code)}</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>{L["flip_th"][0]}</th><th>{L["flip_th"][1]}</th><th>{L["flip_th"][2]}</th></tr></thead>
+      <tbody>{flip_items}</tbody>
+    </table></div>
+    <p class="data-note">{L["flip_note"]}</p>
+  </section>
+"""
+
     # The alternate-language URL for the toggle and hreflang pair. English is
     # the parameterless canonical form; Spanish lives at ?lang=es.
     alt_url = f"{base_url}?lang=es" if lang == "en" else base_url
@@ -820,7 +862,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
     </div>
     <p class="data-note">{L['signals_note']}</p>
   </section>
-{petitions_section}{vacates_section}  <section style="margin-bottom:32px;">
+{petitions_section}{vacates_section}{flips_section}  <section style="margin-bottom:32px;">
     <h2>{L['faq_h']}</h2>
     <div class="faq-list">
       {faq_html}
@@ -1014,9 +1056,57 @@ def neighborhood_page(zip_code: str, lang: str = "en", db: Session = Depends(get
         vacates = {"buildings": int(vac_row.buildings), "orders": int(vac_row.orders),
                    "latest": vac_row.latest}
 
+    # Recent renovation flips in this ZIP: LLC deed transfer followed by an A1/A2
+    # permit on the same lot within 60 days, past 365 days. Same pattern as the
+    # citywide /flips feed, scoped to the neighborhood. Unique, indexable content
+    # that also seeds internal links to /property; renders only when non-empty, so
+    # quiet ZIPs stay lean rather than becoming thin pages.
+    flip_rows = db.execute(text("""
+        WITH llc_transfers AS (
+            SELECT o.bbl, o.doc_date AS transfer_date,
+                   o.party_name_normalized AS buyer, o.doc_amount, p.address
+            FROM ownership_raw o
+            JOIN parcels p ON p.bbl = o.bbl
+            WHERE o.party_name_normalized LIKE '%LLC%'
+              AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
+              AND o.party_type = '2'
+              AND o.doc_date >= CURRENT_DATE - INTERVAL '365 days'
+              AND p.zip_code = :zip
+        ),
+        reno_permits AS (
+            SELECT bbl, MIN(filing_date) AS first_permit_date
+            FROM permits_raw
+            WHERE raw_data->>'job_type' IN ('A1', 'A2')
+              AND filing_date >= CURRENT_DATE - INTERVAL '365 days'
+              AND zip_code = :zip
+            GROUP BY bbl
+        )
+        SELECT DISTINCT ON (l.bbl) l.bbl, l.address, l.buyer, l.doc_amount,
+               l.transfer_date, r.first_permit_date,
+               (r.first_permit_date - l.transfer_date) AS days_between
+        FROM llc_transfers l
+        JOIN reno_permits r ON r.bbl = l.bbl
+        WHERE r.first_permit_date > l.transfer_date
+          AND (r.first_permit_date - l.transfer_date) <= 60
+        ORDER BY l.bbl, l.transfer_date DESC
+    """), {"zip": zip_code}).fetchall()
+    flips = [
+        {
+            "bbl": r.bbl,
+            "address": r.address or f"BBL {r.bbl}",
+            "buyer": r.buyer,
+            "transfer_date": r.transfer_date.isoformat() if r.transfer_date else None,
+            "days_between": (r.days_between.days if hasattr(r.days_between, "days")
+                             else int(r.days_between)) if r.days_between is not None else None,
+        }
+        for r in flip_rows
+    ]
+    flips.sort(key=lambda f: f["transfer_date"] or "", reverse=True)
+    flips = flips[:6]
+
     page_html = _build_neighborhood_page(
         zip_code, name, borough, score, breakdown, raw_counts, raw_hpd, summary, last_updated, history,
-        petitions=petitions, vacates=vacates, lang=lang,
+        petitions=petitions, vacates=vacates, flips=flips, lang=lang,
     )
     _page_cache[cache_key] = (page_html, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page_html)
