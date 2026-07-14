@@ -23,6 +23,7 @@ _OUT = Path(__file__).resolve().parent.parent / "frontend" / "sitemap.xml"
 # (path, changefreq, priority, lastmod or None for today)
 _CORE = [
     ("/",            "daily",   "1.0",  None),
+    ("/displacement", "daily",  "0.9",  None),
     ("/map",         "daily",   "0.9",  None),
     ("/methodology", "weekly",  "0.8",  "2026-07-09"),
     ("/about",       "weekly",  "0.8",  "2026-04-29"),
