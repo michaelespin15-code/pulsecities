@@ -191,6 +191,7 @@ _FOOTER_HTML = """<footer>
   <div class="footer-links">
     <a href="/" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
     <a href="/neighborhoods" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Neighborhoods</a>
+    <a href="/displacement" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Displacement</a>
     <a href="/methodology" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
     <a href="/about" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
     <a href="/press" style="color:#64748b;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Press</a>
@@ -206,6 +207,7 @@ _FOOTERS = {
     "es": (_FOOTER_HTML
            .replace('>Home<', '>Inicio<')
            .replace('>Neighborhoods<', '>Vecindarios<')
+           .replace('>Displacement<', '>Desplazamiento<')
            .replace('>Methodology<', '>Metodología<')
            .replace('>About<', '>Acerca de<')
            .replace('>Press<', '>Prensa<')
