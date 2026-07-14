@@ -161,3 +161,86 @@ class TestBaseScraperFailurePath:
             f"rollback (pos {rollback_idx}) must precede db.get() (pos {get_idx}) "
             "so the aborted transaction is cleared before re-fetching"
         )
+
+
+class TestSourceUnchangedGuard:
+    """
+    A 0-record run must NOT raise an anomaly when the upstream source has not
+    advanced past our last watermark. Weekly-cadence sources (OCA evictions) sit
+    at 0 new rows for days between publishes; that is steady state, not a defect.
+    A 0-record run where the source DID have newer data (watermark absent or
+    ahead) is still a real anomaly and must page.
+    """
+
+    def _make_scraper(self, name, ret):
+        from scrapers.base import BaseScraper
+
+        class _Scraper(BaseScraper):
+            SCRAPER_NAME = name
+            DATASET_ID = "xxxx-0003"
+
+            def _run(self, db):
+                return ret
+
+        with patch.dict("os.environ", {"NYC_OPEN_DATA_APP_TOKEN": "test"}):
+            return _Scraper()
+
+    def _run_with(self, scraper, fresh_run, prior_watermark, rolling_avg):
+        db = MagicMock()
+        db.get.return_value = fresh_run
+        with patch("scrapers.base.SCRAPER_EXPECTED_MIN_RECORDS", {scraper.SCRAPER_NAME: 100}), \
+             patch.object(scraper, "_compute_rolling_avg", return_value=rolling_avg), \
+             patch.object(scraper, "get_watermark", return_value=prior_watermark):
+            return scraper.run(db)
+
+    def test_zero_records_suppressed_when_source_did_not_advance(self):
+        """new_watermark <= last watermark and 0 rows => success, no warning."""
+        from datetime import datetime, timezone
+        from models.scraper import ScraperRun
+
+        ceiling = datetime(2026, 7, 7, tzinfo=timezone.utc)
+        fresh_run = ScraperRun(scraper_name="test_evict", status="running")
+        scraper = self._make_scraper("test_evict", (0, 0, ceiling))
+
+        result = self._run_with(scraper, fresh_run, prior_watermark=ceiling, rolling_avg=200.0)
+
+        assert result.status == "success", (
+            "a caught-up 0-record run must not be flagged as an anomaly"
+        )
+        assert result.warning_message is None
+
+    def test_zero_records_still_flags_when_source_has_newer_data(self):
+        """0 rows with no observed ceiling (query returned nothing) still warns."""
+        from datetime import datetime, timezone
+        from models.scraper import ScraperRun
+
+        prior = datetime(2026, 7, 7, tzinfo=timezone.utc)
+        fresh_run = ScraperRun(scraper_name="test_break", status="running")
+        # new_watermark=None models a genuinely empty/failed pull: nothing seen,
+        # so we cannot conclude the source is unchanged and must still page.
+        scraper = self._make_scraper("test_break", (0, 0, None))
+
+        result = self._run_with(scraper, fresh_run, prior_watermark=prior, rolling_avg=200.0)
+
+        assert result.status == "warning", (
+            "0 rows with no evidence the source is caught up must still raise a warning"
+        )
+        assert result.warning_message is not None
+
+    def test_healthy_run_unaffected(self):
+        """A normal non-zero run is success regardless of the guard."""
+        from datetime import datetime, timezone
+        from models.scraper import ScraperRun
+
+        ceiling = datetime(2026, 7, 8, tzinfo=timezone.utc)
+        fresh_run = ScraperRun(scraper_name="test_ok", status="running")
+        scraper = self._make_scraper("test_ok", (180, 0, ceiling))
+
+        result = self._run_with(
+            scraper, fresh_run,
+            prior_watermark=datetime(2026, 7, 7, tzinfo=timezone.utc),
+            rolling_avg=200.0,
+        )
+
+        assert result.status == "success"
+        assert result.warning_message is None

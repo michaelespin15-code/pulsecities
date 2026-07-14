@@ -230,18 +230,36 @@ class BaseScraper(ABC):
 
             warnings: list[str] = []
 
-            expected_min = SCRAPER_EXPECTED_MIN_RECORDS.get(self.SCRAPER_NAME)
-            if expected_min and records_processed < expected_min * 0.5:
-                warnings.append(
-                    f"count {records_processed} < 50% of static minimum {expected_min}"
-                )
+            # A zero count is only worth flagging when the upstream source had
+            # newer records to give us. When the source's own max date has not
+            # advanced past our last watermark, 0 new rows is the expected quiet
+            # between publishes (OCA evictions publish weekly and lag 2-4 weeks),
+            # not a scraper defect. Scrapers that re-scan a trailing window every
+            # run (WATERMARK_EXTRA_LOOKBACK_DAYS > 0) surface the source's current
+            # ceiling as new_watermark even on a night when nothing new landed, so
+            # comparing it against the last successful watermark tells us whether
+            # the source moved. This mirrors the ACRIS source-freshness check.
+            prior_watermark = self.get_watermark(db)
+            source_unchanged = (
+                records_processed == 0
+                and new_watermark is not None
+                and prior_watermark is not None
+                and new_watermark <= prior_watermark
+            )
 
+            expected_min = SCRAPER_EXPECTED_MIN_RECORDS.get(self.SCRAPER_NAME)
             rolling_avg = self._compute_rolling_avg(db, started_at)
-            if rolling_avg is not None and records_processed < rolling_avg * 0.5:
-                warnings.append(
-                    f"count {records_processed} < 50% of {_ROLLING_WINDOW_DAYS}-day "
-                    f"rolling average {rolling_avg:.0f}"
-                )
+
+            if not source_unchanged:
+                if expected_min and records_processed < expected_min * 0.5:
+                    warnings.append(
+                        f"count {records_processed} < 50% of static minimum {expected_min}"
+                    )
+                if rolling_avg is not None and records_processed < rolling_avg * 0.5:
+                    warnings.append(
+                        f"count {records_processed} < 50% of {_ROLLING_WINDOW_DAYS}-day "
+                        f"rolling average {rolling_avg:.0f}"
+                    )
 
             if warnings:
                 msg = "; ".join(warnings)
@@ -259,7 +277,16 @@ class BaseScraper(ABC):
                 (rolling_avg is not None and rolling_avg > 100)
                 or (expected_min_floor is not None and expected_min_floor > 100)
             )
-            if zero_with_expectation:
+            if source_unchanged:
+                # Source ceiling has not moved past what we already hold; a
+                # 0-record run here is steady state, not an anomaly worth paging on.
+                scraper_run.status = "success"
+                logger.info(
+                    "%s: source unchanged since %s; 0 new records is expected, not flagging",
+                    self.SCRAPER_NAME,
+                    prior_watermark.date().isoformat(),
+                )
+            elif zero_with_expectation:
                 scraper_run.status = "warning"
             else:
                 scraper_run.status = "success"
