@@ -28,10 +28,34 @@ Adjacent guards re-run green: footer/analytics/breadcrumbs/displacement (19),
 frontend_routes incl. palette (57), watch-cta/nbhd-flips/operator-seo (7),
 ui-copy incl. em-dash (10). Live-verified via nginx: all pages 8/8 hub links.
 
-**#9 remainder still queued** (see the recipes further down): neighborhood
-lateral-link sections; `/displacement` + LinkedIn in the about/methodology/press
-STATIC footers; nginx trailing-slash 301s; `/property` in the sitemap. Plus P3
-polish. Not pushed (Michael runs `git push`).
+**#9 progress (this session):**
+- **Footer parity DONE** (ef987a0): all static footers (about/methodology/press/
+  status/operator/developers) + the brief footer (`briefs.py`) now carry
+  `/neighborhoods`, `/displacement`, and LinkedIn to match the SSR
+  `_FOOTER_HTML`. `test_footer_consistency` CANON was tightened to require
+  `/neighborhoods` + `/displacement`, so future drift fails.
+- **Neighborhood lateral-link sections DONE** (d32a068): each `/neighborhood/{zip}`
+  now renders "Operators active in {name}" (non-noise operators holding parcels
+  in the ZIP -> `/operator/{slug}`), "More {borough} neighborhoods" (borough ZIPs
+  by score -> `/neighborhood/{zip}`, self excluded), and an always-on
+  `/displacement` CTA. List sections render only when non-empty; bilingual via
+  `_NB_L`. Guarded by `test_neighborhood_lateral.py`.
+
+- **nginx trailing-slash 301s DONE** (d75a989): a regex `location` 301s the
+  slash form of every content route (`/flips/`, `/brooklyn/`, `/this-week/archive/`,
+  etc.) to the canonical slash-less URL, query preserved. Copied to /etc, `nginx -t`
+  clean, reloaded; 15 routes verified 301 -> 200. `test_infra_guards` still green.
+- **/property in the sitemap DONE** (1e31c7c): only the ~1.5k buildings with BOTH
+  a deed transfer AND an eviction (the arc the site documents) are listed, at
+  priority 0.5 — NOT the ~912k parcels that merely inherit a ZIP score (doorway
+  flood). `test_sitemap.py` guards the flood cap + that every listed property is
+  200 + index,follow. sitemap regenerated live (1800 urls); the file is a cron
+  artifact so only the generator + test were committed.
+
+**#8 and #9 are now COMPLETE.** Only P3 polish remains: dynamic OG images for
+`/borough` + `/this-week` (infra in `api/routes/og_images.py`); `/displacement`
+section headers `<div class="sec-h">` -> `<h2>`; weave "biggest NYC landlords"
+into operator titles/H1. Not pushed (Michael runs `git push`).
 
 ---
 
