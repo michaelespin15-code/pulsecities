@@ -62,29 +62,36 @@ Applied this session (466e85d):
   'Explore' -> 'NYC Displacement Risk Map | PulseCities'. /status noindex.
   /map sitemap priority 0.9 -> 0.6.
 
-Queued as tasks #6-#9 (agent findings, with the fix recipes):
-- **#6 /property/{bbl} SSR bodies** (P1, both agents). Serves the app.html map
-  shell: H1 "PulseCities", body identical across all parcels, only
-  SoftwareApplication schema, absent from sitemap, yet hundreds of internal
-  links point at it. Needs real SSR body + Place/BreadcrumbList schema + up-links.
-- **#7 operator pages** (P1): ZERO structured data; acquisition addresses are
-  plain text. Add Dataset+BreadcrumbList (agent gave the snippet), link addresses
-  to /property, add "active in these neighborhoods" ZIP links + breadcrumb.
-- **#8 shared SSR nav constant + /this-week schema + breadcrumbs** (P1/P2):
-  per-page navs are inconsistent and omit /displacement; /this-week emits no
-  schema (regression vs /week); many pages lack BreadcrumbList.
-- **#9 neighborhood lateral links + homepage Organization schema + footers**
-  (P1/P2): neighborhood pages are outbound dead-ends (add operators-here,
-  nearby-neighborhoods, /displacement CTA); homepage has no Organization schema;
-  4 static footers omit /displacement+LinkedIn; homepage operator rows are
-  non-links; nginx trailing-slash routes 404 instead of 301.
-- Minor/P3 (not ticketed): dynamic OG images for borough/this-week; og:image
-  dimensions on ~11 pages; /displacement sec-h divs -> h2; keyword nits
-  ("biggest NYC landlords" vs "operator networks").
+Audit fixes shipped this session:
+- **#6 /property/{bbl} real SSR bodies DONE** (a0d5dc6). Was the app.html map
+  shell (H1 "PulseCities", identical across parcels). Now renders per-building
+  public-record body (address H1, area score, ownership transfers, evictions,
+  permits, 311 volume) + Place + BreadcrumbList JSON-LD + Plausible + up-links to
+  /neighborhood, owning /operator, borough. Buildings with no records/score are
+  noindex,follow so thin pages don't dilute the index. _build_property_page().
+  test_property_page.py guards real-content + noindex gate.
+- **#7 operator pages DONE** (44a10c5). Added Dataset + BreadcrumbList JSON-LD
+  (was zero schema); acquisition addresses now link to /property and ZIPs to
+  /neighborhood in the server HTML; client portfolio table addresses link to
+  /property too. test_operator_seo.py guards it.
+- **#9 partial** (f1272f2): homepage Organization schema (logo/founder/sameAs)
+  added; /displacement added to the homepage footer.
 
-Session commits: e39f58b, 04cd936, 2c1021f, e06b55a, 8f05615, b9f6649, 484b4d5,
-466e85d (+ checkpoints). All live (working tree is prod); nginx cp'd to /etc and
-reloaded; NOT pushed (Michael runs git push).
+Still queued:
+- **#8** shared SSR nav constant (navs inconsistent, omit /displacement);
+  /this-week emits no schema (regression vs /week — add ItemList+BreadcrumbList+
+  NewsArticle); BreadcrumbList missing on /operators, /flips, /radar,
+  /displacement, /neighborhoods, /this-week.
+- **#9 remainder**: neighborhood lateral-link sections (operators-buying-here,
+  nearby-neighborhoods, /displacement CTA); /displacement + LinkedIn in the
+  about/methodology/press footers; homepage operator/signal module rows as links;
+  nginx trailing-slash 301s; /property in the sitemap (index file for volume).
+- Minor/P3: dynamic OG images (borough/this-week); og:image dims on ~11 pages;
+  /displacement sec-h divs -> h2; "biggest NYC landlords" keyword weave.
+
+Session commits (SEO push): e39f58b, 04cd936, e06b55a, 8f05615, b9f6649, 484b4d5,
+466e85d, a0d5dc6, 44a10c5, f1272f2 (+ checkpoints). All live (working tree is
+prod); nginx cp'd to /etc and reloaded; NOT pushed (Michael runs git push).
 
 ## Earlier session (three questions -> drop automation)
 
