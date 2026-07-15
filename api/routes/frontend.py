@@ -386,6 +386,12 @@ _NB_L = {
         "flip_days": "{n}d",
         "flip_note": ("Source: ACRIS deeds and DOB permits via NYC Open Data, past 365 days. "
                       "Shown for context; not part of the composite score."),
+        "ops_h": "Operators active in {name}",
+        "ops_sub": "Ownership networks with public-record deed activity in {zip}, most active here first.",
+        "ops_meta": "{n} in {zip} · {t} citywide",
+        "nearby_h": "More {borough} neighborhoods",
+        "nearby_sub": "Other {borough} ZIP codes ranked by displacement-pressure score.",
+        "disp_cta": "See the citywide displacement picture →",
         "lang_toggle_label": "ES", "lang_toggle_aria": "Ver esta página en español",
     },
     "es": {
@@ -473,6 +479,12 @@ _NB_L = {
         "flip_days": "{n}d",
         "flip_note": ("Fuente: escrituras ACRIS y permisos DOB vía NYC Open Data, últimos 365 días. "
                       "Mostrado como contexto; no forma parte de la puntuación compuesta."),
+        "ops_h": "Operadores activos en {name}",
+        "ops_sub": "Redes de propiedad con actividad de escrituras en {zip} en registros públicos, primero las más activas aquí.",
+        "ops_meta": "{n} en {zip} · {t} en total",
+        "nearby_h": "Más vecindarios de {borough}",
+        "nearby_sub": "Otros códigos postales de {borough} por puntuación de presión de desplazamiento.",
+        "disp_cta": "Ver el panorama de desplazamiento de toda la ciudad →",
         "lang_toggle_label": "EN", "lang_toggle_aria": "View this page in English",
     },
 }
@@ -555,6 +567,8 @@ def _build_neighborhood_page(
     petitions: dict | None = None,
     vacates: dict | None = None,
     flips: list | None = None,
+    operators_here: list | None = None,
+    nearby: list | None = None,
     lang: str = "en",
 ) -> str:
     e = _html.escape
@@ -785,6 +799,48 @@ def _build_neighborhood_page(
   </section>
 """
 
+    # Lateral internal links. Operators with deed activity in this ZIP and the
+    # borough's other neighborhoods deepen the crawl graph and give a reader
+    # somewhere to go next. Each renders only when it has rows.
+    operators_section = ""
+    if operators_here:
+        op_items = ""
+        for op in operators_here:
+            meta = L["ops_meta"].format(n=op["local"], zip=zip_code, t=op["total"])
+            op_items += (
+                '<li class="lat-row">'
+                f'<a href="/operator/{e(op["slug"])}">{e(op["name"])}</a>'
+                f'<span class="lat-meta">{e(meta)}</span></li>'
+            )
+        operators_section = f"""  <section style="margin-bottom:32px;">
+    <h2>{L["ops_h"].format(name=e(name))}</h2>
+    <p class="section-sub">{L["ops_sub"].format(zip=zip_code)}</p>
+    <ul class="lat-list">{op_items}</ul>
+  </section>
+"""
+
+    nearby_section = ""
+    if nearby:
+        nb_items = ""
+        for nb in nearby:
+            _tl, tier_color = _tier_info(nb["score"])
+            nb_items += (
+                '<li class="lat-row">'
+                f'<a href="/neighborhood/{e(nb["zip"])}">{e(nb["name"])}</a>'
+                f'<span class="lat-score" style="color:{tier_color};">{nb["score"]:.0f}</span></li>'
+            )
+        nearby_section = f"""  <section style="margin-bottom:32px;">
+    <h2>{L["nearby_h"].format(borough=e(borough_disp))}</h2>
+    <p class="section-sub">{L["nearby_sub"].format(borough=e(borough_disp))}</p>
+    <ul class="lat-list">{nb_items}</ul>
+  </section>
+"""
+
+    # Always-valid link to the flagship citywide page, from every neighborhood.
+    disp_cta_html = (
+        f'  <p class="disp-cta"><a href="/displacement">{L["disp_cta"]}</a></p>\n'
+    )
+
     # The alternate-language URL for the toggle and hreflang pair. English is
     # the parameterless canonical form; Spanish lives at ?lang=es.
     alt_url = f"{base_url}?lang=es" if lang == "en" else base_url
@@ -906,6 +962,15 @@ td{{padding:12px 0;border-bottom:1px solid rgba(148,163,184,.06);vertical-align:
 .faq-item:first-child{{border-top:1px solid var(--border)}}
 .faq-q{{font-size:.88rem;font-weight:600;margin-bottom:6px}}
 .faq-a{{font-size:.83rem;color:var(--muted);line-height:1.65}}
+.lat-list{{list-style:none;padding:0;margin:0}}
+.lat-row{{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--border)}}
+.lat-row a{{color:var(--text);font-weight:500;font-size:.9rem}}
+.lat-row a:hover{{color:var(--accent)}}
+.lat-meta{{color:var(--muted);font-size:.78rem;white-space:nowrap}}
+.lat-score{{font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:600;white-space:nowrap}}
+.disp-cta{{text-align:center;margin:8px 0 28px}}
+.disp-cta a{{color:var(--accent);font-size:.9rem}}
+.disp-cta a:hover{{text-decoration:underline}}
 .meth-link{{font-size:.82rem;margin-bottom:28px}}
 .meth-link a{{color:var(--accent)}}
 .meth-link a:hover{{text-decoration:underline}}
@@ -949,7 +1014,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
     </div>
     <p class="data-note">{L['signals_note']}</p>
   </section>
-{petitions_section}{vacates_section}{flips_section}  <section style="margin-bottom:32px;">
+{petitions_section}{vacates_section}{flips_section}{operators_section}{nearby_section}  <section style="margin-bottom:32px;">
     <h2>{L['faq_h']}</h2>
     <div class="faq-list">
       {faq_html}
@@ -962,7 +1027,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
     <textarea id="embed-code" readonly rows="3" aria-label="{L['embed_aria']}" style="width:100%;max-width:560px;background:var(--surface);color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px;font-family:SFMono-Regular,Menlo,Consolas,monospace;line-height:1.5;resize:none;">{e(embed_code)}</textarea>
     <p style="margin-top:8px;"><button class="btn-copy" id="copy-embed-btn" onclick="copyEmbed()">{L['embed_btn']}</button></p>
   </section>
-  <p class="meth-link"><a href="/methodology">{L['meth_link']}</a></p>
+{disp_cta_html}  <p class="meth-link"><a href="/methodology">{L['meth_link']}</a></p>
   <div class="cta-row">
     <a href="/map?q={zip_code}" class="btn-map">{L['cta_map'].format(zip=zip_code)}</a>
     <button class="btn-copy" id="copy-btn" onclick="copyLink()">{L['cta_copy']}</button>
@@ -1191,9 +1256,48 @@ def neighborhood_page(zip_code: str, lang: str = "en", db: Session = Depends(get
     flips.sort(key=lambda f: f["transfer_date"] or "", reverse=True)
     flips = flips[:6]
 
+    # Lateral internal links: operators with deed activity in this ZIP, and the
+    # other neighborhoods in this borough by score. Both deepen the crawl graph
+    # and give a reader somewhere to go; each renders only when non-empty.
+    from api.routes.operators import OPERATOR_NOISE_ROOTS
+    op_rows = db.execute(text("""
+        SELECT o.operator_root, o.slug,
+               COALESCE(o.total_acquisitions, 0) AS total,
+               count(DISTINCT p.bbl) AS local
+        FROM operators o
+        JOIN operator_parcels op ON op.operator_id = o.id
+        JOIN parcels p ON p.bbl = op.bbl
+        WHERE o.operator_class = 'operator'
+          AND COALESCE(jsonb_array_length(o.llc_entities), 0) > 0
+          AND p.zip_code = :zip
+        GROUP BY o.id
+        ORDER BY local DESC, total DESC, o.operator_root
+        LIMIT 8
+    """), {"zip": zip_code}).fetchall()
+    operators_here = [
+        {"name": r.operator_root, "slug": r.slug, "total": int(r.total), "local": int(r.local)}
+        for r in op_rows
+        if r.slug and r.operator_root not in OPERATOR_NOISE_ROOTS
+    ][:6]
+
+    nearby = []
+    if borough:
+        nb_rows = db.execute(text("""
+            SELECT n.zip_code, n.name, ds.score
+            FROM neighborhoods n
+            JOIN displacement_scores ds ON ds.zip_code = n.zip_code
+            WHERE ds.score IS NOT NULL AND n.name IS NOT NULL AND n.zip_code <> :zip
+        """), {"zip": zip_code}).fetchall()
+        nearby = sorted(
+            ({"zip": r.zip_code, "name": r.name, "score": float(r.score)}
+             for r in nb_rows if _borough_from_zip(r.zip_code) == borough),
+            key=lambda x: x["score"], reverse=True,
+        )[:6]
+
     page_html = _build_neighborhood_page(
         zip_code, name, borough, score, breakdown, raw_counts, raw_hpd, summary, last_updated, history,
-        petitions=petitions, vacates=vacates, flips=flips, lang=lang,
+        petitions=petitions, vacates=vacates, flips=flips,
+        operators_here=operators_here, nearby=nearby, lang=lang,
     )
     _page_cache[cache_key] = (page_html, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page_html)
