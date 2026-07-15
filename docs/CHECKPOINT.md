@@ -43,7 +43,105 @@ address H1 (not the old map shell); all 12 SSR pages load Plausible once.
 - P3: dynamic OG images (borough/this-week); `/displacement` sec-h `<div>`->`<h2>`;
   "biggest NYC landlords" keyword weave.
 
-**Push:** nothing pushed; Michael runs `! git push`.
+**Push:** pushed to GitHub (`main`, private repo `michaelespin15-code/pulsecities`)
+through fe460e1 on 2026-07-15. Agents cannot push; Michael runs `! git push`.
+
+---
+
+## For a NEW chat session: environment, patterns, gotchas
+
+**Deploy model (unchanged, critical):** the working tree IS production.
+- Static files (`frontend/*.html`, sitemap.xml, robots.txt) are served by nginx
+  straight from disk — edits are instantly live, no reload.
+- Python (FastAPI/gunicorn) runs as systemd unit `pulsecities`. After editing
+  any `.py`, `systemctl reload pulsecities` (import-check FIRST:
+  `venv/bin/python -c "from api.main import app"` — a syntax error left unreloaded
+  is invisible; a bad reload crash-loops).
+- nginx config lives in `deploy/nginx-pulsecities.conf`. To change routing: edit
+  it, `cp deploy/nginx-pulsecities.conf /etc/nginx/sites-enabled/pulsecities`,
+  `nginx -t`, `systemctl reload nginx`.
+- **New SSR routes need an nginx `location = /route` proxy block** — SSR pages are
+  individually allow-listed; an unlisted path falls through to static and 404s.
+  This bit /displacement; don't forget it for new routes.
+- The nightly-generated files (`frontend/sitemap.xml`, `frontend/llms.txt`,
+  `scripts/*_state.json`, `eviction_flips_editions.json`) show as `M` in git
+  every session — they are cron artifacts, NOT your edits. Do not commit them
+  with feature work.
+- Box is 4GB/2CPU; run pytest in targeted subsets, not the whole suite at once.
+
+**Verify a page:** `curl -s -k -H "Host: pulsecities.com" https://127.0.0.1/PATH`
+or TestClient (`from fastapi.testclient import TestClient`). Both hit the prod DB
+(single-DB box) — reads are safe; NEVER let a test commit to prod tables (use
+dry_run + rollback; see the audit-2026-07-11 note below).
+
+**SSR page pattern (all in `api/routes/frontend.py`, ~4000 lines):** each page
+is a full-HTML f-string with inline `<style>` (dark theme `#0f172a`), built with
+these module helpers: `_jsonld(obj)`, `_set_meta()`, `_tier_info(score)`,
+`_FOOTER_HTML` / `_FOOTERS[lang]`, `_crumbs(*(name,path))` (BreadcrumbList for a
+JSON-LD @graph), and `{_PLAUSIBLE}` injected right after the
+`<script type="application/ld+json">{jsonld}</script>` line (this is how every
+SSR page loads analytics — keep the pattern on new pages).
+- Property page: `_build_property_page()`. Neighborhood: `_build_neighborhood_page()`
+  (bilingual via `_NB_L[lang]`, `?lang=es`). Displacement: `displacement_page()`
+  with `_approved_flip_arcs()` (named eviction-flip arcs come ONLY from approved
+  editions — the human review gate; do not bypass it).
+- **Palette guard:** never use the retired bright greens (`#4ade80`, `#22c55e`,
+  `#16a34a`, `#eab308`) anywhere in `frontend.py`/`briefs.py` — `test_frontend_routes
+  ::TestCanonicalTierBands` fails the build. Use canonical `#3E6B54` (positive),
+  `#C08B2D`, `#F97316`, `#EF4444`.
+- **Footer guard:** `test_footer_consistency` requires the CANON link subset on
+  every footer; the SSR footer is `_FOOTER_HTML`. Extra links are allowed.
+- **No em dashes in UI copy** (Michael's standing rule).
+
+**Tests added this session:** test_displacement_page, test_ssr_analytics,
+test_watch_cta, test_neighborhood_flips, test_property_page, test_operator_seo,
+test_breadcrumbs, test_flips_postpack, plus the base-scraper source-unchanged
+guards.
+
+## Remaining work — executable recipes
+
+**#8 shared SSR nav constant (the one real refactor left).** Every SSR page
+hand-rolls its own `<nav>` and they disagree (different link subsets; none but
+the homepage include /displacement). Build one `_SSR_NAV` constant (mirror
+`_FOOTER_HTML`) with the full hub set — Map, Displacement, Neighborhoods,
+Operators, Flips, Radar, This-week, Methodology — and interpolate it into each
+page's nav: operators, neighborhoods, borough, flips, flips/editions, radar,
+this-week, week (`_week_nav_html`), displacement, property. Verify each renders
+and run the frontend + footer + analytics tests. ~10 nav blocks; do it carefully.
+
+**#9 remainder:**
+- Neighborhood lateral sections in `_build_neighborhood_page()` (render only when
+  non-empty, like the flips section): "Operators buying in {name}" (query
+  `operators` via `operator_parcels`→`parcels` filtered to the ZIP, link
+  `/operator/{slug}`), "Nearby neighborhoods" (same-borough ZIPs by score, link
+  `/neighborhood/{zip}`), and a `/displacement` CTA link. Bilingual copy keys in
+  `_NB_L`.
+- Add `/displacement` (+ LinkedIn for parity) to the about/methodology/press
+  static footers.
+- nginx trailing-slash 301s: a regex `location` returning 301 for the exact-match
+  content routes (currently `/flips/` etc. 404). Place before the catch-all.
+- `/property` in the sitemap: `generate_sitemap.py`, query BBLs that have signals
+  (index the substantive ones only), split into a sitemap index if volume is large.
+
+**P3 polish:** dynamic OG images for `/borough` + `/this-week` (infra exists in
+`api/routes/og_images.py`); `/displacement` section headers `<div class="sec-h">`
+-> `<h2 class="sec-h">`; weave "biggest NYC landlords" into operator titles/H1.
+
+## Action items on Michael (only he can do)
+- **Anthropic credits**: top up, or the AI read (`/api/summary`) keeps returning
+  503 to visitors (it degrades gracefully with a cooldown, so no crash).
+- **Before the repo goes PUBLIC** (part of the job-search "ship the proof" plan):
+  scrub `DATABASE_URL` from git history (`git filter-repo`) and rotate the
+  Postgres password — it was committed in the April initial commit. Anthropic key
+  + NYC token in that old `.env` were placeholders; Resend/R2 keys were never
+  committed. Fine while the repo stays private.
+- Distribution: post this week's flip post-pack; send the 153% reporter tip.
+
+## Bigger-picture backlog (pre-existing, not this session)
+Growth bottleneck is distribution, not features (~4 real external subscribers,
+near-zero human traffic, Googlebot crawling fine). Parked directions: "ship the
+proof" (repo public + builder write-up), automate-the-drop (DONE this session),
+conversion instrumentation (Plausible now on all pages — build the funnel views).
 
 ---
 
