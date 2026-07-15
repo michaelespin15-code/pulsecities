@@ -77,15 +77,16 @@ Audit fixes shipped this session:
 - **#9 partial** (f1272f2): homepage Organization schema (logo/founder/sameAs)
   added; /displacement added to the homepage footer.
 
-- **#8 partial** (b0e9204): /this-week now emits NewsArticle + ItemList +
-  BreadcrumbList (was zero); /displacement got a BreadcrumbList in its graph.
+- **#8 mostly done** (b0e9204, 6bf7348): /this-week now emits NewsArticle +
+  ItemList + BreadcrumbList (was zero); BreadcrumbList folded into /displacement,
+  /operators, /neighborhoods, /flips, /flips/editions, /radar via a shared
+  _crumbs() helper (JSON-LD @graph). test_breadcrumbs.py guards coverage.
 
 Still queued:
-- **#8 remainder** (riskier, left for a fresh session): the shared SSR nav
-  constant (every SSR page has a different hand-rolled nav omitting /displacement
-  — a real refactor, don't rush it); BreadcrumbList still missing on /operators,
-  /flips, /radar, /neighborhoods (fold into each page's jsonld @graph like the
-  /displacement + /this-week edits did).
+- **#8 remainder** (riskier, left for a fresh session): ONLY the shared SSR nav
+  constant is left — every SSR page has a different hand-rolled nav that omits
+  /displacement. It is a real refactor across ~10 page heads; do it deliberately,
+  not at the tail of a marathon session.
 - **#9 remainder**: neighborhood lateral-link sections (operators-buying-here,
   nearby-neighborhoods, /displacement CTA); /displacement + LinkedIn in the
   about/methodology/press footers; homepage operator/signal module rows as links;
