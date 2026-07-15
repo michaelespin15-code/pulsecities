@@ -2033,16 +2033,16 @@ def operators_directory(db: Session = Depends(get_db)):
         })
 
     n_visible = len(operators)
-    title = "NYC Operator Networks | PulseCities"
+    title = "Biggest NYC Landlords by Acquisition Volume | PulseCities"
     desc = (
-        f"{n_visible} public-record operator clusters with measurable NYC acquisition activity, "
-        "sourced from ACRIS deed records."
+        f"The biggest NYC landlords by acquisition volume: {n_visible} ownership networks "
+        "grouped from ACRIS deed records, ranked by measurable buying activity."
     )
     jsonld = _jsonld({
         "@context": "https://schema.org",
         "@graph": [{
             "@type": "ItemList",
-            "name": "NYC Operator Networks",
+            "name": "Biggest NYC landlords by acquisition volume",
             "description": desc,
             "url": "https://pulsecities.com/operators",
             "numberOfItems": n_visible,
@@ -2058,14 +2058,14 @@ def operators_directory(db: Session = Depends(get_db)):
 <title>{_html.escape(title)}</title>
 <meta name="description" content="{_html.escape(desc)}">
 <link rel="canonical" href="https://pulsecities.com/operators">
-<meta property="og:title" content="NYC Operator Networks | PulseCities">
+<meta property="og:title" content="{_html.escape(title)}">
 <meta property="og:description" content="{_html.escape(desc)}">
 <meta property="og:url" content="https://pulsecities.com/operators">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
 <meta property="og:image" content="https://pulsecities.com/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="NYC Operator Networks | PulseCities">
+<meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
@@ -2102,7 +2102,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <div style="margin-bottom:8px;">
     <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Home</a>
   </div>
-  <h1 id="dir-heading" style="font-size:1.4rem;font-weight:600;margin-bottom:6px;">NYC Operator Networks</h1>
+  <h1 id="dir-heading" style="font-size:1.4rem;font-weight:600;margin-bottom:6px;">The biggest NYC landlords</h1>
   <p id="dir-desc" style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px;line-height:1.6;">
     Ownership clusters identified in NYC deed records. Each groups LLCs by naming patterns and acquisition activity. Public records only.
   </p>
@@ -2116,7 +2116,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   var lang = localStorage.getItem('pc-lang') || 'en';
   var i18n = {{
     en: {{
-      heading: 'NYC Operator Networks',
+      heading: 'The biggest NYC landlords',
       desc: 'Ownership clusters identified in NYC deed records. Each groups LLCs by naming patterns and acquisition activity. Public records only.',
       sub: '{n_visible} clusters tracked across an 18-month public records window.',
       acq: 'acquisitions',
@@ -2124,7 +2124,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
       toggle: 'EN / ES'
     }},
     es: {{
-      heading: 'Redes de operadores de NYC',
+      heading: 'Los mayores propietarios de NYC',
       desc: 'Grupos de propiedad identificados en registros de escrituras de NYC. Cada uno agrupa LLC por patrones de nombres y actividad de adquisición. Solo registros públicos.',
       sub: '{n_visible} grupos rastreados en una ventana de registros públicos de 18 meses.',
       acq: 'adquisiciones',
@@ -4280,25 +4280,25 @@ footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) 
 <div class="stats">{stats_html}</div>
 
 <div class="section">
-<div class="sec-h">Evicted, then flipped <a class="sec-more" href="/flips/editions" onclick="plausible('Showcase Section',{{props:{{sec:'arcs'}}}})">All editions &rarr;</a></div>
+<h2 class="sec-h">Evicted, then flipped <a class="sec-more" href="/flips/editions" onclick="plausible('Showcase Section',{{props:{{sec:'arcs'}}}})">All editions &rarr;</a></h2>
 <div class="sec-sub">Buildings where tenants were evicted, an LLC bought in, and the building resold at a markup within a year. Reviewed before listing. Every step is a public deed.</div>
 <ul>{arc_items}</ul>
 </div>
 
 <div class="section">
-<div class="sec-h">Highest pressure this week <a class="sec-more" href="/neighborhoods" onclick="plausible('Showcase Section',{{props:{{sec:'hot'}}}})">All neighborhoods &rarr;</a></div>
+<h2 class="sec-h">Highest pressure this week <a class="sec-more" href="/neighborhoods" onclick="plausible('Showcase Section',{{props:{{sec:'hot'}}}})">All neighborhoods &rarr;</a></h2>
 <div class="sec-sub">The neighborhoods with the strongest combined displacement signals across {n_hoods} scored ZIP codes.</div>
 <ul>{hot_items}</ul>
 </div>
 
 <div class="section">
-<div class="sec-h">The largest landlords <a class="sec-more" href="/operators" onclick="plausible('Showcase Section',{{props:{{sec:'operators'}}}})">All landlords &rarr;</a></div>
+<h2 class="sec-h">The largest landlords <a class="sec-more" href="/operators" onclick="plausible('Showcase Section',{{props:{{sec:'operators'}}}})">All landlords &rarr;</a></h2>
 <div class="sec-sub">Owner networks with the most acquisitions across the city, resolved from ACRIS deeds through their LLC shells.</div>
 <ul>{op_items}</ul>
 </div>
 
 <div class="section">
-<div class="sec-h">Buying clusters <a class="sec-more" href="/radar" onclick="plausible('Showcase Section',{{props:{{sec:'radar'}}}})">Speculation radar &rarr;</a></div>
+<h2 class="sec-h">Buying clusters <a class="sec-more" href="/radar" onclick="plausible('Showcase Section',{{props:{{sec:'radar'}}}})">Speculation radar &rarr;</a></h2>
 <div class="sec-sub">A single LLC taking the deed on several buildings in one ZIP within 90 days. Concentrated buying often precedes turnover.</div>
 <ul>{cl_items}</ul>
 </div>
