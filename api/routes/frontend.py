@@ -3702,6 +3702,42 @@ def this_week_page(db: Session = Depends(get_db)):
         f"{counts.evictions:,} eviction filings, {counts.permits:,} construction permits. Public records only."
     )
 
+    # /this-week emitted no structured data (regression vs /week/{slug}). It is a
+    # dated editorial review, so it earns a NewsArticle plus the movers ItemList
+    # and a breadcrumb.
+    jsonld = _jsonld({
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "NewsArticle",
+                "headline": title,
+                "description": desc,
+                "datePublished": date.today().isoformat(),
+                "author": {"@type": "Person", "name": "Michael Espin"},
+                "publisher": {"@type": "Organization", "name": "PulseCities", "url": "https://pulsecities.com"},
+                "url": "https://pulsecities.com/this-week",
+            },
+            {
+                "@type": "ItemList",
+                "name": f"NYC displacement score movers, {range_label}",
+                "numberOfItems": len(movers),
+                "itemListElement": [
+                    {"@type": "ListItem", "position": i,
+                     "name": (mv.name or mv.zip_code),
+                     "url": f"https://pulsecities.com/neighborhood/{mv.zip_code}"}
+                    for i, mv in enumerate(movers, 1)
+                ],
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://pulsecities.com/"},
+                    {"@type": "ListItem", "position": 2, "name": "This week", "item": "https://pulsecities.com/this-week"},
+                ],
+            },
+        ],
+    })
+
     page = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3709,7 +3745,8 @@ def this_week_page(db: Session = Depends(get_db)):
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
-<link rel="canonical" href="https://pulsecities.com/this-week">{_PLAUSIBLE}
+<link rel="canonical" href="https://pulsecities.com/this-week">
+<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(desc)}">
 <meta property="og:url" content="https://pulsecities.com/this-week">
@@ -4024,12 +4061,23 @@ def displacement_page(db: Session = Depends(get_db)):
     )
     jsonld = _jsonld({
         "@context": "https://schema.org",
-        "@type": "CollectionPage",
-        "name": "The State of NYC Displacement",
-        "description": desc,
-        "url": "https://pulsecities.com/displacement",
-        "isPartOf": {"@type": "WebSite", "name": "PulseCities", "url": "https://pulsecities.com"},
-        "dateModified": date.today().isoformat(),
+        "@graph": [
+            {
+                "@type": "CollectionPage",
+                "name": "The State of NYC Displacement",
+                "description": desc,
+                "url": "https://pulsecities.com/displacement",
+                "isPartOf": {"@type": "WebSite", "name": "PulseCities", "url": "https://pulsecities.com"},
+                "dateModified": date.today().isoformat(),
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://pulsecities.com/"},
+                    {"@type": "ListItem", "position": 2, "name": "Displacement", "item": "https://pulsecities.com/displacement"},
+                ],
+            },
+        ],
     })
 
     head = f"""<!DOCTYPE html>
