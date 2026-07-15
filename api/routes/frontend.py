@@ -165,6 +165,18 @@ def _jsonld(obj) -> str:
     return json.dumps(obj, indent=2).replace("<", "\\u003c")
 
 
+def _crumbs(*pairs) -> dict:
+    """A schema.org BreadcrumbList from (name, path) pairs, for embedding in a
+    page's JSON-LD @graph."""
+    return {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": i, "name": n, "item": f"https://pulsecities.com{p}"}
+            for i, (n, p) in enumerate(pairs, 1)
+        ],
+    }
+
+
 def _tier_info(score: float) -> tuple[str, str]:
     """
     Returns (display_label, hex_color) for the score tier.
@@ -1852,12 +1864,14 @@ def operators_directory(db: Session = Depends(get_db)):
     )
     jsonld = _jsonld({
         "@context": "https://schema.org",
-        "@type": "ItemList",
-        "name": "NYC Operator Networks",
-        "description": desc,
-        "url": "https://pulsecities.com/operators",
-        "numberOfItems": n_visible,
-        "itemListElement": list_items,
+        "@graph": [{
+            "@type": "ItemList",
+            "name": "NYC Operator Networks",
+            "description": desc,
+            "url": "https://pulsecities.com/operators",
+            "numberOfItems": n_visible,
+            "itemListElement": list_items,
+        }, _crumbs(("Home", "/"), ("Operators", "/operators"))],
     })
 
     page = f"""<!DOCTYPE html>
@@ -2070,12 +2084,14 @@ def neighborhoods_directory(lang: str = "en", db: Session = Depends(get_db)):
     alt_url = f"{base_url}?lang=es" if lang == "en" else base_url
     jsonld = _jsonld({
         "@context": "https://schema.org",
-        "@type": "ItemList",
-        "name": LL["dir_h1"],
-        "description": desc,
-        "url": canonical,
-        "numberOfItems": n,
-        "itemListElement": list_items,
+        "@graph": [{
+            "@type": "ItemList",
+            "name": LL["dir_h1"],
+            "description": desc,
+            "url": canonical,
+            "numberOfItems": n,
+            "itemListElement": list_items,
+        }, _crumbs(("Home", "/"), ("Neighborhoods", "/neighborhoods"))],
     })
 
     page = f"""<!DOCTYPE html>
@@ -2538,12 +2554,14 @@ def flip_watch_page(db: Session = Depends(get_db)):
     )
     jsonld = _jsonld({
         "@context": "https://schema.org",
-        "@type": "ItemList",
-        "name": "NYC Flip Watch",
-        "description": desc,
-        "url": "https://pulsecities.com/flips",
-        "numberOfItems": n,
-        "itemListElement": list_items,
+        "@graph": [{
+            "@type": "ItemList",
+            "name": "NYC Flip Watch",
+            "description": desc,
+            "url": "https://pulsecities.com/flips",
+            "numberOfItems": n,
+            "itemListElement": list_items,
+        }, _crumbs(("Home", "/"), ("Flip Watch", "/flips"))],
     })
 
     page = f"""<!DOCTYPE html>
@@ -2805,12 +2823,14 @@ def flips_editions_page(db: Session = Depends(get_db)):
     )
     jsonld = _jsonld({
         "@context": "https://schema.org",
-        "@type": "ItemList",
-        "name": "NYC Eviction Flips, weekly editions",
-        "description": desc,
-        "url": "https://pulsecities.com/flips/editions",
-        "numberOfItems": total_arcs,
-        "itemListElement": list_items,
+        "@graph": [{
+            "@type": "ItemList",
+            "name": "NYC Eviction Flips, weekly editions",
+            "description": desc,
+            "url": "https://pulsecities.com/flips/editions",
+            "numberOfItems": total_arcs,
+            "itemListElement": list_items,
+        }, _crumbs(("Home", "/"), ("Flip Watch", "/flips"), ("Weekly editions", "/flips/editions"))],
     })
 
     page = f"""<!DOCTYPE html>
@@ -3051,12 +3071,14 @@ def speculation_radar_page(db: Session = Depends(get_db)):
     )
     jsonld = _jsonld({
         "@context": "https://schema.org",
-        "@type": "ItemList",
-        "name": "NYC Speculation Radar",
-        "description": desc,
-        "url": "https://pulsecities.com/radar",
-        "numberOfItems": n,
-        "itemListElement": list_items,
+        "@graph": [{
+            "@type": "ItemList",
+            "name": "NYC Speculation Radar",
+            "description": desc,
+            "url": "https://pulsecities.com/radar",
+            "numberOfItems": n,
+            "itemListElement": list_items,
+        }, _crumbs(("Home", "/"), ("Speculation Radar", "/radar"))],
     })
 
     page = f"""<!DOCTYPE html>
