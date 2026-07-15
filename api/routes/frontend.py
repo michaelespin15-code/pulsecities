@@ -228,6 +228,81 @@ _FOOTERS = {
            .replace('Built by Michael Espin', 'Creado por Michael Espin')),
 }
 
+# One top nav for every SSR page. Before this each page hand-rolled its own
+# <nav> and they disagreed on which hub links to show; none but the homepage
+# surfaced /displacement or /this-week. test_ssr_nav.py fails the suite if a
+# page's top nav drops a hub link. Bilingual pages pass lang + a server-toggle
+# anchor as toggle_html; English pages pass the JS EN/ES button
+# (_LANG_TOGGLE_BTN) or nothing. The links wrap on narrow widths.
+_SSR_NAV_ITEMS = [
+    ("/map", "map"),
+    ("/displacement", "displacement"),
+    ("/neighborhoods", "neighborhoods"),
+    ("/operators", "operators"),
+    ("/flips", "flips"),
+    ("/radar", "radar"),
+    ("/this-week", "this_week"),
+    ("/methodology", "methodology"),
+]
+
+_SSR_NAV_LABELS = {
+    "en": {"map": "Map", "displacement": "Displacement", "neighborhoods": "Neighborhoods",
+           "operators": "Operators", "flips": "Flips", "radar": "Radar",
+           "this_week": "This week", "methodology": "Methodology"},
+    "es": {"map": "Mapa", "displacement": "Desplazamiento", "neighborhoods": "Vecindarios",
+           "operators": "Operadores", "flips": "Flips", "radar": "Radar",
+           "this_week": "Esta semana", "methodology": "Metodología"},
+}
+
+_LANG_TOGGLE_BTN = (
+    '<button id="lang-toggle" style="font-family:\'JetBrains Mono\',monospace;'
+    'font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;'
+    'cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>'
+)
+
+_SSR_NAV_BRAND = (
+    '<a href="/" style="display:flex;align-items:center;gap:8px;color:#f1f5f9;">'
+    '<svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">'
+    '<rect width="32" height="32" rx="6" fill="#1a1a2e"/>'
+    '<polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" '
+    'stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    '<span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span></a>'
+)
+
+
+def _ssr_nav(active: str = "", lang: str = "en", toggle_html: str = "", track: bool = False) -> str:
+    """Shared SSR top nav with the full hub set. `active` is the current page's
+    path (its link is brightened + marked aria-current). `toggle_html` is
+    appended after the links (JS button for EN pages, server anchor for the
+    bilingual pages). `track` adds the /displacement Showcase Nav plausible
+    events on each outbound link."""
+    labels = _SSR_NAV_LABELS.get(lang, _SSR_NAV_LABELS["en"])
+    parts = []
+    for path, key in _SSR_NAV_ITEMS:
+        label = labels[key]
+        if path == active:
+            parts.append(
+                f'<a href="{path}" aria-current="page" '
+                f'style="font-size:0.78rem;color:#cbd5e1;">{label}</a>'
+            )
+            continue
+        onclick = (f" onclick=\"plausible('Showcase Nav',{{props:{{to:'{key.replace('_', '-')}'}}}})\""
+                   if track else "")
+        parts.append(
+            f'<a href="{path}"{onclick} style="font-size:0.78rem;color:rgba(148,163,184,0.5);" '
+            f'onmouseover="this.style.color=\'#94a3b8\'" '
+            f'onmouseout="this.style.color=\'rgba(148,163,184,0.5)\'">{label}</a>'
+        )
+    links = "".join(parts)
+    return (
+        '<nav>\n  <div class="nav-inner">\n    '
+        + _SSR_NAV_BRAND
+        + '\n    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end;">'
+        + links + toggle_html
+        + '</div>\n  </div>\n</nav>'
+    )
+
+
 # Neighborhood-page copy, both languages. Data (names, numbers, dates) flows
 # in via format slots; everything a reader sees as prose lives here.
 _NB_L = {
@@ -713,7 +788,12 @@ def _build_neighborhood_page(
     # The alternate-language URL for the toggle and hreflang pair. English is
     # the parameterless canonical form; Spanish lives at ?lang=es.
     alt_url = f"{base_url}?lang=es" if lang == "en" else base_url
-    nav_links = "".join(f'<a href="{href}">{label}</a>' for href, label in L["nav"])
+    nav_toggle = (
+        f'<a href="{e(alt_url)}" id="lang-toggle" aria-label="{L["lang_toggle_aria"]}" '
+        f'style="font-size:0.78rem;color:rgba(148,163,184,0.5);" '
+        f'onmouseover="this.style.color=\'#94a3b8\'" '
+        f'onmouseout="this.style.color=\'rgba(148,163,184,0.5)\'">{L["lang_toggle_label"]}</a>'
+    )
 
     # Watch-this-block CTA: subscribes the reader's email to this ZIP straight
     # from the organic landing page, closing the search -> view -> watch funnel.
@@ -795,7 +875,8 @@ def _build_neighborhood_page(
 body{{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}}
 a{{color:inherit;text-decoration:none}}
 nav{{border-bottom:1px solid var(--border);padding:12px 0}}
-.nav-inner{{max-width:720px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}}
+.nav-inner{{max-width:720px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .nav-links a{{font-size:.78rem;color:var(--muted);margin-left:16px;transition:color .15s}}
 .nav-links a:hover{{color:var(--text)}}
 .container{{max-width:720px;margin:0 auto;padding:32px 20px 80px}}
@@ -848,13 +929,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
 </style>
 </head>
 <body>
-<nav><div class="nav-inner">
-  <a href="/" style="display:flex;align-items:center;gap:8px;">
-    <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span style="font-size:.85rem;color:rgba(148,163,184,.55);">PulseCities</span>
-  </a>
-  <div class="nav-links">{nav_links}<a href="{e(alt_url)}" id="lang-toggle" aria-label="{L['lang_toggle_aria']}">{L['lang_toggle_label']}</a></div>
-</div></nav>
+{_ssr_nav("/neighborhoods", lang=lang, toggle_html=nav_toggle)}
 <main><div class="container">
   <p class="breadcrumb"><a href="/map">{L['back_map']}</a>{breadcrumb_borough}</p>
   <h1>{L['h1'].format(name=e(name), zip=zip_code)}</h1>
@@ -1326,7 +1401,8 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 nav{border-bottom:1px solid var(--border);padding:12px 0}
-.nav-inner{max-width:720px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:8px}
+.nav-inner{max-width:720px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+@media(max-width:600px){.nav-inner{flex-wrap:wrap;row-gap:4px}.nav-inner>div{flex-wrap:wrap;row-gap:4px}}
 .brand{font-size:.85rem;color:rgba(148,163,184,.55)}
 .container{max-width:720px;margin:0 auto;padding:28px 20px 72px}
 .breadcrumb{font-size:.78rem;color:var(--muted);margin-bottom:18px}
@@ -1361,11 +1437,7 @@ footer{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-i
 
     body = f"""</head>
 <body>
-<nav><div class="nav-inner">
-<a href="/" style="display:flex;align-items:center;gap:8px;">
-<svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-<span class="brand">PulseCities</span></a>
-</div></nav>
+{_ssr_nav()}
 <main><div class="container">
 <p class="breadcrumb">{crumb_html}</p>
 <h1>{e(address)}</h1>
@@ -1921,20 +1993,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 </style>
 </head>
 <body>
-<nav>
-  <div class="nav-inner">
-    <a href="/" style="display:flex;align-items:center;gap:8px;color:#f1f5f9;">
-      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span>
-    </a>
-    <div style="display:flex;align-items:center;gap:16px;">
-      <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Map</a>
-      <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Methodology</a>
-      <a href="/about" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">About</a><a href="/press" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Press</a>
-      <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
-    </div>
-  </div>
-</nav>
+{_ssr_nav("/operators", toggle_html=_LANG_TOGGLE_BTN)}
 <div class="container">
   <div style="margin-bottom:8px;">
     <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Home</a>
@@ -2082,6 +2141,12 @@ def neighborhoods_directory(lang: str = "en", db: Session = Depends(get_db)):
     base_url = "https://pulsecities.com/neighborhoods"
     canonical = base_url if lang == "en" else f"{base_url}?lang=es"
     alt_url = f"{base_url}?lang=es" if lang == "en" else base_url
+    nav_toggle = (
+        f'<a href="{alt_url}" id="lang-toggle" aria-label="{LL["toggle_aria"]}" '
+        f'style="font-size:0.78rem;color:rgba(148,163,184,0.5);" '
+        f'onmouseover="this.style.color=\'#94a3b8\'" '
+        f'onmouseout="this.style.color=\'rgba(148,163,184,0.5)\'">{LL["toggle"]}</a>'
+    )
     jsonld = _jsonld({
         "@context": "https://schema.org",
         "@graph": [{
@@ -2144,22 +2209,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 </style>
 </head>
 <body>
-<nav>
-  <div class="nav-inner">
-    <a href="/" style="display:flex;align-items:center;gap:8px;color:#f1f5f9;">
-      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span>
-    </a>
-    <div style="display:flex;align-items:center;gap:16px;">
-      <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_map']}</a>
-      <a href="/operators" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_operators']}</a>
-      <a href="/flips" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_flips']}</a>
-      <a href="/radar" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_radar']}</a>
-      <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_meth']}</a>
-      <a href="{alt_url}" id="lang-toggle" aria-label="{LL['toggle_aria']}" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['toggle']}</a>
-    </div>
-  </div>
-</nav>
+{_ssr_nav("/neighborhoods", lang=lang, toggle_html=nav_toggle)}
 <div class="container">
   <div style="margin-bottom:8px;">
     <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">{LL['back_home']}</a>
@@ -2327,6 +2377,12 @@ def borough_page(slug: str, lang: str = "en", db: Session = Depends(get_db)):
     base_url = canonical
     page_url = base_url if lang == "en" else f"{base_url}?lang=es"
     alt_url = f"{base_url}?lang=es" if lang == "en" else base_url
+    nav_toggle = (
+        f'<a href="{alt_url}" id="lang-toggle" aria-label="{LL["toggle_aria"]}" '
+        f'style="font-size:0.78rem;color:rgba(148,163,184,0.5);" '
+        f'onmouseover="this.style.color=\'#94a3b8\'" '
+        f'onmouseout="this.style.color=\'rgba(148,163,184,0.5)\'">{LL["toggle"]}</a>'
+    )
     jsonld = _jsonld({
         "@context": "https://schema.org",
         "@graph": [
@@ -2406,22 +2462,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 </style>
 </head>
 <body>
-<nav>
-  <div class="nav-inner">
-    <a href="/" style="display:flex;align-items:center;gap:8px;color:#f1f5f9;">
-      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span>
-    </a>
-    <div style="display:flex;align-items:center;gap:16px;">
-      <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_map']}</a>
-      <a href="/neighborhoods{lsuf}" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_nbhds']}</a>
-      <a href="/flips" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_flips']}</a>
-      <a href="/radar" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_radar']}</a>
-      <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['nav_meth']}</a>
-      <a href="{alt_url}" id="lang-toggle" aria-label="{LL['toggle_aria']}" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">{LL['toggle']}</a>
-    </div>
-  </div>
-</nav>
+{_ssr_nav("/neighborhoods", lang=lang, toggle_html=nav_toggle)}
 <div class="container">
   <div style="margin-bottom:8px;">
     <a href="/neighborhoods{lsuf}" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">{LL['back_all']}</a>
@@ -2615,21 +2656,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 </style>
 </head>
 <body>
-<nav>
-  <div class="nav-inner">
-    <a href="/" style="display:flex;align-items:center;gap:8px;color:#f1f5f9;">
-      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span>
-    </a>
-    <div style="display:flex;align-items:center;gap:16px;">
-      <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Map</a>
-      <a href="/operators" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Operators</a>
-      <a href="/radar" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Radar</a>
-      <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Methodology</a>
-      <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
-    </div>
-  </div>
-</nav>
+{_ssr_nav("/flips", toggle_html=_LANG_TOGGLE_BTN)}
 <div class="container">
   <div style="margin-bottom:8px;">
     <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Home</a>
@@ -2882,21 +2909,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 </style>
 </head>
 <body>
-<nav>
-  <div class="nav-inner">
-    <a href="/" style="display:flex;align-items:center;gap:8px;color:#f1f5f9;">
-      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span>
-    </a>
-    <div style="display:flex;align-items:center;gap:16px;">
-      <a href="/flips" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Flip Watch</a>
-      <a href="/radar" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Radar</a>
-      <a href="/press" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Press</a>
-      <a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Methodology</a>
-      <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
-    </div>
-  </div>
-</nav>
+{_ssr_nav("/flips", toggle_html=_LANG_TOGGLE_BTN)}
 <div class="container">
   <div style="margin-bottom:8px;">
     <a href="/flips" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Flip Watch</a>
@@ -3134,20 +3147,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 </style>
 </head>
 <body>
-<nav>
-  <div class="nav-inner">
-    <a href="/" style="display:flex;align-items:center;gap:8px;color:#f1f5f9;">
-      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span>
-    </a>
-    <div style="display:flex;align-items:center;gap:16px;">
-      <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Map</a>
-      <a href="/operators" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Operators</a>
-      <a href="/flips" style="font-size:0.78rem;color:rgba(148,163,184,0.5);" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='rgba(148,163,184,0.5)'">Flips</a>
-      <button id="lang-toggle" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
-    </div>
-  </div>
-</nav>
+{_ssr_nav("/radar", toggle_html=_LANG_TOGGLE_BTN)}
 <div class="container">
   <div style="margin-bottom:8px;">
     <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Home</a>
@@ -3370,18 +3370,8 @@ footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) 
 
 
 def _week_nav_html() -> str:
-    return (
-        '<nav>\n  <div class="nav-inner">\n'
-        '    <a href="/" style="display:flex;align-items:center;gap:8px;color:#f1f5f9;">'
-        '<svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-        '<span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span></a>\n'
-        '    <div style="display:flex;align-items:center;gap:16px;">'
-        '<a href="/this-week" style="font-size:0.78rem;color:rgba(148,163,184,0.5);">This week</a>'
-        '<a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);">Map</a>'
-        '<a href="/neighborhoods" style="font-size:0.78rem;color:rgba(148,163,184,0.5);">Neighborhoods</a>'
-        '<a href="/methodology" style="font-size:0.78rem;color:rgba(148,163,184,0.5);">Methodology</a>'
-        '</div>\n  </div>\n</nav>'
-    )
+    # Weekly editions are children of /this-week; mark it active.
+    return _ssr_nav("/this-week")
 
 
 
@@ -3812,19 +3802,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 </style>
 </head>
 <body>
-<nav>
-  <div class="nav-inner">
-    <a href="/" style="display:flex;align-items:center;gap:8px;color:#f1f5f9;">
-      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span style="font-size:0.85rem;color:rgba(148,163,184,0.6);">PulseCities</span>
-    </a>
-    <div style="display:flex;align-items:center;gap:16px;">
-      <a href="/map" style="font-size:0.78rem;color:rgba(148,163,184,0.5);">Map</a>
-      <a href="/flips" style="font-size:0.78rem;color:rgba(148,163,184,0.5);">Flip Watch</a>
-      <a href="/operators" style="font-size:0.78rem;color:rgba(148,163,184,0.5);">Operators</a>
-    </div>
-  </div>
-</nav>
+{_ssr_nav("/this-week")}
 <div class="container">
   <div style="margin-bottom:8px;">
     <a href="/" style="font-size:0.75rem;color:rgba(148,163,184,0.5);">&#8592; Home</a>
@@ -4189,16 +4167,7 @@ footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) 
 
     body = f"""</head>
 <body>
-<nav><div class="nav-inner">
-<a href="/" class="brand">PulseCities</a>
-<div class="nav-links">
-<a href="/flips" onclick="plausible('Showcase Nav',{{props:{{to:'flips'}}}})">Flips</a>
-<a href="/radar" onclick="plausible('Showcase Nav',{{props:{{to:'radar'}}}})">Radar</a>
-<a href="/operators" onclick="plausible('Showcase Nav',{{props:{{to:'operators'}}}})">Landlords</a>
-<a href="/neighborhoods" onclick="plausible('Showcase Nav',{{props:{{to:'neighborhoods'}}}})">Neighborhoods</a>
-<a href="/map" onclick="plausible('Showcase Nav',{{props:{{to:'map'}}}})">Map</a>
-</div>
-</div></nav>
+{_ssr_nav("/displacement", track=True)}
 <div class="wrap">
 <div class="eyebrow">PulseCities &middot; Citywide &middot; NYC public records</div>
 <h1>The State of NYC Displacement</h1>
