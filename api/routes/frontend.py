@@ -2530,11 +2530,13 @@ def borough_page(slug: str, lang: str = "en", db: Session = Depends(get_db)):
 <meta property="og:url" content="{page_url}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
-<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta property="og:image" content="https://pulsecities.com/og/borough/{slug}.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{_html.escape(desc)}">
-<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:image" content="https://pulsecities.com/og/borough/{slug}.png">
 <script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
@@ -3868,11 +3870,13 @@ def this_week_page(db: Session = Depends(get_db)):
 <meta property="og:url" content="https://pulsecities.com/this-week">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
-<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta property="og:image" content="https://pulsecities.com/og/this-week/card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{e(title)}">
 <meta name="twitter:description" content="{e(desc)}">
-<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:image" content="https://pulsecities.com/og/this-week/card.png">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>

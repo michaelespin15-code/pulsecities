@@ -406,3 +406,170 @@ def operator_og_image(slug: str, db: Session = Depends(get_db)):
 
     return Response(content=png, media_type="image/png",
                     headers={"Cache-Control": "public, max-age=3600"})
+
+
+# ---------------------------------------------------------------------------
+# Headline cards for the section landing pages (borough, this-week). One
+# generic renderer: an eyebrow, a wrapped title, a date line, and up to three
+# stat columns, in the same visual language as the neighborhood card.
+# ---------------------------------------------------------------------------
+
+_BOROUGH_SLUGS = {
+    "brooklyn": "Brooklyn", "manhattan": "Manhattan", "queens": "Queens",
+    "bronx": "Bronx", "staten-island": "Staten Island",
+}
+
+
+def _wrap(draw, text_str: str, font, max_w: int, max_lines: int = 2) -> list[str]:
+    words, lines, cur = text_str.split(), [], ""
+    for w in words:
+        trial = f"{cur} {w}".strip()
+        if draw.textlength(trial, font=font) <= max_w or not cur:
+            cur = trial
+        else:
+            lines.append(cur)
+            cur = w
+            if len(lines) == max_lines - 1:
+                break
+    rest = " ".join(words[sum(len(l.split()) for l in lines):]) if lines else cur
+    lines.append(rest if lines else cur)
+    return lines[:max_lines]
+
+
+def _render_headline(eyebrow: str, title: str, date_label: str,
+                     stats: list[tuple], accent: tuple = _ORANGE) -> bytes:
+    W, H = 1200, 630
+    img  = Image.new("RGB", (W, H), _BG)
+    draw = ImageDraw.Draw(img)
+
+    for x in range(0, W, 60):
+        draw.line([(x, 0), (x, H)], fill=_DIM, width=1)
+    for y in range(0, H, 60):
+        draw.line([(0, y), (W, y)], fill=_DIM, width=1)
+
+    f_eyebrow = ImageFont.truetype(_FONTS_MONO,    20)
+    f_title   = ImageFont.truetype(_FONTS_BOLD,    58)
+    f_date    = ImageFont.truetype(_FONTS_MONO,    17)
+    f_count   = ImageFont.truetype(_FONTS_BOLD,    52)
+    f_label   = ImageFont.truetype(_FONTS_REGULAR, 19)
+    f_brand   = ImageFont.truetype(_FONTS_MONO,    16)
+
+    draw.text((80, 82), eyebrow.upper(), font=f_eyebrow, fill=accent)
+
+    lines = _wrap(draw, title, f_title, W - 160)
+    ty = 128
+    for ln in lines:
+        draw.text((80, ty), ln, font=f_title, fill=_WHITE)
+        ty += 68
+
+    draw.line([(80, ty + 8), (680, ty + 8)], fill=(35, 50, 75), width=1)
+    draw.text((80, ty + 22), f"As of {date_label}", font=f_date, fill=_MUTED)
+
+    sx = 80
+    for value, label in stats[:3]:
+        draw.text((sx, 400), str(value), font=f_count, fill=_WHITE)
+        draw.text((sx, 462), label, font=f_label, fill=_MUTED)
+        sx += 370
+
+    draw.text((82, H - 50), "pulsecities.com", font=f_brand, fill=(60, 75, 100))
+    draw.rectangle([0, H - 5, W, H], fill=accent)
+
+    buf = io.BytesIO()
+    img.save(buf, "PNG", optimize=True)
+    return buf.getvalue()
+
+
+@router.get("/og/borough/{slug}.png", include_in_schema=False)
+def borough_og_image(slug: str, db: Session = Depends(get_db)):
+    borough = _BOROUGH_SLUGS.get(slug)
+    if not borough:
+        return Response(content=_DEFAULT_IMAGE.read_bytes(), media_type="image/png",
+                        headers={"Cache-Control": "public, max-age=86400"})
+
+    today      = date.today()
+    cache_key  = f"borough-{slug}_{today.strftime('%Y%m%d')}"
+    cache_path = _CACHE_DIR / f"{cache_key}.png"
+    if cache_path.exists():
+        return Response(content=cache_path.read_bytes(), media_type="image/png",
+                        headers={"Cache-Control": "public, max-age=3600"})
+
+    from api.routes.neighborhoods import _borough_from_zip
+    rows = db.execute(text("""
+        SELECT n.zip_code, n.name, ds.score
+        FROM neighborhoods n JOIN displacement_scores ds ON ds.zip_code = n.zip_code
+        WHERE ds.score IS NOT NULL AND n.name IS NOT NULL
+    """)).fetchall()
+    members = [(r.name, float(r.score)) for r in rows if _borough_from_zip(r.zip_code) == borough]
+    if not members:
+        return Response(content=_DEFAULT_IMAGE.read_bytes(), media_type="image/png",
+                        headers={"Cache-Control": "public, max-age=3600"})
+
+    n = len(members)
+    avg = sum(s for _, s in members) / n
+    top_name, top_score = max(members, key=lambda x: x[1])
+    png = _render_headline(
+        eyebrow="NYC displacement pressure",
+        title=f"{borough}",
+        date_label=today.strftime("%b %-d, %Y"),
+        stats=[
+            (n, "neighborhoods tracked"),
+            (f"{avg:.0f}", "average score"),
+            (f"{top_score:.0f}", f"highest: {top_name}"),
+        ],
+        accent=_score_color(top_score),
+    )
+    cache_path.write_bytes(png)
+    _clean_old_cache(f"borough-{slug}", cache_key)
+    return Response(content=png, media_type="image/png",
+                    headers={"Cache-Control": "public, max-age=3600"})
+
+
+# Slashed path on purpose: a single-segment /og/this-week.png would be captured
+# by the /og/{zip_code}.png route (zip_code="this-week") and fall back to the
+# default image. The extra segment keeps this route reachable.
+@router.get("/og/this-week/card.png", include_in_schema=False)
+def this_week_og_image(db: Session = Depends(get_db)):
+    today      = date.today()
+    cache_key  = f"thisweek_{today.strftime('%Y%m%d')}"
+    cache_path = _CACHE_DIR / f"{cache_key}.png"
+    if cache_path.exists():
+        return Response(content=cache_path.read_bytes(), media_type="image/png",
+                        headers={"Cache-Control": "public, max-age=3600"})
+
+    # Score movers, not raw filing counts: the record tables lag ~1-2 weeks, so a
+    # 7-day eviction/deed count reads 0 mid-lag and looks broken. The score deltas
+    # are snapshotted nightly, so they are always current and genuinely this-week.
+    risers = db.execute(text("""
+        WITH now_s AS (
+            SELECT DISTINCT ON (zip_code) zip_code, composite_score AS s
+            FROM score_history WHERE scored_at <= CURRENT_DATE
+            ORDER BY zip_code, scored_at DESC
+        ),
+        then_s AS (
+            SELECT DISTINCT ON (zip_code) zip_code, composite_score AS s
+            FROM score_history WHERE scored_at <= CURRENT_DATE - 7
+            ORDER BY zip_code, scored_at DESC
+        )
+        SELECT COUNT(*) FILTER (WHERE now_s.s - then_s.s >= 0.5) AS n
+        FROM now_s JOIN then_s ON then_s.zip_code = now_s.zip_code
+    """)).scalar() or 0
+
+    agg = db.execute(text("""
+        SELECT COUNT(*) FILTER (WHERE score >= 67) AS high, ROUND(AVG(score)) AS avg
+        FROM displacement_scores WHERE score IS NOT NULL
+    """)).fetchone()
+
+    png = _render_headline(
+        eyebrow="This week in NYC displacement",
+        title="What the public record moved this week",
+        date_label=today.strftime("%b %-d, %Y"),
+        stats=[
+            (int(risers), "neighborhoods rising, 7d"),
+            (int(agg.high or 0) if agg else 0, "at high pressure"),
+            (int(agg.avg or 0) if agg else 0, "citywide average score"),
+        ],
+    )
+    cache_path.write_bytes(png)
+    _clean_old_cache("thisweek", cache_key)
+    return Response(content=png, media_type="image/png",
+                    headers={"Cache-Control": "public, max-age=3600"})
