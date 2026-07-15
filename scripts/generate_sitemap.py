@@ -2,8 +2,15 @@
 Regenerate frontend/sitemap.xml from the live database.
 
 Core pages are listed first, then the tracked operator profiles under their
-canonical slugs, then every neighborhood page that has a score. Neighborhood
-pages carry today's lastmod because scores refresh nightly.
+canonical slugs, then every neighborhood page that has a score, then the
+substantive property pages. Neighborhood pages carry today's lastmod because
+scores refresh nightly.
+
+Property pages are deliberately NOT sitemapped en masse: ~912k parcels sit in a
+scored ZIP and would render index,follow, but almost all are thin. Only the
+buildings that carry BOTH an ownership transfer and an eviction filing (the
+eviction-to-resale arc the site documents, ~1.5k parcels) are listed, at low
+priority, so the sitemap points crawlers at substance rather than doorway pages.
 
 Run manually or from cron after the nightly scoring pass:
     python -m scripts.generate_sitemap
@@ -86,6 +93,21 @@ def build() -> str:
             ORDER BY n.zip_code
         """)).fetchall()]
 
+        # Substantive property pages only: a deed transfer AND an eviction on the
+        # same lot, in a named/scored neighborhood. This is the arc the site is
+        # about (~1.5k parcels), not the ~912k thin parcels that merely inherit a
+        # ZIP score. ORDER BY keeps the nightly output stable (no diff churn).
+        property_bbls = [r.bbl for r in db.execute(text("""
+            SELECT DISTINCT p.bbl
+            FROM parcels p
+            JOIN ownership_raw o ON o.bbl = p.bbl
+            JOIN evictions_raw e ON e.bbl = p.bbl
+            JOIN neighborhoods n ON n.zip_code = p.zip_code
+            JOIN displacement_scores ds ON ds.zip_code = p.zip_code
+            WHERE p.address IS NOT NULL AND n.name IS NOT NULL AND ds.score IS NOT NULL
+            ORDER BY p.bbl
+        """)).fetchall()]
+
         week_slugs = _completed_week_slugs(db)
 
     lines = [
@@ -109,6 +131,10 @@ def build() -> str:
         entry(f"/operator/{slug}", "weekly", "0.6", today)
     for z in zips:
         entry(f"/neighborhood/{z}", "daily", "0.7", today)
+    # Substantive property pages (deed + eviction on the lot). Low priority so
+    # they read as secondary to the hub pages; weekly since records lag.
+    for bbl in property_bbls:
+        entry(f"/property/{bbl}", "weekly", "0.5", today)
     # Historical weekly editions never change once past; lastmod = their Sunday.
     for slug, sunday_iso in week_slugs:
         entry(f"/week/{slug}", "monthly", "0.5", sunday_iso)
