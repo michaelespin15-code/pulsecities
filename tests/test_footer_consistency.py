@@ -16,8 +16,11 @@ from fastapi.testclient import TestClient
 
 FRONTEND = Path(__file__).parent.parent / "frontend"
 
-# Every page footer must contain at least these paths.
-CANON = {"/", "/methodology", "/about", "/press", "/status"}
+# Every page footer must contain at least these paths. /neighborhoods and
+# /displacement joined the canonical set on 2026-07-15 (footer parity pass);
+# they are the two hub destinations every surface should route crawlers to.
+CANON = {"/", "/neighborhoods", "/displacement", "/methodology", "/about",
+         "/press", "/status"}
 
 # Static pages served straight off disk by nginx.
 STATIC_PAGES = ["index.html", "about.html", "methodology.html", "press.html",
