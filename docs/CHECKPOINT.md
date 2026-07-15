@@ -1,3 +1,40 @@
+# PulseCities checkpoint, 2026-07-15 (later) — #8 shared SSR nav DONE
+
+The one real refactor the prior handoff queued is done and live (faedc35).
+
+**What shipped:** a single `_ssr_nav(active, lang, toggle_html, track)` helper
+(next to `_FOOTER_HTML`) now renders the top nav on EVERY SSR page. Before this
+each page hand-rolled its own `<nav>` with a different link subset and none but
+the homepage surfaced `/displacement` or `/this-week`. All 11 navs now carry the
+full hub set: Map, Displacement, Neighborhoods, Operators, Flips, Radar, This
+week, Methodology. The current page's link is brightened + `aria-current`.
+- English pages pass `_LANG_TOGGLE_BTN` (JS EN/ES button) or nothing (this-week,
+  week, property).
+- Bilingual pages (neighborhoods dir, borough, **and the individual
+  `/neighborhood/{zip}` page** — folded in beyond the recipe since it is the
+  highest-value organic surface, 177 pages) pass a server-toggle anchor built
+  from `alt_url` + the page's `LL`/`L` labels; ES labels come from
+  `_SSR_NAV_LABELS["es"]`. localStorage `pc-lang` still auto-redirects ES users,
+  so dropping the per-link `?lang=es` suffix does not regress ES persistence.
+- Displacement keeps its `Showcase Nav` plausible funnel via `track=True` (7
+  outbound links tracked; the self-link is active/untracked).
+- Property gained the full hub nav (was brand-only); its `.nav-inner` CSS got
+  `justify-content:space-between` + the mobile-wrap media query.
+
+**Guard:** `tests/test_ssr_nav.py` (16 tests) — helper unit tests (hub set,
+active marker, ES labels, toggle/track) + integration tests asserting every SSR
+route's top nav carries all 8 hub links, incl. ES variants and week editions.
+Adjacent guards re-run green: footer/analytics/breadcrumbs/displacement (19),
+frontend_routes incl. palette (57), watch-cta/nbhd-flips/operator-seo (7),
+ui-copy incl. em-dash (10). Live-verified via nginx: all pages 8/8 hub links.
+
+**#9 remainder still queued** (see the recipes further down): neighborhood
+lateral-link sections; `/displacement` + LinkedIn in the about/methodology/press
+STATIC footers; nginx trailing-slash 301s; `/property` in the sitemap. Plus P3
+polish. Not pushed (Michael runs `git push`).
+
+---
+
 # PulseCities checkpoint, 2026-07-15 — growth levers + full SEO build
 
 ## Session outcome (consolidated)
