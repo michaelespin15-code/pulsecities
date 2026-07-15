@@ -52,10 +52,25 @@ ui-copy incl. em-dash (10). Live-verified via nginx: all pages 8/8 hub links.
   200 + index,follow. sitemap regenerated live (1800 urls); the file is a cron
   artifact so only the generator + test were committed.
 
-**#8 and #9 are now COMPLETE.** Only P3 polish remains: dynamic OG images for
-`/borough` + `/this-week` (infra in `api/routes/og_images.py`); `/displacement`
-section headers `<div class="sec-h">` -> `<h2>`; weave "biggest NYC landlords"
-into operator titles/H1. Not pushed (Michael runs `git push`).
+**#8, #9, AND P3 polish are now COMPLETE.** P3 this session:
+- **/displacement sec-h -> h2** (e8f81df): the four section headers are now
+  semantic `<h2 class="sec-h">` (identical render; reset zeroes margins).
+- **"biggest NYC landlords" keyword** (e8f81df): /operators title is now
+  "Biggest NYC Landlords by Acquisition Volume", H1 "The biggest NYC landlords"
+  (server + JS EN/ES), meta rewritten; the sub-desc keeps the accurate
+  "ownership clusters from ACRIS deeds" framing. Individual operator pages left
+  alone (claiming "biggest" on a small operator would be dishonest).
+- **Dynamic OG cards** (c56ef67): `_render_headline()` + `/og/borough/{slug}.png`
+  and `/og/this-week/card.png` (slashed path so /og/{zip}.png can't swallow it).
+  Borough card = tracked/avg/top; this-week card = score-history deltas
+  (risers 7d, high-pressure count, citywide avg) NOT raw filings, which lag ~2wk
+  and read 0 mid-lag. Pages point og/twitter:image at the cards.
+  `test_og_cards.py` guards dynamic-not-default + references.
+
+The full 2026-07-15 growth+SEO backlog (#8, #9, P3) is now shipped and
+live-verified. Nothing left queued from it. Not pushed (Michael runs `git push`).
+New guard tests this run: test_ssr_nav, test_neighborhood_lateral, test_sitemap,
+test_og_cards. All adjacent suites green.
 
 ---
 
