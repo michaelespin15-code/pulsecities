@@ -1,3 +1,52 @@
+# PulseCities checkpoint, 2026-07-15 — growth levers + full SEO build
+
+## Session outcome (consolidated)
+
+Marathon session: growth levers, then a full 3-agent SEO audit and its fixes.
+~21 commits, all live (working tree IS prod), all tested, NOT pushed.
+
+**Live-verified this pass** (curl via nginx, 200 + content): `/`, `/displacement`,
+`/property/{bbl}`, `/operator/{slug}`, `/this-week`, `/neighborhood/{zip}`,
+`/flips`, `/radar`, `/operators`, `/neighborhoods` all 200. `/displacement`
+serves real content + CollectionPage/BreadcrumbList; `/property` renders a real
+address H1 (not the old map shell); all 12 SSR pages load Plausible once.
+
+**Shipped (high-impact, done + live):**
+- `/displacement` flagship; Plausible on every SSR page; watch-block conversion
+  CTA (EN/ES); per-ZIP recent-flips section; weekly post-pack automation.
+- Real `/property/{bbl}` SSR bodies (Place + BreadcrumbList, noindex when thin).
+- Operator pages: Dataset + BreadcrumbList schema, addresses/ZIPs link to
+  `/property` + `/neighborhood`.
+- `/this-week` schema (NewsArticle+ItemList+BreadcrumbList); BreadcrumbList on
+  `/displacement /operators /neighborhoods /flips /flips-editions /radar` via
+  `_crumbs()`.
+- On-page: neighborhood titles un-truncated (177 pages), `/map` title, trimmed
+  descriptions, `/status` noindex, `/map` sitemap priority 0.9->0.6.
+- Homepage Organization schema; `/displacement` in homepage nav + footer + all 13
+  SSR footers.
+- Guard tests added throughout (displacement, ssr-analytics, watch-cta,
+  neighborhood-flips, property, operator-seo, breadcrumbs).
+
+**Internal linking to new pages (verified):**
+- `/displacement`: homepage nav + homepage footer + EVERY SSR page footer.
+  NOT yet in the individual SSR page TOP navs (that is the pending nav refactor).
+- `/property`: linked from `/flips`, `/radar`, `/this-week`, `/flips/editions`,
+  `/displacement`, the neighborhood recent-flips section, and operator pages.
+
+**NOT fully optimized — remaining (queued, tasks #8/#9):**
+- #8: shared SSR nav constant. `/displacement` is in footers but not the SSR page
+  top navs; each nav is hand-rolled and inconsistent. Real refactor across ~10
+  page heads; deliberately left for a fresh session.
+- #9: neighborhood lateral-link sections (operators-buying-here,
+  nearby-neighborhoods); `/displacement` in the about/methodology/press footers;
+  nginx trailing-slash 301s; `/property` in the sitemap (index file for volume).
+- P3: dynamic OG images (borough/this-week); `/displacement` sec-h `<div>`->`<h2>`;
+  "biggest NYC landlords" keyword weave.
+
+**Push:** nothing pushed; Michael runs `! git push`.
+
+---
+
 # PulseCities checkpoint, 2026-07-14 — digest retime, evictions guard, drop automation, /displacement showcase
 
 ## Growth build (later session): /displacement + SEO push
