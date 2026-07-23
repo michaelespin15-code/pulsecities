@@ -258,10 +258,11 @@
 
         .hero-meta {
             font-family: var(--mono); font-size: 11.5px; color: var(--faint);
-            margin-top: 14px; min-height: 18px;
+            margin-top: 14px; min-height: 34px; line-height: 1.5;
         }
         .hero-meta a { color: var(--faint); text-decoration: underline; text-underline-offset: 2px; }
         .hero-meta a:hover { color: var(--muted); }
+        .hero-meta .meta-link { margin-left: 10px; white-space: nowrap; }
 
         /* Section frame */
         section { padding: 26px 0; }
@@ -298,7 +299,8 @@
             font-family: var(--display); font-size: 21px; font-weight: 600;
             margin-bottom: 2px;
         }
-        .docket-sub { font-family: var(--mono); font-size: 11.5px; color: var(--faint); margin-bottom: 20px; }
+        .docket-sub { font-family: var(--mono); font-size: 11.5px; color: var(--faint); margin-bottom: 3px; }
+        .docket-note { font-size: 12.5px; color: var(--muted); margin-bottom: 20px; }
 
         .arc { position: relative; margin-left: 6px; }
         .arc::before {
@@ -490,7 +492,8 @@
             </div>
             <div class="docket-body">
                 <p class="docket-place">4575 Furman Avenue, Wakefield, Bronx</p>
-                <p class="docket-sub" data-i18n="docket_sub">BBL 2050840054 &middot; ZIP 10470 &middot; every step below is a public record</p>
+                <p class="docket-sub">BBL 2050840054 &middot; ZIP 10470</p>
+                <p class="docket-note" data-i18n="docket_note">Every step below is a public record</p>
                 <div class="arc">
                     <div class="arc-step">
                         <span class="arc-date" data-i18n="arc_d1">Jan 13, 2025</span>
@@ -578,7 +581,7 @@
             finding_eyebrow_week: "This week's finding",
             docket_head: 'Eviction → purchase → resale',
             docket_gain: '+100% in 84 days',
-            docket_sub: 'BBL 2050840054 · ZIP 10470 · every step below is a public record',
+            docket_note: 'Every step below is a public record',
             arc_d1: 'Jan 13, 2025', arc_e1: 'A city marshal executes a residential eviction.',
             arc_d2: 'Apr 21, 2025', arc_e2: 'A second eviction is executed, separate date and docket.',
             arc_d3: 'Jul 8, 2025',
@@ -590,13 +593,14 @@
             mod_operators: 'Operators on record', mod_operators_cta: 'All operators →',
             mod_signals: 'Live signals',
             mod_flips_cta: 'Flip watch →', mod_radar_cta: 'Radar →',
-            data_through: 'Data through', through: 'through',
-            llc_on_record: 'LLC transfers in the last 90 days', status: 'Status',
+            llc_recent: 'LLC transfers recorded in the last 90 days',
+            llc_windowed: 'LLC transfers in the 90 days ending',
+            data_current: 'Data current through', other_current: 'Other records current to',
+            status: 'Status',
             acquisitions: 'acquisitions', llc_entities: 'LLC entities',
             sig_flips: 'buy-then-renovate flips flagged',
             sig_clusters: 'multi-building buying clusters',
             sig_nightly: 'neighborhoods scored nightly',
-            ed_sub: 'every step below is a public record',
             ed_ev_one: 'A city marshal executes a residential eviction.',
             ed_ev_many: 'The latest of {n} residential evictions on record is executed.',
             ed_buy: '{buyer} buys the property for {amt}.',
@@ -618,7 +622,7 @@
             finding_eyebrow_week: 'El hallazgo de la semana',
             docket_head: 'Desalojo → compra → reventa',
             docket_gain: '+100% en 84 días',
-            docket_sub: 'BBL 2050840054 · ZIP 10470 · cada paso es un registro público',
+            docket_note: 'Cada paso es un registro público',
             arc_d1: '13 ene 2025', arc_e1: 'Un alguacil de la ciudad ejecuta un desalojo residencial.',
             arc_d2: '21 abr 2025', arc_e2: 'Se ejecuta un segundo desalojo, con fecha y expediente distintos.',
             arc_d3: '8 jul 2025',
@@ -630,13 +634,14 @@
             mod_operators: 'Operadores registrados', mod_operators_cta: 'Todos los operadores →',
             mod_signals: 'Señales en vivo',
             mod_flips_cta: 'Flip watch →', mod_radar_cta: 'Radar →',
-            data_through: 'Datos hasta', through: 'hasta',
-            llc_on_record: 'transferencias LLC en los últimos 90 días', status: 'Estado',
+            llc_recent: 'transferencias LLC registradas en los últimos 90 días',
+            llc_windowed: 'transferencias LLC en los 90 días que terminan el',
+            data_current: 'Datos actualizados hasta el', other_current: 'Otros registros actualizados al',
+            status: 'Estado',
             acquisitions: 'adquisiciones', llc_entities: 'entidades LLC',
             sig_flips: 'reventas de compra y renovación detectadas',
             sig_clusters: 'grupos de compra de varios edificios',
             sig_nightly: 'vecindarios puntuados cada noche',
-            ed_sub: 'cada paso es un registro público',
             ed_ev_one: 'Un alguacil de la ciudad ejecuta un desalojo residencial.',
             ed_ev_many: 'Se ejecuta el último de {n} desalojos residenciales registrados.',
             ed_buy: '{buyer} compra la propiedad por {amt}.',
@@ -661,23 +666,35 @@
         return '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 });
     }
 
-    // Hero meta: real freshness, honestly windowed. Deed watermark is named
-    // whenever the upstream feed is paused.
+    // Hero meta: lead with the number that matters, then a plain freshness
+    // line. When the deed feed is paused the count is windowed to its own
+    // watermark and the rest of the data is dated separately, so a reader
+    // never sees two different "through" dates collide in one clause.
     function renderMeta() {
         if (!_stats) return;
-        const parts = [];
         const fresh = _stats.data_freshness || {};
         const latest = Object.values(fresh).map(f => f.through).filter(Boolean).sort().pop();
-        if (latest) parts.push(t('data_through') + ' ' + fmtDate(latest, { month: 'short', day: 'numeric', year: 'numeric' }));
+        const acrisStale = fresh.acris && fresh.acris.stale && fresh.acris.through;
+        const yr = { month: 'short', day: 'numeric', year: 'numeric' };
+        const md = { month: 'short', day: 'numeric' };
+        const lines = [];
         if (_stats.llc_transfers_recent) {
-            let s = _stats.llc_transfers_recent.toLocaleString() + ' ' + t('llc_on_record');
-            if (fresh.acris && fresh.acris.stale && fresh.acris.through) {
-                s += ' ' + t('through') + ' ' + fmtDate(fresh.acris.through, { month: 'short', day: 'numeric' });
+            const n = _stats.llc_transfers_recent.toLocaleString();
+            if (acrisStale) {
+                lines.push(n + ' ' + t('llc_windowed') + ' ' + fmtDate(fresh.acris.through, yr));
+                if (latest && latest !== fresh.acris.through) {
+                    lines.push(t('other_current') + ' ' + fmtDate(latest, md));
+                }
+            } else {
+                lines.push(n + ' ' + t('llc_recent'));
+                if (latest) lines.push(t('data_current') + ' ' + fmtDate(latest, yr));
             }
-            parts.push(s);
+        } else if (latest) {
+            lines.push(t('data_current') + ' ' + fmtDate(latest, yr));
         }
         document.getElementById('hero-meta').innerHTML =
-            esc(parts.join(' · ')) + ' · <a href="/status">' + esc(t('status')) + '</a>';
+            lines.map(esc).join('<br>') +
+            ' <a class="meta-link" href="/status">' + esc(t('status')) + ' →</a>';
     }
 
     function renderRankings() {
@@ -696,7 +713,7 @@
         document.getElementById('mod-operators').innerHTML = _ops.map(o => `
             <div class="op-row">
                 <div class="op-name">${esc(o.operator_root)}</div>
-                <div class="op-meta">${o.total_acquisitions} ${esc(t('acquisitions'))} · ${o.llc_count} ${esc(t('llc_entities'))}</div>
+                <div class="op-meta">${o.total_acquisitions} ${esc(t('acquisitions'))}, ${o.llc_count} ${esc(t('llc_entities'))}</div>
             </div>`).join('');
     }
 
@@ -746,7 +763,8 @@
             </div>
             <div class="docket-body">
                 <p class="docket-place">${esc(place)}</p>
-                <p class="docket-sub">BBL ${esc(a.bbl)} · ZIP ${esc(a.zip_code || '')} · ${esc(t('ed_sub'))}</p>
+                <p class="docket-sub">BBL ${esc(a.bbl)} · ZIP ${esc(a.zip_code || '')}</p>
+                <p class="docket-note">${esc(t('docket_note'))}</p>
                 <div class="arc">${steps.map(s => `
                     <div class="arc-step${s.hot ? ' hot' : ''}">
                         <span class="arc-date">${esc(s.date)}</span>
