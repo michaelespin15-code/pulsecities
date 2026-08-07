@@ -319,7 +319,8 @@ _NB_L = {
         "nav": [("/map", "Map"), ("/methodology", "Methodology"), ("/about", "About"), ("/press", "Press")],
         "back_map": "&#8592; Back to map",
         "all_borough": "All {borough} ZIPs",
-        "h1": "Displacement Signals | {name} ({zip})",
+        "kicker": "Displacement signals",
+        "h1": "{name} {zip}",
         "updated": "{borough}. Updated {date}.",
         "updated_recently": "recently",
         "tier_line": "{tier} DISPLACEMENT PRESSURE",
@@ -388,7 +389,7 @@ _NB_L = {
                       "Shown for context; not part of the composite score."),
         "ops_h": "Operators active in {name}",
         "ops_sub": "Ownership networks with public-record deed activity in {zip}, most active here first.",
-        "ops_meta": "{n} in {zip} · {t} citywide",
+        "ops_meta": "{n} in {zip}, {t} citywide",
         "nearby_h": "More {borough} neighborhoods",
         "nearby_sub": "Other {borough} ZIP codes ranked by displacement-pressure score.",
         "disp_cta": "See the citywide displacement picture →",
@@ -407,7 +408,8 @@ _NB_L = {
         "nav": [("/map", "Mapa"), ("/methodology", "Metodología"), ("/about", "Acerca de"), ("/press", "Prensa")],
         "back_map": "&#8592; Volver al mapa",
         "all_borough": "Todos los ZIP de {borough}",
-        "h1": "Señales de desplazamiento | {name} ({zip})",
+        "kicker": "Señales de desplazamiento",
+        "h1": "{name} {zip}",
         "updated": "{borough}. Actualizado el {date}.",
         "updated_recently": "recientemente",
         "tier_line": "PRESIÓN DE DESPLAZAMIENTO {tier}",
@@ -481,7 +483,7 @@ _NB_L = {
                       "Mostrado como contexto; no forma parte de la puntuación compuesta."),
         "ops_h": "Operadores activos en {name}",
         "ops_sub": "Redes de propiedad con actividad de escrituras en {zip} en registros públicos, primero las más activas aquí.",
-        "ops_meta": "{n} en {zip} · {t} en total",
+        "ops_meta": "{n} en {zip}, {t} en total",
         "nearby_h": "Más vecindarios de {borough}",
         "nearby_sub": "Otros códigos postales de {borough} por puntuación de presión de desplazamiento.",
         "disp_cta": "Ver el panorama de desplazamiento de toda la ciudad →",
@@ -664,7 +666,7 @@ def _build_neighborhood_page(
     dataset_ld = _jsonld({
         "@context": "https://schema.org",
         "@type": "Dataset",
-        "name": f"Displacement Signals -- {name} ({zip_code}), {borough_disp}, NYC",
+        "name": f"Displacement Signals: {name} ({zip_code}), {borough_disp}, NYC",
         "description": meta_desc,
         "url": canonical,
         "spatialCoverage": {
@@ -931,7 +933,7 @@ def _build_neighborhood_page(
 body{{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}}
 a{{color:inherit;text-decoration:none}}
 nav{{border-bottom:1px solid var(--border);padding:12px 0}}
-.nav-inner{{max-width:720px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
 @media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .nav-links a{{font-size:.78rem;color:var(--muted);margin-left:16px;transition:color .15s}}
 .nav-links a:hover{{color:var(--text)}}
@@ -940,6 +942,7 @@ nav{{border-bottom:1px solid var(--border);padding:12px 0}}
 .breadcrumb a{{color:var(--muted)}}
 .breadcrumb a:hover{{color:var(--text)}}
 h1{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.45rem;font-weight:600;line-height:1.3;margin-bottom:6px}}
+.kicker{{font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.18em;color:#f97316;text-transform:uppercase;margin-bottom:8px}}
 .subline{{font-size:.82rem;color:var(--muted);margin-bottom:28px}}
 .score-block{{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;padding:20px 24px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;margin-bottom:20px}}
 .score-num{{font-size:2.8rem;font-weight:700;font-family:'JetBrains Mono',monospace;line-height:1}}
@@ -997,6 +1000,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
 {_ssr_nav("/neighborhoods", lang=lang, toggle_html=nav_toggle)}
 <main><div class="container">
   <p class="breadcrumb"><a href="/map">{L['back_map']}</a>{breadcrumb_borough}</p>
+  <div class="kicker">{L['kicker']}</div>
   <h1>{L['h1'].format(name=e(name), zip=zip_code)}</h1>
   <p class="subline">{L['updated'].format(borough=e(borough_disp), date=e(updated_disp))}</p>
   {score_block}
@@ -1505,7 +1509,7 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 nav{border-bottom:1px solid var(--border);padding:12px 0}
-.nav-inner{max-width:720px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-inner{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 @media(max-width:600px){.nav-inner{flex-wrap:wrap;row-gap:4px}.nav-inner>div{flex-wrap:wrap;row-gap:4px}}
 .brand{font-size:.85rem;color:rgba(148,163,184,.55)}
 .container{max-width:720px;margin:0 auto;padding:28px 20px 72px}
@@ -2940,7 +2944,7 @@ def flips_editions_page(db: Session = Depends(get_db)):
             })
         sections_html += f"""
 <section class="edition">
-  <h2 class="edition-week">{week}<span class="edition-date"> &middot; published {generated}</span></h2>
+  <h2 class="edition-week">{week}<span class="edition-date">, published {generated}</span></h2>
 {cards}
 </section>"""
 
@@ -3918,7 +3922,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <h1 id="tw-heading" style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;font-weight:600;margin-bottom:6px;">This week in NYC displacement</h1>
   <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(148,163,184,0.55);margin-bottom:4px;">{e(range_label)}</p>
   <p id="tw-intro" style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px;line-height:1.6;">
-    The week's movement across all NYC neighborhoods, from the same public records that drive the map. This page always shows the current week. <a href="/this-week/archive" style="color:rgba(249,115,22,0.8);">Past weeks &rarr;</a>
+    <span id="tw-intro-text">The week's movement across all NYC neighborhoods, from the same public records that drive the map. This page always shows the current week.</span> <a id="tw-archive-link" href="/this-week/archive" style="color:rgba(249,115,22,0.8);">Past weeks &rarr;</a>
   </p>
 
   <h2 id="tw-movers-h">Score movers</h2>
@@ -3942,11 +3946,13 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 {_FOOTER_HTML}
 <script>
 (function() {{
-  var lang = localStorage.getItem('pc-lang') || 'en';
+  var lang = 'en';
+  try {{ lang = localStorage.getItem('pc-lang') || 'en'; }} catch (e) {{ return; }}
   if (lang !== 'es') return;
   var es = {{
     'tw-heading':     'Esta semana en el desplazamiento de NYC',
-    'tw-intro':       'El movimiento de la semana en todos los vecindarios de NYC, con los mismos registros p\u00fablicos que alimentan el mapa. Esta p\u00e1gina siempre muestra la semana actual.',
+    'tw-intro-text':  'El movimiento de la semana en todos los vecindarios de NYC, con los mismos registros p\u00fablicos que alimentan el mapa. Esta p\u00e1gina siempre muestra la semana actual.',
+    'tw-archive-link': 'Semanas anteriores \u2192',
     'tw-movers-h':    'Cambios de puntuaci\u00f3n',
     'tw-movers-sub':  'Mayores aumentos de presi\u00f3n de desplazamiento en los \u00faltimos 7 d\u00edas.',
     'tw-records-h':   'Nuevo en el registro',
@@ -4050,7 +4056,7 @@ def displacement_page(db: Session = Depends(get_db)):
     max_score = float(agg.max) if agg and agg.max is not None else 0.0
     n_hoods = int(agg.n) if agg and agg.n else 0
 
-    arcs = sorted(_approved_flip_arcs(), key=lambda a: a.get("gain_pct", 0), reverse=True)
+    arcs = sorted(_approved_flip_arcs(), key=lambda a: a.get("gain_pct") or 0, reverse=True)
     flips = query_flips(db)
     clusters = query_radar(db)
 
@@ -4093,10 +4099,10 @@ def displacement_page(db: Session = Depends(get_db)):
         addr = esc((a.get("address") or f"BBL {a.get('bbl')}").title())
         zc = esc(str(a.get("zip_code") or ""))
         line = (
-            f"Evicted {_my(a.get('eviction_date'))} &middot; bought {_my(a.get('buy_date'))} "
-            f"for {_m(a.get('buy_amt'))} &middot; sold {_my(a.get('sell_date'))} for {_m(a.get('sell_amt'))}"
+            f"Evicted {_my(a.get('eviction_date'))}. Bought {_my(a.get('buy_date'))} "
+            f"for {_m(a.get('buy_amt'))}, sold {_my(a.get('sell_date'))} for {_m(a.get('sell_amt'))}"
         )
-        gain = int(a.get("gain_pct", 0))
+        gain = int(a.get("gain_pct") or 0)
         arc_items += (
             f'<li class="arc" onclick="location.href=\'/property/{bbl}\'">'
             f'<a href="/property/{bbl}">'
@@ -4137,7 +4143,7 @@ def displacement_page(db: Session = Depends(get_db)):
             f'<li class="row" onclick="location.href=\'/operator/{esc(o.slug)}\'">'
             f'<a href="/operator/{esc(o.slug)}">'
             f'<span class="rank">#{i}</span>'
-            f'<span class="row-name">{name}<span class="row-sub">{esc(" &middot; ".join(meta))}</span></span>'
+            f'<span class="row-name">{name}<span class="row-sub">{esc(", ".join(meta))}</span></span>'
             f'<span class="row-arrow">&rarr;</span>'
             f'</a></li>'
         )
@@ -4150,7 +4156,7 @@ def displacement_page(db: Session = Depends(get_db)):
         hood = esc(c["neighborhood"] or zc)
         span = c.get("span_days")
         span_txt = f"{span} days" if span is not None else "recent"
-        amt = f" &middot; {_m(c['total_amount'])}" if c.get("total_amount") else ""
+        amt = f", {_m(c['total_amount'])}" if c.get("total_amount") else ""
         cl_items += (
             f'<li class="row" onclick="location.href=\'/radar\'">'
             f'<a href="/radar">'
@@ -4162,7 +4168,7 @@ def displacement_page(db: Session = Depends(get_db)):
     if not cl_items:
         cl_items = '<li class="empty">No active clusters in the current window.</li>'
 
-    title = "The State of NYC Displacement | PulseCities"
+    title = "The state of NYC displacement | PulseCities"
     desc = (
         "A live read of NYC displacement pressure, rebuilt nightly from public records: "
         "hottest neighborhoods, largest landlords, eviction-to-resale flips, and buying clusters."
@@ -4172,7 +4178,7 @@ def displacement_page(db: Session = Depends(get_db)):
         "@graph": [
             {
                 "@type": "CollectionPage",
-                "name": "The State of NYC Displacement",
+                "name": "The state of NYC displacement",
                 "description": desc,
                 "url": "https://pulsecities.com/displacement",
                 "isPartOf": {"@type": "WebSite", "name": "PulseCities", "url": "https://pulsecities.com"},
@@ -4278,7 +4284,7 @@ footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) 
 {_ssr_nav("/displacement", track=True)}
 <div class="wrap">
 <div class="eyebrow">PulseCities &middot; Citywide &middot; NYC public records</div>
-<h1>The State of NYC Displacement</h1>
+<h1>The state of NYC displacement</h1>
 <p class="lede">What the public record shows right now. Every number below is rebuilt nightly from NYC open data: deeds, evictions, permits, violations, and complaints.</p>
 
 <div class="stats">{stats_html}</div>
