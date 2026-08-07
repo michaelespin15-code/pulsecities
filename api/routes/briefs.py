@@ -351,7 +351,7 @@ def _build_zip_brief(
   <section>
     <h2>Displacement pressure score</h2>
     {score_block}
-    <p class="source-note">Score is a 0 to 100 index normalized across 178 NYC ZIP codes. Higher values indicate more elevated displacement-pressure signals relative to citywide averages, not an absolute measure of risk.</p>
+    <p class="source-note">Score is a 0 to 100 index normalized across the 177 scored NYC ZIP codes. Higher values indicate more elevated displacement-pressure signals relative to citywide averages, not an absolute measure of risk.</p>
   </section>
 
   <section>
@@ -367,7 +367,7 @@ def _build_zip_brief(
       </thead>
       <tbody>{rows_html}</tbody>
     </table>
-    <p class="source-note">Index values are PERCENT_RANK scores computed across all 178 tracked NYC ZIP codes. Count windows noted per signal. Rent-stabilized unit loss uses annual DHCR data; counts are point-in-time, not windowed.</p>
+    <p class="source-note">Index values are PERCENT_RANK scores computed across the 177 scored NYC ZIP codes. Count windows noted per signal. Rent-stabilized unit loss uses annual DHCR data; counts are point-in-time, not windowed.</p>
   </section>
 
   <section>
