@@ -336,13 +336,13 @@
         .docket-cta:hover { text-decoration: underline; }
 
         /* ── Module row ──────────────────────────────────────────────── */
-        .modules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+        .modules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid rgba(147, 161, 173, 0.22); }
         .module {
-            background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-            padding: 18px 18px 14px;
+            padding: 16px 18px 14px 0;
             min-height: 240px;
             display: flex; flex-direction: column;
         }
+        .module + .module { border-left: 1px solid var(--border); padding-left: 18px; }
         .module-label {
             font-family: var(--mono); font-size: 10.5px; font-weight: 600;
             letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
@@ -395,7 +395,8 @@
             .search-row { flex-direction: column; }
             .search-row button { width: 100%; }
             .modules { grid-template-columns: 1fr; }
-            .module { min-height: 0; }
+            .module { min-height: 0; padding-right: 0; }
+            .module + .module { border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 16px; }
             .docket-head { font-size: 10px; }
         }
 
@@ -465,8 +466,8 @@
         <div>
             <a class="hero-map" href="/map" id="cta-explore" aria-label="Explore the displacement risk map">
                 <picture>
-                    <source srcset="/map-preview-560.webp?v=3 560w, /map-preview.webp?v=3 1120w" sizes="(max-width: 860px) calc(100vw - 40px), 340px" type="image/webp">
-                    <img src="/map-preview.jpg?v=3" srcset="/map-preview-560.jpg?v=3 560w, /map-preview.jpg?v=3 1120w" sizes="(max-width: 860px) calc(100vw - 40px), 340px" width="1120" height="600" alt="NYC displacement risk map" loading="eager" fetchpriority="high" decoding="async">
+                    <source srcset="/map-preview-560.webp?v=4 560w, /map-preview.webp?v=4 1120w" sizes="(max-width: 860px) calc(100vw - 40px), 340px" type="image/webp">
+                    <img src="/map-preview.jpg?v=4" srcset="/map-preview-560.jpg?v=4 560w, /map-preview.jpg?v=4 1120w" sizes="(max-width: 860px) calc(100vw - 40px), 340px" width="1120" height="600" alt="NYC displacement risk map" loading="eager" fetchpriority="high" decoding="async">
                 </picture>
                 <span class="map-explore" data-i18n="explore_map">Explore the map &rarr;</span>
             </a>
@@ -803,11 +804,52 @@
     });
     applyLang(_lang);
 
+    // The hero trace is the brand mark drawn from live data: the current
+    // top-risk neighborhood's daily score, last 90 days. The static polyline
+    // stays as the no-JS fallback.
+    function drawPulseTrace(zip, name) {
+        fetch('/api/score-history/' + encodeURIComponent(zip) + '?days=90')
+            .then(r => r.ok ? r.json() : null)
+            .then(hist => {
+                if (!Array.isArray(hist) || hist.length < 14) return;
+                var svg = document.querySelector('.pulse-trace');
+                var line = svg && svg.querySelector('polyline');
+                if (!line) return;
+                var scores = hist.map(p => p.score);
+                var lo = Math.min.apply(null, scores) - 1;
+                var hi = Math.max.apply(null, scores) + 1;
+                var rng = (hi - lo) || 1;
+                var x0 = 40, x1 = 220;
+                var pts = scores.map((s, i) => {
+                    var x = x0 + (i / (scores.length - 1)) * (x1 - x0);
+                    var y = 4 + (1 - (s - lo) / rng) * 16;
+                    return x.toFixed(1) + ',' + y.toFixed(1);
+                });
+                var yEnd = pts[pts.length - 1].split(',')[1];
+                var yStart = pts[0].split(',')[1];
+                // The draw-in dash animation is sized for the decorative line;
+                // the data line has a different length, so render it solid.
+                line.style.animation = 'none';
+                line.style.strokeDasharray = 'none';
+                line.style.strokeDashoffset = '0';
+                line.setAttribute('points', '0,' + yStart + ' ' + pts.join(' ') + ' 260,' + yEnd);
+                svg.removeAttribute('aria-hidden');
+                svg.setAttribute('role', 'img');
+                svg.setAttribute('aria-label', name + ' daily displacement score, last 90 days');
+                var t = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+                t.textContent = name + ' (' + zip + '), daily score, last 90 days';
+                svg.appendChild(t);
+            }).catch(() => {});
+    }
+
     fetch('/api/stats').then(r => r.ok ? r.json() : null).then(data => {
         if (!data) return;
         _stats = data;
         renderMeta();
         renderRankings();
+        if (data.top_risk && data.top_risk.zip_code) {
+            drawPulseTrace(data.top_risk.zip_code, data.top_risk.name || data.top_risk.zip_code);
+        }
     }).catch(() => {});
 
     fetch('/api/operators/top?limit=3').then(r => r.ok ? r.json() : null).then(ops => {

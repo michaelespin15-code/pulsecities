@@ -10,6 +10,7 @@ GET /operators                — server-side rendered directory of all tracked 
 import html as _html
 import json
 import logging
+import math
 import re
 import time
 from datetime import date, timedelta
@@ -502,8 +503,13 @@ def _trend_svg(history: list[tuple[str, float]]) -> str:
         return ""
 
     scores = [s for _, s in history]
-    lo = max(0.0, min(scores) - 2.0)
-    hi = min(100.0, max(scores) + 2.0)
+    raw_lo = max(0.0, min(scores) - 2.0)
+    raw_hi = min(100.0, max(scores) + 2.0)
+    # Snap the axis to a human step so gridlines read 65/70/75, never 67/71/75.
+    span = raw_hi - raw_lo
+    step = next((s for s in (1, 2, 5, 10, 20) if span <= s * 4), 25)
+    lo = max(0.0, math.floor(raw_lo / step) * step)
+    hi = min(100.0, math.ceil(raw_hi / step) * step)
     rng = (hi - lo) or 1.0
 
     w, h = 640.0, 150.0
@@ -521,14 +527,16 @@ def _trend_svg(history: list[tuple[str, float]]) -> str:
     last_x, last_y = pts[-1].split(",")
 
     grid = ""
-    for frac, val in ((0.0, hi), (0.5, lo + rng / 2), (1.0, lo)):
-        gy = py_t + frac * plot_h
+    val = lo
+    while val <= hi + 1e-9:
+        gy = py_t + (1 - (val - lo) / rng) * plot_h
         grid += (
             f'<line x1="{px_l}" y1="{gy:.1f}" x2="{px_l + plot_w}" y2="{gy:.1f}" '
             f'stroke="rgba(147,161,173,.12)" stroke-width="1"/>'
             f'<text x="{px_l + 2}" y="{gy - 4:.1f}" font-size="10" '
             f'font-family="JetBrains Mono,monospace" fill="rgba(147,161,173,.45)">{val:.0f}</text>'
         )
+        val += step
 
     def _md(iso: str) -> str:
         try:
@@ -3461,10 +3469,10 @@ h2{font-size:0.78rem;font-weight:600;color:rgba(147,161,173,0.75);text-transform
 .tw-delta{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:500;line-height:1.1}
 .tw-score{font-size:0.68rem;color:rgba(147,161,173,0.55)}
 .tw-empty{padding:18px 0;font-size:0.8rem;color:#93a1ad}
-.tw-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px}
-.tw-stat{background:rgba(27,37,52,0.5);border:1px solid rgba(147,161,173,0.1);border-radius:10px;padding:16px}
-.tw-stat-n{font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:600;color:#eef2f5}
-.tw-stat-l{font-size:0.72rem;color:#93a1ad;margin-top:4px}
+.tw-stats{display:flex;flex-wrap:wrap;gap:10px 36px;margin-top:12px;padding:12px 2px;border-top:1px solid rgba(147,161,173,0.22);border-bottom:1px solid rgba(147,161,173,0.1)}
+.tw-stat{display:flex;align-items:baseline;gap:8px}
+.tw-stat-n{font-family:'JetBrains Mono',monospace;font-size:1.25rem;font-weight:600;color:#eef2f5;line-height:1}
+.tw-stat-l{font-size:0.68rem;color:#93a1ad;text-transform:uppercase;letter-spacing:0.06em}
 .wk-nav{display:flex;justify-content:space-between;gap:12px;margin-top:36px;font-family:'JetBrains Mono',monospace;font-size:0.75rem}
 .wk-nav a{color:rgba(237,99,23,0.8)}
 .wk-idx{list-style:none;padding:0;margin:0}
@@ -4231,12 +4239,12 @@ nav{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0;position:stick
 .eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.18em;color:#ed6317;text-transform:uppercase;margin-bottom:14px}
 h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(2rem,5.4vw,3.1rem);line-height:1.04;letter-spacing:-0.02em;margin-bottom:14px}
 .lede{font-size:1.05rem;color:#93a1ad;max-width:620px;line-height:1.5}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:34px 0 8px}
-.stat{border:1px solid rgba(147,161,173,0.12);border-radius:12px;padding:16px 14px;background:rgba(147,161,173,0.03)}
-.stat-num{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.9rem;line-height:1;color:#eef2f5}
-.stat-unit{font-size:0.9rem;color:#677686;font-weight:600}
-.stat-label{font-size:0.72rem;color:#93a1ad;margin-top:8px;line-height:1.3}
-@media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stats{display:flex;flex-wrap:wrap;gap:10px 40px;margin:34px 0 8px;padding:14px 2px;border-top:1px solid rgba(147,161,173,0.22);border-bottom:1px solid rgba(147,161,173,0.1)}
+.stat{display:flex;align-items:baseline;gap:8px}
+.stat-num{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:1.35rem;line-height:1;color:#eef2f5}
+.stat-unit{font-size:0.8rem;color:#677686;font-weight:600}
+.stat-label{font-size:0.68rem;color:#93a1ad;text-transform:uppercase;letter-spacing:0.06em;line-height:1.3}
+@media(max-width:640px){.stats{gap:10px 24px}}
 .section{margin-top:44px}
 .sec-h{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:1.3rem;letter-spacing:-0.01em;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .sec-more{font-family:'JetBrains Mono',monospace;font-size:0.74rem;color:#ed6317;white-space:nowrap}
