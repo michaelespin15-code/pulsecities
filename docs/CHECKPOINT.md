@@ -588,3 +588,15 @@ pass; 15 commits, 25ac829..8c8d185. What changed that later sessions build on:
   password BEFORE the repo goes public; CSP report-only; shared_buffers raise;
   dedicated PULSECITIES_R2_* creds (offsite currently borrows
   violation-leads'); og-image.png still says 178 ZIPs.
+
+## 2026-08-07 (later) — Traction pages
+
+/evictions (citywide marshal-eviction tracker, hub nav, FAQ schema, ES
+strings) and /who-owns-my-building (tenant-intent landing, top buyers,
+official registry links) shipped in 3abd296, driven by Search Console
+demand. Notes for later sessions: new SSR routes 404 until nginx gets a
+`location =` block (deploy copy synced); hub nav is 9 links, .nav-inner
+960px; _addr_title() fixes str.title() ordinal mangling on all-caps
+addresses; property titles now lead with the records promise, not score
+jargon (874dd52). Remaining traction backlog lives in the traction-pages
+memory note.
