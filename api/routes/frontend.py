@@ -1448,8 +1448,11 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str
     crumb_items.append({"@type": "ListItem", "position": pos, "name": address, "item": f"https://pulsecities.com/property/{bbl}"})
 
     url = f"https://pulsecities.com/property/{bbl}"
-    score_part = f" | Displacement Score {score:.1f}/100" if score is not None else ""
-    title = f"{address}, {borough}{score_part} | PulseCities"
+    # Searchers type the address plus "bronx ny" or a ZIP, and they want the
+    # records, not our score jargon. Title matches the query and promises the
+    # record; the score stays in the description and on the page.
+    zip_part = f" {zip_code}" if zip_code else ""
+    title = f"{address}, {borough} NY{zip_part}: deeds, evictions, permits | PulseCities"
     zloc = f" ({zip_code})" if zip_code else ""
     desc = (f"{address}, {borough}{zloc}: deed transfers, eviction filings, and renovation "
             f"permits from NYC public records"
