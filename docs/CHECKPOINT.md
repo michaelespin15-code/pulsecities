@@ -555,3 +555,36 @@ halves by convention.
 - The concurrent `claude --resume` sessions on this box belong to other
   projects (/root/michaelespin, /root/violation-leads); check
   `readlink /proc/PID/cwd` before assuming they touch pulsecities.
+
+## 2026-08-07 — Full audit sweep + de-AI design pass (session end)
+
+Five-agent audit (backend, frontend, copy, visual, infra) and same-day fix
+pass; 15 commits, 25ac829..8c8d185. What changed that later sessions build on:
+
+- **Palette is now house-owned.** Every framework hex is retuned (accent
+  #ed6317, bg #111823, muted #93a1ad, link #6fb1d8, stamp #e4483b); Tailwind
+  stops overridden in tailwind.config.js so utilities follow. Ramp Low
+  #3E6B54 / Moderate #C08B2D unchanged. A stock #f97316 anywhere is a
+  regression now.
+- **Design language tightened:** stat-card grids on /displacement and
+  /this-week are ledger strips; landing modules are ruled columns; hero
+  pulse-trace draws the top-risk ZIP's real 90-day line; map preview re-shot
+  from the live app (was the old bright-green ramp); neighborhood h1 is
+  "Name ZIP" under a kicker, no title-tag pipe; trend chart ticks on human
+  steps.
+- **Live bugs fixed:** renovation-flip endpoint 500 (psycopg int, _days
+  guard), map app back-button trap, /displacement literal &middot;, press.html
+  false "feed paused" claim, ops.html XSS, ~500 lines dead hero code purged.
+- **Ops hardened:** nginx server_tokens off, Referrer-Policy, /ops.html 404,
+  week+detail trailing-slash 301s, limit_req on /property /brief /og (all
+  mirrored to deploy/); OOMScoreAdjust -500 on the app unit, -800 drop-in for
+  postgres (applies at its next restart); daily_health_check + pipeline_health
+  finally in cron (03:40/03:45) and their alerts actually flush; Resend ops
+  email retries; ownership scraper retries party/legal fetches and fails loud
+  so the watermark can't skip batches.
+- **Repo hygiene:** sitemap.xml, llms.txt, state JSONs untracked (nightly
+  churn); tree stays clean.
+- **Deferred (needs Michael):** purge .env from git history or rotate the DB
+  password BEFORE the repo goes public; CSP report-only; shared_buffers raise;
+  dedicated PULSECITIES_R2_* creds (offsite currently borrows
+  violation-leads'); og-image.png still says 178 ZIPs.
