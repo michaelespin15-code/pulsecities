@@ -25,7 +25,7 @@ from sqlalchemy import text
 
 from config.nyc import SOCRATA_BASE_URL
 from models.database import get_scraper_db
-from scheduler.alerts import send_alert
+from scheduler.alerts import flush_alerts, send_alert
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -240,6 +240,9 @@ def main():
     write_audit(results)
 
     stale_count = sum(1 for r in results if r["status"] == "stale")
+    # send_alert only buffers for the ops email; without this flush the
+    # staleness alerts never leave the box.
+    flush_alerts()
     sys.exit(1 if stale_count else 0)
 
 

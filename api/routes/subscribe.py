@@ -5,6 +5,7 @@ ZIP-based: { email, zip_code } — watches a specific neighborhood.
 Citywide:  { email, is_citywide: true } — watches all of NYC.
 """
 
+import html
 import logging
 import os
 import re
@@ -268,6 +269,47 @@ _UNSUBSCRIBE_HTML = """
 </html>
 """.strip()
 
+# Served with a 404 when the token doesn't resolve. The person clicking is a
+# human coming from an email, not an API client, so raw JSON is the wrong shape.
+_UNSUBSCRIBE_INVALID_HTML = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Unsubscribe link not active | PulseCities</title>
+</head>
+<body style="margin:0;padding:0;background:#0f172a;font-family:'Inter',system-ui,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:48px 24px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
+          <tr>
+            <td style="padding-bottom:32px;">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#38bdf8;letter-spacing:-0.01em;">PulseCities</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#1e293b;border-radius:12px;padding:32px;border:1px solid rgba(148,163,184,0.1);">
+              <p style="margin:0 0 8px;font-size:20px;font-weight:600;color:#f1f5f9;">This unsubscribe link isn't active.</p>
+              <p style="margin:0 0 24px;font-size:14px;color:#94a3b8;line-height:1.6;">
+                It may have expired, or the subscription it pointed to is already gone. If emails keep arriving, reply to one and we'll remove you by hand.
+              </p>
+              <a href="https://pulsecities.com"
+                 style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;text-decoration:none;">
+                Back to PulseCities
+              </a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+""".strip()
+
 
 class SubscribeRequest(BaseModel):
     email: str
@@ -312,9 +354,14 @@ class SubscribeRequest(BaseModel):
         return self
 
 
-def _fill(template: str, values: dict) -> str:
+def _fill(template: str, values: dict, escape: bool = False) -> str:
+    # The HTML branch escapes: addresses and operator names come from DB rows
+    # that started life as third-party record data. The text part ships raw.
     for key, val in values.items():
-        template = template.replace("{" + key + "}", str(val))
+        s = str(val)
+        if escape:
+            s = html.escape(s)
+        template = template.replace("{" + key + "}", s)
     return template
 
 
@@ -342,22 +389,22 @@ def _send_confirmation(
     if bbl:
         values.update({"bbl": bbl, "address": address or f"BBL {bbl}"})
         subject = f"You're watching {address or bbl}"
-        html, text_body = _BUILDING_CONFIRMATION_HTML, _BUILDING_CONFIRMATION_TEXT
+        html_body, text_body = _BUILDING_CONFIRMATION_HTML, _BUILDING_CONFIRMATION_TEXT
         log_line = ("Building-watch confirmation sent to %s for %s", email, bbl)
     elif operator_slug:
         name = operator_name or operator_slug
         values.update({"operator_name": name, "operator_slug": operator_slug})
         subject = f"You're following {name}"
-        html, text_body = _OPERATOR_CONFIRMATION_HTML, _OPERATOR_CONFIRMATION_TEXT
+        html_body, text_body = _OPERATOR_CONFIRMATION_HTML, _OPERATOR_CONFIRMATION_TEXT
         log_line = ("Operator-follow confirmation sent to %s for %s", email, operator_slug)
     elif is_citywide:
         subject = "You're watching NYC"
-        html, text_body = _CITYWIDE_CONFIRMATION_HTML, _CITYWIDE_CONFIRMATION_TEXT
+        html_body, text_body = _CITYWIDE_CONFIRMATION_HTML, _CITYWIDE_CONFIRMATION_TEXT
         log_line = ("Citywide confirmation sent to %s", email)
     else:
         values["zip_code"] = zip_code
         subject = f"You're watching {zip_code}"
-        html, text_body = _CONFIRMATION_HTML, _CONFIRMATION_TEXT
+        html_body, text_body = _CONFIRMATION_HTML, _CONFIRMATION_TEXT
         log_line = ("Confirmation sent to %s for zip %s", email, zip_code)
 
     try:
@@ -365,7 +412,7 @@ def _send_confirmation(
             "from": "PulseCities <alerts@pulsecities.com>",
             "to": [email],
             "subject": subject,
-            "html": _fill(html, values),
+            "html": _fill(html_body, values, escape=True),
             "text": _fill(text_body, values),
             "headers": {
                 "List-Unsubscribe": f"<{unsub_url}>",
@@ -490,7 +537,8 @@ def subscribe(
 
 
 @router.get('/unsubscribe', response_class=HTMLResponse)
-def unsubscribe_confirm(token: str, db: Session = Depends(get_db)):
+@limiter.limit('30/minute')
+def unsubscribe_confirm(request: Request, token: str, db: Session = Depends(get_db)):
     """Confirmation page, no state change. Mail scanners (SafeLinks,
     Proofpoint) prefetch GET links from email bodies; if this deleted, a
     subscriber could be silently removed before ever seeing the digest.
@@ -500,7 +548,7 @@ def unsubscribe_confirm(token: str, db: Session = Depends(get_db)):
     ).scalar_one_or_none()
 
     if not sub:
-        raise HTTPException(status_code=404, detail='Invalid or expired unsubscribe link.')
+        return HTMLResponse(content=_UNSUBSCRIBE_INVALID_HTML, status_code=404)
 
     from urllib.parse import quote
     page = _UNSUBSCRIBE_CONFIRM_HTML.replace('{token}', quote(token))
@@ -508,7 +556,8 @@ def unsubscribe_confirm(token: str, db: Session = Depends(get_db)):
 
 
 @router.post('/unsubscribe', response_class=HTMLResponse)
-def unsubscribe(token: str, db: Session = Depends(get_db)):
+@limiter.limit('30/minute')
+def unsubscribe(request: Request, token: str, db: Session = Depends(get_db)):
     """Performs the unsubscribe. Reached two ways: the confirmation page's
     button, and RFC 8058 one-click POSTs that Gmail/Yahoo send to the
     List-Unsubscribe URL (their form body is ignored; token is in the query)."""
@@ -517,7 +566,7 @@ def unsubscribe(token: str, db: Session = Depends(get_db)):
     ).scalar_one_or_none()
 
     if not sub:
-        raise HTTPException(status_code=404, detail='Invalid or expired unsubscribe link.')
+        return HTMLResponse(content=_UNSUBSCRIBE_INVALID_HTML, status_code=404)
 
     email    = sub.email
     zip_code = sub.zip_code

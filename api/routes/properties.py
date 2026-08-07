@@ -10,6 +10,8 @@ on the map. Returns raw signal counts (not scores) so users can see the data.
 
 import logging
 import os
+import threading
+import time
 
 import requests
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
@@ -31,8 +33,19 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/properties", tags=["properties"])
 limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
-# How many months of raw signal data to return in the API response
-SIGNAL_WINDOW_MONTHS = 12
+# Raw signal window; response keys promise *_last_12mo, so this is a real year
+SIGNAL_WINDOW_DAYS = 365
+
+# OSM Nominatim policy is roughly 1 request/second aggregate. The per-client
+# rate limit alone lets concurrent clients stack well past that, so geocoding
+# shares one process-wide budget plus a small TTL cache for repeat queries.
+_GEOCODE_TTL = 6 * 3600
+_GEOCODE_CACHE_MAX = 512
+_geocode_cache: dict[str, tuple[tuple[float | None, float | None], float]] = {}
+_NOMINATIM_MIN_INTERVAL = 1.1
+_NOMINATIM_MAX_WAIT = 3.0
+_nominatim_lock = threading.Lock()
+_nominatim_next_slot = 0.0
 
 
 @router.get("/search")
@@ -77,7 +90,7 @@ def _get_property_data(bbl: str, db: Session) -> dict:
     score = db.query(PropertyScore).filter(PropertyScore.bbl == bbl).first()
 
     from datetime import datetime, timedelta, timezone
-    since = datetime.now(timezone.utc) - timedelta(days=SIGNAL_WINDOW_MONTHS * 30)
+    since = datetime.now(timezone.utc) - timedelta(days=SIGNAL_WINDOW_DAYS)
 
     complaints = (
         db.query(ComplaintRaw)
@@ -185,8 +198,44 @@ def _geosearch_to_bbl(address: str) -> str | None:
     return _pluto_bbl_from_coords(lat, lon)
 
 
+def _nominatim_reserve_slot() -> bool:
+    """Claim the next slot in the shared 1 req/s Nominatim budget. Returns
+    False when the backlog is too deep to wait out; the caller should give up
+    rather than queue requests indefinitely."""
+    global _nominatim_next_slot
+    with _nominatim_lock:
+        now = time.monotonic()
+        slot = max(now, _nominatim_next_slot)
+        if slot - now > _NOMINATIM_MAX_WAIT:
+            return False
+        _nominatim_next_slot = slot + _NOMINATIM_MIN_INTERVAL
+    if slot > now:
+        time.sleep(slot - now)
+    return True
+
+
+def _geocode_cache_put(key: str, result: tuple[float | None, float | None]) -> None:
+    if len(_geocode_cache) >= _GEOCODE_CACHE_MAX:
+        now = time.monotonic()
+        for k, (_, exp) in list(_geocode_cache.items()):
+            if now >= exp:
+                _geocode_cache.pop(k, None)
+        while len(_geocode_cache) >= _GEOCODE_CACHE_MAX:
+            _geocode_cache.pop(next(iter(_geocode_cache)), None)
+    _geocode_cache[key] = (result, time.monotonic() + _GEOCODE_TTL)
+
+
 def _nominatim_geocode(address: str) -> tuple[float | None, float | None]:
     """Return (lat, lon) for an address using OSM Nominatim, restricted to NYC."""
+    cache_key = " ".join(address.lower().split())
+    cached = _geocode_cache.get(cache_key)
+    if cached and time.monotonic() < cached[1]:
+        return cached[0]
+
+    if not _nominatim_reserve_slot():
+        logger.warning("Nominatim budget exhausted; skipping geocode for '%s'", address)
+        return None, None
+
     try:
         resp = requests.get(
             NOMINATIM_URL,
@@ -203,9 +252,13 @@ def _nominatim_geocode(address: str) -> tuple[float | None, float | None]:
         )
         resp.raise_for_status()
         results = resp.json()
-        if not results:
-            return None, None
-        return float(results[0]["lat"]), float(results[0]["lon"])
+        # Misses are cached too, so a repeated junk query stops costing budget.
+        result = (
+            (float(results[0]["lat"]), float(results[0]["lon"]))
+            if results else (None, None)
+        )
+        _geocode_cache_put(cache_key, result)
+        return result
     except Exception as e:
         logger.warning("Nominatim geocode failed for '%s': %s", address, e)
         return None, None

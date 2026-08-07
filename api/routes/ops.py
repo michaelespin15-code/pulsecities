@@ -4,7 +4,9 @@ Private ops dashboard.
 GET /ops?t={OPS_TOKEN}           — serves dashboard HTML
 GET /api/ops/summary?t={token}   — returns JSON for the dashboard
 
-Both return 404 on missing/wrong token so the endpoint is invisible to scanners.
+Both prefer the token in an X-Ops-Token header (keeps it out of access logs)
+and fall back to the ?t= query param. Missing/wrong token returns 404 so the
+endpoint is invisible to scanners.
 """
 
 import hmac
@@ -14,7 +16,7 @@ import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from fastapi.responses import FileResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -36,21 +38,25 @@ def _token_ok(t: str) -> bool:
     return bool(_TOKEN) and hmac.compare_digest(t, _TOKEN)
 
 
-def _auth(t: str = Query(default="")) -> None:
-    if not _token_ok(t):
+# Header first: a query-string token lands in access logs and browser history.
+# The ?t= form stays as a fallback for the bookmarked dashboard URL.
+def _auth(t: str = Query(default=""),
+          x_ops_token: str = Header(default="")) -> None:
+    if not _token_ok(x_ops_token or t):
         raise HTTPException(status_code=404)
 
 
 @router.get("/ops", include_in_schema=False)
-def ops_page(t: str = Query(default="")):
-    if not _token_ok(t):
+def ops_page(t: str = Query(default=""), x_ops_token: str = Header(default="")):
+    if not _token_ok(x_ops_token or t):
         raise HTTPException(status_code=404)
     return FileResponse(str(_FRONTEND / "ops.html"), media_type="text/html")
 
 
 @router.get("/api/ops/summary", include_in_schema=False)
-def ops_summary(t: str = Query(default=""), db: Session = Depends(get_db)):
-    if not _token_ok(t):
+def ops_summary(t: str = Query(default=""), x_ops_token: str = Header(default=""),
+                db: Session = Depends(get_db)):
+    if not _token_ok(x_ops_token or t):
         raise HTTPException(status_code=404)
 
     # --- Subscribers ---

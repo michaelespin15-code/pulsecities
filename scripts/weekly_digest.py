@@ -703,7 +703,7 @@ def render_zip_digest(
                 <td style="font-family:{_MONO};font-size:42px;font-weight:700;color:{tier_color};letter-spacing:-0.02em;line-height:1;white-space:nowrap;">{score:.1f}</td>
                 <td width="100%" style="padding-left:14px;vertical-align:bottom;">
                   <span style="display:inline-block;font-family:{_MONO};font-size:10px;font-weight:700;color:{tier_color};border:1px solid {tier_color};padding:3px 7px;letter-spacing:0.14em;">{tier_label}</span>
-                  <div style="font-family:{_MONO};font-size:11px;color:{delta_ink};margin-top:6px;white-space:nowrap;">{delta_text} &middot; last week {summary['score_prev']:.1f}</div>
+                  <div style="font-family:{_MONO};font-size:11px;color:{delta_ink};margin-top:6px;white-space:nowrap;">{delta_text}, last week {summary['score_prev']:.1f}</div>
                 </td>
               </tr></table>
               <img src="https://pulsecities.com/og/spark/{zip_code}.png" width="504" alt="90-day pressure trace for {zip_code}" style="display:block;width:100%;height:auto;margin-top:14px;border:0;">
@@ -1113,9 +1113,9 @@ def render_citywide_digest(subscription: dict, summary: dict, narrative: str | N
         for c in clusters:
             where = c.get("neighborhood") or c.get("zip_code")
             amount = _money(c.get("total_amount"))
-            detail = f"{c['building_count']} buildings &middot; {where}"
+            detail = f"{c['building_count']} buildings in {where}"
             if amount:
-                detail += f" &middot; {amount}"
+                detail += f", {amount}"
             entries += (
                 f'<tr><td style="padding-bottom:10px;">'
                 f'<div style="font-family:{_MONO};font-size:12px;color:{_INK};">{_html_escape(str(c["buyer"]))}</div>'

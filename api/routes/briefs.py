@@ -18,7 +18,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 from fastapi import APIRouter, Depends
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import HTMLResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -49,25 +49,25 @@ def _score_tier(score: float) -> tuple[str, str]:
     Low 0-33, Moderate 34-66, High 67-84, Critical 85+.
     """
     if score >= 85:
-        return "Critical", "#ef4444"
+        return "Critical", "#e4483b"
     if score >= 67:
-        return "High", "#f97316"
+        return "High", "#ed6317"
     if score >= 34:
         return "Moderate", "#C08B2D"
-    return "Low", "#64748b"
+    return "Low", "#677686"
 
 
 def _idx_color(v: float) -> str:
     if v >= 70:
-        return "#f97316"
+        return "#ed6317"
     if v >= 45:
         return "#C08B2D"
-    return "rgba(148,163,184,0.45)"
+    return "rgba(147,161,173,0.45)"
 
 
 _CSS = """
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0f172a;--border:rgba(148,163,184,.1);--text:#f1f5f9;--muted:rgba(148,163,184,.65);--faint:rgba(148,163,184,.35);--accent:#f97316}
+:root{--bg:#111823;--border:rgba(147,161,173,.1);--text:#eef2f5;--muted:rgba(147,161,173,.65);--faint:rgba(147,161,173,.35);--accent:#ed6317}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 nav{border-bottom:1px solid var(--border);padding:12px 0}
@@ -78,13 +78,13 @@ nav{border-bottom:1px solid var(--border);padding:12px 0}
 .brief-label{font-size:.66rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
 h1{font-size:1.42rem;font-weight:600;line-height:1.3;margin-bottom:4px}
 .generated{font-size:.74rem;color:var(--faint);margin-bottom:28px}
-.summary{font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:32px;padding:16px 20px;border-left:2px solid var(--accent);background:rgba(249,115,22,.04)}
+.summary{font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:32px;padding:16px 20px;border-left:2px solid var(--accent);background:rgba(237,99,23,.04)}
 h2{font-size:.67rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
 section{margin-bottom:32px}
 table{width:100%;border-collapse:collapse;margin-bottom:8px}
 th{font-size:.63rem;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:6px 0;border-bottom:1px solid var(--border);text-align:left}
 th.tr{text-align:right}
-td{padding:10px 0;border-bottom:1px solid rgba(148,163,184,.06);vertical-align:top;font-size:.86rem}
+td{padding:10px 0;border-bottom:1px solid rgba(147,161,173,.06);vertical-align:top;font-size:.86rem}
 .td-r{text-align:right;font-family:'JetBrains Mono',monospace;white-space:nowrap}
 .td-label{color:var(--text)}
 .td-sub{display:block;font-size:.7rem;color:var(--faint);margin-top:2px}
@@ -103,7 +103,7 @@ td{padding:10px 0;border-bottom:1px solid rgba(148,163,184,.06);vertical-align:t
 .btn-primary{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--accent);color:#fff;border-radius:6px;font-size:.85rem;font-weight:500;text-decoration:none;transition:opacity .15s}
 .btn-primary:hover{opacity:.88}
 .btn-ghost{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:6px;font-size:.85rem;text-decoration:none;transition:color .15s,border-color .15s;cursor:pointer;font-family:inherit}
-.btn-ghost:hover{color:var(--text);border-color:rgba(148,163,184,.3)}
+.btn-ghost:hover{color:var(--text);border-color:rgba(147,161,173,.3)}
 .cta-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 footer{border-top:1px solid var(--border);padding:24px 20px;text-align:center}
 .footer-links{max-width:740px;margin:0 auto;display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
@@ -112,28 +112,42 @@ footer{border-top:1px solid var(--border);padding:24px 20px;text-align:center}
 @media(max-width:600px){h1{font-size:1.2rem}.score-big{font-size:2rem}.container{padding:24px 16px 60px}.metrics{grid-template-columns:1fr 1fr}.entity-list{columns:1}.cta-row{flex-direction:column;align-items:flex-start}}
 @media print{
   nav,footer,.cta-row{display:none!important}
-  body{background:#fff;color:#1e293b}
-  :root{--bg:#fff;--text:#1e293b;--muted:#475569;--faint:#94a3b8;--border:#e2e8f0;--accent:#ea580c}
+  body{background:#fff;color:#1b2534}
+  :root{--bg:#fff;--text:#1b2534;--muted:#46525f;--faint:#93a1ad;--border:#e4e8ec;--accent:#ea580c}
   .summary{border-left-color:#ea580c;background:#fff7ed}
-  .score-row,.metric{border-color:#e2e8f0;background:#f8fafc}
+  .score-row,.metric{border-color:#e4e8ec;background:#f2f5f7}
   .container{padding:20px 0 40px}
-  a[href]{color:#1e293b}
-  .disclaimer{border-color:#e2e8f0}
+  a[href]{color:#1b2534}
+  .disclaimer{border-color:#e4e8ec}
 }
 """
+
+# Async font swap, same preload/onload pattern as the static pages; a
+# render-blocking stylesheet held first paint hostage on cold brief links.
+_FONT_HREF = "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&family=JetBrains+Mono:wght@400&display=swap"
 
 _FONTS = (
     '<link rel="preconnect" href="https://fonts.googleapis.com">'
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-    '<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">'
+    f'<link rel="preload" href="{_FONT_HREF}" as="style" onload="this.onload=null;this.rel=\'stylesheet\'">'
+    f'<noscript><link rel="stylesheet" href="{_FONT_HREF}"></noscript>'
+)
+
+# Same Plausible snippet the other SSR pages carry (see frontend.py); brief
+# pages were the only server-rendered surface reporting nothing.
+_PLAUSIBLE = (
+    '<script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>'
+    '\n<script>window.plausible=window.plausible||function(){(plausible.q=plausible.q||[])'
+    '.push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};'
+    'plausible.init()</script>'
 )
 
 
 def _nav_html() -> str:
     return """<nav><div class="nav-inner">
   <a href="/" style="display:flex;align-items:center;gap:8px;">
-    <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span style="font-size:.85rem;color:rgba(148,163,184,.55);">PulseCities</span>
+    <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#ed6317" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span style="font-size:.85rem;color:rgba(147,161,173,.55);">PulseCities</span>
   </a>
   <div class="nav-links"><a href="/map">Map</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="/press">Press</a></div>
 </div></nav>"""
@@ -141,7 +155,7 @@ def _nav_html() -> str:
 
 def _footer_html() -> str:
     return """<footer><div class="footer-links">
-  <a href="/">Home</a><a href="/map">Map</a><a href="/neighborhoods">Neighborhoods</a><a href="/displacement">Displacement</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="/press">Press</a><a href="/status">Status</a><a href="mailto:michaelespin15@gmail.com">Contact</a>
+  <a href="/">Home</a><a href="/map">Map</a><a href="/neighborhoods">Neighborhoods</a><a href="/displacement">Displacement</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="/press">Press</a><a href="/status">Status</a><a href="mailto:nycdisplacement@gmail.com">Contact</a>
 </div></footer>"""
 
 
@@ -165,6 +179,37 @@ function fallback(url, done) {{
 </script>"""
 
 
+def _error_page(status_code: int, heading: str, message: str) -> HTMLResponse:
+    """Styled 4xx page. Briefs get shared by link, so a typo'd or dead URL
+    should land on something that still looks like the site, not bare text."""
+    e = _html.escape
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>{e(heading)} | PulseCities</title>
+{_FONTS}
+<style>{_CSS}</style>
+</head>
+<body>
+{_nav_html()}
+<main><div class="container">
+  <p class="brief-label">Evidence Brief</p>
+  <h1>{e(heading)}</h1>
+  <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin:16px 0 28px;">{e(message)}</p>
+  <div class="cta-row">
+    <a href="/neighborhoods" class="btn-primary">Browse neighborhoods</a>
+    <a href="/" class="btn-ghost">Back to PulseCities</a>
+  </div>
+</div></main>
+{_footer_html()}
+</body>
+</html>"""
+    return HTMLResponse(page, status_code=status_code)
+
+
 # ---------------------------------------------------------------------------
 # ZIP code evidence brief
 # ---------------------------------------------------------------------------
@@ -172,7 +217,8 @@ function fallback(url, done) {{
 @router.get("/brief/zip/{zip_code}", include_in_schema=False)
 def zip_brief(zip_code: str, db: Session = Depends(get_db)):
     if not (len(zip_code) == 5 and zip_code.isdigit()):
-        return Response(status_code=400, content="Invalid ZIP code")
+        return _error_page(400, "Invalid ZIP code",
+                           "Brief addresses look like /brief/zip/11221. Check the link and try again.")
 
     cached = _zip_brief_cache.get(zip_code)
     if cached and time.monotonic() < cached[1]:
@@ -188,7 +234,8 @@ def zip_brief(zip_code: str, db: Session = Depends(get_db)):
     """), {"zip": zip_code}).fetchone()
 
     if not row:
-        return Response(status_code=404, content="ZIP code not found")
+        return _error_page(404, "No brief for this ZIP code",
+                           "PulseCities tracks 178 residential NYC ZIP codes. This one is not among them.")
 
     name       = row.name or zip_code
     score      = float(row.score) if row.score is not None else None
@@ -258,10 +305,10 @@ def _build_zip_brief(
         i_col = _idx_color(float(idx) if idx is not None else 0.0)
         if key == "rs_unit_loss":
             cnt_s = "No annual loss recorded in current data"
-            c_col = "rgba(148,163,184,0.38)"
+            c_col = "rgba(147,161,173,0.38)"
         elif count == 0:
             cnt_s = "0"
-            c_col = "rgba(148,163,184,0.38)"
+            c_col = "rgba(147,161,173,0.38)"
         else:
             cnt_s = f"{count:,}"
             c_col = "var(--text)"
@@ -287,6 +334,7 @@ def _build_zip_brief(
 <meta property="og:url" content="{e(brief_url)}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
+{_PLAUSIBLE}
 {_FONTS}
 <style>{_CSS}</style>
 </head>
@@ -359,12 +407,14 @@ def _build_zip_brief(
 @router.get("/brief/operator/{slug}", include_in_schema=False)
 def operator_brief(slug: str, db: Session = Depends(get_db)):
     if not re.match(r"^[a-z0-9-]+$", slug):
-        return Response(status_code=400, content="Invalid slug")
+        return _error_page(400, "Invalid operator link",
+                           "Operator briefs look like /brief/operator/example-realty. Check the link and try again.")
 
     from api.routes.operators import OPERATOR_NOISE_ROOTS, OPERATOR_NOISE_SLUGS
 
     if slug in OPERATOR_NOISE_SLUGS:
-        return Response(status_code=404)
+        return _error_page(404, "Operator not found",
+                           "No operator cluster matches this link. It may have been merged or reclassified.")
 
     cached = _op_brief_cache.get(slug)
     if cached and time.monotonic() < cached[1]:
@@ -375,10 +425,12 @@ def operator_brief(slug: str, db: Session = Depends(get_db)):
         {"slug": slug},
     ).fetchone()
     if op_row is None:
-        return Response(status_code=404, content="Operator not found")
+        return _error_page(404, "Operator not found",
+                           "No operator cluster matches this link. It may have been merged or reclassified.")
 
     if op_row.operator_root in OPERATOR_NOISE_ROOTS:
-        return Response(status_code=404)
+        return _error_page(404, "Operator not found",
+                           "No operator cluster matches this link. It may have been merged or reclassified.")
 
     operator_id   = op_row.id
     operator_root = op_row.operator_root
@@ -601,6 +653,7 @@ def _build_operator_brief(
 <meta property="og:url" content="{e(brief_url)}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
+{_PLAUSIBLE}
 {_FONTS}
 <style>{_CSS}</style>
 </head>

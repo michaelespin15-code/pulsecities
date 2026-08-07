@@ -536,6 +536,10 @@ def get_operator_paper_trail(
 
     def field(v) -> str:
         s = "" if v is None else str(v)
+        # Spreadsheets execute cells starting with = + - @ as formulas, and
+        # party names are third-party ACRIS input. A leading quote defuses it.
+        if s[:1] in ("=", "+", "-", "@"):
+            s = "'" + s
         if any(c in s for c in (",", '"', "\n")):
             s = '"' + s.replace('"', '""') + '"'
         return s

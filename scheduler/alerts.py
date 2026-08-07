@@ -26,6 +26,7 @@ Failure contract:
 """
 import logging
 import os
+import time
 
 import requests
 
@@ -151,14 +152,29 @@ def send_ops_email(subject: str, body: str) -> None:
 
     try:
         import resend
-
-        resend.api_key = api_key
-        resend.Emails.send({
-            "from": "PulseCities Ops <alerts@pulsecities.com>",
-            "to": recipients,
-            "subject": f"[PulseCities] {subject}",
-            "text": body,
-        })
-        logger.info("ops-email sent to %s: %s", ", ".join(recipients), subject)
     except Exception as exc:
-        logger.warning("Failed to send ops email (non-fatal): %s", exc)
+        logger.warning("Failed to import resend (non-fatal): %s", exc)
+        return
+
+    resend.api_key = api_key
+    payload = {
+        "from": "PulseCities Ops <alerts@pulsecities.com>",
+        "to": recipients,
+        "subject": f"[PulseCities] {subject}",
+        "text": body,
+    }
+    # The Aug 5 outage email died on a single TLS error to api.resend.com, so
+    # the send gets a short retry ladder before giving up. This runs in cron
+    # jobs, not request handlers, so blocking sleeps are fine here.
+    last_exc: Exception | None = None
+    for delay in (0, 2, 8):
+        if delay:
+            time.sleep(delay)
+        try:
+            resend.Emails.send(payload)
+            logger.info("ops-email sent to %s: %s", ", ".join(recipients), subject)
+            return
+        except Exception as exc:
+            last_exc = exc
+            logger.warning("ops-email send attempt failed: %s", exc)
+    logger.warning("Failed to send ops email after 3 attempts (non-fatal): %s", last_exc)

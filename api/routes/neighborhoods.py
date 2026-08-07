@@ -403,7 +403,7 @@ def get_top_risk_neighborhoods(
         params,
     ).fetchall()
 
-    # Raw count column map: dominant signal key -> actual 30-day count column from CTE.
+    # Raw count column map: dominant signal key -> actual 365-day count column from CTE.
     # These are real event counts from source tables (Option B per RESEARCH.md).
     RAW_COUNT_COLS = {
         "llc_acquisitions": "raw_llc",
@@ -536,10 +536,13 @@ def get_top_movers(
             GROUP BY zip_code
         ),
         complaint_counts AS (
+            -- Same displacement-type filter as top-risk and scoring; unfiltered
+            -- counts overstated the complaint signal for movers.
             SELECT zip_code, COUNT(*) AS cnt
             FROM complaints_raw
             WHERE created_date >= CURRENT_DATE - INTERVAL '30 days'
               AND zip_code IS NOT NULL
+              AND complaint_type = ANY(:complaint_types)
             GROUP BY zip_code
         )
         SELECT
@@ -567,7 +570,8 @@ def get_top_movers(
           AND ({valid_zip})
         ORDER BY delta DESC
         LIMIT :limit
-    """), {"limit": min(capped * 3, 60)}).fetchall()
+    """), {"limit": min(capped * 3, 60),
+           "complaint_types": list(DISPLACEMENT_COMPLAINT_TYPES)}).fetchall()
 
     _RAW_COLS = {
         "llc_acquisitions": "raw_llc",

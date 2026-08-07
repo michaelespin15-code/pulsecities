@@ -34,18 +34,18 @@ _FONTS_MONO    = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
 
 _DEFAULT_IMAGE = Path(__file__).parent.parent.parent / "frontend" / "og-image.png"
 
-_BG     = (15, 23, 42)
-_ORANGE = (249, 115, 22)
-_WHITE  = (241, 245, 249)
-_MUTED  = (100, 116, 139)
+_BG     = (17, 24, 35)
+_ORANGE = (237, 99, 23)
+_WHITE  = (238, 242, 245)
+_MUTED  = (103, 118, 134)
 _DIM    = (20, 32, 56)
 
 
 # Canonical bands: Low 0-33, Moderate 34-66, High 67-84, Critical 85+.
 # Must match the map legend, panel, summaries, and digest.
 def _score_color(score: float) -> tuple:
-    if score >= 85: return (239, 68, 68)
-    if score >= 67: return (249, 115, 22)
+    if score >= 85: return (228, 72, 59)
+    if score >= 67: return (237, 99, 23)
     if score >= 34: return (192, 139, 45)
     return (62, 107, 84)
 
@@ -257,7 +257,7 @@ def _render_operator(
         x = cx + math.cos(a) * 150
         yy = cy + math.sin(a) * 130
         draw.line([(cx, cy), (x, yy)], fill=(55, 70, 95), width=2)
-        draw.ellipse([x - 11, yy - 11, x + 11, yy + 11], fill=(100, 116, 139))
+        draw.ellipse([x - 11, yy - 11, x + 11, yy + 11], fill=(103, 118, 134))
     draw.ellipse([cx - 22, cy - 22, cx + 22, cy + 22], fill=_ORANGE)
 
     draw.text((82, H - 50), "pulsecities.com", font=f_brand, fill=(60, 75, 100))
@@ -317,8 +317,10 @@ def _render_spark(scores: list[float]) -> bytes:
 
 @router.get("/og/spark/{zip_code}.png", include_in_schema=False)
 def spark_image(zip_code: str, db: Session = Depends(get_db)):
-    """Personal 90-day pulse trace for the weekly email. Never 404s: a ZIP
-    without history gets a flat placeholder so no client renders a broken box.
+    """Personal 90-day pulse trace for the weekly email. A tracked ZIP without
+    history gets a flat placeholder so no client renders a broken box; a ZIP we
+    don't track 404s before any render, since the disk cache is keyed by
+    (zip, day) and would otherwise grow with every probed five-digit string.
     The special key 'nyc' traces the citywide average for the citywide digest."""
     if zip_code != "nyc" and not (len(zip_code) == 5 and zip_code.isdigit()):
         png = _render_spark([])
@@ -332,6 +334,14 @@ def spark_image(zip_code: str, db: Session = Depends(get_db)):
     if cache_path.exists():
         return Response(content=cache_path.read_bytes(), media_type="image/png",
                         headers={"Cache-Control": "public, max-age=3600"})
+
+    if zip_code != "nyc":
+        known = db.execute(
+            text("SELECT 1 FROM neighborhoods WHERE zip_code = :zip"),
+            {"zip": zip_code},
+        ).fetchone()
+        if not known:
+            return Response(status_code=404)
 
     if zip_code == "nyc":
         rows = db.execute(text("""

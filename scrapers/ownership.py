@@ -34,6 +34,7 @@ from datetime import date, datetime, timezone
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from sqlalchemy.dialects.postgresql import insert
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from config.nyc import ACRIS_TRANSFER_DOC_TYPES, SOCRATA_BASE_URL
 from models.bbl import normalize_bbl
@@ -100,6 +101,7 @@ class OwnershipScraper(BaseScraper):
         # Override base_url: set per-dataset in helpers
         self._parties_url = f"{SOCRATA_BASE_URL}/{PARTIES_DATASET_ID}.json"
         self._legals_url = f"{SOCRATA_BASE_URL}/{LEGALS_DATASET_ID}.json"
+        self._consecutive_batch_failures = 0
 
     def _check_source_freshness(self, db) -> int | None:
         """
@@ -161,6 +163,7 @@ class OwnershipScraper(BaseScraper):
         where = self._build_master_where(db)
         logger.info("ACRIS master query: %s", where)
 
+        self._consecutive_batch_failures = 0
         records_processed = 0
         records_failed = 0
         new_watermark: datetime | None = None
@@ -230,6 +233,19 @@ class OwnershipScraper(BaseScraper):
             f"AND doc_type IN ({doc_types_sql})"
         )
 
+    def _note_batch_fetch_failure(self) -> None:
+        """A batch whose parties/legals fetch dies even after retries is
+        dropped while the watermark still advances past it, so those deeds are
+        never refetched. An isolated drop is tolerable; a streak means the
+        source or network is down, so the run must fail. That keeps the
+        watermark where it was, and the rerun refetches the lost batches."""
+        self._consecutive_batch_failures += 1
+        if self._consecutive_batch_failures > 3:
+            raise RuntimeError(
+                f"{self._consecutive_batch_failures} consecutive ACRIS batch "
+                "fetch failures; aborting run so the watermark does not advance"
+            )
+
     def _join_and_persist(
         self, db, master_batch: dict[str, dict]
     ) -> tuple[int, int]:
@@ -272,8 +288,9 @@ class OwnershipScraper(BaseScraper):
                     ):
                         grantors[did] = party_rec
         except Exception as e:
-            logger.warning("ACRIS parties fetch failed for batch: %s", e)
+            logger.warning("ACRIS parties fetch failed for batch after retries: %s", e)
             # Count entire batch as failed; can't score LLC acquisitions without party names
+            self._note_batch_fetch_failure()
             return 0, len(master_batch)
 
         # --- Fetch legals (BBLs) ---
@@ -290,7 +307,12 @@ class OwnershipScraper(BaseScraper):
                 if did and bbl:
                     legals[did] = bbl
         except Exception as e:
-            logger.warning("ACRIS legals fetch failed for batch: %s", e)
+            logger.warning("ACRIS legals fetch failed for batch after retries: %s", e)
+            # Without BBLs every row in the batch fails the join anyway.
+            self._note_batch_fetch_failure()
+            return 0, len(master_batch)
+
+        self._consecutive_batch_failures = 0
 
         def _clean(val: str | None) -> str | None:
             v = (val or "").strip()
@@ -346,6 +368,14 @@ class OwnershipScraper(BaseScraper):
 
         return processed, failed
 
+    # Same retry policy as BaseScraper._fetch_page. These two fetches went
+    # unprotected while master pages retried, and a single transient failure
+    # here costs a whole 400-deed batch.
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=30),
+        reraise=True,
+    )
     def _fetch_parties(self, id_list_sql: str) -> list[dict]:
         """Fetch buyer (party_type=2) and seller (party_type=1) rows for the given document_ids."""
         params = {
@@ -360,6 +390,11 @@ class OwnershipScraper(BaseScraper):
         resp.raise_for_status()
         return resp.json()
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=30),
+        reraise=True,
+    )
     def _fetch_legals(self, id_list_sql: str) -> list[dict]:
         """Fetch property (borough/block/lot) rows for the given document_ids."""
         params = {

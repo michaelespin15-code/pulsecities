@@ -14,7 +14,7 @@ import time
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -31,13 +31,49 @@ limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
 app = FastAPI(
     title="PulseCities API",
-    description="NYC displacement intelligence — powered by public data",
+    description="NYC displacement signals from public records",
     version="0.1.0",
     lifespan=lifespan,
 )
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Catch-all 500 page. Without it an unhandled DB error on an SSR route serves
+# Starlette's bare "Internal Server Error" text to a browser. Deliberately
+# self-contained: no fonts, no assets, nothing that can fail with it.
+_ERROR_HTML = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Something went wrong | PulseCities</title>
+<style>
+body{margin:0;background:#0f172a;color:#f1f5f9;font-family:system-ui,-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.6}
+main{padding:24px;max-width:420px}
+h1{font-size:1.25rem;font-weight:600;margin:0 0 10px}
+p{font-size:.9rem;color:#94a3b8;margin:0 0 24px}
+a{display:inline-block;background:#f97316;color:#fff;font-size:.85rem;font-weight:500;padding:10px 20px;border-radius:6px;text-decoration:none}
+</style>
+</head>
+<body>
+<main>
+<h1>Something went wrong on our end</h1>
+<p>The error is logged. Give it a minute and try again.</p>
+<a href="/">Back to PulseCities</a>
+</main>
+</body>
+</html>"""
+
+
+@app.exception_handler(Exception)
+async def unhandled_error(request, exc):
+    # Starlette re-raises after this handler runs, so the traceback still lands
+    # in the error log; this only shapes what the client sees.
+    if "text/html" in request.headers.get("accept", ""):
+        return HTMLResponse(_ERROR_HTML, status_code=500)
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 # Partner API keys (see /developers). The public tier is keyless; when a
 # request carries X-API-Key the key must resolve to an active row or the
@@ -123,6 +159,25 @@ def _resolve_api_key(raw_key: str) -> dict | None:
     _prune_key_cache()
     _API_KEY_CACHE[key_hash] = (info, time.monotonic() + _API_KEY_TTL)
     return info
+
+
+@app.middleware("http")
+async def head_as_get(request, call_next):
+    """Uptime bots and link checkers probe with HEAD, which FastAPI's GET-only
+    routes answer with 405. Serve the GET internally and drop the body.
+    Content-Length is kept as-is; HEAD advertises the body it suppresses."""
+    if request.method != "HEAD":
+        return await call_next(request)
+    request.scope["method"] = "GET"
+    response = await call_next(request)
+    # Drain the wrapped response so the downstream app task completes.
+    async for _ in response.body_iterator:
+        pass
+    return Response(
+        status_code=response.status_code,
+        headers=dict(response.headers),
+        background=response.background,
+    )
 
 
 @app.middleware("http")
