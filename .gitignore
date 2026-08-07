@@ -18,3 +18,13 @@ DONE.md
 audits/*.json
 .playwright-mcp/
 /*.jpeg
+
+# Nightly-generated runtime state. The working tree is production, so these
+# churn every cron run; tracking them means permanent dirt and a git checkout
+# away from rolling back live state.
+frontend/sitemap.xml
+frontend/llms.txt
+scripts/building_alerts_state.json
+scripts/eviction_flips_state.json
+scripts/eviction_flips_editions.json
+scripts/operator_network_analysis.json
