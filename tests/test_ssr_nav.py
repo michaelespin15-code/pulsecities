@@ -23,7 +23,7 @@ warnings.filterwarnings("ignore")
 client = TestClient(app)
 
 # Every SSR top nav must link the full hub set.
-HUB = {"/map", "/displacement", "/neighborhoods", "/operators",
+HUB = {"/map", "/displacement", "/neighborhoods", "/operators", "/evictions",
        "/flips", "/radar", "/this-week", "/methodology"}
 
 
@@ -75,7 +75,7 @@ def test_helper_appends_toggle_and_track():
 STATIC_HUB_ROUTES = [
     "/operators", "/neighborhoods", "/borough/brooklyn", "/flips",
     "/flips/editions", "/radar", "/this-week", "/displacement",
-    "/neighborhood/11216",
+    "/neighborhood/11216", "/evictions", "/who-owns-my-building",
 ]
 
 

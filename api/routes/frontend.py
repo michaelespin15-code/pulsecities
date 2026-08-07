@@ -240,6 +240,7 @@ _SSR_NAV_ITEMS = [
     ("/displacement", "displacement"),
     ("/neighborhoods", "neighborhoods"),
     ("/operators", "operators"),
+    ("/evictions", "evictions"),
     ("/flips", "flips"),
     ("/radar", "radar"),
     ("/this-week", "this_week"),
@@ -248,11 +249,11 @@ _SSR_NAV_ITEMS = [
 
 _SSR_NAV_LABELS = {
     "en": {"map": "Map", "displacement": "Displacement", "neighborhoods": "Neighborhoods",
-           "operators": "Operators", "flips": "Flips", "radar": "Radar",
-           "this_week": "This week", "methodology": "Methodology"},
+           "operators": "Operators", "evictions": "Evictions", "flips": "Flips",
+           "radar": "Radar", "this_week": "This week", "methodology": "Methodology"},
     "es": {"map": "Mapa", "displacement": "Desplazamiento", "neighborhoods": "Vecindarios",
-           "operators": "Operadores", "flips": "Flips", "radar": "Radar",
-           "this_week": "Esta semana", "methodology": "Metodología"},
+           "operators": "Operadores", "evictions": "Desalojos", "flips": "Flips",
+           "radar": "Radar", "this_week": "Esta semana", "methodology": "Metodología"},
 }
 
 _LANG_TOGGLE_BTN = (
@@ -941,7 +942,7 @@ def _build_neighborhood_page(
 body{{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}}
 a{{color:inherit;text-decoration:none}}
 nav{{border-bottom:1px solid var(--border);padding:12px 0}}
-.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+.nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
 @media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .nav-links a{{font-size:.78rem;color:var(--muted);margin-left:16px;transition:color .15s}}
 .nav-links a:hover{{color:var(--text)}}
@@ -1507,7 +1508,7 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str
 <meta name="twitter:title" content="{e(title)}">
 <meta name="twitter:description" content="{e(desc)}">
 <meta name="twitter:image" content="{og_image}">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23ed6317' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <script type="application/ld+json">{place_ld}</script>
 <script type="application/ld+json">{bc_ld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -1520,7 +1521,7 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 nav{border-bottom:1px solid var(--border);padding:12px 0}
-.nav-inner{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-inner{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 @media(max-width:600px){.nav-inner{flex-wrap:wrap;row-gap:4px}.nav-inner>div{flex-wrap:wrap;row-gap:4px}}
 .brand{font-size:.85rem;color:rgba(147,161,173,.55)}
 .container{max-width:720px;margin:0 auto;padding:28px 20px 72px}
@@ -2090,7 +2091,7 @@ def operators_directory(db: Session = Depends(get_db)):
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
-.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+.nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
 @media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
@@ -2306,7 +2307,7 @@ def neighborhoods_directory(lang: str = "en", db: Session = Depends(get_db)):
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
-.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+.nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
 @media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
@@ -2559,7 +2560,7 @@ def borough_page(slug: str, lang: str = "en", db: Session = Depends(get_db)):
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
-.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+.nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
 @media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
@@ -2751,7 +2752,7 @@ def flip_watch_page(db: Session = Depends(get_db)):
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
-.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+.nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
 @media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
@@ -3006,7 +3007,7 @@ def flips_editions_page(db: Session = Depends(get_db)):
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh;line-height:1.65}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
-.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+.nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
 @media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
@@ -3240,7 +3241,7 @@ def speculation_radar_page(db: Session = Depends(get_db)):
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
-.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+.nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
 @media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
@@ -3456,7 +3457,7 @@ def _stat_cells_html(counts) -> str:
 _WEEK_CSS = """*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}
 nav{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}
-.nav-inner{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-inner{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 @media(max-width:600px){.nav-inner{flex-wrap:wrap;row-gap:4px}.nav-inner>div{flex-wrap:wrap;row-gap:4px}}
 .container{max-width:860px;margin:0 auto;padding:32px 20px 80px}
 a{color:inherit;text-decoration:none}
@@ -3899,7 +3900,7 @@ def this_week_page(db: Session = Depends(get_db)):
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
-.nav-inner{{max-width:860px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+.nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
 @media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
@@ -4107,7 +4108,7 @@ def displacement_page(db: Session = Depends(get_db)):
     arc_items = ""
     for a in arcs[:6]:
         bbl = esc(str(a.get("bbl", "")))
-        addr = esc((a.get("address") or f"BBL {a.get('bbl')}").title())
+        addr = esc(_addr_title(a.get("address") or f"BBL {a.get('bbl')}"))
         zc = esc(str(a.get("zip_code") or ""))
         line = (
             f"Evicted {_my(a.get('eviction_date'))}. Bought {_my(a.get('buy_date'))} "
@@ -4223,7 +4224,7 @@ def displacement_page(db: Session = Depends(get_db)):
 <meta name="twitter:title" content="{esc(title)}">
 <meta name="twitter:description" content="{esc(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23ed6317' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap"></noscript>
@@ -4341,4 +4342,489 @@ footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) 
 
     page = head + css + body
     _displacement_cache = (page, time.monotonic() + _PAGE_TTL)
+    return HTMLResponse(page)
+
+
+# --- Evictions tracker: citywide marshal-eviction record ----------------------
+
+_evictions_cache: tuple[str, float] | None = None  # cleared on restart
+
+
+def _addr_title(a: str) -> str:
+    # str.title() capitalizes after digits ("233Rd St"); put ordinals back
+    return re.sub(r"(\d)(St|Nd|Rd|Th)\b", lambda m: m.group(1) + m.group(2).lower(),
+                  a.title())
+
+
+@router.get("/evictions", include_in_schema=False)
+def evictions_page(db: Session = Depends(get_db)):
+    """Citywide tracker for executed residential marshal evictions.
+
+    Search demand already exists for "{neighborhood} evictions" and nothing on
+    the site answered it directly; this page does, and it is the press-facing
+    home for the eviction record. Nightly data, Residential type only.
+    """
+    global _evictions_cache
+    if _evictions_cache and time.monotonic() < _evictions_cache[1]:
+        return HTMLResponse(_evictions_cache[0])
+
+    esc = _html.escape
+
+    counts = db.execute(text("""
+        SELECT count(*) FILTER (WHERE executed_date >= CURRENT_DATE - 7)   AS d7,
+               count(*) FILTER (WHERE executed_date >= CURRENT_DATE - 30)  AS d30,
+               count(*) FILTER (WHERE executed_date >= CURRENT_DATE - 365) AS d365,
+               max(executed_date) AS latest
+        FROM evictions_raw WHERE eviction_type = 'Residential'
+    """)).first()
+    d7, d30, d365 = int(counts.d7 or 0), int(counts.d30 or 0), int(counts.d365 or 0)
+    latest = counts.latest.isoformat() if counts.latest else None
+
+    recent = db.execute(text("""
+        SELECT * FROM (
+            SELECT DISTINCT ON (e.address, e.executed_date)
+                   e.bbl, e.address, e.zip_code, e.borough, e.executed_date, n.name
+            FROM evictions_raw e
+            LEFT JOIN neighborhoods n ON n.zip_code = e.zip_code
+            WHERE e.eviction_type = 'Residential'
+              AND e.executed_date IS NOT NULL
+              AND e.executed_date >= CURRENT_DATE - 30
+              AND e.address NOT ILIKE '%store located%'
+            ORDER BY e.address, e.executed_date
+        ) t ORDER BY executed_date DESC LIMIT 15
+    """)).fetchall()
+
+    top_zips = db.execute(text("""
+        SELECT e.zip_code, coalesce(n.name, e.zip_code) AS name,
+               count(*) FILTER (WHERE e.executed_date >= CURRENT_DATE - 30) AS d30,
+               count(*) AS d365
+        FROM evictions_raw e
+        LEFT JOIN neighborhoods n ON n.zip_code = e.zip_code
+        WHERE e.eviction_type = 'Residential'
+          AND e.executed_date >= CURRENT_DATE - 365
+          AND e.zip_code IS NOT NULL
+        GROUP BY 1, 2 ORDER BY d30 DESC, d365 DESC LIMIT 15
+    """)).fetchall()
+
+    boroughs = db.execute(text("""
+        SELECT initcap(borough) AS b, count(*) AS c
+        FROM evictions_raw
+        WHERE eviction_type = 'Residential'
+          AND executed_date >= CURRENT_DATE - 30 AND borough IS NOT NULL
+        GROUP BY 1 ORDER BY 2 DESC
+    """)).fetchall()
+
+    n_arcs = len(_approved_flip_arcs())
+
+    _MONTHS = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+    def _short_date(d) -> str:
+        if not d:
+            return ""
+        return f"{_MONTHS[d.month]} {d.day}, {d.year}"
+
+    recent_html = ""
+    for r in recent:
+        addr = esc(_addr_title(r.address or ""))
+        hood = esc(r.name or (r.borough or "").title())
+        when = _short_date(r.executed_date)
+        inner = (
+            f'<div class="ev-main"><div class="ev-addr">{addr}</div>'
+            f'<div class="ev-geo">{hood}, {esc(r.zip_code or "")}</div></div>'
+            f'<div class="ev-when">{when}</div>'
+        )
+        if r.bbl:
+            recent_html += (f'<li class="ev-row"><a href="/property/{esc(str(r.bbl))}">'
+                            f'{inner}</a></li>\n')
+        else:
+            recent_html += f'<li class="ev-row"><div class="ev-static">{inner}</div></li>\n'
+    if not recent_html:
+        recent_html = ('<li class="ev-row"><div class="ev-static">No executions published '
+                       'in the current window. Check back after the next nightly refresh</div></li>\n')
+
+    zip_rows = ""
+    for z in top_zips:
+        zip_rows += (
+            f'<tr><td><a href="/neighborhood/{esc(z.zip_code)}">{esc(z.name)}</a></td>'
+            f'<td class="num">{esc(z.zip_code)}</td>'
+            f'<td class="num">{int(z.d30)}</td><td class="num">{int(z.d365):,}</td></tr>\n'
+        )
+
+    borough_line = ", ".join(f"{esc(b.b)} {int(b.c)}" for b in boroughs)
+    through_line = f"Records through {_short_date(counts.latest)}" if latest else "Refreshed nightly"
+
+    title = "NYC evictions tracker: marshal evictions by neighborhood | PulseCities"
+    desc = (f"{d30} residential marshal evictions executed across NYC in the past 30 days, "
+            f"tracked nightly from public records, with the neighborhoods where they concentrate.")
+
+    faq = [
+        ("What is a marshal eviction?",
+         "A court-ordered warrant of eviction carried out by a city marshal or sheriff. "
+         "The record marks the day possession of the home was returned to the landlord, "
+         "which is the end of the court process, not the start."),
+        ("Is this list public record?",
+         "Yes. Every entry comes from NYC Open Data's evictions dataset, published by the "
+         "Department of Investigation from marshal and sheriff filings. PulseCities adds "
+         "the neighborhood context and refreshes nightly."),
+        ("Why is a recent eviction missing?",
+         "Agencies publish on a lag. Counts here reflect published records, which can "
+         "trail the event itself by days or weeks."),
+    ]
+    faq_html = "".join(
+        f'<div class="faq-item"><h3>{esc(q)}</h3><p>{esc(a)}</p></div>' for q, a in faq
+    )
+
+    jsonld = _jsonld({
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "Dataset",
+                "name": "NYC residential marshal evictions",
+                "description": desc,
+                "url": "https://pulsecities.com/evictions",
+                "license": "https://opendata.cityofnewyork.us/overview/",
+                "creator": {"@type": "Organization", "name": "PulseCities"},
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {"@type": "Question", "name": q,
+                     "acceptedAnswer": {"@type": "Answer", "text": a}}
+                    for q, a in faq
+                ],
+            },
+            _crumbs(("Home", "/"), ("Evictions", "/evictions")),
+        ],
+    })
+
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{esc(title)}</title>
+<meta name="description" content="{esc(desc)}">
+<link rel="canonical" href="https://pulsecities.com/evictions">
+<meta property="og:title" content="{esc(title)}">
+<meta property="og:description" content="{esc(desc)}">
+<meta property="og:url" content="https://pulsecities.com/evictions">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PulseCities">
+<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{esc(title)}">
+<meta name="twitter:description" content="{esc(desc)}">
+<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+<style>
+*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
+nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
+.nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
+.container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
+a{{color:inherit;text-decoration:none}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
+.footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
+@media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
+.eyebrow{{font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.18em;color:#ed6317;text-transform:uppercase;margin-bottom:10px}}
+h1{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;font-weight:600;margin-bottom:6px}}
+h2{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.05rem;font-weight:600;margin:34px 0 4px}}
+.sub{{font-size:0.82rem;color:#93a1ad;line-height:1.6;max-width:640px}}
+.stats{{display:flex;flex-wrap:wrap;gap:10px 40px;margin:26px 0 4px;padding:14px 2px;border-top:1px solid rgba(147,161,173,0.22);border-bottom:1px solid rgba(147,161,173,0.1)}}
+.stat{{display:flex;align-items:baseline;gap:8px}}
+.stat-num{{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:1.35rem;line-height:1;color:#eef2f5}}
+.stat-label{{font-size:0.68rem;color:#93a1ad;text-transform:uppercase;letter-spacing:0.06em;line-height:1.3}}
+.mono-note{{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(147,161,173,0.55);margin-top:6px}}
+.section-sub{{font-size:0.76rem;color:rgba(147,161,173,0.65);margin-bottom:10px}}
+.ev-list{{list-style:none;padding:0;margin:0}}
+.ev-row{{border-bottom:1px solid rgba(147,161,173,0.07)}}
+.ev-row a,.ev-static{{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:12px 0}}
+.ev-row a:hover .ev-addr{{color:#ed6317}}
+.ev-addr{{font-family:'JetBrains Mono',monospace;font-size:0.86rem;font-weight:500;color:#e4e8ec;letter-spacing:0.02em}}
+.ev-geo{{font-size:0.74rem;color:rgba(147,161,173,0.7);margin-top:2px}}
+.ev-when{{font-family:'JetBrains Mono',monospace;font-size:0.74rem;color:#93a1ad;flex-shrink:0}}
+.table-wrap{{overflow-x:auto}}
+table{{width:100%;border-collapse:collapse;font-size:0.82rem}}
+th{{text-align:left;font-family:'JetBrains Mono',monospace;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.08em;color:rgba(147,161,173,0.6);font-weight:500;padding:8px 12px 8px 0;border-bottom:1px solid rgba(147,161,173,0.22)}}
+td{{padding:9px 12px 9px 0;border-bottom:1px solid rgba(147,161,173,0.07)}}
+td a{{color:#6fb1d8}}
+td a:hover{{text-decoration:underline}}
+th.num,td.num{{text-align:right;font-family:'JetBrains Mono',monospace}}
+.faq-item h3{{font-size:0.88rem;font-weight:600;margin:18px 0 4px}}
+.faq-item p{{font-size:0.8rem;color:#93a1ad;line-height:1.6;max-width:640px}}
+.note{{font-size:0.72rem;color:rgba(147,161,173,0.45);margin-top:26px;line-height:1.6}}
+.note a,.cross a{{color:rgba(237,99,23,0.75)}}
+.cross{{font-size:0.82rem;color:#93a1ad;line-height:1.6;max-width:640px}}
+</style>
+</head>
+<body>
+{_ssr_nav("/evictions", toggle_html=_LANG_TOGGLE_BTN)}
+<div class="container">
+  <div style="margin-bottom:8px;">
+    <a href="/" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">&#8592; Home</a>
+  </div>
+  <div class="eyebrow">NYC public records</div>
+  <h1 id="ev-heading">NYC marshal evictions</h1>
+  <p class="sub" id="ev-desc">A marshal eviction is the end of the court process: a warrant executed and a household removed. Every entry below comes from the city's public eviction record and refreshes nightly.</p>
+  <div class="stats">
+    <div class="stat"><div class="stat-num">{d7}</div><div class="stat-label" id="ev-l7">past 7 days</div></div>
+    <div class="stat"><div class="stat-num">{d30:,}</div><div class="stat-label" id="ev-l30">past 30 days</div></div>
+    <div class="stat"><div class="stat-num">{d365:,}</div><div class="stat-label" id="ev-l365">past 12 months</div></div>
+  </div>
+  <p class="mono-note">{through_line}</p>
+
+  <h2 id="ev-recent-h">Most recent executions</h2>
+  <p class="section-sub" id="ev-recent-sub">Residential warrants executed in the past 30 days, newest first</p>
+  <ul class="ev-list">
+{recent_html}  </ul>
+
+  <h2 id="ev-where-h">Where evictions concentrate</h2>
+  <p class="section-sub" id="ev-where-sub">Ranked by executions in the past 30 days</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Neighborhood</th><th class="num">ZIP</th><th class="num">30 days</th><th class="num">12 months</th></tr></thead>
+    <tbody>
+{zip_rows}    </tbody>
+  </table>
+  </div>
+  <p class="mono-note">Past 30 days by borough: {borough_line}</p>
+
+  <h2 id="ev-after-h">After the eviction</h2>
+  <p class="cross">{n_arcs} buildings on the record were emptied by eviction, bought by an LLC, and resold at a markup within a year. <a href="/displacement">See the documented arcs &rarr;</a></p>
+  <p class="cross" style="margin-top:6px;">Checking a specific building? <a href="/who-owns-my-building">Who owns my building &rarr;</a></p>
+
+  <h2 id="ev-faq-h">About this record</h2>
+  {faq_html}
+
+  <p class="note" id="ev-note">An eviction record describes a court outcome, not wrongdoing by any party. Eviction cases begin as court filings months earlier; neighborhood pages show ZIP-level filing trends. <a href="/methodology">How PulseCities reads the record &rarr;</a></p>
+</div>
+{_FOOTER_HTML}
+<script>
+(function() {{
+  function lsGet(k) {{ try {{ return localStorage.getItem(k); }} catch (e) {{ return null; }} }}
+  function lsSet(k, v) {{ try {{ localStorage.setItem(k, v); }} catch (e) {{}} }}
+  var lang = lsGet('pc-lang') || 'en';
+  var en = {{}};
+  var es = {{
+    'ev-heading': 'Desalojos por alguacil en NYC',
+    'ev-desc': 'Un desalojo por alguacil es el final del proceso judicial: una orden ejecutada y un hogar desalojado. Cada entrada proviene del registro p\\u00fablico de desalojos de la ciudad y se actualiza cada noche.',
+    'ev-l7': '\\u00faltimos 7 d\\u00edas',
+    'ev-l30': '\\u00faltimos 30 d\\u00edas',
+    'ev-l365': '\\u00faltimos 12 meses',
+    'ev-recent-h': 'Ejecuciones m\\u00e1s recientes',
+    'ev-recent-sub': '\\u00d3rdenes residenciales ejecutadas en los \\u00faltimos 30 d\\u00edas, primero las m\\u00e1s nuevas',
+    'ev-where-h': 'D\\u00f3nde se concentran los desalojos',
+    'ev-where-sub': 'Ordenado por ejecuciones en los \\u00faltimos 30 d\\u00edas',
+    'ev-after-h': 'Despu\\u00e9s del desalojo',
+    'ev-faq-h': 'Sobre este registro'
+  }};
+  Object.keys(es).forEach(function(id) {{
+    var el = document.getElementById(id);
+    if (el) en[id] = el.textContent;
+  }});
+  function applyLang(l) {{
+    var t = l === 'es' ? es : en;
+    Object.keys(t).forEach(function(id) {{
+      var el = document.getElementById(id);
+      if (el) el.textContent = t[id];
+    }});
+    document.documentElement.lang = l;
+    var btn = document.getElementById('lang-toggle');
+    if (btn) btn.textContent = l === 'es' ? 'ES / EN' : 'EN / ES';
+  }}
+  if (lang === 'es') applyLang('es');
+  var btn = document.getElementById('lang-toggle');
+  if (btn) btn.addEventListener('click', function() {{
+    lang = lang === 'en' ? 'es' : 'en';
+    lsSet('pc-lang', lang);
+    applyLang(lang);
+  }});
+}})();
+</script>
+</body>
+</html>"""
+
+    _evictions_cache = (page, time.monotonic() + _PAGE_TTL)
+    return HTMLResponse(page)
+
+
+# --- Who owns my building: the search intent every tenant starts with ---------
+
+_who_owns_cache: tuple[str, float] | None = None
+_WHO_OWNS_TTL = 21600  # explainer copy plus a top-buyers list; 6h is plenty
+
+
+@router.get("/who-owns-my-building", include_in_schema=False)
+def who_owns_page(db: Session = Depends(get_db)):
+    """Landing page for the "who owns my building" search intent.
+
+    The GSC query log shows people arriving on bare addresses and LLC names;
+    this page meets the question directly and routes it into address search,
+    property pages, and operator profiles.
+    """
+    global _who_owns_cache
+    if _who_owns_cache and time.monotonic() < _who_owns_cache[1]:
+        return HTMLResponse(_who_owns_cache[0])
+
+    esc = _html.escape
+
+    buyers = db.execute(text("""
+        SELECT slug, display_name, total_acquisitions
+        FROM operators WHERE operator_class = 'operator'
+        ORDER BY total_acquisitions DESC NULLS LAST LIMIT 5
+    """)).fetchall()
+
+    buyers_html = "".join(
+        f'<li class="buyer-row"><a href="/operator/{esc(b.slug)}">'
+        f'<span class="buyer-name">{esc(b.display_name)}</span>'
+        f'<span class="buyer-count">{int(b.total_acquisitions or 0):,} acquisitions</span>'
+        f'</a></li>\n'
+        for b in buyers
+    )
+
+    title = "Who owns my building? Look up any NYC address | PulseCities"
+    desc = ("Look up any NYC address and see who took the deed, what they paid, and what "
+            "happened next: evictions, permits, and violations, all from public records.")
+
+    faq = [
+        ("How do I find out who owns a building in NYC?",
+         "Start with the deed. Every property sale in NYC is recorded in ACRIS, the city "
+         "register, and names the buyer. Search your address on PulseCities and the "
+         "property page shows the most recent deed holder along with the eviction, "
+         "permit, and violation record for the building."),
+        ("Why is the owner an LLC instead of a person?",
+         "Most investor purchases close under a limited liability company, often one LLC "
+         "per building, which keeps the people behind it off the deed. PulseCities "
+         "groups related LLCs into operator networks using shared names and filing "
+         "patterns, so one name leads to the wider portfolio."),
+        ("Is ownership information public?",
+         "Yes. Deeds, mortgages, permits, violations, and eviction records are all "
+         "public record. PulseCities reads the same city sources anyone can, and links "
+         "each claim to its document ID where one exists."),
+        ("Can I find out if my building is rent-stabilized?",
+         "DHCR publishes building-level counts of rent-stabilized units once a year. "
+         "Neighborhood pages track stabilized-unit loss as a signal; for a binding "
+         "answer on your own lease, request your rent history from DHCR directly."),
+    ]
+    faq_html = "".join(
+        f'<div class="faq-item"><h3>{esc(q)}</h3><p>{esc(a)}</p></div>' for q, a in faq
+    )
+
+    jsonld = _jsonld({
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {"@type": "Question", "name": q,
+                     "acceptedAnswer": {"@type": "Answer", "text": a}}
+                    for q, a in faq
+                ],
+            },
+            _crumbs(("Home", "/"), ("Who owns my building", "/who-owns-my-building")),
+        ],
+    })
+
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{esc(title)}</title>
+<meta name="description" content="{esc(desc)}">
+<link rel="canonical" href="https://pulsecities.com/who-owns-my-building">
+<meta property="og:title" content="{esc(title)}">
+<meta property="og:description" content="{esc(desc)}">
+<meta property="og:url" content="https://pulsecities.com/who-owns-my-building">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PulseCities">
+<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{esc(title)}">
+<meta name="twitter:description" content="{esc(desc)}">
+<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+<style>
+*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
+nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
+.nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
+.container{{max-width:720px;margin:0 auto;padding:32px 20px 80px}}
+a{{color:inherit;text-decoration:none}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
+.footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
+@media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
+.eyebrow{{font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.18em;color:#ed6317;text-transform:uppercase;margin-bottom:10px}}
+h1{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.7rem;font-weight:600;margin-bottom:8px}}
+h2{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.05rem;font-weight:600;margin:34px 0 6px}}
+p{{font-size:0.86rem;color:#93a1ad;line-height:1.65;max-width:640px}}
+p a,.body-link{{color:#6fb1d8}}
+p a:hover{{text-decoration:underline}}
+.search-row{{display:flex;gap:10px;margin:22px 0 6px;max-width:560px}}
+.search-row input{{flex:1;font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:#e4e8ec;background:#16202d;border:1px solid rgba(147,161,173,0.2);border-radius:8px;padding:12px 14px;min-width:0}}
+.search-row input::placeholder{{color:rgba(147,161,173,0.5)}}
+.search-row button{{font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;color:#111823;background:#ed6317;border:none;border-radius:8px;padding:12px 22px;cursor:pointer}}
+.search-row button:hover{{background:#f0854b}}
+.search-hint{{font-size:0.74rem;color:rgba(147,161,173,0.55);margin-bottom:4px}}
+.buyer-list{{list-style:none;padding:0;margin:8px 0 0}}
+.buyer-row{{border-bottom:1px solid rgba(147,161,173,0.07)}}
+.buyer-row a{{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:11px 0}}
+.buyer-name{{font-family:'JetBrains Mono',monospace;font-size:0.85rem;font-weight:500;color:#e4e8ec}}
+.buyer-row a:hover .buyer-name{{color:#ed6317}}
+.buyer-count{{font-family:'JetBrains Mono',monospace;font-size:0.74rem;color:#93a1ad;flex-shrink:0}}
+.faq-item h3{{font-size:0.9rem;font-weight:600;margin:20px 0 4px}}
+.faq-item p{{font-size:0.82rem}}
+.note{{font-size:0.72rem;color:rgba(147,161,173,0.45);margin-top:26px;line-height:1.6}}
+.note a{{color:rgba(237,99,23,0.75)}}
+</style>
+</head>
+<body>
+{_ssr_nav("", toggle_html="")}
+<div class="container">
+  <div style="margin-bottom:8px;">
+    <a href="/" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">&#8592; Home</a>
+  </div>
+  <div class="eyebrow">NYC ownership records</div>
+  <h1>Who owns my building?</h1>
+  <p>Every NYC property sale is a public record. Search your address and see who took the deed, what they paid, and what happened next in the building: evictions, permits, and violations.</p>
+  <form class="search-row" action="/map" method="get">
+    <input type="text" name="q" placeholder="Enter an address, ZIP, or neighborhood" aria-label="Search an address, ZIP, or neighborhood">
+    <button type="submit">Search</button>
+  </form>
+  <p class="search-hint">Free, no signup. Public records only</p>
+
+  <h2>Start with the deed</h2>
+  <p>Deeds are recorded in ACRIS, the city register run by the Department of Finance. The most recent deed names the current owner of record and the price paid. A PulseCities property page puts that deed next to the building's eviction, permit, and violation history, with ACRIS document IDs you can verify yourself. <a href="/property/4109220015">See a worked example &rarr;</a></p>
+
+  <h2>When the owner is an LLC</h2>
+  <p>Most investor purchases close under a limited liability company, often a fresh LLC per building, which keeps the people behind the purchase off the deed. PulseCities groups related LLCs into operator networks using shared naming and filing patterns, so one LLC on your deed can lead to the whole portfolio. <a href="/operators">Browse the operator directory &rarr;</a></p>
+
+  <h2>Most active buyers on record</h2>
+  <p class="search-hint" style="margin-top:2px;">Operator networks ranked by recorded LLC acquisitions</p>
+  <ul class="buyer-list">
+{buyers_html}  </ul>
+
+  <h2>What to check after the owner</h2>
+  <p>The name on the deed matters less than what the record shows around it. On any property or neighborhood page, look at executed evictions, renovation permits filed soon after a purchase, open HPD violations, and rent-stabilized unit counts over time. Every neighborhood page has a watch card that emails you when the record moves. <a href="/evictions">Citywide eviction tracker &rarr;</a></p>
+
+  <h2>Other official registries</h2>
+  <p>For the deed itself, <a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBL" target="_blank" rel="noopener noreferrer">search ACRIS directly</a>. Multiple-dwelling landlords must also register a managing agent with HPD, searchable on <a href="https://hpdonline.nyc.gov/hpdonline/" target="_blank" rel="noopener noreferrer">HPD Online</a>. PulseCities indexes the deed record and the enforcement record; HPD registration can name a person where the deed names a shell.</p>
+
+  <h2>Common questions</h2>
+  {faq_html}
+
+  <p class="note">Ownership records describe documents, not conduct. Nothing here is a claim of wrongdoing by any owner. <a href="/methodology">How PulseCities reads the record &rarr;</a></p>
+</div>
+{_FOOTER_HTML}
+</body>
+</html>"""
+
+    _who_owns_cache = (page, time.monotonic() + _WHO_OWNS_TTL)
     return HTMLResponse(page)

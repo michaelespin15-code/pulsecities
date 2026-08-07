@@ -108,7 +108,7 @@
     }
     </script>
 
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23ed6317' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
     <script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>
     <script>
@@ -597,7 +597,7 @@
             llc_recent: 'LLC transfers recorded in the last 90 days',
             llc_windowed: 'LLC transfers in the 90 days ending',
             data_current: 'Data current through', other_current: 'Other records current to',
-            status: 'Status',
+            status: 'Status', who_owns: 'Who owns my building?',
             acquisitions: 'acquisitions', llc_entities: 'LLC entities',
             sig_flips: 'buy-then-renovate flips flagged',
             sig_clusters: 'multi-building buying clusters',
@@ -638,7 +638,7 @@
             llc_recent: 'transferencias LLC registradas en los últimos 90 días',
             llc_windowed: 'transferencias LLC en los 90 días que terminan el',
             data_current: 'Datos actualizados hasta el', other_current: 'Otros registros actualizados al',
-            status: 'Estado',
+            status: 'Estado', who_owns: '¿Quién es el dueño de mi edificio?',
             acquisitions: 'adquisiciones', llc_entities: 'entidades LLC',
             sig_flips: 'reventas de compra y renovación detectadas',
             sig_clusters: 'grupos de compra de varios edificios',
@@ -695,7 +695,8 @@
         }
         document.getElementById('hero-meta').innerHTML =
             lines.map(esc).join('<br>') +
-            ' <a class="meta-link" href="/status">' + esc(t('status')) + ' →</a>';
+            ' <a class="meta-link" href="/status">' + esc(t('status')) + ' →</a>' +
+            ' <a class="meta-link" href="/who-owns-my-building">' + esc(t('who_owns')) + ' →</a>';
     }
 
     function renderRankings() {
