@@ -9,7 +9,6 @@
 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
-    <link rel="stylesheet" href="/tailwind.min.css">
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap"></noscript>
 
@@ -21,33 +20,33 @@
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'DM Sans', sans-serif; background: #0f172a; color: #f1f5f9; min-height: 100vh; overflow-x: hidden; }
+        body { font-family: 'DM Sans', sans-serif; background: #111823; color: #eef2f5; min-height: 100vh; overflow-x: hidden; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        .accent { color: #f97316; }
-        .panel { background: #1e293b; border: 1px solid rgba(148,163,184,0.1); border-radius: 8px; }
-        .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; color: #f97316; font-weight: 400; }
-        .stat-label { font-size: 0.7rem; color: rgba(148,163,184,0.85); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
-        .tag-strong { background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.35); color: #f97316; font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; }
-        .tag-possible { background: rgba(148,163,184,0.08); border: 1px solid rgba(148,163,184,0.2); color: rgba(148,163,184,0.7); font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; }
-        .signal-chip { display: inline-flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; background: rgba(15,23,42,0.6); border: 1px solid rgba(148,163,184,0.18); border-radius: 4px; padding: 2px 7px; color: rgba(148,163,184,0.9); }
-        .llc-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; background: rgba(15,23,42,0.5); border: 1px solid rgba(148,163,184,0.1); border-radius: 4px; padding: 3px 8px; color: rgba(148,163,184,0.8); }
+        .accent { color: #ed6317; }
+        .panel { background: #1b2534; border: 1px solid rgba(147,161,173,0.1); border-radius: 8px; }
+        .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; color: #ed6317; font-weight: 400; }
+        .stat-label { font-size: 0.7rem; color: rgba(147,161,173,0.85); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+        .tag-strong { background: rgba(237,99,23,0.15); border: 1px solid rgba(237,99,23,0.35); color: #ed6317; font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; }
+        .tag-possible { background: rgba(147,161,173,0.08); border: 1px solid rgba(147,161,173,0.2); color: rgba(147,161,173,0.7); font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; }
+        .signal-chip { display: inline-flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; background: rgba(17,24,35,0.6); border: 1px solid rgba(147,161,173,0.18); border-radius: 4px; padding: 2px 7px; color: rgba(147,161,173,0.9); }
+        .llc-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; background: rgba(17,24,35,0.5); border: 1px solid rgba(147,161,173,0.1); border-radius: 4px; padding: 3px 8px; color: rgba(147,161,173,0.8); }
         details > summary { list-style: none; cursor: pointer; }
         details > summary::-webkit-details-marker { display: none; }
         .chevron { transition: transform 0.2s; display: inline-block; }
         details[open] .chevron { transform: rotate(180deg); }
         a { color: inherit; text-decoration: none; }
-        a:hover { color: #f97316; }
+        a:hover { color: #ed6317; }
         #loading-state { display: none; }
         #content { display: block; }
         .stat-card { padding: 14px 16px; }
         .page-wrap { max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; }
         .desktop-table-wrap { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .mobile-card-list { display: none; }
-        .mob-row { padding: 12px 16px; border-top: 1px solid rgba(148,163,184,0.06); }
+        .mob-row { padding: 12px 16px; border-top: 1px solid rgba(147,161,173,0.06); }
         .mob-row:first-child { border-top: none; }
-        .mob-addr { font-size: 0.85rem; color: rgba(241,245,249,0.88); line-height: 1.4; word-break: break-word; }
-        .mob-meta { font-size: 0.75rem; color: #94a3b8; margin-top: 3px; line-height: 1.45; }
-        .mob-buyer { font-size: 0.78rem; color: #94a3b8; margin-top: 3px; line-height: 1.4; word-break: break-word; }
+        .mob-addr { font-size: 0.85rem; color: rgba(238,242,245,0.88); line-height: 1.4; word-break: break-word; }
+        .mob-meta { font-size: 0.75rem; color: #93a1ad; margin-top: 3px; line-height: 1.45; }
+        .mob-buyer { font-size: 0.78rem; color: #93a1ad; margin-top: 3px; line-height: 1.4; word-break: break-word; }
         .mob-score { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; }
         @media (max-width: 640px) {
             .stat-card { padding: 10px 14px; }
@@ -57,30 +56,35 @@
             .desktop-table-wrap { display: none !important; }
             .mobile-card-list { display: block; }
         }
-        .skip-link { position:absolute;top:-48px;left:0;z-index:9999;background:#1e293b;color:#38bdf8;padding:8px 16px;font-size:14px;text-decoration:none;border-radius:0 0 4px 0;transition:top 0.1s; }
+        .skip-link { position:absolute;top:-48px;left:0;z-index:9999;background:#1b2534;color:#6fb1d8;padding:8px 16px;font-size:14px;text-decoration:none;border-radius:0 0 4px 0;transition:top 0.1s; }
         .skip-link:focus { top:0; }
+        .nav-links a { font-size: 0.78rem; color: #93a1ad; text-decoration: none; }
+        .nav-links a:hover, .nav-links a:focus-visible { color: #e4e8ec; }
+        .op-footer-links a { color: #93a1ad; text-decoration: none; }
+        .op-footer-links a:hover, .op-footer-links a:focus-visible { color: #e4e8ec; }
+        #network-svg circle[tabindex]:focus-visible { outline: 2px solid #6fb1d8; outline-offset: 2px; }
     </style>
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to content</a>
     <!-- Nav -->
-    <nav style="border-bottom: 1px solid rgba(148,163,184,0.08); padding: 12px 0;">
+    <nav style="border-bottom: 1px solid rgba(147,161,173,0.08); padding: 12px 0;">
         <div style="max-width: 860px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between;">
-            <a href="/" style="display: flex; align-items: center; gap: 8px; color: #f1f5f9;">
-                <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span style="font-size: 0.85rem; color: rgba(241,245,249,0.8);">PulseCities</span>
+            <a href="/" style="display: flex; align-items: center; gap: 8px; color: #eef2f5;">
+                <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#ed6317" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span style="font-size: 0.85rem; color: rgba(238,242,245,0.8);">PulseCities</span>
             </a>
-            <div style="display:flex;align-items:center;gap:16px;">
-                <a href="/map" style="font-size:0.78rem;color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Map</a>
-                <a href="/operators" style="font-size:0.78rem;color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Operators</a>
-                <a href="/methodology" style="font-size:0.78rem;color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Methodology</a>
-                <button id="lang-toggle" aria-label="Switch to Spanish" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#94a3b8;background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
+            <div class="nav-links" style="display:flex;align-items:center;gap:16px;">
+                <a href="/map">Map</a>
+                <a href="/operators">Operators</a>
+                <a href="/methodology">Methodology</a>
+                <button id="lang-toggle" aria-label="Switch to Spanish" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#93a1ad;background:none;border:none;cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>
             </div>
         </div>
     </nav>
 
-    <div id="main-content" class="page-wrap">
-        <a href="/" style="font-size: 0.75rem; color: rgba(148,163,184,0.7); display: inline-block; margin-bottom: 20px;" data-i18n="back_map">← Home</a>
+    <main id="main-content" class="page-wrap">
+        <a href="/" style="font-size: 0.75rem; color: rgba(147,161,173,0.7); display: inline-block; margin-bottom: 20px;" data-i18n="back_map">← Home</a>
 
 
         <!-- Content -->
@@ -90,39 +94,39 @@
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                     <div>
                         <h1 id="op-root" class="mono accent" style="font-size: 1.8rem; font-weight: 400; letter-spacing: 0.04em;"></h1>
-                        <div id="op-summary" style="font-size: 0.82rem; color: #94a3b8; margin-top: 5px;"></div>
-                        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;" data-i18n="op_descriptor">Public-record activity linked to this operator.</div>
-                        <div id="why-matters" style="font-size: 0.8rem; color: #94a3b8; margin-top: 3px; margin-bottom: 4px; line-height: 1.5;"></div>
+                        <div id="op-summary" style="font-size: 0.82rem; color: #93a1ad; margin-top: 5px;"></div>
+                        <div style="font-size: 0.75rem; color: #93a1ad; margin-top: 4px;" data-i18n="op_descriptor">Public-record activity linked to this operator.</div>
+                        <div id="why-matters" style="font-size: 0.8rem; color: #93a1ad; margin-top: 3px; margin-bottom: 4px; line-height: 1.5;"></div>
                         <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
                             <span class="signal-chip" data-i18n="chip_window">18-month window</span>
                             <span class="signal-chip" data-i18n="chip_public_records">public records</span>
                         </div>
                         <div style="margin-top: 10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                            <button id="copy-link-btn" data-i18n="copy_link" style="font-size:0.72rem;color:rgba(148,163,184,0.55);background:rgba(148,163,184,0.06);border:1px solid rgba(148,163,184,0.15);border-radius:5px;padding:4px 10px;cursor:pointer;min-height:28px;font-family:'DM Sans',sans-serif;">Copy link</button>
+                            <button id="copy-link-btn" data-i18n="copy_link" style="font-size:0.72rem;color:rgba(147,161,173,0.55);background:rgba(147,161,173,0.06);border:1px solid rgba(147,161,173,0.15);border-radius:5px;padding:4px 10px;cursor:pointer;min-height:28px;font-family:'DM Sans',sans-serif;">Copy link</button>
                             <span id="copy-link-announce" aria-live="polite" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;"></span>
-                            <a id="brief-link-btn" href="#" style="display:none;font-size:0.72rem;color:rgba(148,163,184,0.55);background:rgba(148,163,184,0.06);border:1px solid rgba(148,163,184,0.15);border-radius:5px;padding:4px 10px;min-height:28px;line-height:20px;text-decoration:none;">View evidence brief</a>
-                            <button id="follow-btn" data-i18n="follow_operator" aria-expanded="false" aria-controls="follow-form" style="font-size:0.72rem;color:rgba(249,115,22,0.8);background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.25);border-radius:5px;padding:4px 10px;cursor:pointer;min-height:28px;font-family:'DM Sans',sans-serif;">Follow</button>
+                            <a id="brief-link-btn" href="#" style="display:none;font-size:0.72rem;color:rgba(147,161,173,0.55);background:rgba(147,161,173,0.06);border:1px solid rgba(147,161,173,0.15);border-radius:5px;padding:4px 10px;min-height:28px;line-height:20px;text-decoration:none;">View evidence brief</a>
+                            <button id="follow-btn" data-i18n="follow_operator" aria-expanded="false" aria-controls="follow-form" style="font-size:0.72rem;color:rgba(237,99,23,0.8);background:rgba(237,99,23,0.06);border:1px solid rgba(237,99,23,0.25);border-radius:5px;padding:4px 10px;cursor:pointer;min-height:28px;font-family:'DM Sans',sans-serif;">Follow</button>
                         </div>
                         <div id="follow-form" style="display:none;margin-top:10px;max-width:420px;">
-                            <p style="font-size:0.75rem;color:#94a3b8;margin-bottom:8px;line-height:1.5;" data-i18n="follow_prompt">Get an email when this operator records new acquisitions. Quiet weeks send nothing.</p>
+                            <p style="font-size:0.75rem;color:#93a1ad;margin-bottom:8px;line-height:1.5;" data-i18n="follow_prompt">Get an email when this operator records new acquisitions. Quiet weeks send nothing.</p>
                             <div style="display:flex;gap:8px;">
-                                <input id="follow-email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" style="flex:1;min-width:0;font-size:0.78rem;color:#e2e8f0;background:rgba(30,41,59,0.9);border:1px solid rgba(148,163,184,0.2);border-radius:5px;padding:7px 10px;font-family:'DM Sans',sans-serif;">
-                                <button id="follow-submit" data-i18n="follow_submit" style="font-size:0.75rem;font-weight:600;color:#1a1a2e;background:#f97316;border:1px solid #f97316;border-radius:5px;padding:7px 14px;cursor:pointer;font-family:'DM Sans',sans-serif;">Follow</button>
+                                <input id="follow-email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" aria-label="Email address" style="flex:1;min-width:0;font-size:0.78rem;color:#e4e8ec;background:rgba(27,37,52,0.9);border:1px solid rgba(147,161,173,0.2);border-radius:5px;padding:7px 10px;font-family:'DM Sans',sans-serif;">
+                                <button id="follow-submit" data-i18n="follow_submit" style="font-size:0.75rem;font-weight:600;color:#1a1a2e;background:#ed6317;border:1px solid #ed6317;border-radius:5px;padding:7px 14px;cursor:pointer;font-family:'DM Sans',sans-serif;">Follow</button>
                             </div>
                             <p id="follow-status" aria-live="polite" style="display:none;font-size:0.72rem;margin-top:8px;"></p>
                         </div>
                     </div>
-                    <div style="font-size: 0.72rem; color: rgba(148,163,184,0.55); font-family: 'JetBrains Mono', monospace; padding-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline;">
+                    <div style="font-size: 0.72rem; color: rgba(147,161,173,0.55); font-family: 'JetBrains Mono', monospace; padding-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline;">
                         <span data-i18n="source_acris">Source: NYC ACRIS</span>
-                        <a id="paper-trail-link" href="#" style="display:none; color:#38bdf8; text-decoration:none;" data-i18n="download_csv" onclick="plausible('Paper Trail Download')">Download the paper trail (CSV)</a>
+                        <a id="paper-trail-link" href="#" style="display:none; color:#6fb1d8; text-decoration:none;" data-i18n="download_csv" onclick="plausible('Paper Trail Download')">Download the paper trail (CSV)</a>
                     </div>
                 </div>
             </div>
 
             <!-- Analyst note (operator-specific, shown only when note exists) — above stats -->
-            <div id="pattern-note" style="display:none; margin-bottom:20px; padding:12px 16px; background:rgba(249,115,22,0.05); border:1px solid rgba(249,115,22,0.12); border-radius:8px;">
-                <div style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; color:rgba(249,115,22,0.5); margin-bottom:6px; font-family:'JetBrains Mono',monospace;" data-i18n="pattern_note_header">Analyst note</div>
-                <div id="pattern-note-text" style="font-size:0.8rem; color:#94a3b8; line-height:1.55;"></div>
+            <div id="pattern-note" style="display:none; margin-bottom:20px; padding:12px 16px; background:rgba(237,99,23,0.05); border:1px solid rgba(237,99,23,0.12); border-radius:8px;">
+                <div style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; color:rgba(237,99,23,0.5); margin-bottom:6px; font-family:'JetBrains Mono',monospace;" data-i18n="pattern_note_header">Analyst note</div>
+                <div id="pattern-note-text" style="font-size:0.8rem; color:#93a1ad; line-height:1.55;"></div>
             </div>
 
             <!-- Stats row -->
@@ -154,32 +158,32 @@
             </div>
 
             <!-- What this shows -->
-            <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:6px;line-height:1.65;" data-i18n="what_this_shows">Properties grouped by LLC naming patterns in public deed records. Scores reflect neighborhood displacement risk, not a claim of wrongdoing by any individual actor.</p>
-            <p style="font-size:0.78rem;color:#94a3b8;margin-bottom:20px;line-height:1.55;" data-i18n="network_disclaimer">Derived from public deed records; indicates ownership structure, not legal conclusions.</p>
+            <p style="font-size:0.82rem;color:#93a1ad;margin-bottom:6px;line-height:1.65;" data-i18n="what_this_shows">Properties grouped by LLC naming patterns in public deed records. Scores reflect neighborhood displacement risk, not a claim of wrongdoing by any individual actor.</p>
+            <p style="font-size:0.78rem;color:#93a1ad;margin-bottom:20px;line-height:1.55;" data-i18n="network_disclaimer">Derived from public deed records; indicates ownership structure, not legal conclusions.</p>
 
             <!-- LLC network graph -->
             <div id="network-section" style="display:none; margin-bottom: 24px;">
-                <div style="font-size: 0.78rem; font-weight: 600; color: rgba(148,163,184,0.75); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;" data-i18n="network_header">
+                <div style="font-size: 0.78rem; font-weight: 600; color: rgba(147,161,173,0.75); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;" data-i18n="network_header">
                     LLC Network
                 </div>
-                <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 12px; line-height: 1.5;" data-i18n="network_caveat">
+                <div style="font-size: 0.75rem; color: #93a1ad; margin-bottom: 12px; line-height: 1.5;" data-i18n="network_caveat">
                     Each LLC this operator acquired through, connected to the ZIP codes where it bought. Node size tracks recorded acquisitions. ZIP color shows current displacement pressure.
                 </div>
-                <div id="network-wrap" style="position:relative; background:rgba(30,41,59,0.35); border:1px solid rgba(148,163,184,0.12); border-radius:10px; overflow:hidden;">
+                <div id="network-wrap" style="position:relative; background:rgba(27,37,52,0.35); border:1px solid rgba(147,161,173,0.12); border-radius:10px; overflow:hidden;">
                     <svg id="network-svg" style="display:block; width:100%; height:auto;" role="img" aria-label="Network graph of LLC entities and ZIP codes for this operator"></svg>
-                    <div id="network-tip" style="display:none; position:absolute; pointer-events:none; background:#1e293b; border:1px solid rgba(148,163,184,0.25); border-radius:6px; padding:7px 10px; font-size:0.72rem; color:#e2e8f0; line-height:1.45; max-width:230px; z-index:5; box-shadow:0 4px 16px rgba(0,0,0,0.4);"></div>
+                    <div id="network-tip" style="display:none; position:absolute; pointer-events:none; background:#1b2534; border:1px solid rgba(147,161,173,0.25); border-radius:6px; padding:7px 10px; font-size:0.72rem; color:#e4e8ec; line-height:1.45; max-width:230px; z-index:5; box-shadow:0 4px 16px rgba(0,0,0,0.4);"></div>
                 </div>
-                <div style="font-size: 0.7rem; color: rgba(148,163,184,0.45); margin-top: 8px;" data-i18n="network_hint">
+                <div style="font-size: 0.7rem; color: rgba(147,161,173,0.45); margin-top: 8px;" data-i18n="network_hint">
                     Select a ZIP to open it on the map. Select an LLC to search its records.
                 </div>
             </div>
 
             <!-- Related Operators -->
             <div id="related-section" style="display: none; margin-bottom: 16px;">
-                <div style="font-size: 0.78rem; font-weight: 600; color: rgba(148,163,184,0.75); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;" data-i18n="related_operators">
+                <div style="font-size: 0.78rem; font-weight: 600; color: rgba(147,161,173,0.75); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;" data-i18n="related_operators">
                     Related Operators
                 </div>
-                <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 14px; line-height: 1.5;" data-i18n="related_caveat">
+                <div style="font-size: 0.75rem; color: #93a1ad; margin-bottom: 14px; line-height: 1.5;" data-i18n="related_caveat">
                     These clusters are not the same operator. The signals below are evidence of a possible relationship: shared properties, name patterns, or geographic overlap. Each operator remains as the public records show them.
                 </div>
                 <div id="related-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
@@ -187,23 +191,23 @@
 
             <!-- Eviction-then-buy callout -->
             <div id="eviction-wrap" style="display:none; margin-bottom: 16px;">
-                <div style="padding: 12px 16px; background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px;">
-                    <div style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(239,68,68,0.55); margin-bottom: 4px; font-family: 'JetBrains Mono', monospace;" data-i18n="eviction_flagged">Eviction filings before acquisition</div>
-                    <div style="font-size: 0.75rem; color: rgba(148,163,184,0.45); margin-bottom: 10px; line-height: 1.5;" data-i18n="eviction_flagged_note">Properties below had eviction filings recorded before a later acquisition in public records. Sourced from ACRIS and NYC housing court data.</div>
+                <div style="padding: 12px 16px; background: rgba(228,72,59,0.05); border: 1px solid rgba(228,72,59,0.2); border-radius: 8px;">
+                    <div style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(228,72,59,0.55); margin-bottom: 4px; font-family: 'JetBrains Mono', monospace;" data-i18n="eviction_flagged">Eviction filings before acquisition</div>
+                    <div style="font-size: 0.75rem; color: rgba(147,161,173,0.45); margin-bottom: 10px; line-height: 1.5;" data-i18n="eviction_flagged_note">Properties below had eviction filings recorded before a later acquisition in public records. Sourced from ACRIS and NYC housing court data.</div>
                     <div id="eviction-rows" style="display: flex; flex-direction: column; gap: 6px;"></div>
                 </div>
             </div>
 
             <!-- Portfolio table -->
             <div class="panel" style="margin-bottom: 16px;">
-                <div style="padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(148,163,184,0.07);">
-                    <span style="font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8);" data-i18n="portfolio_header">High-risk properties in this portfolio</span>
-                    <span id="portfolio-count" style="font-size: 0.72rem; color: rgba(148,163,184,0.6); font-family: 'JetBrains Mono', monospace;"></span>
+                <div style="padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(147,161,173,0.07);">
+                    <span style="font-size: 0.82rem; font-weight: 600; color: rgba(147,161,173,0.8);" data-i18n="portfolio_header">High-risk properties in this portfolio</span>
+                    <span id="portfolio-count" style="font-size: 0.72rem; color: rgba(147,161,173,0.6); font-family: 'JetBrains Mono', monospace;"></span>
                 </div>
                 <div class="desktop-table-wrap" id="portfolio-table-wrap">
                     <table style="width: 100%; min-width: 620px; border-collapse: collapse; font-size: 0.78rem;">
                         <thead>
-                            <tr style="color: rgba(148,163,184,0.4); font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.06em;">
+                            <tr style="color: rgba(147,161,173,0.4); font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.06em;">
                                 <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_address">Address</th>
                                 <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_zip">ZIP</th>
                                 <th scope="col" style="padding: 8px 16px; text-align: center; font-weight: 400;" data-i18n="portfolio_score">Score</th>
@@ -216,10 +220,10 @@
                     </table>
                 </div>
                 <div id="portfolio-mobile-list" class="mobile-card-list"></div>
-                <div id="portfolio-empty" style="display:none; padding:24px 16px; font-size:0.8rem; color:rgba(148,163,184,0.35); text-align:center;" data-i18n="portfolio_empty">No high-risk properties found.</div>
-                <div id="portfolio-toggle-wrap" style="display:none; padding:10px 16px; border-top:1px solid rgba(148,163,184,0.06);">
+                <div id="portfolio-empty" style="display:none; padding:24px 16px; font-size:0.8rem; color:#93a1ad; text-align:center;" data-i18n="portfolio_empty">No high-risk properties found.</div>
+                <div id="portfolio-toggle-wrap" style="display:none; padding:10px 16px; border-top:1px solid rgba(147,161,173,0.06);">
                     <button id="portfolio-toggle-btn" type="button" onclick="togglePortfolio()"
-                        style="font-size:0.75rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 0;min-height:32px;">
+                        style="font-size:0.75rem;color:rgba(147,161,173,0.5);background:none;border:none;cursor:pointer;padding:4px 0;min-height:32px;">
                         Show all properties
                     </button>
                 </div>
@@ -227,13 +231,13 @@
 
             <!-- Recent acquisitions -->
             <div class="panel">
-                <div style="padding: 14px 16px 10px; font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8); border-bottom: 1px solid rgba(148,163,184,0.07);">
-                    <span data-i18n="recent_acq_header">Recent Acquisitions</span> <span style="font-size: 0.72rem; font-weight: 400; color: rgba(148,163,184,0.35);" data-i18n="recent_acq_window">(last 18 months, up to 50)</span>
+                <div style="padding: 14px 16px 10px; font-size: 0.82rem; font-weight: 600; color: rgba(147,161,173,0.8); border-bottom: 1px solid rgba(147,161,173,0.07);">
+                    <span data-i18n="recent_acq_header">Recent Acquisitions</span> <span style="font-size: 0.72rem; font-weight: 400; color: rgba(147,161,173,0.35);" data-i18n="recent_acq_window">(last 18 months, up to 50)</span>
                 </div>
                 <div id="acq-table" class="desktop-table-wrap">
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.78rem;">
                         <thead>
-                            <tr style="color: rgba(148,163,184,0.4); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em;">
+                            <tr style="color: rgba(147,161,173,0.4); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em;">
                                 <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_address">Address</th>
                                 <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_zip">Zip</th>
                                 <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_buyer">Buyer LLC</th>
@@ -244,24 +248,24 @@
                         <tbody id="acq-rows"></tbody>
                     </table>
                 </div>
-                <div id="acq-empty" style="display: none; padding: 24px 16px; font-size: 0.8rem; color: rgba(148,163,184,0.35); text-align: center;" data-i18n="acq_empty">
+                <div id="acq-empty" style="display: none; padding: 24px 16px; font-size: 0.8rem; color: #93a1ad; text-align: center;" data-i18n="acq_empty">
                     No acquisitions found in the 18-month window.
                 </div>
-                <div id="acq-amount-note" style="display:none; padding:10px 16px 0; font-size:0.74rem; color:rgba(148,163,184,0.35); line-height:1.5;"></div>
+                <div id="acq-amount-note" style="display:none; padding:10px 16px 0; font-size:0.74rem; color:rgba(147,161,173,0.35); line-height:1.5;"></div>
                 <div id="acq-mobile-list" class="mobile-card-list"></div>
-                <div id="acq-toggle-wrap" style="display:none; padding:10px 16px; border-top:1px solid rgba(148,163,184,0.06);">
+                <div id="acq-toggle-wrap" style="display:none; padding:10px 16px; border-top:1px solid rgba(147,161,173,0.06);">
                     <button id="acq-toggle-btn" type="button" onclick="toggleAcquisitions()"
-                        style="font-size:0.75rem;color:rgba(148,163,184,0.5);background:none;border:none;cursor:pointer;padding:4px 0;min-height:32px;">
+                        style="font-size:0.75rem;color:rgba(147,161,173,0.5);background:none;border:none;cursor:pointer;padding:4px 0;min-height:32px;">
                     </button>
                 </div>
-                <div style="padding:10px 16px 12px; font-size:0.68rem; color:rgba(148,163,184,0.4); line-height:1.5;">
-                    <span data-i18n="acq_verify_note">Each row shows its ACRIS document ID under the date. Verify any record at</span> <a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBL" target="_blank" rel="noopener noreferrer" style="color:rgba(249,115,22,0.65);">a836-acris.nyc.gov</a>.
+                <div style="padding:10px 16px 12px; font-size:0.68rem; color:rgba(147,161,173,0.4); line-height:1.5;">
+                    <span data-i18n="acq_verify_note">Each row shows its ACRIS document ID under the date. Verify any record at</span> <a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBL" target="_blank" rel="noopener noreferrer" style="color:rgba(237,99,23,0.65);">a836-acris.nyc.gov</a>.
                 </div>
             </div>
 
             <!-- Acquisition pace chart (below deal log) -->
             <div class="panel" id="timeline-wrap" style="display:none; margin-top: 16px; padding: 14px 16px;">
-                <div style="font-size: 0.7rem; font-weight: 600; color: rgba(148,163,184,0.5); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;" data-i18n="acq_pace">Acquisition Pace</div>
+                <div style="font-size: 0.7rem; font-weight: 600; color: rgba(147,161,173,0.5); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;" data-i18n="acq_pace">Acquisition Pace</div>
                 <div style="position: relative; height: 72px;">
                     <canvas id="timeline-chart"></canvas>
                 </div>
@@ -271,26 +275,32 @@
             <div class="panel" style="margin-top: 16px;">
                 <details>
                     <summary style="padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;">
-                        <span style="font-size: 0.82rem; font-weight: 600; color: rgba(148,163,184,0.8);" data-i18n="llc_entities_header">LLC Entities</span>
+                        <span style="font-size: 0.82rem; font-weight: 600; color: rgba(147,161,173,0.8);" data-i18n="llc_entities_header">LLC Entities</span>
                         <span style="display: flex; align-items: center; gap: 8px;">
-                            <span id="llc-count-badge" class="mono" style="font-size: 0.72rem; color: rgba(148,163,184,0.4);"></span>
-                            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.4)" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
+                            <span id="llc-count-badge" class="mono" style="font-size: 0.72rem; color: rgba(147,161,173,0.4);"></span>
+                            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(147,161,173,0.4)" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
                         </span>
                     </summary>
                     <div id="llc-list" style="padding: 0 16px 16px; display: flex; flex-wrap: wrap; gap: 6px;"></div>
                 </details>
             </div>
 
-            <div style="margin-top: 28px; padding-top: 14px; border-top: 1px solid rgba(148,163,184,0.07);">
-                <p id="last-updated" style="font-size: 0.72rem; color: rgba(148,163,184,0.55); font-family: 'JetBrains Mono', monospace;"></p>
-                <p style="font-size: 0.75rem; color: rgba(148,163,184,0.45); margin-top: 6px;"><a id="explore-ops-link" href="/operators" style="color: rgba(148,163,184,0.45);" data-i18n="explore_ops">Explore other NYC operator networks</a></p>
+            <div style="margin-top: 28px; padding-top: 14px; border-top: 1px solid rgba(147,161,173,0.07);">
+                <p id="last-updated" style="font-size: 0.72rem; color: rgba(147,161,173,0.55); font-family: 'JetBrains Mono', monospace;"></p>
+                <p style="font-size: 0.75rem; color: rgba(147,161,173,0.45); margin-top: 6px;"><a id="explore-ops-link" href="/operators" style="color: rgba(147,161,173,0.45);" data-i18n="explore_ops">Explore other NYC operator networks</a></p>
             </div>
 
         </div><!-- /content -->
-    </div>
+    </main>
 
     <script>
-    let _lang            = localStorage.getItem('pc-lang') || 'en';
+    // Safari with "Block all cookies" throws on any localStorage access, which
+    // would kill this whole script at parse-run time. Route every read/write
+    // through these so the page just falls back to English instead.
+    function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+    function lsSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+    let _lang            = lsGet('pc-lang') || 'en';
     let _cachedData      = null, _cachedZipNames = null;
     let _lastUpdatedDate = null;
     let _chartJsLoaded = false, _timelineChart = null;
@@ -331,10 +341,10 @@
     }
 
     function _scoreColor(score) {
-        if (score >= 65) return { bg: 'rgba(239,68,68,0.14)', text: '#ef4444' };
-        if (score >= 45) return { bg: 'rgba(249,115,22,0.14)', text: '#f97316' };
+        if (score >= 65) return { bg: 'rgba(228,72,59,0.14)', text: '#e4483b' };
+        if (score >= 45) return { bg: 'rgba(237,99,23,0.14)', text: '#ed6317' };
         if (score >= 25) return { bg: 'rgba(234,179,8,0.14)',  text: '#eab308' };
-        return { bg: 'rgba(100,116,139,0.14)', text: 'rgba(148,163,184,0.55)' };
+        return { bg: 'rgba(103,118,134,0.14)', text: 'rgba(147,161,173,0.55)' };
     }
 
     function fmtScore(v) {
@@ -671,7 +681,7 @@
 
         function showStatus(key, ok) {
             status.textContent = t(key);
-            status.style.color = ok ? '#4ade80' : '#f87171';
+            status.style.color = ok ? '#6fa287' : '#ec6a5e';
             status.style.display = 'block';
         }
 
@@ -821,7 +831,7 @@
             const ln = document.createElementNS(NS, 'line');
             ln.setAttribute('x1', a.x); ln.setAttribute('y1', a.y);
             ln.setAttribute('x2', b.x); ln.setAttribute('y2', b.y);
-            ln.setAttribute('stroke', 'rgba(148,163,184,' + Math.min(0.1 + e.weight * 0.05, 0.35) + ')');
+            ln.setAttribute('stroke', 'rgba(147,161,173,' + Math.min(0.1 + e.weight * 0.05, 0.35) + ')');
             ln.setAttribute('stroke-width', Math.min(0.7 + e.weight * 0.35, 2.6));
             svg.appendChild(ln);
         });
@@ -835,15 +845,15 @@
             const c = document.createElementNS(NS, 'circle');
             c.setAttribute('cx', nd.x); c.setAttribute('cy', nd.y); c.setAttribute('r', r);
             if (nd.type === 'operator') {
-                c.setAttribute('fill', '#f97316');
+                c.setAttribute('fill', '#ed6317');
                 c.setAttribute('fill-opacity', '0.9');
             } else if (nd.type === 'llc') {
-                c.setAttribute('fill', 'rgba(148,163,184,0.18)');
-                c.setAttribute('stroke', 'rgba(148,163,184,0.6)');
+                c.setAttribute('fill', 'rgba(147,161,173,0.18)');
+                c.setAttribute('stroke', 'rgba(147,161,173,0.6)');
                 c.setAttribute('stroke-width', '1');
                 c.style.cursor = 'pointer';
             } else {
-                c.setAttribute('fill', nd.color || '#64748b');
+                c.setAttribute('fill', nd.color || '#677686');
                 c.setAttribute('fill-opacity', '0.85');
                 c.style.cursor = 'pointer';
             }
@@ -866,15 +876,19 @@
                 tip.style.top  = (evt.clientY - box.top + 14) + 'px';
             });
             c.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
-            if (nd.type === 'zip') {
-                c.addEventListener('click', () => {
+            if (nd.type === 'zip' || nd.type === 'llc') {
+                const open = () => {
                     plausible('Network Graph Node Click');
                     window.location.href = '/map?q=' + encodeURIComponent(nd.label);
-                });
-            } else if (nd.type === 'llc') {
-                c.addEventListener('click', () => {
-                    plausible('Network Graph Node Click');
-                    window.location.href = '/map?q=' + encodeURIComponent(nd.label);
+                };
+                c.addEventListener('click', open);
+                // These circles behave as links to the map search, so give
+                // them focus and Enter/Space activation like any other link.
+                c.setAttribute('tabindex', '0');
+                c.setAttribute('role', 'link');
+                c.setAttribute('aria-label', nd.label + (nd.type === 'zip' && nd.name ? ', ' + nd.name : ''));
+                c.addEventListener('keydown', evt => {
+                    if (evt.key === 'Enter' || evt.key === ' ') { evt.preventDefault(); open(); }
                 });
             }
             svg.appendChild(c);
@@ -891,15 +905,15 @@
                 tx.setAttribute('font-family', "'JetBrains Mono', monospace");
                 if (nd.type === 'operator') {
                     tx.setAttribute('font-size', '12');
-                    tx.setAttribute('fill', '#f97316');
+                    tx.setAttribute('fill', '#ed6317');
                     tx.textContent = nd.label.toUpperCase();
                 } else if (nd.type === 'zip') {
                     tx.setAttribute('font-size', '10');
-                    tx.setAttribute('fill', 'rgba(226,232,240,0.75)');
+                    tx.setAttribute('fill', 'rgba(228,232,236,0.75)');
                     tx.textContent = nd.label;
                 } else {
                     tx.setAttribute('font-size', '9');
-                    tx.setAttribute('fill', 'rgba(148,163,184,0.55)');
+                    tx.setAttribute('fill', 'rgba(147,161,173,0.55)');
                     // Short form: drop the shared root token so labels stay readable
                     tx.textContent = nd.label.replace(/\s+LLC\.?$/i, '');
                 }
@@ -914,7 +928,6 @@
         zipNames        = _cachedZipNames;
 
         document.getElementById('content').style.display       = 'block';
-        plausible('Operator Profile View');
         document.getElementById('op-root').textContent         = data.operator_root;
         const _briefBtn = document.getElementById('brief-link-btn');
         if (_briefBtn && data.slug) {
@@ -971,12 +984,12 @@
                 const acq = acqByBbl[e.bbl] || {};
                 const addr = addrOrLot(acq.address, e.bbl);
                 const row = document.createElement('div');
-                row.style.cssText = 'font-size:0.8rem;color:rgba(241,245,249,0.8);line-height:1.5;';
+                row.style.cssText = 'font-size:0.8rem;color:rgba(238,242,245,0.8);line-height:1.5;';
                 row.innerHTML =
-                    '<span class="mono" style="color:rgba(239,68,68,0.8);">' + esc(addr) + '</span>' +
+                    '<span class="mono" style="color:rgba(228,72,59,0.8);">' + esc(addr) + '</span>' +
                     ': ' + t('evicted_filed') + ' <span class="mono">' + esc(e.eviction_date || '') + '</span>' +
                     ', then acquired <span class="mono">' + esc(e.acquisition_date || '') + '</span>' +
-                    ' by <span class="mono" style="color:rgba(148,163,184,0.65);">' + esc(e.acquiring_entity || '') + '</span>';
+                    ' by <span class="mono" style="color:rgba(147,161,173,0.65);">' + esc(e.acquiring_entity || '') + '</span>';
                 evContainer.appendChild(row);
             });
         }
@@ -1009,20 +1022,20 @@
             const sc = _scoreColor(p.displacement_score);
             const tr = document.createElement('tr');
             if (i >= 15) { tr.className = 'portfolio-extra'; tr.style.display = 'none'; }
-            tr.style.borderTop = '1px solid rgba(148,163,184,0.05)';
-            if (i % 2 === 0) tr.style.background = 'rgba(15,23,42,0.18)';
+            tr.style.borderTop = '1px solid rgba(147,161,173,0.05)';
+            if (i % 2 === 0) tr.style.background = 'rgba(17,24,35,0.18)';
             tr.innerHTML =
-                '<td style="padding:7px 16px;color:rgba(241,245,249,0.85);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><a href="/property/' + encodeURIComponent(p.bbl) + '" style="color:inherit;text-decoration:none;">' + esc(addrOrLot(acq.address, p.bbl)) + '</a></td>' +
-                '<td class="mono" style="padding:7px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;white-space:nowrap;">' +
+                '<td style="padding:7px 16px;color:rgba(238,242,245,0.85);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><a href="/property/' + encodeURIComponent(p.bbl) + '" style="color:inherit;text-decoration:none;">' + esc(addrOrLot(acq.address, p.bbl)) + '</a></td>' +
+                '<td class="mono" style="padding:7px 16px;color:rgba(147,161,173,0.75);font-size:0.72rem;white-space:nowrap;">' +
                     esc(p.zip_code || '') +
-                    (p.zip_code && zipNames[p.zip_code] ? '<br><span style="font-size:0.63rem;color:rgba(148,163,184,0.5);font-family:inherit;">' + esc(zipNames[p.zip_code]) + '</span>' : '') +
+                    (p.zip_code && zipNames[p.zip_code] ? '<br><span style="font-size:0.63rem;color:rgba(147,161,173,0.5);font-family:inherit;">' + esc(zipNames[p.zip_code]) + '</span>' : '') +
                 '</td>' +
                 '<td style="padding:7px 16px;text-align:center;">' +
                     '<span class="mono" style="font-size:0.73rem;background:' + sc.bg + ';color:' + sc.text + ';padding:2px 7px;border-radius:4px;">' + fmtScore(p.displacement_score) + '</span>' +
                 '</td>' +
-                '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (bcCount > 0 ? '#f97316' : 'rgba(148,163,184,0.35)') + ';">' + (bcCount > 0 ? bcCount : t('na')) + '</td>' +
-                '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (rs ? '#94a3b8' : 'rgba(148,163,184,0.35)') + ';">' + (rs ? rs.rs_unit_count : t('na')) + '</td>' +
-                '<td class="mono" style="padding:7px 16px;font-size:0.7rem;color:rgba(148,163,184,0.65);white-space:nowrap;">' + (acq.doc_date ? new Intl.DateTimeFormat('en-US', {year:'numeric',month:'short',timeZone:'UTC'}).format(new Date(acq.doc_date)) : t('na')) + '</td>';
+                '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (bcCount > 0 ? '#ed6317' : 'rgba(147,161,173,0.35)') + ';">' + (bcCount > 0 ? bcCount : t('na')) + '</td>' +
+                '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (rs ? '#93a1ad' : 'rgba(147,161,173,0.35)') + ';">' + (rs ? rs.rs_unit_count : t('na')) + '</td>' +
+                '<td class="mono" style="padding:7px 16px;font-size:0.7rem;color:rgba(147,161,173,0.65);white-space:nowrap;">' + (acq.doc_date ? new Intl.DateTimeFormat('en-US', {year:'numeric',month:'short',timeZone:'UTC'}).format(new Date(acq.doc_date)) : t('na')) + '</td>';
             portfolioTbody.appendChild(tr);
 
             const mRow = formatMobilePropertyRow(p, acq, rs, viol, zipNames);
@@ -1083,16 +1096,16 @@
             acqMobileList.innerHTML = '';
             rows.forEach((r, i) => {
                 const tr = document.createElement('tr');
-                tr.style.borderTop = '1px solid rgba(148,163,184,0.06)';
-                if (i % 2 === 0) tr.style.background = 'rgba(15,23,42,0.2)';
+                tr.style.borderTop = '1px solid rgba(147,161,173,0.06)';
+                if (i % 2 === 0) tr.style.background = 'rgba(17,24,35,0.2)';
                 if (i >= ACQ_CAP) { tr.classList.add('acq-extra'); tr.style.display = 'none'; }
                 tr.innerHTML =
-                    '<td style="padding:8px 16px;color:rgba(241,245,249,0.85);">' + esc(addrOrLot(r.address, r.bbl) || t('na')) + '</td>' +
-                    '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;line-height:1.3;">' + esc(r.zip_code || '') + (r.zip_code && zipNames[r.zip_code] ? '<br><span style="font-size:0.65rem;color:rgba(148,163,184,0.55);font-family:inherit;">' + esc(zipNames[r.zip_code]) + '</span>' : '') + '</td>' +
-                    '<td class="mono" style="padding:8px 16px;color:#94a3b8;font-size:0.7rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(r.buyer_name || '') + '</td>' +
-                    '<td class="mono" style="padding:8px 16px;color:rgba(148,163,184,0.75);font-size:0.72rem;white-space:nowrap;">' + esc(r.doc_date || '') +
-                        (r.document_id ? '<br><span style="font-size:0.62rem;color:rgba(148,163,184,0.45);">' + esc(r.document_id) + '</span>' : '') + '</td>' +
-                    '<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:#94a3b8;font-size:0.72rem;white-space:nowrap;">' + fmtCurrency(r.doc_amount) + '</td>';
+                    '<td style="padding:8px 16px;color:rgba(238,242,245,0.85);">' + esc(addrOrLot(r.address, r.bbl) || t('na')) + '</td>' +
+                    '<td class="mono" style="padding:8px 16px;color:rgba(147,161,173,0.75);font-size:0.72rem;line-height:1.3;">' + esc(r.zip_code || '') + (r.zip_code && zipNames[r.zip_code] ? '<br><span style="font-size:0.65rem;color:rgba(147,161,173,0.55);font-family:inherit;">' + esc(zipNames[r.zip_code]) + '</span>' : '') + '</td>' +
+                    '<td class="mono" style="padding:8px 16px;color:#93a1ad;font-size:0.7rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(r.buyer_name || '') + '</td>' +
+                    '<td class="mono" style="padding:8px 16px;color:rgba(147,161,173,0.75);font-size:0.72rem;white-space:nowrap;">' + esc(r.doc_date || '') +
+                        (r.document_id ? '<br><span style="font-size:0.62rem;color:rgba(147,161,173,0.45);">' + esc(r.document_id) + '</span>' : '') + '</td>' +
+                    '<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:#93a1ad;font-size:0.72rem;white-space:nowrap;">' + fmtCurrency(r.doc_amount) + '</td>';
                 tbody.appendChild(tr);
 
                 const mRow = formatMobileAcquisitionRow(r, zipNames, allAmountsNull);
@@ -1151,8 +1164,8 @@
                     labels: months.map(m => m.year_month.slice(5)),
                     datasets: [{
                         data: months.map(m => m.count),
-                        backgroundColor: 'rgba(249,115,22,0.35)',
-                        borderColor: 'rgba(249,115,22,0.65)',
+                        backgroundColor: 'rgba(237,99,23,0.35)',
+                        borderColor: 'rgba(237,99,23,0.65)',
                         borderWidth: 1,
                         borderRadius: 2,
                     }]
@@ -1174,7 +1187,7 @@
                         }
                     },
                     scales: {
-                        x: { grid: { display: false }, ticks: { font: { size: 10, family: 'JetBrains Mono' }, color: 'rgba(148,163,184,0.45)' } },
+                        x: { grid: { display: false }, ticks: { font: { size: 10, family: 'JetBrains Mono' }, color: 'rgba(147,161,173,0.45)' } },
                         y: { display: false, min: 0 }
                     }
                 }
@@ -1198,7 +1211,7 @@
                 '<a href="/operator/' + esc(rel.operator_root) + '" class="mono accent" style="font-size:1rem;letter-spacing:0.04em;">' + esc(rel.operator_root) + '</a>' +
                 '<span class="' + (isStrong ? 'tag-strong' : 'tag-possible') + '">' + esc(relTag) + '</span>' +
             '</div>' +
-            '<div class="mono" style="font-size:0.72rem;color:rgba(148,163,184,0.4);">' +
+            '<div class="mono" style="font-size:0.72rem;color:rgba(147,161,173,0.4);">' +
                 t('confidence').replace('{pct}', pct) +
             '</div>';
         card.appendChild(header);
@@ -1217,13 +1230,13 @@
                 const count = (sig.shared_bbls || []).length;
                 if (count > 0) {
                     const detail = document.createElement('div');
-                    detail.style.cssText = 'width:100%;font-size:0.7rem;color:rgba(148,163,184,0.7);padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
+                    detail.style.cssText = 'width:100%;font-size:0.7rem;color:rgba(147,161,173,0.7);padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
                     detail.textContent = count + ' shared BBL' + (count !== 1 ? 's' : '') + '. See shared properties below.';
                     sigRow.appendChild(detail);
                 }
             } else if (sig.detail) {
                 const detail = document.createElement('div');
-                detail.style.cssText = 'width:100%;font-size:0.7rem;color:rgba(148,163,184,0.7);padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
+                detail.style.cssText = 'width:100%;font-size:0.7rem;color:rgba(147,161,173,0.7);padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
                 detail.textContent = sig.detail;
                 sigRow.appendChild(detail);
             }
@@ -1232,14 +1245,14 @@
 
         if (rel.shared_properties && rel.shared_properties.length > 0) {
             const sharedDiv = document.createElement('div');
-            sharedDiv.style.cssText = 'border-top:1px solid rgba(148,163,184,0.07);padding:10px 16px;';
+            sharedDiv.style.cssText = 'border-top:1px solid rgba(147,161,173,0.07);padding:10px 16px;';
             const label = document.createElement('div');
-            label.style.cssText  = 'font-size:0.68rem;color:rgba(148,163,184,0.65);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;';
+            label.style.cssText  = 'font-size:0.68rem;color:rgba(147,161,173,0.65);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;';
             label.textContent    = t('shared_properties');
             sharedDiv.appendChild(label);
             rel.shared_properties.forEach(prop => {
                 const row = document.createElement('div');
-                row.style.cssText = 'font-size:0.75rem;color:#94a3b8;padding:2px 0;font-family:"JetBrains Mono",monospace;';
+                row.style.cssText = 'font-size:0.75rem;color:#93a1ad;padding:2px 0;font-family:"JetBrains Mono",monospace;';
                 const zipLabel    = prop.zip_code
                     ? ', ' + prop.zip_code + (_cachedZipNames[prop.zip_code] ? ' ' + _cachedZipNames[prop.zip_code] : '')
                     : '';
@@ -1251,16 +1264,16 @@
 
         if (rel.llc_entities && rel.llc_entities.length > 0) {
             const entityDiv = document.createElement('div');
-            entityDiv.style.cssText = 'border-top:1px solid rgba(148,163,184,0.07);';
+            entityDiv.style.cssText = 'border-top:1px solid rgba(147,161,173,0.07);';
             const det  = document.createElement('details');
             det.open   = true;
             const summ = document.createElement('summary');
             summ.style.cssText = 'padding:10px 16px;display:flex;align-items:center;justify-content:space-between;';
             summ.innerHTML =
-                '<span style="font-size:0.72rem;color:rgba(148,163,184,0.65);">' +
+                '<span style="font-size:0.72rem;color:rgba(147,161,173,0.65);">' +
                     t('llc_in_cluster').replace('{name}', esc(rel.operator_root)) +
                 '</span>' +
-                '<svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.3)" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>';
+                '<svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(147,161,173,0.3)" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>';
             det.appendChild(summ);
             const pills = document.createElement('div');
             pills.style.cssText = 'padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:5px;';
@@ -1273,7 +1286,7 @@
             if (rel.llc_entities.length > 30) {
                 const more = document.createElement('span');
                 more.className   = 'llc-pill';
-                more.style.color = 'rgba(148,163,184,0.35)';
+                more.style.color = 'rgba(147,161,173,0.35)';
                 more.textContent = t('more').replace('{n}', rel.llc_entities.length - 30);
                 pills.appendChild(more);
             }
@@ -1283,8 +1296,8 @@
         }
 
         const footer = document.createElement('div');
-        footer.style.cssText = 'border-top:1px solid rgba(148,163,184,0.07);padding:10px 16px;text-align:right;';
-        footer.innerHTML = '<a href="/operator/' + esc(rel.operator_root) + '" style="font-size:0.75rem;color:rgba(249,115,22,0.7);">' +
+        footer.style.cssText = 'border-top:1px solid rgba(147,161,173,0.07);padding:10px 16px;text-align:right;';
+        footer.innerHTML = '<a href="/operator/' + esc(rel.operator_root) + '" style="font-size:0.75rem;color:rgba(237,99,23,0.7);">' +
             t('view_profile').replace('{name}', esc(rel.operator_root)) + '</a>';
         footer.querySelector('a').addEventListener('click', () => plausible('Operator Network Click'));
         card.appendChild(footer);
@@ -1371,6 +1384,9 @@
                 if (data.slug) {
                     document.getElementById('canonical-url').href = 'https://pulsecities.com/operator/' + encodeURIComponent(data.slug);
                 }
+                // Fire the view event here rather than in render(), which the
+                // language toggle re-runs and would double-count.
+                plausible('Operator Profile View');
                 try {
                     render(data, zipNames);
                 } catch (e) {
@@ -1398,7 +1414,7 @@
     langToggle.setAttribute('aria-label', _lang === 'es' ? 'Switch to English' : 'Switch to Spanish');
     langToggle.addEventListener('click', () => {
         _lang = _lang === 'en' ? 'es' : 'en';
-        localStorage.setItem('pc-lang', _lang);
+        lsSet('pc-lang', _lang);
         langToggle.textContent = _lang === 'es' ? 'ES / EN' : 'EN / ES';
         langToggle.setAttribute('aria-label', _lang === 'es' ? 'Switch to English' : 'Switch to Spanish');
         applyTranslations();
@@ -1443,19 +1459,19 @@
 
     applyTranslations();
     </script>
-    <footer style="text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom) + 24px);border-top:1px solid rgba(148,163,184,0.08);margin-top:32px;font-size:12px;color:#64748b;font-family:'DM Sans',sans-serif;">
-        <div style="font-size:11px;color:#64748b;margin-bottom:8px;">Built by Michael Espin</div>
+    <footer style="text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686;font-family:'DM Sans',sans-serif;">
+        <div style="font-size:11px;color:#677686;margin-bottom:8px;">Built by Michael Espin</div>
         <div class="op-footer-links" style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;align-items:center;">
-            <a href="/" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Home</a>
-            <a href="/neighborhoods" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Neighborhoods</a>
-            <a href="/displacement" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Displacement</a>
-            <a href="/methodology" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Methodology</a>
-            <a href="/about" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">About</a>
-            <a href="/press" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Press</a>
-            <a href="/status" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Status</a>
-            <a href="mailto:nycdisplacement@gmail.com" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">Contact</a>
-            <a href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" style="color:#64748b;text-decoration:none;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">LinkedIn</a>
-            <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="color:#64748b;text-decoration:none;display:inline-flex;align-items:center;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+            <a href="/">Home</a>
+            <a href="/neighborhoods">Neighborhoods</a>
+            <a href="/displacement">Displacement</a>
+            <a href="/methodology">Methodology</a>
+            <a href="/about">About</a>
+            <a href="/press">Press</a>
+            <a href="/status">Status</a>
+            <a href="mailto:nycdisplacement@gmail.com">Contact</a>
+            <a href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="display:inline-flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
         </div>
     </footer>
 </body>

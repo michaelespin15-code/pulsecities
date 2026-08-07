@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="color-scheme: dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Press and Verified Findings | PulseCities</title>
     <meta name="description" content="Verified NYC displacement findings with ACRIS document IDs, method notes, and data currency. Built for reporters covering housing.">
     <link rel="canonical" href="https://pulsecities.com/press">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23f97316' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Press and Verified Findings | PulseCities">
     <meta property="og:description" content="Verified NYC displacement findings with ACRIS document IDs, method notes, and data currency. Built for reporters covering housing.">
     <meta property="og:url" content="https://pulsecities.com/press">
+    <meta property="og:site_name" content="PulseCities">
     <meta property="og:image" content="https://pulsecities.com/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
@@ -37,6 +40,27 @@
     }
     </script>
 
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://pulsecities.com/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Press",
+                "item": "https://pulsecities.com/press"
+            }
+        ]
+    }
+    </script>
+
     <script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>
     <script>
         window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
@@ -47,14 +71,14 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg:      #0f172a;
-            --surface: #1e293b;
-            --border:  rgba(148, 163, 184, 0.12);
-            --text:    #e2e8f0;
-            --muted:   #94a3b8;
-            --faint:   rgba(148, 163, 184, 0.45);
-            --orange:  #f97316;
-            --sky:     #38bdf8;
+            --bg:      #111823;
+            --surface: #1b2534;
+            --border:  rgba(147, 161, 173, 0.12);
+            --text:    #e4e8ec;
+            --muted:   #93a1ad;
+            --faint:   rgba(147, 161, 173, 0.45);
+            --orange:  #ed6317;
+            --sky:     #6fb1d8;
             --mono:    'JetBrains Mono', monospace;
         }
 
@@ -75,7 +99,7 @@
             position: sticky;
             top: 0;
             z-index: 10;
-            background: rgba(15, 23, 42, 0.92);
+            background: rgba(17, 24, 35, 0.92);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
             padding: 0 24px;
@@ -160,7 +184,7 @@
             display: inline-block;
             font-size: 13px;
             font-weight: 600;
-            color: #0f172a;
+            color: #111823;
             background: var(--orange);
             border: 1px solid var(--orange);
             border-radius: 6px;
@@ -168,7 +192,7 @@
             text-decoration: none;
             transition: opacity 0.15s;
         }
-        .btn-primary:hover { opacity: 0.88; text-decoration: none; color: #0f172a; }
+        .btn-primary:hover { opacity: 0.88; text-decoration: none; color: #111823; }
 
         .btn-secondary {
             display: inline-block;
@@ -180,7 +204,7 @@
             text-decoration: none;
             transition: border-color 0.15s, color 0.15s;
         }
-        .btn-secondary:hover { color: var(--text); border-color: rgba(148,163,184,0.35); text-decoration: none; }
+        .btn-secondary:hover { color: var(--text); border-color: rgba(147,161,173,0.35); text-decoration: none; }
 
         section { margin-bottom: 52px; }
 
@@ -249,7 +273,7 @@
         .finding-verify {
             font-family: var(--mono);
             font-size: 11.5px;
-            color: var(--faint);
+            color: var(--muted);
             line-height: 1.7;
             word-break: break-word;
         }
@@ -325,7 +349,7 @@
             .source-row { grid-template-columns: 1fr; gap: 4px; }
         }
 
-        .skip-link { position:absolute;top:-48px;left:0;z-index:9999;background:#1e293b;color:#38bdf8;padding:8px 16px;font-size:14px;text-decoration:none;border-radius:0 0 4px 0;transition:top 0.1s; }
+        .skip-link { position:absolute;top:-48px;left:0;z-index:9999;background:#1b2534;color:#6fb1d8;padding:8px 16px;font-size:14px;text-decoration:none;border-radius:0 0 4px 0;transition:top 0.1s; }
         .skip-link:focus { top:0; }
     </style>
 </head>
@@ -336,7 +360,7 @@
     <a href="/" class="nav-brand">
         <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
             <rect width="32" height="32" rx="6" fill="#1a1a2e"/>
-            <polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#ed6317" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         PulseCities
     </a>
@@ -349,7 +373,7 @@
     </div>
 </nav>
 
-<div id="main-content" class="container">
+<main id="main-content" class="container">
 
     <header class="page-header">
         <p class="page-label">For reporters</p>
@@ -370,7 +394,7 @@
 
         <div class="finding">
             <p class="finding-place">870 Belmont Avenue, East New York, Brooklyn 11208</p>
-            <p class="finding-kicker">BBL 3040400020 &middot; two residential units</p>
+            <p class="finding-kicker">BBL 3040400020, two residential units</p>
 
             <div class="finding-arc">
                 <div class="arc-step">
@@ -480,7 +504,7 @@
         <div class="source-list">
             <div class="source-row">
                 <span class="source-name">ACRIS deeds</span>
-                <span class="source-desc">NYC Department of Finance property transfers. The upstream Open Data feed is currently paused; deed data runs through late May 2026. Stated on every page that uses it.</span>
+                <span class="source-desc">NYC Department of Finance property transfers. <span id="acris-currency">Deed data freshness is shown on the <a href="/status">status page</a>.</span></span>
             </div>
             <div class="source-row">
                 <span class="source-name">Marshal evictions</span>
@@ -512,7 +536,7 @@
         </div>
     </section>
 
-</div>
+</main>
 
 <footer>
     <p class="footer-byline">Built by Michael Espin</p>
@@ -555,16 +579,26 @@
         })
         .catch(() => {});
 
-    // Freshness line, same source as the homepage chip.
-    fetch('/api/status')
+    // Freshness lines read the same stats endpoint the homepage does, so the
+    // page never states a deed date the database has moved past. If the fetch
+    // fails, the static copy points at the status page and claims nothing.
+    fetch('/api/stats')
         .then(r => r.ok ? r.json() : null)
         .then(data => {
+            const fresh = data && data.data_freshness;
+            if (!fresh) return;
+            const fmt = iso => new Date(iso + 'T00:00:00Z').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+            const latest = Object.values(fresh).map(f => f.through).filter(Boolean).sort().pop();
+            const acris = fresh.acris && fresh.acris.through;
             const el = document.getElementById('press-last-updated');
-            if (!el || !data || !data.data_through) return;
-            const d = new Date(data.data_through + 'T00:00:00Z');
-            if (isNaN(d)) return;
-            el.textContent = 'Data current through ' + d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }) + '. Deed data through late May 2026 (upstream feed paused).';
-            el.style.display = 'block';
+            if (el && latest) {
+                let line = 'Data current through ' + fmt(latest);
+                if (acris && acris !== latest) line += ', deed data through ' + fmt(acris);
+                el.textContent = line;
+                el.style.display = 'block';
+            }
+            const src = document.getElementById('acris-currency');
+            if (src && acris) src.textContent = 'Deed data runs through ' + fmt(acris) + '.';
         })
         .catch(() => {});
 </script>
