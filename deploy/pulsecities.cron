@@ -27,3 +27,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 0 5 * * 0 root /root/pulsecities/scripts/backup_restore_test.sh >> /var/log/pulsecities/backup_restore_test.log 2>&1
 # Weekly ops-health heartbeat email — Sunday 09:45 UTC, after digest+flips, reads the restore-test result
 45 9 * * 0 root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.weekly_ops_health >> /var/log/pulsecities/ops_health.log 2>&1
+# Freshness + pipeline sanity checks — daily after scrape and scoring settle.
+# Both alert through scheduler.alerts and exit nonzero on breach.
+40 3 * * * root /root/pulsecities/venv/bin/python -m scripts.daily_health_check >> /var/log/pulsecities/health_check.log 2>&1
+45 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.pipeline_health >> /var/log/pulsecities/health_check.log 2>&1
