@@ -89,7 +89,7 @@ def build():
         n_scored = _scored_count(db)
 
     nbhd = "\n".join(
-        f"- {name} ({zip_code}, {_borough(zip_code)}) - score {score}, "
+        f"- {name} ({zip_code}, {_borough(zip_code)}): score {score}, "
         f"{_tier_info(float(score))[0].lower()} displacement pressure"
         for zip_code, name, score in top
     )
@@ -101,9 +101,9 @@ def build():
 
     return f"""# PulseCities
 
-> Real-time displacement risk intelligence for all {n_scored} NYC neighborhoods, built on public data signals updated daily from city records.
+> Displacement risk scores for all {n_scored} NYC neighborhoods, built from public records and rescored nightly.
 
-PulseCities tracks housing displacement pressure across New York City by aggregating and scoring signals from public datasets: LLC property acquisitions (ACRIS), renovation permit filings (DOB), tenant complaint rates (311/HPD), residential eviction filings, HPD housing violations, and rent-stabilized unit loss (DHCR). Each of the {n_scored} ZIP code neighborhoods receives a daily composite score from 0 to 100.
+PulseCities tracks housing displacement pressure across New York City by aggregating and scoring signals from public datasets: LLC property acquisitions (ACRIS), renovation permit filings (DOB), tenant complaint rates (311/HPD), executed residential evictions, HPD housing violations, and rent-stabilized unit loss (DHCR). Each of the {n_scored} ZIP code neighborhoods receives a daily composite score from 0 to 100.
 
 ## What this site provides
 
@@ -122,42 +122,42 @@ PulseCities tracks housing displacement pressure across New York City by aggrega
 
 All signals are derived from NYC open data:
 
-- ACRIS (NYC Department of Finance) - deed transfers to LLC entities
-- DOB NOW (NYC Department of Buildings) - alteration permit filings on residential buildings
-- 311 / HPD (NYC Open Data) - tenant complaints filtered to displacement-relevant types
-- NYC Marshal Evictions - residential eviction executions
-- HPD Violations (NYC Open Data) - Class B and C violations on 3+ unit buildings
-- DHCR Rent Stabilization - rent-stabilized unit counts by building, year over year
+- ACRIS (NYC Department of Finance): deed transfers to LLC entities
+- DOB NOW (NYC Department of Buildings): alteration permit filings on residential buildings
+- 311 / HPD (NYC Open Data): tenant complaints filtered to displacement-relevant types
+- NYC Marshal Evictions: residential eviction executions
+- HPD Violations (NYC Open Data): Class B and C violations on 3+ unit buildings
+- DHCR Rent Stabilization: rent-stabilized unit counts by building, year over year
 
 Scoring methodology: each signal is normalized 0 to 100 relative to all NYC neighborhoods (per residential unit), then weighted and composited. Active weights: {weights_line}.{dormant_note}
 
 ## API
 
-- `GET /api/neighborhoods` - GeoJSON FeatureCollection of all {n_scored} scored neighborhoods with scores
-- `GET /api/neighborhoods/{{zip}}/score` - score and signal breakdown for a ZIP code
-- `GET /api/neighborhoods/top-risk` - top N neighborhoods by current score
-- `GET /api/neighborhoods/top-movers` - neighborhoods with largest week-over-week score increase
-- `GET /api/flips` - citywide renovation-flip feed (LLC deed plus renovation permit within 60 days)
-- `GET /api/radar` - concentrated-buying clusters (one LLC, 3+ buildings, one ZIP, within 90 days)
-- `GET /api/score-history/{{zip}}` - daily composite score snapshots for a ZIP code
+- `GET /api/neighborhoods`: GeoJSON FeatureCollection of all {n_scored} scored neighborhoods with scores
+- `GET /api/neighborhoods/{{zip}}/score`: score and signal breakdown for a ZIP code
+- `GET /api/neighborhoods/top-risk`: top N neighborhoods by current score
+- `GET /api/neighborhoods/top-movers`: neighborhoods with largest week-over-week score increase
+- `GET /api/flips`: citywide renovation-flip feed (LLC deed plus renovation permit within 60 days)
+- `GET /api/radar`: concentrated-buying clusters (one LLC, 3+ buildings, one ZIP, within 90 days)
+- `GET /api/score-history/{{zip}}`: daily composite score snapshots for a ZIP code
 
 ## Key pages
 
-- https://pulsecities.com/ - landing page with live stats, the week's verified eviction-flip finding, and top-risk neighborhoods
-- https://pulsecities.com/map - interactive heatmap of all NYC neighborhoods
-- https://pulsecities.com/neighborhoods - directory of every scored ZIP, grouped by borough and ranked
-- https://pulsecities.com/brooklyn (also /manhattan, /queens, /bronx, /staten-island) - borough-level ranked ZIP lists
-- https://pulsecities.com/neighborhood/{{zip}} - per-neighborhood detail with signal breakdown and six-month score trend (e.g. /neighborhood/11216)
-- https://pulsecities.com/operators - directory of tracked LLC operator networks
-- https://pulsecities.com/operator/{{name}} - LLC operator portfolio profiles
-- https://pulsecities.com/flips - Flip Watch, citywide feed of buildings bought by an LLC and filed for renovation within 60 days
-- https://pulsecities.com/flips/editions - human-reviewed weekly editions of eviction-to-resale arcs with ACRIS document IDs
-- https://pulsecities.com/radar - Speculation Radar, one LLC taking 3+ buildings in one ZIP within 90 days
-- https://pulsecities.com/this-week - current week in NYC displacement (score movers, new filings, newest flips)
-- https://pulsecities.com/this-week/archive - every past weekly edition at /week/{{YYYY-Www}}
-- https://pulsecities.com/press - verified findings with ACRIS document IDs and downloadable paper-trail CSVs
-- https://pulsecities.com/developers - public API documentation with endpoint reference and usage terms
-- https://pulsecities.com/methodology - full scoring methodology
+- https://pulsecities.com/: landing page with live stats, the week's verified eviction-flip finding, and top-risk neighborhoods
+- https://pulsecities.com/map: interactive heatmap of all NYC neighborhoods
+- https://pulsecities.com/neighborhoods: directory of every scored ZIP, grouped by borough and ranked
+- https://pulsecities.com/brooklyn (also /manhattan, /queens, /bronx, /staten-island): borough-level ranked ZIP lists
+- https://pulsecities.com/neighborhood/{{zip}}: per-neighborhood detail with signal breakdown and six-month score trend (e.g. /neighborhood/11216)
+- https://pulsecities.com/operators: directory of tracked LLC operator networks
+- https://pulsecities.com/operator/{{name}}: LLC operator portfolio profiles
+- https://pulsecities.com/flips: Flip Watch, citywide feed of buildings bought by an LLC and filed for renovation within 60 days
+- https://pulsecities.com/flips/editions: human-reviewed weekly editions of eviction-to-resale arcs with ACRIS document IDs
+- https://pulsecities.com/radar: Speculation Radar, one LLC taking 3+ buildings in one ZIP within 90 days
+- https://pulsecities.com/this-week: current week in NYC displacement (score movers, new filings, newest flips)
+- https://pulsecities.com/this-week/archive: every past weekly edition at /week/{{YYYY-Www}}
+- https://pulsecities.com/press: verified findings with ACRIS document IDs and downloadable paper-trail CSVs
+- https://pulsecities.com/developers: public API documentation with endpoint reference and usage terms
+- https://pulsecities.com/methodology: full scoring methodology
 
 ## About
 
