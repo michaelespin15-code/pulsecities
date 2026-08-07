@@ -28,7 +28,7 @@
     <meta name="twitter:title" content="PulseCities | NYC Displacement Signals">
     <meta name="twitter:description" content="Search NYC addresses and ZIP codes for displacement signals using public records: permits, evictions, HPD violations, 311 complaints, and ownership transfers.">
     <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#111823">
 
     <script type="application/ld+json">
     {
@@ -125,15 +125,15 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg:      #0f172a;
-            --surface: #131e33;
-            --border:  rgba(148, 163, 184, 0.12);
-            --text:    #e2e8f0;
-            --muted:   #94a3b8;
-            --faint:   rgba(148, 163, 184, 0.45);
-            --pulse:   #f97316;
-            --sky:     #38bdf8;
-            --stamp:   #ef4444;
+            --bg:      #111823;
+            --surface: #16202d;
+            --border:  rgba(147, 161, 173, 0.12);
+            --text:    #e4e8ec;
+            --muted:   #93a1ad;
+            --faint:   rgba(147, 161, 173, 0.45);
+            --pulse:   #ed6317;
+            --sky:     #6fb1d8;
+            --stamp:   #e4483b;
             --mono:    'JetBrains Mono', monospace;
             --display: 'Bricolage Grotesque', 'DM Sans', sans-serif;
         }
@@ -152,7 +152,7 @@
         /* Nav: brand + three links. Everything else lives behind Menu on mobile. */
         nav {
             position: sticky; top: 0; z-index: 20;
-            background: rgba(15, 23, 42, 0.92);
+            background: rgba(17, 24, 35, 0.92);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
             height: 52px;
@@ -190,7 +190,7 @@
             box-shadow: 0 12px 32px rgba(0,0,0,0.4);
         }
         .nav-menu-panel a { color: var(--muted); font-size: 14px; padding: 9px 12px; border-radius: 6px; }
-        .nav-menu-panel a:hover { color: var(--text); background: rgba(148,163,184,0.06); text-decoration: none; }
+        .nav-menu-panel a:hover { color: var(--text); background: rgba(147,161,173,0.06); text-decoration: none; }
 
         .container { max-width: 860px; margin: 0 auto; padding: 0 20px; }
 
@@ -211,7 +211,7 @@
             display: block;
         }
         .hero-map img { display: block; width: 100%; height: 300px; object-fit: cover; object-position: 62% 40%; }
-        .hero-map:hover { border-color: rgba(249, 115, 22, 0.45); }
+        .hero-map:hover { border-color: rgba(237, 99, 23, 0.45); }
         .hero-map .map-explore { position: absolute; right: 12px; bottom: 12px; }
         .hero-legend {
             display: flex; gap: 12px; flex-wrap: wrap;
@@ -243,14 +243,14 @@
         .search-row input {
             flex: 1; min-width: 0;
             font-family: var(--mono); font-size: 14px;
-            color: var(--text); background: rgba(30, 41, 59, 0.9);
-            border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 8px;
+            color: var(--text); background: rgba(27, 37, 52, 0.9);
+            border: 1px solid rgba(147, 161, 173, 0.25); border-radius: 8px;
             padding: 13px 16px;
         }
         .search-row input:focus { outline: 2px solid var(--pulse); outline-offset: 1px; border-color: transparent; }
         .search-row button {
             font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
-            color: #0f172a; background: var(--pulse);
+            color: #111823; background: var(--pulse);
             border: none; border-radius: 8px; padding: 13px 26px; cursor: pointer;
             transition: opacity 0.15s;
         }
@@ -283,14 +283,14 @@
             display: flex; align-items: center; justify-content: space-between; gap: 12px;
             padding: 12px 20px;
             border-bottom: 1px solid var(--border);
-            background: rgba(249, 115, 22, 0.05);
+            background: rgba(237, 99, 23, 0.05);
             font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
             color: var(--muted); text-transform: uppercase;
             flex-wrap: wrap;
         }
         .docket-head .gain {
             color: var(--stamp); font-weight: 600; font-size: 13px;
-            border: 1.5px solid rgba(239, 68, 68, 0.55); border-radius: 4px;
+            border: 1.5px solid rgba(228, 72, 59, 0.55); border-radius: 4px;
             padding: 2px 10px; letter-spacing: 0.04em;
             transform: rotate(-1.2deg);
         }
@@ -305,7 +305,7 @@
         .arc { position: relative; margin-left: 6px; }
         .arc::before {
             content: ''; position: absolute; left: 3.5px; top: 8px; bottom: 8px;
-            width: 1px; background: rgba(148, 163, 184, 0.25);
+            width: 1px; background: rgba(147, 161, 173, 0.25);
         }
         .arc-step {
             position: relative; padding: 0 0 18px 26px;
@@ -352,23 +352,23 @@
         .module-cta { font-size: 12.5px; margin-top: 12px; }
         div.module-cta { display: flex; gap: 16px; }
 
-        .rank-row { display: flex; align-items: baseline; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(148,163,184,0.07); }
+        .rank-row { display: flex; align-items: baseline; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(147,161,173,0.07); }
         .rank-zip { font-family: var(--mono); font-size: 13px; font-weight: 600; }
         .rank-name { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
         .rank-score { font-family: var(--mono); font-size: 12.5px; font-weight: 600; color: var(--pulse); }
 
-        .op-row { padding: 7px 0; border-bottom: 1px solid rgba(148,163,184,0.07); }
+        .op-row { padding: 7px 0; border-bottom: 1px solid rgba(147,161,173,0.07); }
         .op-name { font-family: var(--mono); font-size: 13px; font-weight: 600; }
         .op-meta { font-size: 11.5px; color: var(--muted); }
 
-        .sig-stat { padding: 7px 0; border-bottom: 1px solid rgba(148,163,184,0.07); }
+        .sig-stat { padding: 7px 0; border-bottom: 1px solid rgba(147,161,173,0.07); }
         .sig-num { font-family: var(--mono); font-size: 17px; font-weight: 600; color: var(--text); }
         .sig-desc { font-size: 11.5px; color: var(--muted); }
 
         .map-explore {
             position: absolute; right: 14px; bottom: 14px;
             font-size: 13px; font-weight: 600; color: var(--text);
-            background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(148,163,184,0.3);
+            background: rgba(17, 24, 35, 0.85); border: 1px solid rgba(147,161,173,0.3);
             border-radius: 6px; padding: 8px 14px; backdrop-filter: blur(6px);
         }
         .hero-map:hover .map-explore { border-color: var(--pulse); }
@@ -405,7 +405,7 @@
             html { scroll-behavior: auto; }
         }
 
-        .skip-link { position:absolute;top:-48px;left:0;z-index:9999;background:#1e293b;color:#38bdf8;padding:8px 16px;font-size:14px;text-decoration:none;border-radius:0 0 4px 0;transition:top 0.1s; }
+        .skip-link { position:absolute;top:-48px;left:0;z-index:9999;background:#1b2534;color:#6fb1d8;padding:8px 16px;font-size:14px;text-decoration:none;border-radius:0 0 4px 0;transition:top 0.1s; }
         .skip-link:focus { top:0; }
     </style>
 </head>
@@ -416,7 +416,7 @@
     <a href="/" class="nav-brand">
         <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
             <rect width="32" height="32" rx="6" fill="#1a1a2e"/>
-            <polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#ed6317" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         PulseCities
     </a>
@@ -473,8 +473,8 @@
             <div class="hero-legend">
                 <span><i style="background:#3E6B54"></i><span data-i18n="legend_low">Low</span></span>
                 <span><i style="background:#C08B2D"></i><span data-i18n="legend_moderate">Moderate</span></span>
-                <span><i style="background:#F97316"></i><span data-i18n="legend_high">High</span></span>
-                <span><i style="background:#EF4444"></i><span data-i18n="legend_critical">Critical</span></span>
+                <span><i style="background:#ed6317"></i><span data-i18n="legend_high">High</span></span>
+                <span><i style="background:#e4483b"></i><span data-i18n="legend_critical">Critical</span></span>
             </div>
         </div>
     </header>
