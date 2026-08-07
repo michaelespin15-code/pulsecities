@@ -256,6 +256,13 @@ def get_renovation_flip(
         {"zip_code": zip_code},
     ).fetchall()
 
+    def _days(v):
+        # Postgres date-minus-date comes back as a plain int via psycopg, but guard
+        # for a timedelta in case the driver hands one back.
+        if v is None:
+            return None
+        return v.days if hasattr(v, "days") else int(v)
+
     properties = [
         {
             "bbl": row.bbl,
@@ -263,7 +270,7 @@ def get_renovation_flip(
             "buyer": row.buyer,
             "transfer_date": row.transfer_date.isoformat() if row.transfer_date else None,
             "permit_date": row.first_permit_date.isoformat() if row.first_permit_date else None,
-            "days_between": int(row.days_between.days) if row.days_between else None,
+            "days_between": _days(row.days_between),
         }
         for row in rows
     ]
