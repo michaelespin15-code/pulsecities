@@ -28,3 +28,6 @@ scripts/building_alerts_state.json
 scripts/eviction_flips_state.json
 scripts/eviction_flips_editions.json
 scripts/operator_network_analysis.json
+
+# Playwright MCP screenshot scratch
+.playwright-mcp/
