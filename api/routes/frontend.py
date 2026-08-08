@@ -4414,6 +4414,22 @@ def evictions_page(db: Session = Depends(get_db)):
         GROUP BY 1 ORDER BY 2 DESC
     """)).fetchall()
 
+    monthly = db.execute(text("""
+        SELECT date_trunc('month', executed_date)::date AS m, count(*) AS c
+        FROM evictions_raw
+        WHERE eviction_type = 'Residential'
+          AND executed_date >= (date_trunc('month', CURRENT_DATE) - interval '12 months')
+          AND executed_date < date_trunc('month', CURRENT_DATE)
+        GROUP BY 1 ORDER BY 1
+    """)).fetchall()
+
+    yoy = db.execute(text("""
+        SELECT count(*) FILTER (WHERE executed_date >= CURRENT_DATE - 30) AS cur,
+               count(*) FILTER (WHERE executed_date >= CURRENT_DATE - 395
+                            AND executed_date <  CURRENT_DATE - 365) AS prev
+        FROM evictions_raw WHERE eviction_type = 'Residential'
+    """)).first()
+
     n_arcs = len(_approved_flip_arcs())
 
     _MONTHS = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -4453,6 +4469,62 @@ def evictions_page(db: Session = Depends(get_db)):
 
     borough_line = ", ".join(f"{esc(b.b)} {int(b.c)}" for b in boroughs)
     through_line = f"Records through {_short_date(counts.latest)}" if latest else "Refreshed nightly"
+
+    yoy_line = ""
+    if yoy and yoy.prev:
+        cur, prev = int(yoy.cur), int(yoy.prev)
+        delta = (cur - prev) / prev * 100.0
+        if abs(delta) < 0.5:
+            yoy_line = (f"The past 30 days are level with the same window last year, "
+                        f"{cur:,} against {prev:,}")
+        else:
+            direction = "above" if delta > 0 else "below"
+            yoy_line = (f"The past 30 days are running {abs(delta):.0f}% {direction} the "
+                        f"same window last year, {cur:,} executions against {prev:,}")
+
+    def _month_bars(rows) -> str:
+        if len(rows) < 6:
+            return ""
+        w, h = 640.0, 170.0
+        pad_l, pad_r, pad_t, pad_b = 6.0, 6.0, 22.0, 24.0
+        plot_w, plot_h = w - pad_l - pad_r, h - pad_t - pad_b
+        peak = max(int(r.c) for r in rows) or 1
+        slot = plot_w / len(rows)
+        bar_w = slot * 0.58
+        parts = []
+        for i, r in enumerate(rows):
+            c = int(r.c)
+            bh = (c / peak) * plot_h
+            x = pad_l + i * slot + (slot - bar_w) / 2
+            y = pad_t + plot_h - bh
+            fill = "#ed6317" if i == len(rows) - 1 else "rgba(237,99,23,0.45)"
+            parts.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w:.1f}" '
+                         f'height="{bh:.1f}" fill="{fill}"/>')
+            parts.append(f'<text x="{x + bar_w / 2:.1f}" y="{y - 5:.1f}" font-size="9.5" '
+                         f'text-anchor="middle" font-family="JetBrains Mono,monospace" '
+                         f'fill="rgba(147,161,173,0.75)">{c:,}</text>')
+            parts.append(f'<text x="{x + bar_w / 2:.1f}" y="{h - 8:.1f}" font-size="9.5" '
+                         f'text-anchor="middle" font-family="JetBrains Mono,monospace" '
+                         f'fill="rgba(147,161,173,0.45)">{_MONTHS[r.m.month]}</text>')
+        base_y = pad_t + plot_h
+        parts.append(f'<line x1="{pad_l}" y1="{base_y:.1f}" x2="{pad_l + plot_w:.1f}" '
+                     f'y2="{base_y:.1f}" stroke="rgba(147,161,173,0.25)" stroke-width="1"/>')
+        label = (f"{_MONTHS[rows[0].m.month]} {rows[0].m.year} to "
+                 f"{_MONTHS[rows[-1].m.month]} {rows[-1].m.year}")
+        return (f'<svg viewBox="0 0 {w:.0f} {h:.0f}" role="img" '
+                f'aria-label="Residential marshal evictions by month, {label}" '
+                f'style="width:100%;height:auto;display:block;">' + "".join(parts) + "</svg>")
+
+    bars_svg = _month_bars(monthly)
+    trend_section = ""
+    if bars_svg:
+        yoy_html = f'<p class="cross" id="ev-yoy" style="margin-top:8px;">{yoy_line}</p>' if yoy_line else ""
+        trend_section = f"""
+  <h2 id="ev-trend-h">Twelve months of executions</h2>
+  <p class="section-sub" id="ev-trend-sub">Residential warrants executed by month, complete months only</p>
+  <div style="border:1px solid rgba(147,161,173,0.12);border-radius:8px;padding:14px 12px 8px;background:rgba(255,255,255,.02);">{bars_svg}</div>
+  {yoy_html}
+"""
 
     title = "NYC evictions tracker: marshal evictions by neighborhood | PulseCities"
     desc = (f"{d30} residential marshal evictions executed across NYC in the past 30 days, "
@@ -4576,7 +4648,7 @@ th.num,td.num{{text-align:right;font-family:'JetBrains Mono',monospace}}
     <div class="stat"><div class="stat-num">{d365:,}</div><div class="stat-label" id="ev-l365">past 12 months</div></div>
   </div>
   <p class="mono-note">{through_line}</p>
-
+{trend_section}
   <h2 id="ev-recent-h">Most recent executions</h2>
   <p class="section-sub" id="ev-recent-sub">Residential warrants executed in the past 30 days, newest first</p>
   <ul class="ev-list">
@@ -4615,6 +4687,8 @@ th.num,td.num{{text-align:right;font-family:'JetBrains Mono',monospace}}
     'ev-l7': '\\u00faltimos 7 d\\u00edas',
     'ev-l30': '\\u00faltimos 30 d\\u00edas',
     'ev-l365': '\\u00faltimos 12 meses',
+    'ev-trend-h': 'Doce meses de ejecuciones',
+    'ev-trend-sub': 'Ejecuciones residenciales por mes, solo meses completos',
     'ev-recent-h': 'Ejecuciones m\\u00e1s recientes',
     'ev-recent-sub': '\\u00d3rdenes residenciales ejecutadas en los \\u00faltimos 30 d\\u00edas, primero las m\\u00e1s nuevas',
     'ev-where-h': 'D\\u00f3nde se concentran los desalojos',
