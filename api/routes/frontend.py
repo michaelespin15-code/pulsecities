@@ -4885,6 +4885,8 @@ p a:hover{{text-decoration:underline}}
   <ul class="buyer-list">
 {buyers_html}  </ul>
 
+  <p style="margin-top:10px;font-size:0.8rem;"><a href="/llc" class="body-link">The full ledger of LLC buyers &rarr;</a></p>
+
   <h2>What to check after the owner</h2>
   <p>The name on the deed matters less than what the record shows around it. On any property or neighborhood page, look at executed evictions, renovation permits filed soon after a purchase, open HPD violations, and rent-stabilized unit counts over time. Every neighborhood page has a watch card that emails you when the record moves. <a href="/evictions">Citywide eviction tracker &rarr;</a></p>
 
@@ -4901,4 +4903,304 @@ p a:hover{{text-decoration:underline}}
 </html>"""
 
     _who_owns_cache = (page, time.monotonic() + _WHO_OWNS_TTL)
+    return HTMLResponse(page)
+
+
+# --- LLC entity pages: one page per deed-record buyer -------------------------
+#
+# Tenants google the LLC on their deed or eviction notice. Any entity in the
+# deed record renders on demand so those searches always land; only LLC-named
+# entities with 2+ properties are indexed and sitemapped, mirroring the
+# property-page noindex policy. Slugs resolve through _SLUG_SQL, which must
+# stay byte-identical to the expression in scripts/add_entity_slug_index.sql.
+
+_llc_page_cache: dict[str, tuple[str, float]] = {}
+_llc_dir_cache: tuple[str, float] | None = None
+_LLC_DIR_TTL = 21600
+_LLC_SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,78}$")
+_SLUG_SQL = "btrim(regexp_replace(lower(party_name_normalized), '[^a-z0-9]+', '-', 'g'), '-')"
+
+_LLC_PAGE_CSS = """
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}
+nav{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}
+.nav-inner{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+@media(max-width:600px){.nav-inner{flex-wrap:wrap;row-gap:4px}.nav-inner>div{flex-wrap:wrap;row-gap:4px}}
+.container{max-width:860px;margin:0 auto;padding:32px 20px 80px}
+a{color:inherit;text-decoration:none}
+footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}
+.footer-links{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
+@media(max-width:767px){.container{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.18em;color:#ed6317;text-transform:uppercase;margin-bottom:10px}
+h1{font-family:'JetBrains Mono',monospace;font-size:1.35rem;font-weight:500;letter-spacing:0.03em;margin-bottom:6px}
+h2{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.05rem;font-weight:600;margin:34px 0 4px}
+.sub{font-size:0.82rem;color:#93a1ad;line-height:1.6;max-width:640px}
+.stats{display:flex;flex-wrap:wrap;gap:10px 40px;margin:26px 0 4px;padding:14px 2px;border-top:1px solid rgba(147,161,173,0.22);border-bottom:1px solid rgba(147,161,173,0.1)}
+.stat{display:flex;align-items:baseline;gap:8px}
+.stat-num{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:1.35rem;line-height:1;color:#eef2f5}
+.stat-label{font-size:0.68rem;color:#93a1ad;text-transform:uppercase;letter-spacing:0.06em;line-height:1.3}
+.section-sub{font-size:0.76rem;color:rgba(147,161,173,0.65);margin-bottom:10px}
+.rec-list{list-style:none;padding:0;margin:0}
+.rec-row{border-bottom:1px solid rgba(147,161,173,0.07)}
+.rec-row a,.rec-static{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:12px 0}
+.rec-row a:hover .rec-addr{color:#ed6317}
+.rec-addr{font-family:'JetBrains Mono',monospace;font-size:0.86rem;font-weight:500;color:#e4e8ec;letter-spacing:0.02em}
+.rec-geo{font-size:0.74rem;color:rgba(147,161,173,0.7);margin-top:2px}
+.rec-side{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;text-align:right}
+.rec-amt{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:#c9d2da}
+.rec-date{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(147,161,173,0.55);margin-top:2px}
+.cross{font-size:0.82rem;color:#93a1ad;line-height:1.6;max-width:640px}
+.cross a{color:rgba(237,99,23,0.75)}
+.note{font-size:0.72rem;color:rgba(147,161,173,0.45);margin-top:26px;line-height:1.6}
+.note a{color:rgba(237,99,23,0.75)}
+.mono-note{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(147,161,173,0.55);margin-top:6px}
+"""
+
+
+def _llc_head(title: str, desc: str, url: str, robots: str, jsonld: str) -> str:
+    e = _html.escape
+    return f"""<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{e(title)}</title>
+<meta name="description" content="{e(desc)}">
+<meta name="robots" content="{robots}">
+<link rel="canonical" href="{url}">
+<meta property="og:title" content="{e(title)}">
+<meta property="og:description" content="{e(desc)}">
+<meta property="og:url" content="{url}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PulseCities">
+<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{e(title)}">
+<meta name="twitter:description" content="{e(desc)}">
+<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+<style>{_LLC_PAGE_CSS}</style>"""
+
+
+@router.get("/llc", include_in_schema=False)
+def llc_directory(db: Session = Depends(get_db)):
+    """Directory of the most active LLC buyers in the deed record."""
+    global _llc_dir_cache
+    if _llc_dir_cache and time.monotonic() < _llc_dir_cache[1]:
+        return HTMLResponse(_llc_dir_cache[0])
+
+    esc = _html.escape
+    rows = db.execute(text(f"""
+        SELECT party_name_normalized AS name, {_SLUG_SQL} AS slug,
+               count(DISTINCT bbl) AS bbls, max(doc_date) AS last_seen
+        FROM ownership_raw
+        WHERE doc_type = 'DEED' AND party_type = '2'
+          AND party_name_normalized LIKE '%LLC%'
+        GROUP BY 1, 2
+        HAVING count(DISTINCT bbl) >= 2
+        ORDER BY bbls DESC, last_seen DESC LIMIT 100
+    """)).fetchall()
+
+    items = ""
+    for r in rows:
+        if not _LLC_SLUG_RE.match(r.slug or ""):
+            continue
+        items += (
+            f'<li class="rec-row"><a href="/llc/{esc(r.slug)}">'
+            f'<div><div class="rec-addr">{esc(r.name)}</div></div>'
+            f'<div class="rec-side"><div class="rec-amt">{int(r.bbls)} properties</div>'
+            f'<div class="rec-date">latest {esc(r.last_seen.isoformat()) if r.last_seen else ""}</div></div>'
+            f'</a></li>\n'
+        )
+
+    title = "NYC LLC property buyers: the deed record | PulseCities"
+    desc = ("The most active LLC buyers in NYC's deed record, ranked by properties "
+            "acquired, each with its full purchase history from ACRIS public records.")
+    jsonld = _jsonld({"@context": "https://schema.org",
+                      "@graph": [_crumbs(("Home", "/"), ("LLC buyers", "/llc"))]})
+
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+{_llc_head(title, desc, "https://pulsecities.com/llc", "index, follow", jsonld)}
+</head>
+<body>
+{_ssr_nav("", toggle_html="")}
+<div class="container">
+  <div style="margin-bottom:8px;">
+    <a href="/" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">&#8592; Home</a>
+  </div>
+  <div class="eyebrow">NYC deed record</div>
+  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;letter-spacing:0;font-weight:600;">The LLC buyers</h1>
+  <p class="sub">Every entity below appears as the buyer on two or more NYC deeds. Each page lists the full recorded purchase history, with links to every building. Curated operator networks live in the <a href="/operators" style="color:#6fb1d8;">operator directory</a>; this is the raw ledger.</p>
+  <ul class="rec-list" style="margin-top:18px;">
+{items}  </ul>
+  <p class="note">A deed names a buyer of record. Appearing here describes documents, not conduct. <a href="/methodology">How PulseCities reads the record &rarr;</a></p>
+</div>
+{_FOOTER_HTML}
+</body>
+</html>"""
+
+    _llc_dir_cache = (page, time.monotonic() + _LLC_DIR_TTL)
+    return HTMLResponse(page)
+
+
+@router.get("/llc/{slug}", include_in_schema=False)
+def llc_entity_page(slug: str, db: Session = Depends(get_db)):
+    """Deed-record profile for one exact buyer entity."""
+    slug = slug.lower()
+    if not _LLC_SLUG_RE.match(slug):
+        return _not_found()
+
+    cached = _llc_page_cache.get(slug)
+    if cached and time.monotonic() < cached[1]:
+        return HTMLResponse(cached[0])
+
+    esc = _html.escape
+
+    ent = db.execute(text(f"""
+        SELECT party_name_normalized AS name,
+               count(DISTINCT bbl) FILTER (WHERE party_type = '2') AS buys
+        FROM ownership_raw
+        WHERE doc_type = 'DEED' AND {_SLUG_SQL} = :slug
+        GROUP BY 1 ORDER BY 2 DESC LIMIT 1
+    """), {"slug": slug}).first()
+    if not ent:
+        return _not_found()
+    name = ent.name
+
+    def _side(party_type: str):
+        return db.execute(text("""
+            SELECT DISTINCT ON (o.document_id)
+                   o.bbl, o.doc_date, o.doc_amount, p.address, p.zip_code, n.name AS hood
+            FROM ownership_raw o
+            LEFT JOIN parcels p ON p.bbl = o.bbl
+            LEFT JOIN neighborhoods n ON n.zip_code = p.zip_code
+            WHERE o.doc_type = 'DEED' AND o.party_type = :pt
+              AND o.party_name_normalized = :name
+            ORDER BY o.document_id, o.doc_date DESC
+        """), {"pt": party_type, "name": name}).fetchall()
+
+    buys = sorted(_side("2"), key=lambda r: r.doc_date or date.min, reverse=True)
+    sells = sorted(_side("1"), key=lambda r: r.doc_date or date.min, reverse=True)
+
+    post_ev = db.execute(text("""
+        SELECT count(DISTINCT o.bbl) FROM ownership_raw o
+        JOIN evictions_raw e ON e.bbl = o.bbl
+         AND e.eviction_type = 'Residential'
+         AND e.executed_date < o.doc_date
+         AND e.executed_date >= o.doc_date - 365
+        WHERE o.doc_type = 'DEED' AND o.party_type = '2'
+          AND o.party_name_normalized = :name AND o.doc_amount > 0
+    """), {"name": name}).scalar() or 0
+
+    network = db.execute(text("""
+        SELECT slug, display_name FROM operators
+        WHERE operator_class = 'operator' AND jsonb_exists(llc_entities, :name) LIMIT 1
+    """), {"name": name}).first()
+
+    n_bbls = len({r.bbl for r in buys if r.bbl})
+    volume = sum(float(r.doc_amount) for r in buys if r.doc_amount and float(r.doc_amount) > 0)
+    dates = [r.doc_date for r in buys if r.doc_date]
+    first_seen = min(dates).year if dates else None
+    last_seen = max(dates).isoformat() if dates else None
+
+    def _rows(records):
+        out = ""
+        for r in records[:60]:
+            addr = esc(_addr_title(r.address)) if r.address else f"BBL {esc(str(r.bbl))}"
+            geo = esc(f"{r.hood}, {r.zip_code}" if r.hood else (r.zip_code or ""))
+            amt = _fmt_amount(r.doc_amount) or "no amount recorded"
+            when = esc(r.doc_date.isoformat()) if r.doc_date else ""
+            inner = (f'<div><div class="rec-addr">{addr}</div><div class="rec-geo">{geo}</div></div>'
+                     f'<div class="rec-side"><div class="rec-amt">{esc(amt)}</div>'
+                     f'<div class="rec-date">{when}</div></div>')
+            if r.bbl:
+                out += f'<li class="rec-row"><a href="/property/{esc(str(r.bbl))}">{inner}</a></li>\n'
+            else:
+                out += f'<li class="rec-row"><div class="rec-static">{inner}</div></li>\n'
+        return out
+
+    buys_html = _rows(buys) or '<li class="rec-row"><div class="rec-static"><div class="rec-geo">No purchase deeds in the current record</div></div></li>'
+    sells_section = ""
+    if sells:
+        sells_section = f"""
+  <h2>Sold</h2>
+  <p class="section-sub">Deeds where this entity is the seller of record</p>
+  <ul class="rec-list">
+{_rows(sells)}  </ul>"""
+
+    network_line = ""
+    if network:
+        network_line = (f'<p class="cross" style="margin-top:10px;">This entity is part of the '
+                        f'<a href="/operator/{esc(network.slug)}">{esc(network.display_name)} network &rarr;</a></p>')
+
+    post_ev_line = ""
+    if post_ev:
+        noun = "property" if post_ev == 1 else "properties"
+        post_ev_line = (f'<p class="cross" style="margin-top:10px;">{post_ev} {noun} on this list '
+                        f'had a residential eviction executed within the year before the purchase. '
+                        f'<a href="/evictions">Citywide eviction tracker &rarr;</a></p>')
+
+    is_indexable = "LLC" in name and n_bbls >= 2
+    robots = "index, follow" if is_indexable else "noindex, follow"
+    title = f"{name}: NYC property purchases, deed history | PulseCities"
+    desc = (f"{name} appears as the buyer on {n_bbls} NYC "
+            f"{'property' if n_bbls == 1 else 'properties'} in the deed record"
+            + (f" since {first_seen}" if first_seen else "")
+            + ". Full purchase history from ACRIS public records.")
+    url = f"https://pulsecities.com/llc/{slug}"
+    jsonld = _jsonld({"@context": "https://schema.org", "@graph": [
+        {"@type": "Organization", "name": name, "url": url},
+        _crumbs(("Home", "/"), ("LLC buyers", "/llc"), (name, f"/llc/{slug}")),
+    ]})
+
+    stat_cells = (
+        f'<div class="stat"><div class="stat-num">{n_bbls}</div><div class="stat-label">'
+        f'{"property" if n_bbls == 1 else "properties"} bought</div></div>'
+    )
+    if sells:
+        stat_cells += (f'<div class="stat"><div class="stat-num">{len({r.bbl for r in sells if r.bbl})}</div>'
+                       f'<div class="stat-label">sold</div></div>')
+    if volume:
+        stat_cells += (f'<div class="stat"><div class="stat-num">{_fmt_amount(volume)}</div>'
+                       f'<div class="stat-label">recorded purchase volume</div></div>')
+
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+{_llc_head(title, desc, url, robots, jsonld)}
+</head>
+<body>
+{_ssr_nav("", toggle_html="")}
+<div class="container">
+  <p style="margin-bottom:8px;font-size:0.75rem;color:rgba(147,161,173,0.5);"><a href="/llc">&#8592; All LLC buyers</a></p>
+  <div class="eyebrow">NYC deed record</div>
+  <h1>{esc(name)}</h1>
+  <p class="sub">Every entry below is a recorded deed naming this entity, from ACRIS public records.</p>
+  <div class="stats">{stat_cells}</div>
+  {f'<p class="mono-note">Latest recorded deed {last_seen}</p>' if last_seen else ''}
+  {network_line}
+  {post_ev_line}
+
+  <h2>Bought</h2>
+  <p class="section-sub">Purchase deeds, newest first</p>
+  <ul class="rec-list">
+{buys_html}  </ul>
+{sells_section}
+
+  <p class="cross" style="margin-top:26px;">Looking up your own building? <a href="/who-owns-my-building">Who owns my building &rarr;</a></p>
+  <p class="note">A deed names a buyer or seller of record. This page describes documents, not conduct, and makes no claim of wrongdoing. <a href="/methodology">How PulseCities reads the record &rarr;</a></p>
+</div>
+{_FOOTER_HTML}
+</body>
+</html>"""
+
+    if len(_llc_page_cache) >= 512:
+        now = time.monotonic()
+        expired = [k for k, v in _llc_page_cache.items() if now >= v[1]]
+        for k in expired:
+            _llc_page_cache.pop(k, None)
+        if len(_llc_page_cache) >= 512:
+            _llc_page_cache.clear()
+    _llc_page_cache[slug] = (page, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page)

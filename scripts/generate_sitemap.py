@@ -50,6 +50,7 @@ _CORE = [
     ("/radar",       "daily",   "0.75", None),
     ("/evictions",   "daily",   "0.75", None),
     ("/who-owns-my-building", "monthly", "0.7", None),
+    ("/llc",         "weekly",  "0.6",  None),
 ]
 
 
@@ -112,6 +113,19 @@ def build() -> str:
 
         week_slugs = _completed_week_slugs(db)
 
+        # LLC entity pages: only LLC-named buyers with 2+ properties are
+        # indexable (mirrors the route's robots policy), so only they belong
+        # here. Slug expression matches _SLUG_SQL in api/routes/frontend.py.
+        llc_slugs = sorted({r.slug for r in db.execute(text("""
+            SELECT btrim(regexp_replace(lower(party_name_normalized),
+                         '[^a-z0-9]+', '-', 'g'), '-') AS slug
+            FROM ownership_raw
+            WHERE doc_type = 'DEED' AND party_type = '2'
+              AND party_name_normalized LIKE '%LLC%'
+            GROUP BY party_name_normalized
+            HAVING count(DISTINCT bbl) >= 2
+        """)).fetchall() if r.slug})
+
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
@@ -140,6 +154,9 @@ def build() -> str:
     # Historical weekly editions never change once past; lastmod = their Sunday.
     for slug, sunday_iso in week_slugs:
         entry(f"/week/{slug}", "monthly", "0.5", sunday_iso)
+    # Multi-property LLC buyer pages; the ledger moves only when deeds land.
+    for slug in llc_slugs:
+        entry(f"/llc/{slug}", "monthly", "0.5", today)
 
     lines.append("</urlset>")
     return "\n".join(lines) + "\n"

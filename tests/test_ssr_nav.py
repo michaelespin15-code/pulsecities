@@ -75,8 +75,31 @@ def test_helper_appends_toggle_and_track():
 STATIC_HUB_ROUTES = [
     "/operators", "/neighborhoods", "/borough/brooklyn", "/flips",
     "/flips/editions", "/radar", "/this-week", "/displacement",
-    "/neighborhood/11216", "/evictions", "/who-owns-my-building",
+    "/neighborhood/11216", "/evictions", "/who-owns-my-building", "/llc",
 ]
+
+
+@pytest.mark.integration
+def test_llc_entity_page_top_nav():
+    db = SessionLocal()
+    try:
+        r = db.execute(text(
+            "SELECT btrim(regexp_replace(lower(party_name_normalized), "
+            "'[^a-z0-9]+', '-', 'g'), '-') AS slug "
+            "FROM ownership_raw WHERE doc_type = 'DEED' AND party_type = '2' "
+            "AND party_name_normalized LIKE '%LLC%' "
+            "GROUP BY party_name_normalized "
+            "HAVING count(DISTINCT bbl) >= 2 ORDER BY count(DISTINCT bbl) DESC LIMIT 1"
+        )).first()
+    finally:
+        db.close()
+    if not r:
+        pytest.skip("no multi-property LLC buyer in current data")
+    resp = client.get(f"/llc/{r.slug}")
+    assert resp.status_code == 200
+    assert 'content="index, follow"' in resp.text
+    missing = HUB - _top_nav_paths(resp.text)
+    assert not missing, f"/llc entity top nav missing {sorted(missing)}"
 
 
 @pytest.mark.integration
