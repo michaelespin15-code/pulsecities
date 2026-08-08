@@ -263,7 +263,7 @@ _LANG_TOGGLE_BTN = (
 )
 
 _SSR_NAV_BRAND = (
-    '<a href="/" style="display:flex;align-items:center;gap:8px;color:#eef2f5;">'
+    '<a href="/" style="display:flex;align-items:center;gap:8px;color:#eef2f5;flex-shrink:0;">'
     '<svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">'
     '<rect width="32" height="32" rx="6" fill="#1a1a2e"/>'
     '<polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" '
@@ -296,12 +296,20 @@ def _ssr_nav(active: str = "", lang: str = "en", toggle_html: str = "", track: b
             f'onmouseout="this.style.color=\'rgba(147,161,173,0.5)\'">{label}</a>'
         )
     links = "".join(parts)
+    # One row at every width: the links scroll horizontally instead of
+    # wrapping (nine hub links stack into a wall on phones and zoomed
+    # desktops otherwise). Brand and language toggle stay pinned outside the
+    # scroll area. Pages hide the scrollbar via .nav-inner>div::-webkit-scrollbar.
     return (
         '<nav>\n  <div class="nav-inner">\n    '
         + _SSR_NAV_BRAND
-        + '\n    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end;">'
-        + links + toggle_html
-        + '</div>\n  </div>\n</nav>'
+        + '\n    <div style="display:flex;align-items:center;gap:14px;min-width:0;'
+        'overflow-x:auto;flex-wrap:nowrap;white-space:nowrap;scrollbar-width:none;'
+        '-webkit-overflow-scrolling:touch;">'
+        + links
+        + '</div>\n    '
+        + (f'<div style="flex-shrink:0;">{toggle_html}</div>' if toggle_html else '')
+        + '\n  </div>\n</nav>'
     )
 
 
@@ -943,7 +951,7 @@ body{{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);mi
 a{{color:inherit;text-decoration:none}}
 nav{{border-bottom:1px solid var(--border);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
-@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
+.nav-inner>div::-webkit-scrollbar{{display:none}}
 .nav-links a{{font-size:.78rem;color:var(--muted);margin-left:16px;transition:color .15s}}
 .nav-links a:hover{{color:var(--text)}}
 .container{{max-width:720px;margin:0 auto;padding:32px 20px 80px}}
@@ -1522,7 +1530,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 a{color:inherit;text-decoration:none}
 nav{border-bottom:1px solid var(--border);padding:12px 0}
 .nav-inner{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-@media(max-width:600px){.nav-inner{flex-wrap:wrap;row-gap:4px}.nav-inner>div{flex-wrap:wrap;row-gap:4px}}
+.nav-inner>div::-webkit-scrollbar{display:none}
 .brand{font-size:.85rem;color:rgba(147,161,173,.55)}
 .container{max-width:720px;margin:0 auto;padding:28px 20px 72px}
 .breadcrumb{font-size:.78rem;color:var(--muted);margin-bottom:18px}
@@ -2092,7 +2100,7 @@ def operators_directory(db: Session = Depends(get_db)):
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
-@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
+.nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
 footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
@@ -2308,7 +2316,7 @@ def neighborhoods_directory(lang: str = "en", db: Session = Depends(get_db)):
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
-@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
+.nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
 footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
@@ -2561,7 +2569,7 @@ def borough_page(slug: str, lang: str = "en", db: Session = Depends(get_db)):
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
-@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
+.nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
 footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
@@ -2753,7 +2761,7 @@ def flip_watch_page(db: Session = Depends(get_db)):
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
-@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
+.nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
 footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
@@ -3008,7 +3016,7 @@ def flips_editions_page(db: Session = Depends(get_db)):
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh;line-height:1.65}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
-@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
+.nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
 footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
@@ -3242,7 +3250,7 @@ def speculation_radar_page(db: Session = Depends(get_db)):
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
-@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
+.nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
 footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
@@ -3458,7 +3466,7 @@ _WEEK_CSS = """*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}
 nav{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}
 .nav-inner{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-@media(max-width:600px){.nav-inner{flex-wrap:wrap;row-gap:4px}.nav-inner>div{flex-wrap:wrap;row-gap:4px}}
+.nav-inner>div::-webkit-scrollbar{display:none}
 .container{max-width:860px;margin:0 auto;padding:32px 20px 80px}
 a{color:inherit;text-decoration:none}
 h2{font-size:0.78rem;font-weight:600;color:rgba(147,161,173,0.75);text-transform:uppercase;letter-spacing:0.1em;margin:32px 0 4px}
@@ -3901,7 +3909,7 @@ def this_week_page(db: Session = Depends(get_db)):
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
-@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
+.nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
 h2{{font-size:0.78rem;font-weight:600;color:rgba(147,161,173,0.75);text-transform:uppercase;letter-spacing:0.1em;margin:32px 0 4px}}
@@ -4596,7 +4604,7 @@ def evictions_page(db: Session = Depends(get_db)):
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
-@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
+.nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
 footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
@@ -4829,7 +4837,7 @@ def who_owns_page(db: Session = Depends(get_db)):
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
-@media(max-width:600px){{.nav-inner{{flex-wrap:wrap;row-gap:4px}}.nav-inner>div{{flex-wrap:wrap;row-gap:4px}}}}
+.nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:720px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
 footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
@@ -4925,7 +4933,7 @@ _LLC_PAGE_CSS = """
 body{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}
 nav{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}
 .nav-inner{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-@media(max-width:600px){.nav-inner{flex-wrap:wrap;row-gap:4px}.nav-inner>div{flex-wrap:wrap;row-gap:4px}}
+.nav-inner>div::-webkit-scrollbar{display:none}
 .container{max-width:860px;margin:0 auto;padding:32px 20px 80px}
 a{color:inherit;text-decoration:none}
 footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}
@@ -4944,7 +4952,7 @@ h2{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.05rem;font
 .rec-row{border-bottom:1px solid rgba(147,161,173,0.07)}
 .rec-row a,.rec-static{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:12px 0}
 .rec-row a:hover .rec-addr{color:#ed6317}
-.rec-addr{font-family:'JetBrains Mono',monospace;font-size:0.86rem;font-weight:500;color:#e4e8ec;letter-spacing:0.02em}
+.rec-addr{font-family:'JetBrains Mono',monospace;font-size:0.86rem;font-weight:500;color:#e4e8ec;letter-spacing:0.02em;overflow-wrap:anywhere}
 .rec-geo{font-size:0.74rem;color:rgba(147,161,173,0.7);margin-top:2px}
 .rec-side{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;text-align:right}
 .rec-amt{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:#c9d2da}
