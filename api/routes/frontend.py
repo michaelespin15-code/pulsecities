@@ -2130,7 +2130,8 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <p id="dir-desc" style="font-size:0.82rem;color:#93a1ad;margin-bottom:8px;line-height:1.6;">
     Ownership clusters identified in NYC deed records. Each groups LLCs by naming patterns and acquisition activity. Public records only.
   </p>
-  <p id="dir-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(147,161,173,0.55);margin-bottom:28px;">{n_visible} clusters tracked across an 18-month public records window.</p>
+  <p id="dir-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(147,161,173,0.55);margin-bottom:8px;">{n_visible} clusters tracked across an 18-month public records window.</p>
+  <p id="dir-ledger-link" style="font-size:0.78rem;margin-bottom:28px;">Looking for a specific company instead? <a href="/llc" style="color:#6fb1d8;">Search the full ledger of LLC buyers &rarr;</a></p>
   <ul class="op-list">
 {rows_html}  </ul>
 </div>

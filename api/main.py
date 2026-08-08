@@ -162,6 +162,18 @@ def _resolve_api_key(raw_key: str) -> dict | None:
 
 
 @app.middleware("http")
+async def html_no_stale_cache(request, call_next):
+    """SSR responses shipped with no cache headers, so browsers heuristically
+    cached them and served stale pages after deploys. HTML must revalidate;
+    API responses and anything that sets its own policy are left alone."""
+    response = await call_next(request)
+    ctype = response.headers.get("content-type", "")
+    if ctype.startswith("text/html") and "cache-control" not in response.headers:
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
+@app.middleware("http")
 async def head_as_get(request, call_next):
     """Uptime bots and link checkers probe with HEAD, which FastAPI's GET-only
     routes answer with 405. Serve the GET internally and drop the body.
