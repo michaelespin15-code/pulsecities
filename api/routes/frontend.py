@@ -1376,8 +1376,16 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str
                 f'<tbody>{rows}</tbody></table></div>'
                 f'<p class="data-note">{note}</p></section>')
 
+    def _buyer_cell(name: str) -> str:
+        # Company buyers link to their deed-ledger page; people don't.
+        if name and any(t in name for t in ("LLC", "CORP", "INC", "TRUST", "HOLDING")):
+            slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+            if slug:
+                return (f'<a href="/llc/{e(slug)}" style="color:#6fb1d8;">{e(name)}</a>')
+        return e(name or "")
+
     own_rows = "".join(
-        f'<tr><td class="sc">{e(o.get("buyer") or "")}<span class="sw">{e(o.get("doc_type") or "")}</span></td>'
+        f'<tr><td class="sc">{_buyer_cell(o.get("buyer"))}<span class="sw">{e(o.get("doc_type") or "")}</span></td>'
         f'<td class="sr">{_d(o.get("date"))}</td><td class="si">{_money(o.get("amount"))}</td></tr>'
         for o in owners
     )
@@ -3604,11 +3612,11 @@ def week_edition_page(slug: str, db: Session = Depends(get_db)):
 <meta property="og:url" content="{canonical}">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="PulseCities">
-<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta property="og:image" content="{image}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{e(title)}">
 <meta name="twitter:description" content="{e(desc)}">
-<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:image" content="{image}">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -4592,11 +4600,11 @@ def evictions_page(db: Session = Depends(get_db)):
 <meta property="og:url" content="https://pulsecities.com/evictions">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
-<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta property="og:image" content="https://pulsecities.com/og/site/evictions.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{esc(title)}">
 <meta name="twitter:description" content="{esc(desc)}">
-<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:image" content="https://pulsecities.com/og/site/evictions.png">
 <script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
@@ -4825,11 +4833,11 @@ def who_owns_page(db: Session = Depends(get_db)):
 <meta property="og:url" content="https://pulsecities.com/who-owns-my-building">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
-<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta property="og:image" content="https://pulsecities.com/og/site/who-owns.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{esc(title)}">
 <meta name="twitter:description" content="{esc(desc)}">
-<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:image" content="https://pulsecities.com/og/site/who-owns.png">
 <script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
@@ -4897,7 +4905,7 @@ p a:hover{{text-decoration:underline}}
   <p style="margin-top:10px;font-size:0.8rem;"><a href="/llc" class="body-link">The full ledger of LLC buyers &rarr;</a></p>
 
   <h2>What to check after the owner</h2>
-  <p>The name on the deed matters less than what the record shows around it. On any property or neighborhood page, look at executed evictions, renovation permits filed soon after a purchase, open HPD violations, and rent-stabilized unit counts over time. Every neighborhood page has a watch card that emails you when the record moves. <a href="/evictions">Citywide eviction tracker &rarr;</a></p>
+  <p>The name on the deed matters less than what the record shows around it. On any property or neighborhood page, look at executed evictions, renovation permits filed soon after a purchase, open HPD violations, and rent-stabilized unit counts over time. Every neighborhood page has a watch card that emails you when the record moves. <a href="/evictions">Citywide eviction tracker &rarr;</a> <a href="/is-my-building-rent-stabilized" style="margin-left:10px;">Is my building rent stabilized &rarr;</a></p>
 
   <h2>Other official registries</h2>
   <p>For the deed itself, <a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBL" target="_blank" rel="noopener noreferrer">search ACRIS directly</a>. Multiple-dwelling landlords must also register a managing agent with HPD, searchable on <a href="https://hpdonline.nyc.gov/hpdonline/" target="_blank" rel="noopener noreferrer">HPD Online</a>. PulseCities indexes the deed record and the enforcement record; HPD registration can name a person where the deed names a shell.</p>
@@ -4966,7 +4974,8 @@ h2{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.05rem;font
 """
 
 
-def _llc_head(title: str, desc: str, url: str, robots: str, jsonld: str) -> str:
+def _llc_head(title: str, desc: str, url: str, robots: str, jsonld: str,
+              image: str = "https://pulsecities.com/og-image.png") -> str:
     e = _html.escape
     return f"""<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4979,11 +4988,11 @@ def _llc_head(title: str, desc: str, url: str, robots: str, jsonld: str) -> str:
 <meta property="og:url" content="{url}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
-<meta property="og:image" content="https://pulsecities.com/og-image.png">
+<meta property="og:image" content="https://pulsecities.com/og/site/who-owns.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{e(title)}">
 <meta name="twitter:description" content="{e(desc)}">
-<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+<meta name="twitter:image" content="https://pulsecities.com/og/site/who-owns.png">
 <script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
@@ -5030,7 +5039,7 @@ def llc_directory(db: Session = Depends(get_db)):
     page = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-{_llc_head(title, desc, "https://pulsecities.com/llc", "index, follow", jsonld)}
+{_llc_head(title, desc, "https://pulsecities.com/llc", "index, follow", jsonld, image="https://pulsecities.com/og/site/llc.png")}
 </head>
 <body>
 {_ssr_nav("", toggle_html="")}
@@ -5212,4 +5221,118 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
         if len(_llc_page_cache) >= 512:
             _llc_page_cache.clear()
     _llc_page_cache[slug] = (page, time.monotonic() + _PAGE_TTL)
+    return HTMLResponse(page)
+
+
+# --- Rent-stabilization checker: the third tenant question --------------------
+
+_rs_page_cache: tuple[str, float] | None = None
+_RS_TTL = 21600
+
+
+@router.get("/is-my-building-rent-stabilized", include_in_schema=False)
+def rent_stabilized_page(db: Session = Depends(get_db)):
+    """Intent landing for the "is my building rent stabilized" query class.
+
+    The honest answer routes through DHCR's rent history; this page says so
+    plainly, gives the building-level clues, and shows what the site tracks.
+    """
+    global _rs_page_cache
+    if _rs_page_cache and time.monotonic() < _rs_page_cache[1]:
+        return HTMLResponse(_rs_page_cache[0])
+
+    esc = _html.escape
+
+    latest = db.execute(text("""
+        SELECT year, count(DISTINCT bbl) AS bldgs, sum(rs_unit_count) AS units
+        FROM rs_buildings
+        WHERE rs_unit_count > 0 AND year <= 2023
+        GROUP BY year ORDER BY year DESC LIMIT 1
+    """)).first()
+    rs_year = int(latest.year) if latest else None
+    rs_units = int(latest.units) if latest and latest.units else 0
+    rs_bldgs = int(latest.bldgs) if latest and latest.bldgs else 0
+
+    title = "Is my building rent stabilized? How to check any NYC address | PulseCities"
+    desc = ("How to find out if your NYC apartment is rent stabilized: the free "
+            "official rent history request, the building-level clues, and what the "
+            "registration record shows.")
+
+    faq = [
+        ("How do I check if my apartment is rent stabilized?",
+         "The definitive answer is your rent history, free from New York State "
+         "Homes and Community Renewal. Request it through the Ask HCR portal. "
+         "Building-level clues help too: buildings built before 1974 with six or "
+         "more units are commonly stabilized, and buildings receiving certain tax "
+         "benefits must register stabilized units."),
+        ("Is there an official public list of stabilized buildings?",
+         "DHCR publishes building-level registration lists, but they lag and a "
+         "building's presence or absence is not conclusive for any single "
+         "apartment. That is why the rent history request exists."),
+        ("Can a sale or renovation end stabilization?",
+         "A sale does not end stabilization; the status attaches to the "
+         "apartment, not the owner. Since the 2019 housing law, most paths that "
+         "removed apartments from stabilization are closed, though earlier "
+         "deregulations still stand. If your rent jumped after a renovation, the "
+         "rent history shows how the increases were registered."),
+        ("What does PulseCities track about stabilization?",
+         "Neighborhood pages track registered stabilized-unit counts year over "
+         "year as a displacement signal: a building that stops registering units "
+         "is a building worth watching."),
+    ]
+    faq_html = "".join(
+        f'<div class="faq-item"><h3>{esc(q)}</h3><p>{esc(a)}</p></div>' for q, a in faq
+    )
+    jsonld = _jsonld({"@context": "https://schema.org", "@graph": [
+        {"@type": "FAQPage", "mainEntity": [
+            {"@type": "Question", "name": q,
+             "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]},
+        _crumbs(("Home", "/"), ("Is my building rent stabilized", "/is-my-building-rent-stabilized")),
+    ]})
+
+    reg_line = ""
+    if rs_year and rs_units:
+        reg_line = (f"In {rs_year}, the latest complete registration year in the public "
+                    f"record, {rs_units:,} stabilized units were registered across "
+                    f"{rs_bldgs:,} NYC buildings.")
+
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+{_llc_head(title, desc, "https://pulsecities.com/is-my-building-rent-stabilized", "index, follow", jsonld)}
+</head>
+<body>
+{_ssr_nav("", toggle_html="")}
+<div class="container" style="max-width:720px;">
+  <div style="margin-bottom:8px;">
+    <a href="/" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">&#8592; Home</a>
+  </div>
+  <div class="eyebrow">NYC housing records</div>
+  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.7rem;letter-spacing:0;font-weight:600;">Is my building rent stabilized?</h1>
+  <p class="sub" style="font-size:0.86rem;">There is one definitive answer and a set of useful clues. The definitive answer is free and official; the clues start with your address.</p>
+  <form style="display:flex;gap:10px;margin:22px 0 6px;max-width:560px;" action="/map" method="get">
+    <input type="text" name="q" placeholder="Enter an address, ZIP, or neighborhood" aria-label="Search an address, ZIP, or neighborhood" style="flex:1;font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:#e4e8ec;background:#16202d;border:1px solid rgba(147,161,173,0.2);border-radius:8px;padding:12px 14px;min-width:0;">
+    <button type="submit" style="font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;color:#111823;background:#ed6317;border:none;border-radius:8px;padding:12px 22px;cursor:pointer;">Search</button>
+  </form>
+  <p style="font-size:0.74rem;color:rgba(147,161,173,0.55);margin-bottom:4px;">Free, no signup. Public records only</p>
+
+  <h2>The definitive answer: your rent history</h2>
+  <p class="sub" style="font-size:0.86rem;">New York State keeps the registration record for every stabilized apartment. Request your unit's rent history free through the <a href="https://portal.hcr.ny.gov/" target="_blank" rel="noopener noreferrer" style="color:#6fb1d8;">Ask HCR portal</a>, run by <a href="https://hcr.ny.gov/" target="_blank" rel="noopener noreferrer" style="color:#6fb1d8;">NYS Homes and Community Renewal</a>. It shows every registered rent for your apartment, which answers the question and often more.</p>
+
+  <h2>The building-level clues</h2>
+  <p class="sub" style="font-size:0.86rem;">Buildings built before 1974 with six or more units are commonly stabilized. Buildings that took certain tax benefits must register units for the benefit period. And the registration record itself is a signal: {esc(reg_line) if reg_line else "DHCR publishes building-level registration counts each year."} A building that stops registering units year over year is a building worth watching, which is exactly how PulseCities uses the data on every <a href="/neighborhoods" style="color:#6fb1d8;">neighborhood page</a>.</p>
+
+  <h2>While you are checking</h2>
+  <p class="sub" style="font-size:0.86rem;">The same address search shows who took the deed on your building, the eviction record, and open violations. <a href="/who-owns-my-building" style="color:#6fb1d8;">Who owns my building &rarr;</a></p>
+
+  <h2>Common questions</h2>
+  {faq_html}
+
+  <p class="note">PulseCities reads public registration data; it does not determine any apartment's legal status. For a binding answer, request your rent history from DHCR. <a href="/methodology">How PulseCities reads the record &rarr;</a></p>
+</div>
+{_FOOTER_HTML}
+</body>
+</html>"""
+
+    _rs_page_cache = (page, time.monotonic() + _RS_TTL)
     return HTMLResponse(page)

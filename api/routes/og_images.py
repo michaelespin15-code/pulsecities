@@ -583,3 +583,116 @@ def this_week_og_image(db: Session = Depends(get_db)):
     _clean_old_cache("thisweek", cache_key)
     return Response(content=png, media_type="image/png",
                     headers={"Cache-Control": "public, max-age=3600"})
+
+
+# --- Site cards: OG images for the intent pages, drawn from live numbers ------
+
+_SITE_CARDS = {"evictions", "llc", "who-owns"}
+
+
+def _render_site_card(kicker: str, headline: str, sub: str,
+                      stats: list[tuple[str, str]], today_label: str,
+                      bars: list[int] | None = None) -> bytes:
+    W, H = 1200, 630
+    img  = Image.new("RGB", (W, H), _BG)
+    draw = ImageDraw.Draw(img)
+    for x in range(0, W, 60):
+        draw.line([(x, 0), (x, H)], fill=_DIM, width=1)
+    for y in range(0, H, 60):
+        draw.line([(0, y), (W, y)], fill=_DIM, width=1)
+
+    f_kick  = ImageFont.truetype(_FONTS_MONO,    18)
+    f_name  = ImageFont.truetype(_FONTS_BOLD,    58)
+    f_sub   = ImageFont.truetype(_FONTS_REGULAR, 22)
+    f_date  = ImageFont.truetype(_FONTS_MONO,    17)
+    f_count = ImageFont.truetype(_FONTS_BOLD,    44)
+    f_label = ImageFont.truetype(_FONTS_REGULAR, 19)
+    f_brand = ImageFont.truetype(_FONTS_MONO,    16)
+
+    draw.text((80, 78), kicker.upper(), font=f_kick, fill=_ORANGE)
+    draw.text((80, 112), headline, font=f_name, fill=_WHITE)
+    draw.text((80, 190), sub, font=f_sub, fill=_MUTED)
+    draw.line([(80, 232), (700, 232)], fill=(35, 50, 75), width=1)
+    draw.text((80, 246), f"As of {today_label}", font=f_date, fill=_MUTED)
+
+    y = 300
+    for value, label in stats:
+        draw.text((80, y),      value, font=f_count, fill=_WHITE)
+        draw.text((80, y + 56), label, font=f_label, fill=_MUTED)
+        y += 100
+
+    if bars:
+        peak = max(bars) or 1
+        bx, base, bw, gap, maxh = W - 460, 500, 24, 8, 220
+        for i, v in enumerate(bars[-12:]):
+            bh = int((v / peak) * maxh)
+            x0 = bx + i * (bw + gap)
+            fill = _ORANGE if i == len(bars[-12:]) - 1 else (120, 78, 45)
+            draw.rectangle([x0, base - bh, x0 + bw, base], fill=fill)
+
+    draw.text((82, H - 50), "pulsecities.com", font=f_brand, fill=(60, 75, 100))
+    draw.rectangle([0, H - 5, W, H], fill=_ORANGE)
+    buf = io.BytesIO()
+    img.save(buf, "PNG", optimize=True)
+    return buf.getvalue()
+
+
+@router.get("/og/site/{key}.png", include_in_schema=False)
+def og_site_card(key: str, db: Session = Depends(get_db)):
+    if key not in _SITE_CARDS:
+        return Response(content=_DEFAULT_IMAGE.read_bytes(), media_type="image/png",
+                        headers={"Cache-Control": "public, max-age=86400"})
+
+    today = date.today()
+    cache_key = f"site_{key}_{today.strftime('%Y%m%d')}"
+    cache_path = _CACHE_DIR / f"{cache_key}.png"
+    if cache_path.exists():
+        return Response(content=cache_path.read_bytes(), media_type="image/png",
+                        headers={"Cache-Control": "public, max-age=3600"})
+
+    today_label = today.strftime("%b %-d, %Y")
+    bars = None
+
+    if key == "evictions":
+        c = db.execute(text("""
+            SELECT count(*) FILTER (WHERE executed_date >= CURRENT_DATE - 30)  AS d30,
+                   count(*) FILTER (WHERE executed_date >= CURRENT_DATE - 365) AS d365
+            FROM evictions_raw WHERE eviction_type = 'Residential'
+        """)).first()
+        monthly = db.execute(text("""
+            SELECT count(*) AS c FROM evictions_raw
+            WHERE eviction_type = 'Residential'
+              AND executed_date >= (date_trunc('month', CURRENT_DATE) - interval '12 months')
+              AND executed_date < date_trunc('month', CURRENT_DATE)
+            GROUP BY date_trunc('month', executed_date) ORDER BY date_trunc('month', executed_date)
+        """)).fetchall()
+        bars = [int(r.c) for r in monthly]
+        png = _render_site_card(
+            "NYC public records", "NYC marshal evictions",
+            "Executed residential warrants, tracked nightly",
+            [(f"{int(c.d30):,}", "past 30 days"), (f"{int(c.d365):,}", "past 12 months")],
+            today_label, bars)
+    elif key == "llc":
+        c = db.execute(text("""
+            SELECT count(DISTINCT party_name_normalized) AS ents,
+                   count(DISTINCT bbl) AS bbls
+            FROM ownership_raw
+            WHERE doc_type = 'DEED' AND party_type = '2'
+              AND party_name_normalized LIKE '%LLC%'
+        """)).first()
+        png = _render_site_card(
+            "NYC deed record", "The LLC buyers",
+            "Every LLC on a recorded NYC deed, with full purchase history",
+            [(f"{int(c.ents):,}", "LLC buyers on record"),
+             (f"{int(c.bbls):,}", "properties acquired")],
+            today_label)
+    else:
+        png = _render_site_card(
+            "NYC ownership records", "Who owns my building?",
+            "Deeds, evictions, permits, and violations for any address",
+            [("Free", "no signup, public records only")],
+            today_label)
+
+    cache_path.write_bytes(png)
+    return Response(content=png, media_type="image/png",
+                    headers={"Cache-Control": "public, max-age=3600"})

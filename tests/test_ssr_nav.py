@@ -76,6 +76,7 @@ STATIC_HUB_ROUTES = [
     "/operators", "/neighborhoods", "/borough/brooklyn", "/flips",
     "/flips/editions", "/radar", "/this-week", "/displacement",
     "/neighborhood/11216", "/evictions", "/who-owns-my-building", "/llc",
+    "/is-my-building-rent-stabilized",
 ]
 
 
