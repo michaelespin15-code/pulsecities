@@ -3612,11 +3612,11 @@ def week_edition_page(slug: str, db: Session = Depends(get_db)):
 <meta property="og:url" content="{canonical}">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="PulseCities">
-<meta property="og:image" content="{image}">
+<meta property="og:image" content="https://pulsecities.com/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{e(title)}">
 <meta name="twitter:description" content="{e(desc)}">
-<meta name="twitter:image" content="{image}">
+<meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -4988,11 +4988,11 @@ def _llc_head(title: str, desc: str, url: str, robots: str, jsonld: str,
 <meta property="og:url" content="{url}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
-<meta property="og:image" content="https://pulsecities.com/og/site/who-owns.png">
+<meta property="og:image" content="{image}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{e(title)}">
 <meta name="twitter:description" content="{e(desc)}">
-<meta name="twitter:image" content="https://pulsecities.com/og/site/who-owns.png">
+<meta name="twitter:image" content="{image}">
 <script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
