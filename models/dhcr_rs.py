@@ -26,6 +26,9 @@ class RsBuilding(TimestampMixin, Base):
 
     bbl: Mapped[str | None] = mapped_column(String(10), nullable=True)
     year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # 'dhcr' = real rent-stabilization registrations; 'hpd_jurisdiction' =
+    # HPD multiple-dwelling apartment counts. Only 'dhcr' is RS data.
+    source: Mapped[str | None] = mapped_column(String(32), nullable=True)
     rs_unit_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
     raw_data: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
 

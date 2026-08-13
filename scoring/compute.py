@@ -385,11 +385,13 @@ def _aggregate_rs_unit_loss(db: Session) -> List[Tuple[str, float]]:
                 SELECT bbl, rs_unit_count AS current_units
                 FROM rs_buildings
                 WHERE year = EXTRACT(YEAR FROM CURRENT_DATE)::int
+                  AND source = 'dhcr'
             ),
             prior_year AS (
                 SELECT bbl, rs_unit_count AS prior_units
                 FROM rs_buildings
                 WHERE year = EXTRACT(YEAR FROM CURRENT_DATE)::int - 1
+                  AND source = 'dhcr'
             ),
             loss_per_bbl AS (
                 SELECT c.bbl,
@@ -732,6 +734,7 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
             text(
                 "SELECT COUNT(*) FROM rs_buildings"
                 " WHERE year = EXTRACT(YEAR FROM CURRENT_DATE)::int"
+                "   AND source = 'dhcr'"
             )
         ).scalar() or 0
         if current_year_count > 0:

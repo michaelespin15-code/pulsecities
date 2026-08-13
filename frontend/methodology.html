@@ -83,7 +83,7 @@
                         "name": "Where does the data come from?",
                         "acceptedAnswer": {
                             "@type": "Answer",
-                            "text": "All data is from NYC Open Data: ACRIS deed records, DOB permits, HPD violations, 311 complaints, eviction records, and DHCR rent-stabilized building registrations. Every dataset is public record."
+                            "text": "All data is from NYC Open Data: ACRIS deed records, DOB permits, HPD violations, 311 complaints, eviction records, and HPD building registrations. Every dataset is public record."
                         }
                     },
                     {
@@ -609,12 +609,12 @@
 
             <div class="source-card">
                 <div class="source-card-header">
-                    <a href="https://data.cityofnewyork.us/d/kj4p-ruqc" target="_blank" rel="noopener noreferrer" class="source-name">DHCR Building Registrations</a>
+                    <a href="https://data.cityofnewyork.us/d/kj4p-ruqc" target="_blank" rel="noopener noreferrer" class="source-name">Buildings Subject to HPD Jurisdiction</a>
                     <span class="source-id">
                         <a href="https://data.cityofnewyork.us/d/kj4p-ruqc" target="_blank" rel="noopener noreferrer" class="src-link">dataset kj4p-ruqc</a>
                     </span>
                 </div>
-                <p class="source-desc">Annual rent-stabilized unit counts per building from DHCR. Used to measure year-over-year RS unit loss. Updated annually.</p>
+                <p class="source-desc">Apartment counts per building from HPD, used as a measure of building size. This is not rent-stabilization data. The state's annual rent-stabilized unit snapshot was withdrawn from NYC Open Data in April 2026, so the RS unit-loss signal has no live source and carries no weight in the score; its weight is redistributed across the active signals.</p>
             </div>
 
             <div class="source-card">
@@ -691,7 +691,7 @@
                 <tr>
                     <td>
                         Rent-stabilized unit loss<br>
-                        <span style="font-size:12px;color:var(--muted);">Year-over-year loss in registered rent-stabilized units per building. A direct signal of rent-stabilized housing loss when annual comparisons are available.</span>
+                        <span style="font-size:12px;color:var(--muted);">Year-over-year loss in registered rent-stabilized units per building. Dormant since April 2026, when the state withdrew the annual snapshot dataset; its weight is redistributed across the active signals.</span>
                         <div class="dormant-note">Dormant until 2027. Requires two consecutive DHCR annual snapshots.</div>
                     </td>
                     <td><span class="weight-badge">15%</span></td>
@@ -835,7 +835,7 @@
         <p>No. PulseCities shows where public-record pressure is building, not where evictions will occur. The score reflects activity in the record, not outcomes.</p>
 
         <h3>Where does the data come from?</h3>
-        <p>All data is from NYC Open Data: ACRIS deed records, DOB permits, HPD violations, 311 complaints, eviction records, and DHCR rent-stabilized building registrations. Every dataset is public record.</p>
+        <p>All data is from NYC Open Data: ACRIS deed records, DOB permits, HPD violations, 311 complaints, eviction records, and HPD building registrations. Every dataset is public record.</p>
 
         <h3>How often is it updated?</h3>
         <p>Scrapers run nightly at 2am UTC. Most datasets refresh daily. ACRIS data lags approximately two weeks; eviction data lags two to four weeks.</p>

@@ -350,6 +350,7 @@ def get_operator_profile_by_slug(
                 SELECT DISTINCT ON (bbl) bbl, year, rs_unit_count
                 FROM rs_buildings
                 WHERE bbl = ANY(:bbl_list) AND rs_unit_count IS NOT NULL
+                  AND source = 'dhcr'
                 ORDER BY bbl, year DESC
             """),
             {"bbl_list": bbl_list},

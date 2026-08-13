@@ -1,18 +1,25 @@
 """
-DHCR Rent Stabilization Buildings scraper.
-Dataset: kj4p-ruqc (DHCR Building Registrations — NYC Open Data)
+HPD building-registry scraper (formerly the DHCR rent-stabilization source).
 
-This is the live DHCR building registration list, used as a snapshot source for
-rent-stabilized unit counts. Each Active/Building record represents a building
-currently registered with DHCR, with legalclassa giving the Class A (residential)
-apartment count — which equals the RS unit count for DHCR-registered buildings.
+Dataset: kj4p-ruqc — "Buildings Subject to HPD Jurisdiction" (NYC Open Data),
+published by HPD, not DHCR.
 
-The original dataset yn95-5t2d (annual RS unit snapshots) is no longer available
-on NYC Open Data as of 2026-04-12. kj4p-ruqc is the current replacement source.
+IMPORTANT: what this ingests is NOT rent-stabilization data. The field read
+here, legalclassa, is defined by HPD as "the number of apartments in a
+multiple dwelling" — total apartments in every building under HPD
+jurisdiction (~333k buildings), not registered rent-stabilized units (~32k
+buildings in the real DHCR years).
 
-Since there is no year field in kj4p-ruqc, this scraper always writes the current
-calendar year as the snapshot year. Year-over-year RS unit loss (the displacement
-signal) becomes active after two consecutive annual runs populate both years.
+History: the annual DHCR snapshot dataset yn95-5t2d was withdrawn from NYC
+Open Data on 2026-04-12 and kj4p-ruqc was substituted on the assumption that
+legalclassa equalled the RS unit count for DHCR-registered buildings. It does
+not, and the 10x jump in building count is the tell. Rows written here are
+therefore stamped source='hpd_jurisdiction' and are excluded from every
+rent-stabilization surface and from the rs_unit_loss signal, which has had no
+live source since the withdrawal.
+
+Rows still land in rs_buildings because the apartment count is a useful
+measure of building size; the source column keeps the two datasets apart.
 
 Field name constants:
   boroid      — 1-digit borough code (1–5)
@@ -103,6 +110,7 @@ class DhcrRsScraper(BaseScraper):
             "bbl": bbl,
             "year": snapshot_year,
             "rs_unit_count": rs_unit_count,
+            "source": "hpd_jurisdiction",
         }
 
     def _upsert(self, db, parsed: dict, raw: dict) -> None:
@@ -111,14 +119,15 @@ class DhcrRsScraper(BaseScraper):
         db.execute(
             text("""
                 INSERT INTO rs_buildings (
-                    bbl, year, rs_unit_count, raw_data, created_at, updated_at
+                    bbl, year, rs_unit_count, source, raw_data, created_at, updated_at
                 )
                 VALUES (
-                    :bbl, :year, :rs_unit_count, CAST(:raw_data AS jsonb), :now, :now
+                    :bbl, :year, :rs_unit_count, :source, CAST(:raw_data AS jsonb), :now, :now
                 )
                 ON CONFLICT ON CONSTRAINT uq_rs_buildings_bbl_year
                 DO UPDATE SET
                     rs_unit_count = EXCLUDED.rs_unit_count,
+                    source = EXCLUDED.source,
                     raw_data      = EXCLUDED.raw_data,
                     updated_at    = EXCLUDED.updated_at
             """),

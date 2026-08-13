@@ -340,6 +340,7 @@ def get_top_risk_neighborhoods(
                 JOIN parcels par ON par.bbl = cur.bbl
                 WHERE cur.year = EXTRACT(YEAR FROM CURRENT_DATE)::int
                   AND prior.year = EXTRACT(YEAR FROM CURRENT_DATE)::int - 1
+                  AND cur.source = 'dhcr' AND prior.source = 'dhcr'
                   AND par.zip_code IS NOT NULL
                 GROUP BY par.zip_code
             ),

@@ -110,8 +110,8 @@ _FAQ_A1 = (
 _FAQ_Q2 = "What public records are included?"
 _FAQ_A2 = (
     "PulseCities uses NYC public records: DOB building permits, HPD housing violations, "
-    "311 housing complaints, eviction filings, ACRIS property deed transfers, DHCR "
-    "rent-stabilized housing data, and MapPLUTO residential unit counts."
+    "311 housing complaints, eviction filings, ACRIS property deed transfers, HPD "
+    "building registrations, and MapPLUTO residential unit counts."
 )
 _FAQ_Q3 = "Is this a prediction of eviction?"
 _FAQ_A3 = (
@@ -132,7 +132,7 @@ _FAQS = {
         ("¿Qué registros públicos se incluyen?",
          "PulseCities usa registros públicos de NYC: permisos de construcción de DOB, "
          "violaciones de vivienda de HPD, quejas de vivienda al 311, casos de desalojo, "
-         "transferencias de escrituras de ACRIS, datos de renta estabilizada de DHCR y "
+         "transferencias de escrituras de ACRIS, registros de edificios de HPD y "
          "conteos de unidades residenciales de MapPLUTO."),
         ("¿Es esto una predicción de desalojo?",
          "No. PulseCities no predice desalojos individuales y no es asesoría legal. La "
@@ -5304,7 +5304,7 @@ def rent_stabilized_page(db: Session = Depends(get_db)):
     latest = db.execute(text("""
         SELECT year, count(DISTINCT bbl) AS bldgs, sum(rs_unit_count) AS units
         FROM rs_buildings
-        WHERE rs_unit_count > 0 AND year <= 2023
+        WHERE rs_unit_count > 0 AND source = 'dhcr'
         GROUP BY year ORDER BY year DESC LIMIT 1
     """)).first()
     rs_year = int(latest.year) if latest else None
@@ -5350,9 +5350,10 @@ def rent_stabilized_page(db: Session = Depends(get_db)):
 
     reg_line = ""
     if rs_year and rs_units:
-        reg_line = (f"In {rs_year}, the latest complete registration year in the public "
-                    f"record, {rs_units:,} stabilized units were registered across "
-                    f"{rs_bldgs:,} NYC buildings.")
+        reg_line = (f"In {rs_year}, the most recent registration year PulseCities holds, "
+                    f"{rs_units:,} stabilized units were registered across "
+                    f"{rs_bldgs:,} NYC buildings. The state withdrew its annual snapshot "
+                    f"dataset in April 2026, so nothing newer is published here.")
 
     page = f"""<!DOCTYPE html>
 <html lang="en">
