@@ -23,8 +23,9 @@ adquisiciones registradas, y en 2026 hizo tres compras más después de
 desalojos, todas en el Bronx, incluida una de $1.45 millones cuatro meses
 después de un desalojo.
 
-El contexto: en los últimos 30 días se ejecutaron 1,271 desalojos
-residenciales por alguacil en NYC, y los vecindarios con más ejecuciones son
+El contexto: en los 30 días hasta el 5 de agosto, el último día publicado
+por la ciudad, se ejecutaron 1,530 desalojos residenciales por alguacil en
+NYC, y los vecindarios con más ejecuciones son
 Morris Heights, East Tremont y Belmont, todos en el Bronx. El rastreador
 está en pulsecities.com/evictions, y cada línea de tiempo con sus números de
 documento ACRIS está en pulsecities.com/press.

@@ -3,16 +3,17 @@
 Data-first, no marketing register. Offer lookups in the comments and then
 actually do them; that is what makes these threads go well.
 
-**Title:** I track every NYC marshal eviction from public records. 1,271 in the past 30 days, and the Bronx carries most of them
+**Title:** I track every NYC marshal eviction from public records. 1,530 in the last 30 published days, and the Bronx carries most of them
 
 ---
 
 I built a free public tool (PulseCities) that reads NYC's open housing data
 nightly. A few things from the current eviction record:
 
-- 1,271 residential marshal evictions were executed in the past 30 days,
-  which is 22% below the same window last year
-- 16,583 over the past 12 months
+- 1,530 residential marshal evictions were executed in the 30 days through
+  Aug 5, the most recent day the city has published
+- That runs about 2% below the same 30 days a year earlier, so roughly flat
+- 16,845 over the past 12 months
 - The heaviest concentrations are Morris Heights, East Tremont, and Belmont,
   all in the Bronx
 

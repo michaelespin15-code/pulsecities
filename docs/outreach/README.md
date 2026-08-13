@@ -33,14 +33,21 @@ pages, because the directory rebuilds and the counts move.
 - 17 documented eviction-to-resale arcs on /displacement; steepest is
   104-06 104 Avenue, Queens Village: evicted Feb 2025, bought May 2025 for
   $292K, sold Sep 2025 for $969K, +232%
-- /evictions: 1,271 residential marshal executions in the past 30 days, 22%
-  below the same window last year; 16,583 in the past 12 months; heaviest
-  concentration in the Bronx (Morris Heights, East Tremont, Belmont)
+- /evictions: 1,530 residential marshal executions in the 30 days through
+  Aug 5, 2026, which runs 2% below the same 30 days a year earlier; 16,845 in
+  the past 12 months; heaviest concentration in the Bronx (Morris Heights,
+  East Tremont, Belmont)
+  NOTE: an earlier draft of this kit said "22% below last year". That was
+  wrong. The site was comparing a short window of published records against a
+  full one, because the city publishes evictions on a week-plus lag. Fixed on
+  2026-08-13; every window now ends at the latest published record. Evictions
+  are roughly flat year over year, not falling. Do not use the old figure.
 
 **Data currency phrasing (use exactly this)**
-"Deed data runs through July 1; eviction and violation data through this
-week." Do not volunteer that the upstream ACRIS feed is frozen; the July 1
-watermark is the true answer if asked.
+Check /status before sending and quote what it shows. As of 2026-08-13:
+"Deed data runs through July 1; eviction records through Aug 5." The city's
+eviction feed publishes on a lag of a week or more, so always cite a window
+that ends at the last published day rather than "the past 30 days".
 
 ## Claims to avoid (they died in verification)
 - Do not say MTEK "owns" 42 buildings; it has resold many. Say "recorded
