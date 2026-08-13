@@ -31,3 +31,6 @@ scripts/operator_network_analysis.json
 
 # Playwright MCP screenshot scratch
 .playwright-mcp/
+
+# Agent research scratch
+dash.json
