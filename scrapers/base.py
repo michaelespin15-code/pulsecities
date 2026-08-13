@@ -102,16 +102,36 @@ class BaseScraper(ABC):
         select: str | None = None,
         order: str = ":id",
     ):
-        """Yields every record matching where, page by page."""
+        """Yields every record matching where, page by page.
+
+        Termination is an EMPTY page, never a short one. Socrata throttles by
+        returning fewer rows than asked for without an error, and treating that
+        as end-of-data silently truncated the walk and recorded the run as a
+        success holding partial data. Advancing by the rows actually received
+        means a short page costs one extra round trip and resumes exactly where
+        it stopped, instead of dropping the tail of the table.
+        """
         offset = 0
+        short_pages = 0
         while True:
             page = self._fetch_page(where, select, order, self.PAGE_SIZE, offset)
             if not page:
                 break
-            yield from page
             if len(page) < self.PAGE_SIZE:
-                break
-            offset += self.PAGE_SIZE
+                short_pages += 1
+            yield from page
+            offset += len(page)
+        if short_pages:
+            # One short page is the normal last page. More than one means the
+            # source was handing back partial responses mid-walk.
+            self._short_pages = short_pages
+            if short_pages > 1:
+                logger.warning(
+                    "%s: %d short pages during walk; source returned partial "
+                    "responses and pagination continued past them",
+                    self.SCRAPER_NAME,
+                    short_pages,
+                )
 
     # ------------------------------------------------------------------ #
     # Watermark helpers                                                   #
