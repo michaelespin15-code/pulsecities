@@ -121,4 +121,37 @@ for key in "${KEYS[@]}"; do
     echo "$(date -u '+%F %T') verified $PREFIX/$key ($remote_bytes bytes)"
 done
 
+# --- secrets + curated state -------------------------------------------------
+# The dump restores the database; it does not restore the box. Without .env
+# there are no credentials to reach this bucket, and eviction_flips_editions
+# is the approved published archive that no scraper can regenerate. Encrypted
+# with the same R2 secret so the archive is useless on its own.
+STATE_TAR="/tmp/pulsecities_state_$$.tar.gz.enc"
+trap 'rm -f "$STATE_TAR"' EXIT
+
+tar -czf - -C "$APP_DIR" \
+        .env \
+        scripts/eviction_flips_editions.json \
+        scripts/eviction_flips_state.json \
+        scripts/building_alerts_state.json \
+    2>/dev/null \
+    | openssl enc -aes-256-cbc -pbkdf2 -salt -pass pass:"$S3_SECRET" -out "$STATE_TAR" \
+    || fail "state archive build failed"
+
+state_bytes=$(stat -c %s "$STATE_TAR")
+[ "$state_bytes" -gt 256 ] || fail "state archive suspiciously small ($state_bytes bytes)"
+
+rclone copyto --s3-no-check-bucket --retries 3 --low-level-retries 10 \
+    "$STATE_TAR" "R2:$BUCKET/$PREFIX/state-latest.tar.gz.enc" \
+    2>>/tmp/rclone_offsite_err.log \
+    || fail "rclone upload of state archive failed: $(tail -2 /tmp/rclone_offsite_err.log)"
+
+remote_state=$(curl -s --head --max-time 60 \
+    --aws-sigv4 "aws:amz:auto:s3" --user "$S3_KEYID:$S3_SECRET" \
+    -H "x-amz-content-sha256: $EMPTY_SHA" \
+    "$S3_EP/$BUCKET/$PREFIX/state-latest.tar.gz.enc" \
+    | awk 'tolower($1) == "content-length:" {print $2}' | tr -dc '0-9')
+[ "$remote_state" = "$state_bytes" ] || fail "size mismatch on state archive: local $state_bytes vs remote $remote_state"
+echo "$(date -u '+%F %T') verified $PREFIX/state-latest.tar.gz.enc ($remote_state bytes)"
+
 echo "$(date -u '+%F %T') offsite backup complete"

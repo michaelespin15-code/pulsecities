@@ -47,6 +47,12 @@ logger = logging.getLogger(__name__)
 # PLUTO and DOF are infrequent full-refresh scrapers — skip if run within this window
 PLUTO_MIN_INTERVAL_DAYS = 30
 DOF_MIN_INTERVAL_DAYS = 30
+# The HPD building registry (kj4p-ruqc, ingested by the scraper still named
+# dhcr_rs) is a slow-moving annual-ish list, and its rows are stamped
+# source='hpd_jurisdiction', which every consumer filters out. Re-walking all
+# 350k rows nightly was 92.5% of the pipeline's wall clock for data nothing
+# reads that night. data_health_check already classifies this feed as annual.
+HPD_REGISTRY_MIN_INTERVAL_DAYS = 30
 
 
 def _cleanup_stale_runs(db) -> None:
@@ -118,12 +124,15 @@ def run_nightly_pipeline() -> bool:
         ("evictions", EvictionsScraper),
         ("acris_ownership", OwnershipScraper),
         ("dcwp_licenses", DcwpScraper),
-        ("dhcr_rs", DhcrRsScraper),
         ("hpd_violations", ViolationsScraper),
     ]
 
     for scraper_name, ScraperClass in scrapers:
         if not _run_scraper_with_retry(scraper_name, ScraperClass):
+            had_failures = True
+
+    with get_scraper_db() as db:
+        if not _run_hpd_registry_if_due(db):
             had_failures = True
 
     # Scoring engine runs after all scrapers complete
@@ -238,6 +247,32 @@ def _run_dof_if_due(db) -> bool:
 
     logger.info("DOF run is due — starting...")
     return _run_scraper_with_retry("dof_assessments", DOFScraper)
+
+
+def _run_hpd_registry_if_due(db) -> bool:
+    """Run the HPD building registry at most monthly. It is a full-table walk
+    of ~350k rows whose output no query reads on a nightly cadence."""
+    last = (
+        db.query(ScraperRun)
+        .filter(
+            ScraperRun.scraper_name == "dhcr_rs",
+            ScraperRun.status == "success",
+        )
+        .order_by(ScraperRun.started_at.desc())
+        .first()
+    )
+
+    cutoff = datetime.now(timezone.utc) - timedelta(days=HPD_REGISTRY_MIN_INTERVAL_DAYS)
+    if last and last.started_at > cutoff:
+        logger.info(
+            "HPD registry run skipped — last successful run was %s (within %d-day window)",
+            last.started_at.date(),
+            HPD_REGISTRY_MIN_INTERVAL_DAYS,
+        )
+        return True  # skip counts as success
+
+    logger.info("HPD registry run is due — starting...")
+    return _run_scraper_with_retry("dhcr_rs", DhcrRsScraper)
 
 
 def _run_scoring() -> bool:
