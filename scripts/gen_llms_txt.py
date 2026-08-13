@@ -94,8 +94,10 @@ def build():
         for zip_code, name, score in top
     )
     dormant_note = (
-        f" {', '.join(dormant)} is currently dormant pending second-year DHCR data, "
-        "and its weight is redistributed across the active signals each run."
+        f" {', '.join(dormant)} is dormant: the state withdrew its annual "
+        "rent-stabilization snapshot from NYC Open Data in April 2026, so the "
+        "signal has no live source and its weight is redistributed across the "
+        "active signals each run."
         if dormant else ""
     )
 
@@ -103,7 +105,7 @@ def build():
 
 > Displacement risk scores for all {n_scored} NYC neighborhoods, built from public records and rescored nightly.
 
-PulseCities tracks housing displacement pressure across New York City by aggregating and scoring signals from public datasets: LLC property acquisitions (ACRIS), renovation permit filings (DOB), tenant complaint rates (311/HPD), executed residential evictions, HPD housing violations, and rent-stabilized unit loss (DHCR). Each of the {n_scored} ZIP code neighborhoods receives a daily composite score from 0 to 100.
+PulseCities tracks housing displacement pressure across New York City by aggregating and scoring signals from public datasets: LLC property acquisitions (ACRIS), renovation permit filings (DOB), tenant complaint rates (311/HPD), executed residential evictions, and HPD housing violations. Each of the {n_scored} ZIP code neighborhoods receives a daily composite score from 0 to 100.
 
 ## What this site provides
 
@@ -127,7 +129,9 @@ All signals are derived from NYC open data:
 - 311 / HPD (NYC Open Data): tenant complaints filtered to displacement-relevant types
 - NYC Marshal Evictions: residential eviction executions
 - HPD Violations (NYC Open Data): Class B and C violations on 3+ unit buildings
-- DHCR Rent Stabilization: rent-stabilized unit counts by building, year over year
+- HPD Buildings Subject to HPD Jurisdiction: apartment counts per building, used as a
+  size measure. The state's annual rent-stabilization snapshot was withdrawn from NYC
+  Open Data in April 2026, so the RS unit-loss signal has no live source
 
 Scoring methodology: each signal is normalized 0 to 100 relative to all NYC neighborhoods (per residential unit), then weighted and composited. Active weights: {weights_line}.{dormant_note}
 
@@ -155,6 +159,10 @@ Scoring methodology: each signal is normalized 0 to 100 relative to all NYC neig
 - https://pulsecities.com/radar: Speculation Radar, one LLC taking 3+ buildings in one ZIP within 90 days
 - https://pulsecities.com/this-week: current week in NYC displacement (score movers, new filings, newest flips)
 - https://pulsecities.com/this-week/archive: every past weekly edition at /week/{{YYYY-Www}}
+- https://pulsecities.com/evictions: citywide marshal-eviction tracker, updated nightly
+- https://pulsecities.com/llc: every LLC on a recorded NYC deed, with per-entity deed pages at /llc/{{slug}}
+- https://pulsecities.com/who-owns-my-building: how to find the owner of any NYC address
+- https://pulsecities.com/is-my-building-rent-stabilized: how to check rent-stabilization status
 - https://pulsecities.com/press: verified findings with ACRIS document IDs and downloadable paper-trail CSVs
 - https://pulsecities.com/developers: public API documentation with endpoint reference and usage terms
 - https://pulsecities.com/methodology: full scoring methodology

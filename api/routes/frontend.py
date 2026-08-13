@@ -4382,7 +4382,48 @@ footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) 
 
 # --- Evictions tracker: citywide marshal-eviction record ----------------------
 
-_evictions_cache: tuple[str, float] | None = None  # cleared on restart
+_EVICTIONS_STRINGS = {
+    "en": {
+        "heading": "NYC marshal evictions",
+        "desc": ("A marshal eviction is the end of the court process: a warrant executed "
+                 "and a household removed. Every entry below comes from the city's public "
+                 "eviction record and refreshes nightly."),
+        "l7": "7 days", "l30": "30 days", "l365": "12 months",
+        "trend_h": "Twelve months of executions",
+        "trend_sub": "Residential warrants executed by month, complete months only",
+        "recent_h": "Most recent executions",
+        "recent_sub": "Residential warrants executed in the past 30 days, newest first",
+        "where_h": "Where evictions concentrate",
+        "where_sub": "Ranked by executions in the past 30 days",
+        "after_h": "After the eviction",
+        "faq_h": "About this record",
+        "th": ("Neighborhood", "ZIP", "30 days", "12 months"),
+        "borough_prefix": "Past 30 days by borough",
+        "toggle": "EN / ES", "toggle_aria": "Cambiar a espanol",
+        "home": "&#8592; Home", "kicker": "NYC public records",
+    },
+    "es": {
+        "heading": "Desalojos por alguacil en NYC",
+        "desc": ("Un desalojo por alguacil es el final del proceso judicial: una orden "
+                 "ejecutada y un hogar desalojado. Cada entrada proviene del registro "
+                 "p\u00fablico de desalojos de la ciudad y se actualiza cada noche."),
+        "l7": "7 d\u00edas", "l30": "30 d\u00edas", "l365": "12 meses",
+        "trend_h": "Doce meses de ejecuciones",
+        "trend_sub": "Ejecuciones residenciales por mes, solo meses completos",
+        "recent_h": "Ejecuciones m\u00e1s recientes",
+        "recent_sub": "\u00d3rdenes residenciales ejecutadas en los \u00faltimos 30 d\u00edas, primero las m\u00e1s nuevas",
+        "where_h": "D\u00f3nde se concentran los desalojos",
+        "where_sub": "Ordenado por ejecuciones en los \u00faltimos 30 d\u00edas",
+        "after_h": "Despu\u00e9s del desalojo",
+        "faq_h": "Sobre este registro",
+        "th": ("Vecindario", "ZIP", "30 d\u00edas", "12 meses"),
+        "borough_prefix": "\u00daltimos 30 d\u00edas por condado",
+        "toggle": "ES / EN", "toggle_aria": "Switch to English",
+        "home": "&#8592; Inicio", "kicker": "Registros p\u00fablicos de NYC",
+    },
+}
+
+_evictions_cache: dict[str, tuple[str, float]] = {}  # cleared on restart
 
 
 def _addr_title(a: str) -> str:
@@ -4392,16 +4433,18 @@ def _addr_title(a: str) -> str:
 
 
 @router.get("/evictions", include_in_schema=False)
-def evictions_page(db: Session = Depends(get_db)):
+def evictions_page(lang: str = "en", db: Session = Depends(get_db)):
     """Citywide tracker for executed residential marshal evictions.
 
     Search demand already exists for "{neighborhood} evictions" and nothing on
     the site answered it directly; this page does, and it is the press-facing
     home for the eviction record. Nightly data, Residential type only.
     """
-    global _evictions_cache
-    if _evictions_cache and time.monotonic() < _evictions_cache[1]:
-        return HTMLResponse(_evictions_cache[0])
+    lang = "es" if lang == "es" else "en"
+    L = _EVICTIONS_STRINGS[lang]
+    cached = _evictions_cache.get(lang)
+    if cached and time.monotonic() < cached[1]:
+        return HTMLResponse(cached[0])
 
     esc = _html.escape
 
@@ -4564,11 +4607,20 @@ def evictions_page(db: Session = Depends(get_db)):
     if bars_svg:
         yoy_html = f'<p class="cross" id="ev-yoy" style="margin-top:8px;">{yoy_line}</p>' if yoy_line else ""
         trend_section = f"""
-  <h2 id="ev-trend-h">Twelve months of executions</h2>
-  <p class="section-sub" id="ev-trend-sub">Residential warrants executed by month, complete months only</p>
+  <h2 id="ev-trend-h">{esc(L["trend_h"])}</h2>
+  <p class="section-sub" id="ev-trend-sub">{esc(L["trend_sub"])}</p>
   <div style="border:1px solid rgba(147,161,173,0.12);border-radius:8px;padding:14px 12px 8px;background:rgba(255,255,255,.02);">{bars_svg}</div>
   {yoy_html}
 """
+
+    canonical = ("https://pulsecities.com/evictions?lang=es" if lang == "es"
+                 else "https://pulsecities.com/evictions")
+    alt_url = ("https://pulsecities.com/evictions" if lang == "es"
+               else "https://pulsecities.com/evictions?lang=es")
+    nav_toggle = (
+        f'<a href="{alt_url}" id="lang-toggle" aria-label="{L["toggle_aria"]}" '
+        f'style="font-size:0.72rem;color:rgba(147,161,173,0.5);">{L["toggle"]}</a>'
+    )
 
     title = "NYC evictions tracker: marshal evictions by neighborhood | PulseCities"
     desc = (f"{d30} residential marshal evictions executed across NYC in the past 30 days, "
@@ -4615,13 +4667,16 @@ def evictions_page(db: Session = Depends(get_db)):
     })
 
     page = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="{lang}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
-<link rel="canonical" href="https://pulsecities.com/evictions">
+<link rel="canonical" href="{canonical}">
+<link rel="alternate" hreflang="en" href="https://pulsecities.com/evictions">
+<link rel="alternate" hreflang="es" href="https://pulsecities.com/evictions?lang=es">
+<link rel="alternate" hreflang="x-default" href="https://pulsecities.com/evictions">
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:description" content="{esc(desc)}">
 <meta property="og:url" content="https://pulsecities.com/evictions">
@@ -4678,95 +4733,51 @@ th.num,td.num{{text-align:right;font-family:'JetBrains Mono',monospace}}
 </style>
 </head>
 <body>
-{_ssr_nav("/evictions", toggle_html=_LANG_TOGGLE_BTN)}
+{_ssr_nav("/evictions", lang=lang, toggle_html=nav_toggle)}
 <div class="container">
   <div style="margin-bottom:8px;">
-    <a href="/" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">&#8592; Home</a>
+    <a href="/" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">{L["home"]}</a>
   </div>
-  <div class="eyebrow">NYC public records</div>
-  <h1 id="ev-heading">NYC marshal evictions</h1>
-  <p class="sub" id="ev-desc">A marshal eviction is the end of the court process: a warrant executed and a household removed. Every entry below comes from the city's public eviction record and refreshes nightly.</p>
+  <div class="eyebrow">{L["kicker"]}</div>
+  <h1 id="ev-heading">{esc(L["heading"])}</h1>
+  <p class="sub" id="ev-desc">{esc(L["desc"])}</p>
   <div class="stats">
-    <div class="stat"><div class="stat-num">{d7}</div><div class="stat-label" id="ev-l7">7 days</div></div>
-    <div class="stat"><div class="stat-num">{d30:,}</div><div class="stat-label" id="ev-l30">30 days</div></div>
-    <div class="stat"><div class="stat-num">{d365:,}</div><div class="stat-label" id="ev-l365">12 months</div></div>
+    <div class="stat"><div class="stat-num">{d7}</div><div class="stat-label" id="ev-l7">{esc(L["l7"])}</div></div>
+    <div class="stat"><div class="stat-num">{d30:,}</div><div class="stat-label" id="ev-l30">{esc(L["l30"])}</div></div>
+    <div class="stat"><div class="stat-num">{d365:,}</div><div class="stat-label" id="ev-l365">{esc(L["l365"])}</div></div>
   </div>
   <p class="mono-note">{through_line}</p>
 {trend_section}
-  <h2 id="ev-recent-h">Most recent executions</h2>
-  <p class="section-sub" id="ev-recent-sub">Residential warrants executed in the past 30 days, newest first</p>
+  <h2 id="ev-recent-h">{esc(L["recent_h"])}</h2>
+  <p class="section-sub" id="ev-recent-sub">{esc(L["recent_sub"])}</p>
   <ul class="ev-list">
 {recent_html}  </ul>
 
-  <h2 id="ev-where-h">Where evictions concentrate</h2>
-  <p class="section-sub" id="ev-where-sub">Ranked by executions in the past 30 days</p>
+  <h2 id="ev-where-h">{esc(L["where_h"])}</h2>
+  <p class="section-sub" id="ev-where-sub">{esc(L["where_sub"])}</p>
   <div class="table-wrap">
   <table>
-    <thead><tr><th>Neighborhood</th><th class="num">ZIP</th><th class="num">30 days</th><th class="num">12 months</th></tr></thead>
+    <thead><tr><th>{esc(L["th"][0])}</th><th class="num">{esc(L["th"][1])}</th><th class="num">{esc(L["th"][2])}</th><th class="num">{esc(L["th"][3])}</th></tr></thead>
     <tbody>
 {zip_rows}    </tbody>
   </table>
   </div>
-  <p class="mono-note">Past 30 days by borough: {borough_line}</p>
+  <p class="mono-note">{esc(L["borough_prefix"])}: {borough_line}</p>
 
-  <h2 id="ev-after-h">After the eviction</h2>
+  <h2 id="ev-after-h">{esc(L["after_h"])}</h2>
   <p class="cross">{n_arcs} buildings on the record had a residential eviction executed, were bought by an LLC, and resold at a markup within a year. <a href="/displacement">See the documented arcs &rarr;</a></p>
   <p class="cross" style="margin-top:6px;">Checking a specific building? <a href="/who-owns-my-building">Who owns my building &rarr;</a></p>
 
-  <h2 id="ev-faq-h">About this record</h2>
+  <h2 id="ev-faq-h">{esc(L["faq_h"])}</h2>
   {faq_html}
 
   <p class="note" id="ev-note">An eviction record describes a court outcome, not wrongdoing by any party. Eviction cases begin as court filings months earlier; neighborhood pages show ZIP-level filing trends. <a href="/methodology">How PulseCities reads the record &rarr;</a></p>
 </div>
 {_FOOTER_HTML}
-<script>
-(function() {{
-  function lsGet(k) {{ try {{ return localStorage.getItem(k); }} catch (e) {{ return null; }} }}
-  function lsSet(k, v) {{ try {{ localStorage.setItem(k, v); }} catch (e) {{}} }}
-  var lang = lsGet('pc-lang') || 'en';
-  var en = {{}};
-  var es = {{
-    'ev-heading': 'Desalojos por alguacil en NYC',
-    'ev-desc': 'Un desalojo por alguacil es el final del proceso judicial: una orden ejecutada y un hogar desalojado. Cada entrada proviene del registro p\\u00fablico de desalojos de la ciudad y se actualiza cada noche.',
-    'ev-l7': '7 d\\u00edas',
-    'ev-l30': '30 d\\u00edas',
-    'ev-l365': '12 meses',
-    'ev-trend-h': 'Doce meses de ejecuciones',
-    'ev-trend-sub': 'Ejecuciones residenciales por mes, solo meses completos',
-    'ev-recent-h': 'Ejecuciones m\\u00e1s recientes',
-    'ev-recent-sub': '\\u00d3rdenes residenciales ejecutadas en los \\u00faltimos 30 d\\u00edas, primero las m\\u00e1s nuevas',
-    'ev-where-h': 'D\\u00f3nde se concentran los desalojos',
-    'ev-where-sub': 'Ordenado por ejecuciones en los \\u00faltimos 30 d\\u00edas',
-    'ev-after-h': 'Despu\\u00e9s del desalojo',
-    'ev-faq-h': 'Sobre este registro'
-  }};
-  Object.keys(es).forEach(function(id) {{
-    var el = document.getElementById(id);
-    if (el) en[id] = el.textContent;
-  }});
-  function applyLang(l) {{
-    var t = l === 'es' ? es : en;
-    Object.keys(t).forEach(function(id) {{
-      var el = document.getElementById(id);
-      if (el) el.textContent = t[id];
-    }});
-    document.documentElement.lang = l;
-    var btn = document.getElementById('lang-toggle');
-    if (btn) btn.textContent = l === 'es' ? 'ES / EN' : 'EN / ES';
-  }}
-  if (lang === 'es') applyLang('es');
-  var btn = document.getElementById('lang-toggle');
-  if (btn) btn.addEventListener('click', function() {{
-    lang = lang === 'en' ? 'es' : 'en';
-    lsSet('pc-lang', lang);
-    applyLang(lang);
-  }});
-}})();
-</script>
 </body>
 </html>"""
 
-    _evictions_cache = (page, time.monotonic() + _PAGE_TTL)
+    _evictions_cache[lang] = (page, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page)
 
 
