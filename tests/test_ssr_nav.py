@@ -84,13 +84,19 @@ STATIC_HUB_ROUTES = [
 def test_llc_entity_page_top_nav():
     db = SessionLocal()
     try:
+        # Must satisfy the route's indexing rule: 3+ lots across 2+ buildings.
+        # Ranking by raw lot count alone lands on a whole-condo purchase,
+        # which is one building and deliberately noindex.
         r = db.execute(text(
             "SELECT btrim(regexp_replace(lower(party_name_normalized), "
             "'[^a-z0-9]+', '-', 'g'), '-') AS slug "
             "FROM ownership_raw WHERE doc_type = 'DEED' AND party_type = '2' "
             "AND party_name_normalized LIKE '%LLC%' "
+            "AND length(party_name_normalized) < 48 "
             "GROUP BY party_name_normalized "
-            "HAVING count(DISTINCT bbl) >= 2 ORDER BY count(DISTINCT bbl) DESC LIMIT 1"
+            "HAVING count(DISTINCT bbl) >= 3 "
+            "   AND count(DISTINCT substring(bbl, 1, 6)) >= 2 "
+            "ORDER BY count(DISTINCT substring(bbl, 1, 6)) DESC LIMIT 1"
         )).first()
     finally:
         db.close()

@@ -61,6 +61,15 @@ def _operator_template() -> str:
     return _operator_html
 
 
+# Corporate-form tokens have to stand alone: "INC" as a substring matched
+# "PRINCE", "TRUST" matched "AS TRUSTEE". Servicers, nominees, and referees
+# take title in foreclosure rather than buying, so they are not linked or
+# indexed as buyers.
+_ENTITY_FORM_RE = re.compile(r"\b(LLC|PLLC|LLP|CORP|INC|LTD|LP)\b")
+_NOT_A_BUYER_RE = re.compile(
+    r"\b(TRUSTEE|NOMINEE|REFEREE|SERVICING)\b|NOT IN ITS INDIVIDUAL|AS NOMINEE FOR"
+)
+
 _not_found_html: str | None = None
 
 
@@ -309,7 +318,10 @@ def _ssr_nav(active: str = "", lang: str = "en", toggle_html: str = "", track: b
         + links
         + '</div>\n    '
         + (f'<div style="flex-shrink:0;">{toggle_html}</div>' if toggle_html else '')
-        + '\n  </div>\n</nav>'
+        + '\n  </div>\n</nav>\n'
+        + '<script>(function(){var a=document.querySelector(\'nav [aria-current="page"]\');'
+          'if(!a)return;var r=a.parentElement;if(r.scrollWidth<=r.clientWidth)return;'
+          'r.scrollLeft=Math.max(0,a.offsetLeft-16);})();</script>'
     )
 
 
@@ -1376,16 +1388,22 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str
                 f'<tbody>{rows}</tbody></table></div>'
                 f'<p class="data-note">{note}</p></section>')
 
-    def _buyer_cell(name: str) -> str:
-        # Company buyers link to their deed-ledger page; people don't.
-        if name and any(t in name for t in ("LLC", "CORP", "INC", "TRUST", "HOLDING")):
+    def _buyer_cell(o) -> str:
+        """Link company buyers to their deed ledger. Only parties on a DEED
+        resolve at /llc/{slug}; assignment parties would 404. Substring
+        matching also caught people ("... AS TRUSTEE"), so the form token has
+        to stand on its own."""
+        name = o.get("buyer") or ""
+        if ((o.get("doc_type") or "").upper() == "DEED"
+                and _ENTITY_FORM_RE.search(name)
+                and not _NOT_A_BUYER_RE.search(name)):
             slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
-            if slug:
-                return (f'<a href="/llc/{e(slug)}" style="color:#6fb1d8;">{e(name)}</a>')
-        return e(name or "")
+            if _LLC_SLUG_RE.match(slug):
+                return f'<a href="/llc/{e(slug)}" style="color:#6fb1d8;">{e(name)}</a>'
+        return e(name)
 
     own_rows = "".join(
-        f'<tr><td class="sc">{_buyer_cell(o.get("buyer"))}<span class="sw">{e(o.get("doc_type") or "")}</span></td>'
+        f'<tr><td class="sc">{_buyer_cell(o)}<span class="sw">{e(o.get("doc_type") or "")}</span></td>'
         f'<td class="sr">{_d(o.get("date"))}</td><td class="si">{_money(o.get("amount"))}</td></tr>'
         for o in owners
     )
@@ -4387,12 +4405,24 @@ def evictions_page(db: Session = Depends(get_db)):
 
     esc = _html.escape
 
+    # Every window ends at the latest published record, not today. The city
+    # publishes on a lag of a week or more; anchoring on CURRENT_DATE counted
+    # unpublished days as zero, which read as "0 evictions this week" and
+    # made the year-over-year line compare a short window against a full one.
     counts = db.execute(text("""
-        SELECT count(*) FILTER (WHERE executed_date >= CURRENT_DATE - 7)   AS d7,
-               count(*) FILTER (WHERE executed_date >= CURRENT_DATE - 30)  AS d30,
-               count(*) FILTER (WHERE executed_date >= CURRENT_DATE - 365) AS d365,
-               max(executed_date) AS latest
-        FROM evictions_raw WHERE eviction_type = 'Residential'
+        WITH bound AS (
+            SELECT max(executed_date) AS latest
+            FROM evictions_raw WHERE eviction_type = 'Residential'
+        )
+        SELECT b.latest,
+               count(*) FILTER (WHERE e.executed_date >  b.latest - 7)   AS d7,
+               count(*) FILTER (WHERE e.executed_date >  b.latest - 30)  AS d30,
+               count(*) FILTER (WHERE e.executed_date >  b.latest - 365) AS d365,
+               count(*) FILTER (WHERE e.executed_date >  b.latest - 395
+                            AND e.executed_date <= b.latest - 365)       AS prev30
+        FROM evictions_raw e CROSS JOIN bound b
+        WHERE e.eviction_type = 'Residential'
+        GROUP BY b.latest
     """)).first()
     d7, d30, d365 = int(counts.d7 or 0), int(counts.d30 or 0), int(counts.d365 or 0)
     latest = counts.latest.isoformat() if counts.latest else None
@@ -4440,12 +4470,7 @@ def evictions_page(db: Session = Depends(get_db)):
         GROUP BY 1 ORDER BY 1
     """)).fetchall()
 
-    yoy = db.execute(text("""
-        SELECT count(*) FILTER (WHERE executed_date >= CURRENT_DATE - 30) AS cur,
-               count(*) FILTER (WHERE executed_date >= CURRENT_DATE - 395
-                            AND executed_date <  CURRENT_DATE - 365) AS prev
-        FROM evictions_raw WHERE eviction_type = 'Residential'
-    """)).first()
+    yoy = counts  # same 30-day widths, both anchored to the latest record
 
     n_arcs = len(_approved_flip_arcs())
 
@@ -4485,19 +4510,21 @@ def evictions_page(db: Session = Depends(get_db)):
         )
 
     borough_line = ", ".join(f"{esc(b.b)} {int(b.c)}" for b in boroughs)
-    through_line = f"Records through {_short_date(counts.latest)}" if latest else "Refreshed nightly"
+    latest_disp = _short_date(counts.latest) if latest else ""
+    through_line = (f"Every window above ends {latest_disp}, the most recent day the city "
+                    f"has published") if latest else "Refreshed nightly"
 
     yoy_line = ""
-    if yoy and yoy.prev:
-        cur, prev = int(yoy.cur), int(yoy.prev)
+    if yoy and yoy.prev30:
+        cur, prev = d30, int(yoy.prev30)
         delta = (cur - prev) / prev * 100.0
         if abs(delta) < 0.5:
-            yoy_line = (f"The past 30 days are level with the same window last year, "
-                        f"{cur:,} against {prev:,}")
+            yoy_line = (f"The 30 days through {latest_disp} are level with the same 30 days "
+                        f"a year earlier, {cur:,} against {prev:,}")
         else:
             direction = "above" if delta > 0 else "below"
-            yoy_line = (f"The past 30 days are running {abs(delta):.0f}% {direction} the "
-                        f"same window last year, {cur:,} executions against {prev:,}")
+            yoy_line = (f"The 30 days through {latest_disp} run {abs(delta):.0f}% {direction} "
+                        f"the same 30 days a year earlier, {cur:,} executions against {prev:,}")
 
     def _month_bars(rows) -> str:
         if len(rows) < 6:
@@ -4660,9 +4687,9 @@ th.num,td.num{{text-align:right;font-family:'JetBrains Mono',monospace}}
   <h1 id="ev-heading">NYC marshal evictions</h1>
   <p class="sub" id="ev-desc">A marshal eviction is the end of the court process: a warrant executed and a household removed. Every entry below comes from the city's public eviction record and refreshes nightly.</p>
   <div class="stats">
-    <div class="stat"><div class="stat-num">{d7}</div><div class="stat-label" id="ev-l7">past 7 days</div></div>
-    <div class="stat"><div class="stat-num">{d30:,}</div><div class="stat-label" id="ev-l30">past 30 days</div></div>
-    <div class="stat"><div class="stat-num">{d365:,}</div><div class="stat-label" id="ev-l365">past 12 months</div></div>
+    <div class="stat"><div class="stat-num">{d7}</div><div class="stat-label" id="ev-l7">7 days</div></div>
+    <div class="stat"><div class="stat-num">{d30:,}</div><div class="stat-label" id="ev-l30">30 days</div></div>
+    <div class="stat"><div class="stat-num">{d365:,}</div><div class="stat-label" id="ev-l365">12 months</div></div>
   </div>
   <p class="mono-note">{through_line}</p>
 {trend_section}
@@ -4683,7 +4710,7 @@ th.num,td.num{{text-align:right;font-family:'JetBrains Mono',monospace}}
   <p class="mono-note">Past 30 days by borough: {borough_line}</p>
 
   <h2 id="ev-after-h">After the eviction</h2>
-  <p class="cross">{n_arcs} buildings on the record were emptied by eviction, bought by an LLC, and resold at a markup within a year. <a href="/displacement">See the documented arcs &rarr;</a></p>
+  <p class="cross">{n_arcs} buildings on the record had a residential eviction executed, were bought by an LLC, and resold at a markup within a year. <a href="/displacement">See the documented arcs &rarr;</a></p>
   <p class="cross" style="margin-top:6px;">Checking a specific building? <a href="/who-owns-my-building">Who owns my building &rarr;</a></p>
 
   <h2 id="ev-faq-h">About this record</h2>
@@ -4701,9 +4728,9 @@ th.num,td.num{{text-align:right;font-family:'JetBrains Mono',monospace}}
   var es = {{
     'ev-heading': 'Desalojos por alguacil en NYC',
     'ev-desc': 'Un desalojo por alguacil es el final del proceso judicial: una orden ejecutada y un hogar desalojado. Cada entrada proviene del registro p\\u00fablico de desalojos de la ciudad y se actualiza cada noche.',
-    'ev-l7': '\\u00faltimos 7 d\\u00edas',
-    'ev-l30': '\\u00faltimos 30 d\\u00edas',
-    'ev-l365': '\\u00faltimos 12 meses',
+    'ev-l7': '7 d\\u00edas',
+    'ev-l30': '30 d\\u00edas',
+    'ev-l365': '12 meses',
     'ev-trend-h': 'Doce meses de ejecuciones',
     'ev-trend-sub': 'Ejecuciones residenciales por mes, solo meses completos',
     'ev-recent-h': 'Ejecuciones m\\u00e1s recientes',
@@ -4931,6 +4958,23 @@ p a:hover{{text-decoration:underline}}
 # property-page noindex policy. Slugs resolve through _SLUG_SQL, which must
 # stay byte-identical to the expression in scripts/add_entity_slug_index.sql.
 
+def _is_buyer_entity(name: str) -> bool:
+    """A company that actually buys, as opposed to a servicer or trustee
+    taking title in foreclosure, and not a name the source truncated
+    mid-token (party_name_normalized is cut at 48 characters)."""
+    if not name or len(name) >= 48:
+        return False
+    return bool(_ENTITY_FORM_RE.search(name)) and not _NOT_A_BUYER_RE.search(name)
+
+
+def _lot_label(bbls: int, blocks: int) -> str:
+    """Whole-condo purchases record one deed per unit, so a raw lot count
+    reads as portfolio breadth it does not have."""
+    if blocks and blocks < bbls:
+        return (f"{bbls} lots in {blocks} building" + ("s" if blocks != 1 else ""))
+    return f"{bbls} propert" + ("ies" if bbls != 1 else "y")
+
+
 _llc_page_cache: dict[str, tuple[str, float]] = {}
 _llc_dir_cache: tuple[str, float] | None = None
 _LLC_DIR_TTL = 21600
@@ -4967,6 +5011,8 @@ h2{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.05rem;font
 .rec-amt{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:#c9d2da}
 .rec-date{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(147,161,173,0.55);margin-top:2px}
 .cross{font-size:0.82rem;color:#93a1ad;line-height:1.6;max-width:640px}
+.faq-item h3{font-size:0.9rem;font-weight:600;margin:20px 0 4px;color:#e4e8ec}
+.faq-item p{font-size:0.82rem;color:#93a1ad;line-height:1.6;max-width:640px}
 .cross a{color:rgba(237,99,23,0.75)}
 .note{font-size:0.72rem;color:rgba(147,161,173,0.45);margin-top:26px;line-height:1.6}
 .note a{color:rgba(237,99,23,0.75)}
@@ -5009,23 +5055,28 @@ def llc_directory(db: Session = Depends(get_db)):
     esc = _html.escape
     rows = db.execute(text(f"""
         SELECT party_name_normalized AS name, {_SLUG_SQL} AS slug,
-               count(DISTINCT bbl) AS bbls, max(doc_date) AS last_seen
+               count(DISTINCT bbl) AS bbls,
+               count(DISTINCT substring(bbl, 1, 6)) AS blocks,
+               max(doc_date) AS last_seen
         FROM ownership_raw
         WHERE doc_type = 'DEED' AND party_type = '2'
           AND party_name_normalized LIKE '%LLC%'
         GROUP BY 1, 2
-        HAVING count(DISTINCT bbl) >= 2
-        ORDER BY bbls DESC, last_seen DESC LIMIT 100
+        HAVING count(DISTINCT bbl) >= 3
+           AND count(DISTINCT substring(bbl, 1, 6)) >= 2
+        ORDER BY blocks DESC, bbls DESC, last_seen DESC LIMIT 100
     """)).fetchall()
 
     items = ""
     for r in rows:
+        if not _is_buyer_entity(r.name):
+            continue
         if not _LLC_SLUG_RE.match(r.slug or ""):
             continue
         items += (
             f'<li class="rec-row"><a href="/llc/{esc(r.slug)}">'
             f'<div><div class="rec-addr">{esc(r.name)}</div></div>'
-            f'<div class="rec-side"><div class="rec-amt">{int(r.bbls)} properties</div>'
+            f'<div class="rec-side"><div class="rec-amt">{_lot_label(int(r.bbls), int(r.blocks))}</div>'
             f'<div class="rec-date">latest {esc(r.last_seen.isoformat()) if r.last_seen else ""}</div></div>'
             f'</a></li>\n'
         )
@@ -5049,7 +5100,7 @@ def llc_directory(db: Session = Depends(get_db)):
   </div>
   <div class="eyebrow">NYC deed record</div>
   <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;letter-spacing:0;font-weight:600;">The LLC buyers</h1>
-  <p class="sub">Every entity below appears as the buyer on two or more NYC deeds. Each page lists the full recorded purchase history, with links to every building. Curated operator networks live in the <a href="/operators" style="color:#6fb1d8;">operator directory</a>; this is the raw ledger.</p>
+  <p class="sub">Every entity below appears as the buyer on three or more NYC deeds, across more than one building. The deed record here begins in 2025. Each page lists that entity's recorded deeds, with links to every building. Curated operator networks live in the <a href="/operators" style="color:#6fb1d8;">operator directory</a>; this is the raw ledger.</p>
   <ul class="rec-list" style="margin-top:18px;">
 {items}  </ul>
   <p class="note">A deed names a buyer of record. Appearing here describes documents, not conduct. <a href="/methodology">How PulseCities reads the record &rarr;</a></p>
@@ -5117,6 +5168,7 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
     """), {"name": name}).first()
 
     n_bbls = len({r.bbl for r in buys if r.bbl})
+    n_blocks = len({r.bbl[:6] for r in buys if r.bbl})
     volume = sum(float(r.doc_amount) for r in buys if r.doc_amount and float(r.doc_amount) > 0)
     dates = [r.doc_date for r in buys if r.doc_date]
     first_seen = min(dates).year if dates else None
@@ -5156,16 +5208,18 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
     if post_ev:
         noun = "property" if post_ev == 1 else "properties"
         post_ev_line = (f'<p class="cross" style="margin-top:10px;">{post_ev} {noun} on this list '
-                        f'had a residential eviction executed within the year before the purchase. '
+                        f'with a recorded price had a residential eviction executed within the year before the purchase. '
                         f'<a href="/evictions">Citywide eviction tracker &rarr;</a></p>')
 
-    is_indexable = "LLC" in name and n_bbls >= 2
+    # Thin-page guard: a whole-condo purchase is one building however
+    # many unit deeds it records, and servicers are not buyers.
+    is_indexable = (_is_buyer_entity(name) and "LLC" in name
+                    and n_bbls >= 3 and n_blocks >= 2)
     robots = "index, follow" if is_indexable else "noindex, follow"
     title = f"{name}: NYC property purchases, deed history | PulseCities"
     desc = (f"{name} appears as the buyer on {n_bbls} NYC "
-            f"{'property' if n_bbls == 1 else 'properties'} in the deed record"
-            + (f" since {first_seen}" if first_seen else "")
-            + ". Full purchase history from ACRIS public records.")
+            f"{'property' if n_bbls == 1 else 'properties'} in the deed record. "
+            f"Deeds recorded since 2025, from ACRIS public records.")
     url = f"https://pulsecities.com/llc/{slug}"
     jsonld = _jsonld({"@context": "https://schema.org", "@graph": [
         {"@type": "Organization", "name": name, "url": url},
@@ -5174,14 +5228,18 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
 
     stat_cells = (
         f'<div class="stat"><div class="stat-num">{n_bbls}</div><div class="stat-label">'
-        f'{"property" if n_bbls == 1 else "properties"} bought</div></div>'
+        f'{"lot" if n_bbls == 1 else "lots"} bought</div></div>'
     )
+    if n_blocks and n_blocks < n_bbls:
+        stat_cells += (f'<div class="stat"><div class="stat-num">{n_blocks}</div>'
+                       f'<div class="stat-label">building' + ("s" if n_blocks != 1 else "")
+                       + '</div></div>')
     if sells:
         stat_cells += (f'<div class="stat"><div class="stat-num">{len({r.bbl for r in sells if r.bbl})}</div>'
                        f'<div class="stat-label">sold</div></div>')
     if volume:
         stat_cells += (f'<div class="stat"><div class="stat-num">{_fmt_amount(volume)}</div>'
-                       f'<div class="stat-label">recorded purchase volume</div></div>')
+                       f'<div class="stat-label">volume, priced deeds</div></div>')
 
     page = f"""<!DOCTYPE html>
 <html lang="en">
@@ -5194,7 +5252,7 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
   <p style="margin-bottom:8px;font-size:0.75rem;color:rgba(147,161,173,0.5);"><a href="/llc">&#8592; All LLC buyers</a></p>
   <div class="eyebrow">NYC deed record</div>
   <h1>{esc(name)}</h1>
-  <p class="sub">Every entry below is a recorded deed naming this entity, from ACRIS public records.</p>
+  <p class="sub">Every entry below is a recorded deed naming this entity, from ACRIS public records. The deed record here begins in 2025.</p>
   <div class="stats">{stat_cells}</div>
   {f'<p class="mono-note">Latest recorded deed {last_seen}</p>' if last_seen else ''}
   {network_line}

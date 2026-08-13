@@ -114,18 +114,28 @@ def build() -> str:
 
         week_slugs = _completed_week_slugs(db)
 
-        # LLC entity pages: only LLC-named buyers with 2+ properties are
-        # indexable (mirrors the route's robots policy), so only they belong
-        # here. Slug expression matches _SLUG_SQL in api/routes/frontend.py.
-        llc_slugs = sorted({r.slug for r in db.execute(text("""
-            SELECT btrim(regexp_replace(lower(party_name_normalized),
-                         '[^a-z0-9]+', '-', 'g'), '-') AS slug
-            FROM ownership_raw
-            WHERE doc_type = 'DEED' AND party_type = '2'
-              AND party_name_normalized LIKE '%LLC%'
-            GROUP BY party_name_normalized
-            HAVING count(DISTINCT bbl) >= 2
-        """)).fetchall() if r.slug})
+        # LLC entity pages, gated exactly as the route's robots policy is:
+        # 3+ lots across 2+ buildings (a whole-condo buy records one deed per
+        # unit but is a single building), and a real buyer rather than a
+        # servicer or trustee. _is_buyer_entity is imported rather than
+        # restated so the two rules cannot drift apart.
+        from api.routes.frontend import _is_buyer_entity, _LLC_SLUG_RE
+
+        llc_slugs = sorted({
+            r.slug for r in db.execute(text("""
+                SELECT party_name_normalized AS name,
+                       btrim(regexp_replace(lower(party_name_normalized),
+                             '[^a-z0-9]+', '-', 'g'), '-') AS slug,
+                       max(doc_date) AS last_deed
+                FROM ownership_raw
+                WHERE doc_type = 'DEED' AND party_type = '2'
+                  AND party_name_normalized LIKE '%LLC%'
+                GROUP BY 1, 2
+                HAVING count(DISTINCT bbl) >= 3
+                   AND count(DISTINCT substring(bbl, 1, 6)) >= 2
+            """)).fetchall()
+            if r.slug and _LLC_SLUG_RE.match(r.slug) and _is_buyer_entity(r.name)
+        })
 
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',

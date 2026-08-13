@@ -80,6 +80,10 @@ def _compute_freshness(db):
                 continue
             # datetime is a subclass of date — check datetime first.
             max_date = val.date() if isinstance(val, _datetime) else val
+            # ACRIS carries a handful of forward-dated instruments, which made
+            # the homepage advertise data "through" a date two weeks out. A
+            # feed is never fresher than today.
+            max_date = min(max_date, today)
             days = (today - max_date).days
             signals[name] = {
                 "through": max_date.isoformat(),

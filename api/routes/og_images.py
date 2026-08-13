@@ -639,9 +639,10 @@ def _render_site_card(kicker: str, headline: str, sub: str,
 
 @router.get("/og/site/{key}.png", include_in_schema=False)
 def og_site_card(key: str, db: Session = Depends(get_db)):
+    # 404 unknown keys: a 200 with a 235KB body let a scan of junk URLs
+    # fill the nginx /og/ cache zone and evict every real card.
     if key not in _SITE_CARDS:
-        return Response(content=_DEFAULT_IMAGE.read_bytes(), media_type="image/png",
-                        headers={"Cache-Control": "public, max-age=86400"})
+        return Response(status_code=404)
 
     today = date.today()
     cache_key = f"site_{key}_{today.strftime('%Y%m%d')}"
@@ -694,5 +695,6 @@ def og_site_card(key: str, db: Session = Depends(get_db)):
             today_label)
 
     cache_path.write_bytes(png)
+    _clean_old_cache(f"site_{key}", cache_key)
     return Response(content=png, media_type="image/png",
                     headers={"Cache-Control": "public, max-age=3600"})
