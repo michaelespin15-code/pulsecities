@@ -87,8 +87,11 @@ class BaseScraper(ABC):
             "$where": where,
             "$limit": limit,
             "$offset": offset,
-            "$order": order,
         }
+        # Aggregate selects (max(...)) reject an $order on a column they don't
+        # group by, so callers pass order=None to omit it.
+        if order:
+            params["$order"] = order
         if select:
             params["$select"] = select
         logger.debug("%s: GET %s?%s", self.SCRAPER_NAME, self.base_url, urllib.parse.urlencode(params))
@@ -158,11 +161,47 @@ class BaseScraper(ABC):
         Subsequent runs: uses stored watermark minus 10 minutes (clock-skew buffer).
         """
         watermark = self.get_watermark(db)
+        # Remembered so a zero-record run can ask the source for its own ceiling
+        # on this same field; see _source_ceiling().
+        self._watermark_field = date_field
         if watermark:
             since = watermark - timedelta(minutes=10) - timedelta(days=self.WATERMARK_EXTRA_LOOKBACK_DAYS)
         else:
             since = datetime.now(timezone.utc) - timedelta(days=self.INITIAL_LOOKBACK_DAYS)
         return f"{date_field} > '{since.strftime('%Y-%m-%dT%H:%M:%S.000')}'"
+
+    def _source_ceiling(self) -> datetime | None:
+        """Ask the source for the newest value of our watermark field.
+
+        Scrapers that don't re-scan a trailing window return new_watermark=None
+        on a run that found nothing, which is indistinguishable from "the fetch
+        broke and gave us nothing". One aggregate query settles it: if the
+        source's own max is at or behind our watermark, there was nothing to
+        get. ACRIS publishes in bursts and spent seven of eight nights filing a
+        warning for a quiet source, which is how a real ACRIS failure would
+        have gone unnoticed.
+
+        Returns None when the probe itself fails, which leaves the caller on
+        the cautious path (still flag it) rather than silencing on a bad probe.
+        """
+        field = getattr(self, "_watermark_field", None)
+        if not field:
+            return None
+        try:
+            rows = self._fetch_page(
+                where=f"{field} IS NOT NULL",
+                select=f"max({field}) AS mx",
+                order=None,
+                limit=1,
+            )
+        except Exception:
+            logger.warning("%s: source-ceiling probe failed", self.SCRAPER_NAME, exc_info=True)
+            return None
+        raw = (rows[0].get("mx") if rows else None) or ""
+        try:
+            return datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        except ValueError:
+            return None
 
     # ------------------------------------------------------------------ #
     # Anomaly detection                                                  #
@@ -266,6 +305,19 @@ class BaseScraper(ABC):
                 and prior_watermark is not None
                 and new_watermark <= prior_watermark
             )
+            # Scrapers without a trailing re-scan report no watermark at all on
+            # an empty run, so the check above can't fire for them. Ask the
+            # source directly rather than defaulting to "anomaly" every quiet
+            # night; a warning that cries wolf is worse than no warning.
+            if records_processed == 0 and new_watermark is None and prior_watermark is not None:
+                ceiling = self._source_ceiling()
+                if ceiling is not None:
+                    if ceiling.tzinfo is None:
+                        ceiling = ceiling.replace(tzinfo=timezone.utc)
+                    reference = prior_watermark
+                    if reference.tzinfo is None:
+                        reference = reference.replace(tzinfo=timezone.utc)
+                    source_unchanged = ceiling <= reference
 
             expected_min = SCRAPER_EXPECTED_MIN_RECORDS.get(self.SCRAPER_NAME)
             rolling_avg = self._compute_rolling_avg(db, started_at)

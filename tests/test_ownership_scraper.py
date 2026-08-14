@@ -256,8 +256,34 @@ class TestOwnershipSourceFreshness:
 
         assert processed == 0
         assert failed == 0
-        assert wm is None
+        # The unchanged watermark comes back rather than None. BaseScraper reads
+        # `new_watermark <= prior_watermark` as "source had nothing to give" and
+        # scores the run a success; returning None discarded that proof and made
+        # every quiet night look like a scraper anomaly.
+        assert wm == watermark
         mock_paginate.assert_not_called()
+
+    def test_quiet_source_is_not_an_anomaly(self, scraper):
+        """A quiet source must score 'success', not 'warning'.
+
+        This is the guard that matters. ACRIS publishes deeds in bursts, so most
+        nights legitimately return nothing. The scraper proved the source had
+        nothing newer and then discarded that proof by returning new_watermark
+        of None, so BaseScraper scored every quiet night as an anomaly. Seven
+        warnings in eight days is how a real ACRIS outage gets ignored.
+        """
+        watermark = datetime(2026, 3, 31, tzinfo=timezone.utc)
+        self._mock_http(scraper, "2026-03-31T00:00:00.000")
+
+        db = MagicMock()
+        with patch.object(scraper, "get_watermark", return_value=watermark):
+            with patch.object(scraper, "paginate"):
+                _, _, new_watermark = scraper._run(db)
+
+        # BaseScraper reads this exact comparison as "the source had nothing to
+        # give us" and keeps the run clean.
+        assert new_watermark is not None
+        assert new_watermark <= watermark
 
     def test_fresh_source_calls_paginate(self, scraper):
         """When source is fresh, _run() must proceed to paginate."""

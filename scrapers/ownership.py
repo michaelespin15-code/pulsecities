@@ -158,7 +158,13 @@ class OwnershipScraper(BaseScraper):
                 MASTER_DATASET_ID,
                 MASTER_DATASET_ID,
             )
-            return 0, 0, None
+            # Hand the unchanged watermark back rather than None. We just proved
+            # the source has nothing newer, and returning None threw that proof
+            # away: the run scored as an anomaly on every quiet night, so ACRIS
+            # filed seven warnings in eight days and a genuine failure would
+            # have read exactly the same. Deeds publish in bursts, so quiet is
+            # the normal state here, not the exception.
+            return 0, 0, self.get_watermark(db)
 
         where = self._build_master_where(db)
         logger.info("ACRIS master query: %s", where)
