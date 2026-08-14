@@ -15,6 +15,7 @@ from slowapi.util import get_remote_address
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from api.freshness import FRESHNESS_SOURCES, through_sql
 from models.database import get_db
 
 router = APIRouter(prefix="/stats", tags=["stats"])
@@ -54,12 +55,11 @@ _FRESHNESS_CACHE: dict = {}
 _FRESHNESS_TTL = 300  # 5 minutes
 
 # Signal freshness thresholds (days). Same values as daily_health_check.py.
+# Queries come from api/freshness.py so /api/stats, /api/status and the health
+# check cannot drift into quoting three different dates for one feed again.
 _FRESHNESS_CHECKS = [
-    ("acris",       "SELECT MAX(doc_date) FROM ownership_raw",     7),
-    ("permits",     "SELECT MAX(filing_date) FROM permits_raw",    10),
-    ("evictions",   "SELECT MAX(executed_date) FROM evictions_raw", 14),
-    ("complaints",  "SELECT MAX(created_date) FROM complaints_raw", 10),
-    ("violations",  "SELECT MAX(inspection_date) FROM violations_raw", 10),
+    (name, through_sql(table, column), threshold)
+    for name, table, column, threshold in FRESHNESS_SOURCES
 ]
 
 
@@ -80,10 +80,9 @@ def _compute_freshness(db):
                 continue
             # datetime is a subclass of date — check datetime first.
             max_date = val.date() if isinstance(val, _datetime) else val
-            # ACRIS carries a handful of forward-dated instruments, which made
-            # the homepage advertise data "through" a date two weeks out. A
-            # feed is never fresher than today.
-            max_date = min(max_date, today)
+            # Forward-dated rows are excluded in SQL now. The old code clamped
+            # them to today instead, which reported ACRIS as current through
+            # today while its real ceiling sat two weeks back.
             days = (today - max_date).days
             signals[name] = {
                 "through": max_date.isoformat(),

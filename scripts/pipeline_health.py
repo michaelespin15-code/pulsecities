@@ -28,6 +28,7 @@ from typing import Any
 
 from sqlalchemy import text
 
+from api.freshness import ACRIS_THROUGH_SQL
 from models.database import get_scraper_db
 
 # Key scrapers for which status=failure triggers a nonzero exit.
@@ -178,8 +179,11 @@ def fetch_history_summary(db, scored_at: date) -> dict[str, Any]:
 
 
 def fetch_acris_max_doc_date(db) -> date | None:
-    r = db.execute(text("SELECT MAX(doc_date) FROM ownership_raw")).scalar()
-    return r
+    """Newest deed date we actually hold, ignoring instruments dated ahead of
+    the calendar. Reading the raw MAX let two filer-typed future dates report
+    the feed as current, which is a large part of why ACRIS going quiet on
+    2026-07-31 raised nothing here."""
+    return db.execute(text(ACRIS_THROUGH_SQL)).scalar()
 
 
 # ---------------------------------------------------------------------------

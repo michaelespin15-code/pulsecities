@@ -87,12 +87,19 @@ def ops_summary(t: str = Query(default=""), x_ops_token: str = Header(default=""
     """)).fetchall()
 
     # --- Data freshness ---
+    # Future-dated rows are excluded throughout; see api/freshness.py. The ops
+    # view has to agree with /api/stats and /api/status or it is no use for
+    # deciding whether a feed has actually stopped.
     freshness = db.execute(text("""
         SELECT
-            (SELECT MAX(doc_date)           FROM ownership_raw)       AS acris,
-            (SELECT MAX(executed_date)      FROM evictions_raw)       AS evictions,
-            (SELECT MAX(filing_date)        FROM permits_raw)         AS permits,
-            (SELECT MAX(created_date)       FROM complaints_raw)      AS complaints,
+            (SELECT MAX(doc_date)           FROM ownership_raw
+                 WHERE doc_date       <= CURRENT_DATE)                AS acris,
+            (SELECT MAX(executed_date)      FROM evictions_raw
+                 WHERE executed_date  <= CURRENT_DATE)                AS evictions,
+            (SELECT MAX(filing_date)        FROM permits_raw
+                 WHERE filing_date    <= CURRENT_DATE)                AS permits,
+            (SELECT MAX(created_date)       FROM complaints_raw
+                 WHERE created_date   <= CURRENT_DATE)                AS complaints,
             (SELECT MAX(cache_generated_at) FROM displacement_scores) AS scores_computed,
             (SELECT MAX(scored_at)          FROM score_history)       AS score_history_latest
     """)).fetchone()

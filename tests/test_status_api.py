@@ -156,9 +156,13 @@ class TestAcrisWatermarkHonesty:
         from models.database import SessionLocal
         from sqlalchemy import text as _text
 
+        from datetime import date as _date
+
+        from api.freshness import ACRIS_THROUGH_SQL
+
         db = SessionLocal()
         try:
-            max_doc = db.execute(_text("SELECT MAX(doc_date) FROM ownership_raw")).scalar()
+            max_doc = db.execute(_text(ACRIS_THROUGH_SQL)).scalar()
         finally:
             db.close()
         if max_doc is None:
@@ -169,4 +173,17 @@ class TestAcrisWatermarkHonesty:
         acris = next(s for s in data["sources"] if s["key"] == "acris_ownership")
         assert acris["data_through"] == max_doc.isoformat(), (
             f"status claims {acris['data_through']}, table holds {max_doc}"
+        )
+
+        # The invariant that actually got broken: filers type their own
+        # doc_date, so two rows out of ~198,000 were dated ahead of the calendar
+        # and a bare MAX published a sitewide "data through" thirteen days in
+        # the future. Data can never be good through a date that has not
+        # happened, on any source.
+        today = _date.today().isoformat()
+        assert acris["data_through"] <= today, (
+            f"status claims ACRIS data through {acris['data_through']}, which is in the future"
+        )
+        assert data["data_through"] <= today, (
+            f"sitewide data_through is {data['data_through']}, which is in the future"
         )

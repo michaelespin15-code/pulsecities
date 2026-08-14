@@ -25,6 +25,7 @@ from slowapi.util import get_remote_address
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from api.freshness import ACRIS_THROUGH_SQL
 from models.database import get_db
 
 logger = logging.getLogger(__name__)
@@ -121,8 +122,12 @@ def get_status(request: Request, response: Response, db: Session = Depends(get_d
         # ACRIS watermarks come from the feed's recorded_datetime, which can
         # run days ahead of the doc dates that actually persisted. Freshness
         # must describe what the site serves, so anchor to the table.
+        # Excludes future-dated instruments. Two rows dated ahead of the
+        # calendar were enough to publish a sitewide "data through" of a date
+        # thirteen days out, since most_recent below takes the newest watermark
+        # across every source and /about and /status both render it.
         if key == "acris_ownership":
-            max_doc = db.execute(text("SELECT MAX(doc_date) FROM ownership_raw")).scalar()
+            max_doc = db.execute(text(ACRIS_THROUGH_SQL)).scalar()
             if max_doc is not None:
                 watermark = datetime.combine(max_doc, datetime.min.time(), tzinfo=timezone.utc)
 
