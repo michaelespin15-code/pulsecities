@@ -203,7 +203,7 @@ _UNSUBSCRIBE_CONFIRM_HTML = """
               </p>
               <form method="post" action="/api/unsubscribe?token={token}" style="margin:0;">
                 <button type="submit"
-                        style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;border:none;cursor:pointer;font-family:inherit;">
+                        style="display:inline-block;background:#ed6317;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;border:none;cursor:pointer;font-family:inherit;">
                   Unsubscribe
                 </button>
               </form>
@@ -249,7 +249,7 @@ _UNSUBSCRIBE_HTML = """
                 You won't receive any more weekly digests from PulseCities.
               </p>
               <a href="https://pulsecities.com"
-                 style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;text-decoration:none;">
+                 style="display:inline-block;background:#ed6317;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;text-decoration:none;">
                 Back to PulseCities
               </a>
             </td>
@@ -297,7 +297,7 @@ _UNSUBSCRIBE_INVALID_HTML = """
                 It may have expired, or the subscription it pointed to is already gone. If emails keep arriving, reply to one and we'll remove you by hand.
               </p>
               <a href="https://pulsecities.com"
-                 style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;text-decoration:none;">
+                 style="display:inline-block;background:#ed6317;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;text-decoration:none;">
                 Back to PulseCities
               </a>
             </td>

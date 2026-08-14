@@ -58,8 +58,8 @@ SIGNAL_LABELS = {
 # email's light paper these muted inks also read far better than the old
 # bright green/gold ever did.
 _RISK_DISPLAY = [
-    (85, "CRITICAL",      "#ef4444"),
-    (67, "HIGH RISK",     "#f97316"),
+    (85, "CRITICAL",      "#e4483b"),
+    (67, "HIGH RISK",     "#ed6317"),
     (34, "MODERATE RISK", "#C08B2D"),
     ( 0, "LOW RISK",      "#3E6B54"),
 ]
@@ -73,8 +73,8 @@ def _display_risk(score: float) -> tuple[str, str]:
 
 
 def _score_color(score: float) -> str:
-    if score >= 85: return "#ef4444"
-    if score >= 67: return "#f97316"
+    if score >= 85: return "#e4483b"
+    if score >= 67: return "#ed6317"
     if score >= 34: return "#C08B2D"
     return "#3E6B54"
 
@@ -480,7 +480,7 @@ def _delta_text(delta: float) -> str:
 
 
 def _delta_color(delta: float) -> str:
-    if delta >= SCORE_DELTA_MIN:  return "#ef4444"
+    if delta >= SCORE_DELTA_MIN:  return "#e4483b"
     if delta <= -SCORE_DELTA_MIN: return "#3E6B54"
     return "#94a3b8"
 
@@ -1312,7 +1312,7 @@ def render_operator_digest(subscription: dict, update: dict) -> dict:
             f'<td style="padding:8px 0 8px 16px;font-family:\'JetBrains Mono\',monospace;'
             f'font-size:12px;color:#94a3b8;text-align:right;white-space:nowrap;">{a["date"]}</td>'
             f'<td style="padding:8px 0 8px 16px;font-family:\'JetBrains Mono\',monospace;'
-            f'font-size:12px;color:#f97316;text-align:right;white-space:nowrap;">{price}</td>'
+            f'font-size:12px;color:#ed6317;text-align:right;white-space:nowrap;">{price}</td>'
             f'</tr>'
         )
     more_html = ""
@@ -1360,7 +1360,7 @@ def render_operator_digest(subscription: dict, update: dict) -> dict:
 
             <tr><td style="padding-top:24px;">
               <a href="https://pulsecities.com/operator/{slug}"
-                 style="display:inline-block;background:#f97316;color:#fff;font-size:13px;font-weight:600;padding:11px 22px;border-radius:6px;text-decoration:none;margin-right:12px;">
+                 style="display:inline-block;background:#ed6317;color:#fff;font-size:13px;font-weight:600;padding:11px 22px;border-radius:6px;text-decoration:none;margin-right:12px;">
                 View the full profile
               </a>
               <a href="https://pulsecities.com/brief/operator/{slug}"

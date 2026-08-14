@@ -359,7 +359,12 @@ class TestCanonicalTierBands:
     # low #3E6B54, moderate #C08B2D, high #F97316, critical #EF4444.
     # Fills and chips carry the palette; low-as-text stays slate for
     # contrast. If a hex changes, change every surface in the same commit.
-    _STALE_TIER_HEXES = ("#16a34a", "#eab308", "#22c55e", "#4ade80")
+    # Framework defaults belong here, not in the palette. The house colors are
+    # #ed6317 (high) and #e4483b (critical); Tailwind's #f97316 and #ef4444 are
+    # what they replaced, and the emails kept shipping the old pair for months
+    # after the site moved because nothing was watching for them.
+    _STALE_TIER_HEXES = ("#16a34a", "#eab308", "#22c55e", "#4ade80",
+                         "#f97316", "#F97316", "#ef4444", "#EF4444")
 
     def test_map_fill_and_legend_use_canonical_palette(self):
         app = self._app()
@@ -370,7 +375,7 @@ class TestCanonicalTierBands:
 
     def test_landing_legend_uses_canonical_palette(self):
         idx = (Path(__file__).parent.parent / "frontend" / "index.html").read_text()
-        for canon in ("#3E6B54", "#C08B2D", "#F97316", "#EF4444"):
+        for canon in ("#3E6B54", "#C08B2D", "#ed6317", "#e4483b"):
             assert canon in idx, f"canonical tier color '{canon}' missing from index.html legend"
         for stale in self._STALE_TIER_HEXES:
             assert stale not in idx, f"stale tier color '{stale}' in index.html"
@@ -379,6 +384,15 @@ class TestCanonicalTierBands:
         for name in ("frontend.py", "briefs.py"):
             src = (Path(__file__).parent.parent / "api" / "routes" / name).read_text()
             assert "#C08B2D" in src, f"canonical moderate color missing from {name}"
+            for stale in self._STALE_TIER_HEXES:
+                assert stale not in src, f"stale tier color '{stale}' in {name}"
+
+    def test_email_templates_use_canonical_palette(self):
+        """Digest and transactional mail must match the site. They are the only
+        surface a subscriber sees between visits, and they drifted back to the
+        framework palette unnoticed because no test covered subscribe.py."""
+        for name in ("api/routes/subscribe.py", "scripts/weekly_digest.py"):
+            src = (Path(__file__).parent.parent / name).read_text()
             for stale in self._STALE_TIER_HEXES:
                 assert stale not in src, f"stale tier color '{stale}' in {name}"
 

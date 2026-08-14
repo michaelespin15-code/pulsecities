@@ -17,6 +17,7 @@
 /var/log/pulsecities/ops_health.log
 /var/log/pulsecities/backup_restore_test.log
 /var/log/pulsecities/operator_refresh.log
+/var/log/pulsecities/health_check.log
 /var/log/pulsecities/health_probe.log {
     weekly
     size 20M

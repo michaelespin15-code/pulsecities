@@ -21,7 +21,9 @@ def test_displacement_renders_all_sections():
     assert r.status_code == 200
     body = r.text
     for needle in (
-        "State of NYC Displacement",
+        # Sentence case, matching the shipped heading. The copy pass moved off
+        # title case sitewide and this assertion kept the old capitalisation.
+        "The state of NYC displacement",
         "Evicted, then flipped",
         "Highest pressure",
         "largest landlords",
