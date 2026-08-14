@@ -3382,6 +3382,13 @@ _week_page_cache: dict[str, tuple[str, float]] = {}   # slug -> (html, expires)
 _week_index_cache: tuple[str, float] | None = None
 
 
+# How far back a snapshot lookup may walk. Scoring snapshots daily, so the
+# nearest earlier row is normally the same day; 30 days covers any realistic
+# run of missed nights. Without a floor each lookup scanned the entire history
+# to find one row per ZIP, which the archive page then paid 84 times over.
+_SNAPSHOT_LOOKBACK_DAYS = 30
+
+
 def _movers_between(db, as_of: date, prior: date, limit: int = 8):
     """Top risers comparing the latest score on/before `as_of` to the latest on
     or before `prior`. DISTINCT ON walks back to the nearest earlier snapshot, so
@@ -3389,12 +3396,14 @@ def _movers_between(db, as_of: date, prior: date, limit: int = 8):
     return db.execute(text("""
         WITH now_s AS (
             SELECT DISTINCT ON (zip_code) zip_code, composite_score AS s
-            FROM score_history WHERE scored_at <= :as_of
+            FROM score_history
+            WHERE scored_at <= :as_of AND scored_at > :as_of_floor
             ORDER BY zip_code, scored_at DESC
         ),
         then_s AS (
             SELECT DISTINCT ON (zip_code) zip_code, composite_score AS s
-            FROM score_history WHERE scored_at <= :prior
+            FROM score_history
+            WHERE scored_at <= :prior AND scored_at > :prior_floor
             ORDER BY zip_code, scored_at DESC
         )
         SELECT n.zip_code, nb.name, nb.borough,
@@ -3407,7 +3416,13 @@ def _movers_between(db, as_of: date, prior: date, limit: int = 8):
         WHERE now_s.s - then_s.s >= 0.5
         ORDER BY (now_s.s - then_s.s) DESC
         LIMIT :limit
-    """), {"as_of": as_of, "prior": prior, "limit": limit}).fetchall()
+    """), {
+        "as_of": as_of,
+        "as_of_floor": as_of - timedelta(days=_SNAPSHOT_LOOKBACK_DAYS),
+        "prior": prior,
+        "prior_floor": prior - timedelta(days=_SNAPSHOT_LOOKBACK_DAYS),
+        "limit": limit,
+    }).fetchall()
 
 
 def _counts_between(db, start: date, end_exclusive: date):
@@ -4470,19 +4485,39 @@ def evictions_page(lang: str = "en", db: Session = Depends(get_db)):
     d7, d30, d365 = int(counts.d7 or 0), int(counts.d30 or 0), int(counts.d365 or 0)
     latest = counts.latest.isoformat() if counts.latest else None
 
-    recent = db.execute(text("""
+    # Anchored on the newest published day, exactly like the counts above.
+    # CURRENT_DATE - 30 silently walked a shorter window every day the city
+    # went quiet, because executions publish well behind the calendar.
+    _RECENT_WINDOW = """
+        FROM evictions_raw e
+        CROSS JOIN (SELECT max(executed_date) AS latest FROM evictions_raw
+                    WHERE eviction_type = 'Residential') b
+        WHERE e.eviction_type = 'Residential'
+          AND e.executed_date IS NOT NULL
+          AND e.executed_date > b.latest - 30
+          AND e.address NOT ILIKE '%store located%'
+    """
+
+    recent = db.execute(text(f"""
         SELECT * FROM (
             SELECT DISTINCT ON (e.address, e.executed_date)
-                   e.bbl, e.address, e.zip_code, e.borough, e.executed_date, n.name
-            FROM evictions_raw e
-            LEFT JOIN neighborhoods n ON n.zip_code = e.zip_code
-            WHERE e.eviction_type = 'Residential'
-              AND e.executed_date IS NOT NULL
-              AND e.executed_date >= CURRENT_DATE - 30
-              AND e.address NOT ILIKE '%store located%'
+                   e.bbl, e.address, e.zip_code, e.borough, e.executed_date,
+                   (SELECT name FROM neighborhoods n WHERE n.zip_code = e.zip_code) AS name
+            {_RECENT_WINDOW}
             ORDER BY e.address, e.executed_date
-        ) t ORDER BY executed_date DESC LIMIT 15
+        ) t ORDER BY executed_date DESC LIMIT 150
     """)).fetchall()
+
+    # The list is deduplicated per address and day and drops storefronts, so it
+    # needs its own total. Measuring it against the raw 30-day count would
+    # compare two different populations and overstate what is being withheld.
+    recent_total = int(db.execute(text(f"""
+        SELECT count(*) FROM (
+            SELECT DISTINCT ON (e.address, e.executed_date) e.address
+            {_RECENT_WINDOW}
+            ORDER BY e.address, e.executed_date
+        ) t
+    """)).scalar() or 0)
 
     top_zips = db.execute(text("""
         SELECT e.zip_code, coalesce(n.name, e.zip_code) AS name,
@@ -4543,6 +4578,17 @@ def evictions_page(lang: str = "en", db: Session = Depends(get_db)):
     if not recent_html:
         recent_html = ('<li class="ev-row"><div class="ev-static">No executions published '
                        'in the current window. Check back after the next nightly refresh</div></li>\n')
+
+    # The subtitle described the whole 30-day window while the list showed a
+    # slice of it. Say which slice, or the page reads as though the city
+    # executed fifteen warrants last month.
+    recent_sub = L["recent_sub"]
+    if len(recent) < recent_total:
+        shown = f"{len(recent):,}"
+        total = f"{recent_total:,}"
+        recent_sub += (f". Showing the {shown} newest of {total}"
+                       if lang != "es" else
+                       f". Mostrando las {shown} más recientes de {total}")
 
     zip_rows = ""
     for z in top_zips:
@@ -4749,7 +4795,7 @@ th.num,td.num{{text-align:right;font-family:'JetBrains Mono',monospace}}
   <p class="mono-note">{through_line}</p>
 {trend_section}
   <h2 id="ev-recent-h">{esc(L["recent_h"])}</h2>
-  <p class="section-sub" id="ev-recent-sub">{esc(L["recent_sub"])}</p>
+  <p class="section-sub" id="ev-recent-sub">{esc(recent_sub)}</p>
   <ul class="ev-list">
 {recent_html}  </ul>
 
