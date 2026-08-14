@@ -34,3 +34,6 @@ scripts/operator_network_analysis.json
 
 # Agent research scratch
 dash.json
+
+# Playwright writes screenshots into the cwd when no output dir is set
+/*.png

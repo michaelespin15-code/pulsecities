@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-    <!-- Preconnect to external CDN origins -->
-    <link rel="preconnect" href="https://unpkg.com">
+    <!-- Preconnect to external CDN origins. MapLibre and Chart.js are served
+         from this origin now, so only the basemap tiles remain third-party. -->
     <link rel="preconnect" href="https://tiles.stadiamaps.com">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -66,8 +66,8 @@
     <!-- Tailwind + DaisyUI (built locally, dark theme only) -->
     <link rel="stylesheet" href="/tailwind.min.css">
 
-    <!-- MapLibre GL CSS 5.2.0 -->
-    <link href="https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <!-- MapLibre GL CSS 5.2.0, served from this origin. See vendor/README.md -->
+    <link href="/vendor/maplibre-gl.css" rel="stylesheet" />
 
     <!-- Google Fonts: DM Sans + JetBrains Mono -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -1003,8 +1003,8 @@
     <!-- Sparkline tooltip div — positioned absolutely, shown on SVG hover -->
     <div id="sparkline-tip" style="display:none;position:absolute;pointer-events:none;background:#1b2534;color:#eef2f5;font-size:11px;padding:3px 7px;border-radius:4px;white-space:nowrap;z-index:1000;"></div>
 
-    <!-- MapLibre GL JS 5.2.0 -->
-    <script src="https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.js"></script>
+    <!-- MapLibre GL JS 5.2.0, served from this origin. See vendor/README.md -->
+    <script src="/vendor/maplibre-gl.js"></script>
 
     <script>
         // Safari with "Block all cookies" throws on any localStorage access,
@@ -1077,7 +1077,7 @@
             if (_chartJsPromise) return _chartJsPromise;
             _chartJsPromise = new Promise((resolve, reject) => {
                 const s = document.createElement('script');
-                s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js';
+                s.src = '/vendor/chart.umd.min.js';
                 s.onload = resolve;
                 s.onerror = (err) => { s.remove(); _chartJsPromise = null; reject(err); };
                 document.head.appendChild(s);
