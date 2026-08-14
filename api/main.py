@@ -15,7 +15,7 @@ import time
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, Response
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
@@ -37,7 +37,29 @@ app = FastAPI(
 )
 
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_exceeded(request, exc: RateLimitExceeded):
+    """slowapi's stock handler answers a rejection with Retry-After: 0 and
+    reports the full quota as X-RateLimit-Remaining. Both are backwards: the
+    first tells a well-behaved client to retry immediately, which is how a
+    throttle turns into a hot loop, and the second says there is budget left on
+    the request we just refused. Answer with the window length and a remaining
+    of zero, which is what the caller needs to back off correctly."""
+    window = 60
+    try:
+        window = int(exc.limit.limit.get_expiry())
+    except Exception:  # pragma: no cover - shape depends on the limits release
+        logger.warning("could not read rate-limit window; defaulting Retry-After to 60s")
+    return JSONResponse(
+        status_code=429,
+        content={"error": f"Rate limit exceeded: {exc.detail}"},
+        headers={
+            "Retry-After": str(window),
+            "X-RateLimit-Remaining": "0",
+        },
+    )
 
 # Catch-all 500 page. Without it an unhandled DB error on an SSR route serves
 # Starlette's bare "Internal Server Error" text to a browser. Deliberately
@@ -170,6 +192,20 @@ async def html_no_stale_cache(request, call_next):
     ctype = response.headers.get("content-type", "")
     if ctype.startswith("text/html") and "cache-control" not in response.headers:
         response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
+@app.middleware("http")
+async def strip_bogus_retry_after(request, call_next):
+    """slowapi's headers_enabled stamps Retry-After on every response it counts,
+    including 200s, and fills it with the remaining request count rather than a
+    delay. Retry-After is only defined for 429/503 and 3xx; on a 200 it is noise
+    that well-behaved clients and CDNs are entitled to act on. The X-RateLimit-*
+    trio already carries the quota, so drop the header everywhere it has no
+    meaning and leave it intact where it does."""
+    response = await call_next(request)
+    if response.status_code not in (429, 503) and "retry-after" in response.headers:
+        del response.headers["retry-after"]
     return response
 
 

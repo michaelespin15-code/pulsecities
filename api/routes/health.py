@@ -16,7 +16,6 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from models.database import get_db
-from models.scraper import ScraperRun
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["system"])
@@ -45,14 +44,26 @@ def health(db: Session = Depends(get_db)):
         raise HTTPException(status_code=503, detail="database unavailable")
 
     try:
+        # One DISTINCT ON instead of a query per scraper. This route is the
+        # uptime-monitor target and carries no rate limit, so its cost is
+        # whatever anyone cares to send at it; five round trips per hit made
+        # that a cheap amplifier.
+        rows = db.execute(
+            text("""
+                SELECT DISTINCT ON (scraper_name)
+                       scraper_name, status, started_at, records_processed,
+                       watermark_timestamp
+                FROM scraper_runs
+                WHERE scraper_name = ANY(:names)
+                ORDER BY scraper_name, started_at DESC
+            """),
+            {"names": SCRAPER_NAMES},
+        ).fetchall()
+        latest = {r.scraper_name: r for r in rows}
+
         scrapers = {}
         for name in SCRAPER_NAMES:
-            last_run = (
-                db.query(ScraperRun)
-                .filter(ScraperRun.scraper_name == name)
-                .order_by(ScraperRun.started_at.desc())
-                .first()
-            )
+            last_run = latest.get(name)
             scrapers[name] = (
                 {
                     "status": last_run.status,

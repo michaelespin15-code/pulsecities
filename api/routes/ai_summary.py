@@ -29,6 +29,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
 
+from api.ratelimit import per_worker
 from models.database import get_db
 from models.neighborhoods import Neighborhood
 from models.scores import DisplacementScore
@@ -158,7 +159,10 @@ def _build_facts(name, borough, zip_code, score, breakdown, raw_counts) -> str:
 
 
 @router.get("/{zip_code}/summary")
-@limiter.limit("20/hour")
+# This route calls Anthropic on a cache miss, so the limit is a spend control.
+# Declared as the whole-process ceiling; per_worker() divides it by the worker
+# count, because slowapi would otherwise allow it once per worker.
+@limiter.limit(per_worker(20, "hour"))
 def get_neighborhood_summary(
     request: Request,
     response: Response,

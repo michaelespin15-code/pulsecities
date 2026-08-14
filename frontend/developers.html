@@ -214,7 +214,7 @@ curl https://pulsecities.com/api/stats</code></pre>
     <h2 id="ground-rules">Ground rules</h2>
     <ul>
         <li>Base URL is <code>https://pulsecities.com/api</code>. Every endpoint below is <code>GET</code> and returns JSON.</li>
-        <li>Rate limit is 60 requests per minute per IP (30 on a few heavier routes). Responses carry standard <code>X-RateLimit-*</code> headers.</li>
+        <li>Rate limit is 120 requests per minute per IP, with a burst of 40 for pages that open several calls at once. A few heavier routes cap lower. Responses carry standard <code>X-RateLimit-*</code> headers, and a 429 tells you how long to wait in <code>Retry-After</code>.</li>
         <li>Data refreshes once a night from city sources. Most responses are cached for an hour; there is nothing to gain from polling faster.</li>
         <li>Check <code>data_freshness</code> in <code>/api/stats</code> before trusting a window. When an upstream feed pauses (ACRIS does), the field says so.</li>
         <li>Attribution: CC BY 4.0. Name PulseCities and link pulsecities.com.</li>
