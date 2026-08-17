@@ -15,7 +15,15 @@ set -euo pipefail
 
 APP_DIR="/root/pulsecities"
 BACKUP_DIR="/var/backups/pulsecities"
-RETENTION_DAYS=7
+
+# Two local dumps, which at ~1.7GB each is ~3.3GB on a 78GB disk. Deeper local
+# history is redundant: backup_offsite.sh pushes weekday slots plus a monthly pin
+# to R2, and Sunday's restore-test proves the newest dump actually restores.
+#
+# This was 7 while a crontab line pruned the same directory at -mtime +1 an hour
+# later. The cron ran last so the cron won, and the repo described a week of
+# dumps that never existed. One policy, in the file that gets deployed.
+RETENTION_DAYS=1
 
 mkdir -p "$BACKUP_DIR"
 

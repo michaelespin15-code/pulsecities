@@ -46,8 +46,19 @@ for _slug, _scraper, _table, _column, _days in FRESHNESS_SOURCES:
 
 
 def through_sql(table: str, column: str) -> str:
-    """Newest record in `table` that is not dated in the future."""
-    return f"SELECT MAX({column}) FROM {table} WHERE {column} <= CURRENT_DATE"
+    """Newest record in `table` that is not dated in the future.
+
+    The bound is `< CURRENT_DATE + 1 day` rather than `<= CURRENT_DATE`, which
+    matters for the timestamp columns: CURRENT_DATE widens to midnight, so
+    `created_date <= CURRENT_DATE` drops every 311 record filed so far today and
+    reports the feed a day staler than it is. Keeping the column bare on the left
+    also leaves it sargable, so this stays an index scan on the 5M-row tables
+    rather than the seq scan a `column::date` cast would force.
+    """
+    return (
+        f"SELECT MAX({column}) FROM {table} "
+        f"WHERE {column} < CURRENT_DATE + INTERVAL '1 day'"
+    )
 
 
 def staleness_days(name: str) -> int:

@@ -16,8 +16,12 @@ Configuration:
     ALERT_SNOOZE — comma-separated substrings. Alerts whose subject or body
                    matches one are logged but not emailed or webhooked. For
                    acknowledged, long-running upstream conditions (a stalled
-                   source that would otherwise warn every night). Remove the
-                   entry when the condition clears.
+                   source that would otherwise warn every night).
+                   Match the full alert subject, not a bare scraper name: a
+                   pattern of 'dcwp_licenses' also silences that scraper's
+                   hard failures and quarantine spikes. Append '@YYYY-MM-DD'
+                   to record when the entry was added; weekly_ops_health
+                   surfaces anything older than 30 days for review.
 
 Failure contract:
     send_alert(), flush_alerts(), and notify_ops() NEVER raise. Delivery
@@ -27,6 +31,7 @@ Failure contract:
 import logging
 import os
 import time
+from datetime import date
 
 import requests
 
@@ -40,10 +45,66 @@ ALERT_WEBHOOK_FORMAT: str = os.getenv("ALERT_WEBHOOK_FORMAT", "slack")
 _pending: list[tuple[str, str]] = []
 
 
+def _parse_snoozes() -> list[tuple[str, "date | None"]]:
+    """Parse ALERT_SNOOZE into (pattern, date it was set).
+
+    An entry may carry an `@YYYY-MM-DD` suffix recording when it was added. The
+    date is metadata for review only: matching always uses the pattern alone.
+    An entry with no date, or an unparseable one, reports None so it shows up in
+    stale_snoozes() rather than quietly living forever.
+    """
+    entries: list[tuple[str, date | None]] = []
+    for raw in os.getenv("ALERT_SNOOZE", "").split(","):
+        raw = raw.strip()
+        if not raw:
+            continue
+        pattern, sep, suffix = raw.rpartition("@")
+        if not sep:
+            entries.append((raw, None))
+            continue
+        try:
+            entries.append((pattern.strip(), date.fromisoformat(suffix.strip())))
+        except ValueError:
+            # The '@' was part of the pattern, not a date suffix.
+            entries.append((raw, None))
+    return entries
+
+
+def active_snoozes() -> list[tuple[str, "date | None"]]:
+    """Every configured snooze, for reporting. See scripts/weekly_ops_health.py."""
+    return _parse_snoozes()
+
+
+def stale_snoozes(max_age_days: int = 30) -> list[tuple[str, "date | None", int | None]]:
+    """Snoozes old enough to deserve a second look, as (pattern, set_on, age_days).
+
+    A snooze is a deliberate blind spot. It is fine to have one, and not fine to
+    forget it: the DCWP entry outlived its own justification and would have kept
+    swallowing alerts after the feed thawed. Undated entries are always returned,
+    since nobody can say whether they are still needed.
+    """
+    today = date.today()
+    stale: list[tuple[str, date | None, int | None]] = []
+    for pattern, set_on in _parse_snoozes():
+        if set_on is None:
+            stale.append((pattern, None, None))
+            continue
+        age = (today - set_on).days
+        if age > max_age_days:
+            stale.append((pattern, set_on, age))
+    return stale
+
+
 def _snoozed(subject: str, body: str) -> bool:
-    patterns = [p.strip() for p in os.getenv("ALERT_SNOOZE", "").split(",") if p.strip()]
+    """True when this alert matches a configured snooze.
+
+    Patterns match against the subject and body together, so they must be
+    specific enough to name the condition being silenced and nothing else. A
+    bare scraper name here silences that scraper's hard failures and quarantine
+    spikes alongside the benign anomaly it was meant for.
+    """
     haystack = f"{subject}\n{body}"
-    return any(p in haystack for p in patterns)
+    return any(pattern in haystack for pattern, _set_on in _parse_snoozes())
 
 
 def send_alert(subject: str, body: str) -> None:

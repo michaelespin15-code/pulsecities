@@ -56,16 +56,30 @@ class TestSingleSourceOfTruth:
 
 
 class TestFutureDatesNeverCountAsFresh:
-    def test_through_sql_excludes_dates_ahead_of_today(self):
+    def test_through_sql_bounds_on_today(self):
         sql = freshness.through_sql("ownership_raw", "doc_date")
-        assert "doc_date <= CURRENT_DATE" in sql
+        assert "CURRENT_DATE" in sql
+
+    def test_the_bound_keeps_the_column_sargable(self):
+        """A `column::date` cast is also correct and forces a seq scan on the
+        5M-row tables. Keep the column bare on the left of the comparison."""
+        sql = freshness.through_sql("complaints_raw", "created_date")
+        assert "created_date::date" not in sql
+        assert "CAST(created_date" not in sql
+
+    def test_the_bound_does_not_drop_records_filed_today(self):
+        """CURRENT_DATE widens to midnight, so `col <= CURRENT_DATE` discards
+        every timestamp row filed so far today and understates freshness."""
+        sql = freshness.through_sql("complaints_raw", "created_date")
+        assert "<= CURRENT_DATE" not in sql
+        assert "CURRENT_DATE + INTERVAL '1 day'" in sql
 
     def test_every_db_freshness_query_carries_the_guard(self):
         """Two ACRIS rows dated in the future drove db_stale_days to -10, which
         no threshold can ever exceed. The check was green by construction."""
         for scraper_name, _dataset, _date_col in dhc.FRESHNESS_CHECKS:
             sql = freshness.db_through_sql(scraper_name)
-            assert "<= CURRENT_DATE" in sql, f"{scraper_name} would trust a future date"
+            assert "CURRENT_DATE" in sql, f"{scraper_name} would trust a future date"
 
 
 class TestUpstreamProbes:

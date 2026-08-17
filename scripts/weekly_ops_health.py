@@ -29,15 +29,20 @@ from pathlib import Path
 
 from sqlalchemy import text
 
+from api.freshness import through_sql
 from config.logging_config import configure_logging
 from models.database import get_scraper_db  # imports load_dotenv() as a side effect
-from scheduler.alerts import send_ops_email
+from scheduler.alerts import active_snoozes, send_ops_email, stale_snoozes
 
 configure_logging()
 logger = logging.getLogger(__name__)
 
 RESTORE_RESULT = Path("/var/log/pulsecities/backup_restore_test.json")
 BACKUP_DIR = Path("/var/backups/pulsecities")
+
+# A snooze is an alert we have chosen not to hear. Past this age, say so weekly:
+# the DCWP entry outlived its own justification and nothing was watching it.
+SNOOZE_REVIEW_DAYS = 30
 
 # (label, table, date column). Deed data is expected stale while the ACRIS
 # feed is paused upstream, so its threshold is wider.
@@ -63,7 +68,12 @@ def gather(db) -> dict:
     lines.append("FEED WATERMARKS")
     today = date.today()
     for label, table, col, max_age in WATERMARKS:
-        latest = db.execute(text(f"SELECT MAX({col})::date FROM {table}")).scalar()
+        # Same future-date exclusion as /api/status and the nightly checks. A
+        # bare MAX() here printed "ACRIS deeds 2026-08-27 (-10d ago)" off two
+        # filer-typed dates, and a negative age can never trip a threshold.
+        latest = db.execute(text(through_sql(table, col))).scalar()
+        if isinstance(latest, datetime):
+            latest = latest.date()
         if latest is None:
             lines.append(f"  {label:<16} no data")
             attention.append(f"{label}: table empty")
@@ -99,6 +109,25 @@ def gather(db) -> dict:
         FROM subscribers
     """)).fetchone()
     lines.append(f"  ZIP {subs.zip}   citywide {subs.citywide}   operator {subs.operator}   pending {subs.pending}")
+
+    lines.append("")
+    lines.append("SNOOZED ALERTS  (deliberate blind spots)")
+    snoozes = active_snoozes()
+    if not snoozes:
+        lines.append("  none")
+    else:
+        stale_patterns = {p for p, _set_on, _age in stale_snoozes(SNOOZE_REVIEW_DAYS)}
+        for pattern, set_on in snoozes:
+            if set_on is None:
+                lines.append(f"  {pattern}  (no set date)  << undated, cannot be reviewed")
+                attention.append(f"snooze has no set date: {pattern}")
+                continue
+            age = (today - set_on).days
+            flag = ""
+            if pattern in stale_patterns:
+                flag = f"  << set {age}d ago, still needed?"
+                attention.append(f"snooze {age}d old: {pattern}")
+            lines.append(f"  {pattern}  (set {set_on.isoformat()}){flag}")
 
     lines.append("")
     lines.append("BACKUP")
