@@ -177,7 +177,7 @@ class OwnershipScraper(BaseScraper):
         # Accumulate master records page by page, batch-join, persist
         master_batch: dict[str, dict] = {}  # document_id → master fields
 
-        for raw in self.paginate(where, order="recorded_datetime ASC"):
+        for raw in self.paginate(where):
             try:
                 master_rec = AcrisMasterInput.model_validate(raw)
             except ValidationError as exc:

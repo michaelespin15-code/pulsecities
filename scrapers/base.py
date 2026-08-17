@@ -113,6 +113,20 @@ class BaseScraper(ABC):
         success holding partial data. Advancing by the rows actually received
         means a short page costs one extra round trip and resumes exactly where
         it stopped, instead of dropping the tail of the table.
+
+        `order` defaults to :id and callers should leave it alone. $limit/$offset
+        paging visits each row once only if the sort key is unique: where rows
+        tie, their relative order between two requests is unspecified, so a tie
+        spanning a page boundary can put the same row on both pages and another
+        row on neither. Duplicates are harmless here because every scraper
+        upserts on a natural key. The dropped row is the problem, and it looks
+        like nothing at all, since the run still succeeds and still reports a
+        plausible count.
+
+        Ordering by a date reads naturally and is exactly the trap: dates are
+        never unique. No scraper needs the order anyway, because each computes
+        its watermark as a max over every row it sees rather than by position.
+        tests/test_pagination_stability.py enforces this.
         """
         offset = 0
         short_pages = 0

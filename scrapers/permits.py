@@ -169,7 +169,17 @@ class PermitsScraper(BaseScraper):
         new_watermark: datetime | None = None
         batch: list[dict] = []
 
-        for raw in self.paginate(where, order=f"{DATE_FIELD} ASC"):
+        # Paginate on :id, the base default, rather than filing_date. Offset
+        # pagination is only safe over a stable, unique sort key, and filing_date
+        # is neither: it is TEXT upstream, so it sorts lexicographically, and
+        # thousands of permits share a date. Rows can then move between pages
+        # while we walk them, skipping some and repeating others. The 3-year
+        # window is ~30k rows against a 50k page, so today it fits in one page
+        # and the bug cannot fire. It fires the first night the window crosses
+        # 50k, silently, as missing permits rather than an error.
+        # Ordering does not matter to this loop: the watermark is a max over
+        # every row and the upsert is keyed, not positional.
+        for raw in self.paginate(where):
             row = self._parse(db, raw)
             if row is None:
                 records_failed += 1

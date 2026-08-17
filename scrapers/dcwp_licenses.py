@@ -79,7 +79,7 @@ class DcwpScraper(BaseScraper):
         records_failed = 0
         new_watermark: datetime | None = None
 
-        for raw in self.paginate(where, order="license_creation_date ASC"):
+        for raw in self.paginate(where):
             parsed = self._parse(db, raw)
             if parsed is None:
                 records_failed += 1

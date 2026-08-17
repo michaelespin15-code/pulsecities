@@ -71,7 +71,7 @@ class PlutoScraper(BaseScraper):
         records_failed = 0
         batch: list[dict] = []
 
-        for raw in self.paginate(where, order="bbl ASC"):
+        for raw in self.paginate(where):
             row = self._parse(db, raw)
             if row is None:
                 records_failed += 1
