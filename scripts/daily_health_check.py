@@ -43,6 +43,74 @@ FRESHNESS_CHECKS = [
 ]
 
 
+# A source that has stopped publishing gets re-reported on this cadence instead
+# of nightly. Long enough that a weeks-long upstream freeze cannot train anyone
+# to filter the ops mailbox, short enough that it cannot be forgotten either.
+UPSTREAM_REALERT_DAYS = 7
+
+# Which feeds are mid-alert, so an unchanged upstream freeze is not re-sent every
+# night. A nightly artifact, not source: see .gitignore.
+STATE_PATH = Path(__file__).parent / "freshness_alert_state.json"
+
+
+def _read_alert_state():
+    """Per-feed alert bookkeeping, or {} when it is missing or unreadable.
+
+    A corrupt state file must not stop the checks from running. Losing it means
+    re-sending one alert, which is the safe direction to fail.
+    """
+    try:
+        state = json.loads(STATE_PATH.read_text())
+        return state if isinstance(state, dict) else {}
+    except FileNotFoundError:
+        return {}
+    except Exception as exc:
+        logger.warning("freshness alert state unreadable (%s); treating as empty", exc)
+        return {}
+
+
+def _write_alert_state(state):
+    try:
+        tmp = STATE_PATH.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps(state, indent=1, sort_keys=True))
+        os.replace(tmp, STATE_PATH)
+    except Exception:
+        # Bookkeeping only. Failing to record it re-sends an alert next run;
+        # raising here would lose the checks that already passed.
+        logger.exception("could not write freshness alert state")
+
+
+def _should_alert(scraper_name, cause, today, state):
+    """Whether to email about this feed now, and the updated state entry.
+
+    An ingest gap alerts every run. An upstream freeze alerts when first seen
+    and then on UPSTREAM_REALERT_DAYS, carrying its age so the repeat reads as
+    an age report rather than as news.
+    """
+    prior = state.get(scraper_name) or {}
+    first_seen = prior.get("first_seen") if prior.get("cause") == cause else None
+    entry = {
+        "cause": cause,
+        "first_seen": first_seen or today.isoformat(),
+        "last_alerted": prior.get("last_alerted"),
+    }
+
+    if cause == "ingest":
+        entry["last_alerted"] = today.isoformat()
+        return True, entry
+
+    last = prior.get("last_alerted") if prior.get("cause") == cause else None
+    if last:
+        try:
+            if (today - date.fromisoformat(last)).days < UPSTREAM_REALERT_DAYS:
+                return False, entry
+        except ValueError:
+            pass  # Unparseable timestamp: alert and rewrite it.
+
+    entry["last_alerted"] = today.isoformat()
+    return True, entry
+
+
 def _app_token_params():
     token = os.getenv("NYC_OPEN_DATA_APP_TOKEN", "")
     if token:
@@ -129,9 +197,30 @@ def classify_status(upstream_days, db_days, threshold):
     return "ok"
 
 
+def stale_cause(upstream_days, db_days, threshold):
+    """Why a feed is stale: 'upstream', 'ingest', or None when it isn't.
+
+    These are different findings that happen to look identical from here. When
+    the source itself has stopped publishing, our matching lag is a consequence
+    of that and there is nothing on this box to fix; the finding is true on the
+    first night and unchanged on the thirtieth. When the source is current and
+    we are behind it, that is our bug and it is worth waking someone for.
+
+    Collapsing both into one alert is what makes a nightly page ignorable, and
+    an ignored channel is the failure that hid the 2026-08-15 outage. The caller
+    uses this to keep the second case loud and put the first on a slow cadence.
+    """
+    if upstream_days is not None and upstream_days > threshold:
+        return "upstream"
+    if db_days is not None and db_days > threshold:
+        return "ingest"
+    return None
+
+
 def run_checks(db):
     today = date.today()
     results = []
+    state = _read_alert_state()
 
     for scraper_name, dataset_id, date_col in FRESHNESS_CHECKS:
         threshold = staleness_days(scraper_name)
@@ -142,21 +231,21 @@ def run_checks(db):
         db_days = stale_days(db_date, today)
         status  = classify_status(up_days, db_days, threshold)
 
+        cause = stale_cause(up_days, db_days, threshold) if status == "stale" else None
+
         alert_fired = False
-        if status == "stale":
-            parts = []
-            if up_days is not None and up_days > threshold:
-                parts.append(
-                    f"upstream max date {upstream_date} is {up_days}d old (threshold {threshold}d)"
-                )
-            if db_days is not None and db_days > threshold:
-                parts.append(
-                    f"our newest {scraper_name} record {db_date} is {db_days}d old "
-                    f"(threshold {threshold}d)"
-                )
-            body = "; ".join(parts) if parts else "source data stale — check manually"
-            send_alert(f"Source data stale: {scraper_name}", body)
-            alert_fired = True
+        if cause:
+            alert_fired, entry = _should_alert(scraper_name, cause, today, state)
+            state[scraper_name] = entry
+            if alert_fired:
+                send_alert(*_stale_alert(
+                    scraper_name, cause, upstream_date, db_date,
+                    up_days, db_days, threshold, entry, today,
+                ))
+        else:
+            # Recovered, or never stale. Drop the entry so the next freeze is
+            # reported as new rather than being silenced by a stale timestamp.
+            state.pop(scraper_name, None)
 
         results.append({
             "scraper_name":      scraper_name,
@@ -166,18 +255,51 @@ def run_checks(db):
             "db_stale_days":     db_days,
             "threshold_days":    threshold,
             "status":            status,
+            "stale_cause":       cause,
             "alert_fired":       alert_fired,
         })
 
+    _write_alert_state(state)
     return results
+
+
+def _stale_alert(scraper_name, cause, upstream_date, db_date,
+                 up_days, db_days, threshold, entry, today):
+    """Build the (subject, body) for a stale feed, naming which failure it is."""
+    if cause == "upstream":
+        held_since = entry.get("first_seen")
+        age = ""
+        if held_since:
+            try:
+                days = (today - date.fromisoformat(held_since)).days
+                age = f" Reported for {days}d." if days else ""
+            except ValueError:
+                pass
+        return (
+            f"Upstream feed frozen: {scraper_name}",
+            f"{scraper_name} last published {upstream_date} ({up_days}d ago, "
+            f"threshold {threshold}d). Our ingest is current with the source, so "
+            f"there is nothing to fix here until the publisher resumes.{age} "
+            f"Re-reported every {UPSTREAM_REALERT_DAYS}d while it stays frozen."
+        )
+
+    return (
+        f"Ingest behind live source: {scraper_name}",
+        f"{scraper_name} publishes through {upstream_date} but our newest record "
+        f"is {db_date} ({db_days}d old, threshold {threshold}d). The source is "
+        f"current, so this gap is ours."
+    )
 
 
 def print_report(results):
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     print(f"\n=== PulseCities Upstream Freshness | {now_str} ===\n")
-    print(f"  {'scraper':<22} {'status':<8} {'upstream':<12} {'db':<12} {'up_days':>7} {'db_days':>7} {'thr':>4}  alert")
-    print("  " + "-" * 82)
+    print(f"  {'scraper':<22} {'status':<8} {'upstream':<12} {'db':<12} {'up_days':>7} {'db_days':>7} {'thr':>4}  {'cause':<9} alert")
+    print("  " + "-" * 92)
     for r in results:
+        # A stale feed with alert=no is on the re-alert cadence, not unnoticed.
+        # Printing the cause keeps that readable without opening the state file.
+        alert = "YES" if r["alert_fired"] else ("held" if r.get("stale_cause") else "no")
         print(
             f"  {r['scraper_name']:<22} {r['status']:<8} "
             f"{(r['upstream_max_date'] or 'N/A'):<12} "
@@ -185,7 +307,8 @@ def print_report(results):
             f"{(str(r['upstream_stale_days']) if r['upstream_stale_days'] is not None else '?'):>7} "
             f"{(str(r['db_stale_days']) if r['db_stale_days'] is not None else '?'):>7} "
             f"{r['threshold_days']:>4}  "
-            f"{'YES' if r['alert_fired'] else 'no'}"
+            f"{(r.get('stale_cause') or '-'):<9} "
+            f"{alert}"
         )
     print()
 

@@ -16,6 +16,7 @@ import socket
 
 from config.logging_config import configure_logging
 from scheduler.alerts import flush_alerts, send_ops_email
+from scheduler.heartbeat import ping as heartbeat
 from scheduler.pipeline import run_nightly_pipeline
 
 _LOCK_FILE = "/tmp/pulsecities_pipeline.lock"
@@ -64,6 +65,9 @@ def main() -> None:
     logger.info("scheduler/main.py started")
 
     if not _acquire_lock(logger):
+        # Deliberately no heartbeat. A run that skips because the previous one
+        # is still going has not proved anything works, and if the pipeline
+        # wedges every night we want the external switch to say so.
         sys.exit(0)
 
     try:
@@ -78,10 +82,13 @@ def main() -> None:
                 f"  tail -100 /var/log/pulsecities/scraper.log\n"
                 f"  https://pulsecities.com/status\n",
             )
+            heartbeat("nightly-pipeline", ok=False, detail="scraper failures")
             sys.exit(1)
         logger.info("Pipeline completed successfully — exiting 0")
+        heartbeat("nightly-pipeline")
     except Exception as exc:
         logger.error("Pipeline raised uncaught exception: %s", exc, exc_info=True)
+        heartbeat("nightly-pipeline", ok=False, detail=f"uncaught exception: {exc}")
         send_ops_email(
             "Nightly pipeline crashed",
             f"The nightly data pipeline on {socket.gethostname()} raised an uncaught "

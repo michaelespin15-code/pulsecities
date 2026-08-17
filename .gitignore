@@ -37,3 +37,4 @@ dash.json
 
 # Playwright writes screenshots into the cwd when no output dir is set
 /*.png
+scripts/freshness_alert_state.json
