@@ -72,6 +72,21 @@ class ComplaintsScraper(BaseScraper):
     DATASET_ID = DATASET_ID
     PAGE_TIMEOUT = 120  # 311 Socrata endpoint is slow, override base 60s
 
+    # 311 keeps publishing records into days that have already passed, and a
+    # watermark filter on created_date only ever moves forward, so anything that
+    # lands after the watermark has swept past it is missed permanently. Measured
+    # against upstream counts before this was set: 1.2% short at 3 days old,
+    # 2.2% at 6, 3.5% at 12, growing rather than closing.
+    #
+    # This is the same mechanism violations (10d) and evictions (45d) already
+    # use, and the upsert is ON CONFLICT DO NOTHING on unique_key, so re-reading
+    # a window costs one fetch and writes nothing new.
+    #
+    # 7 days is a cost/benefit pick, not a complete fix: arrivals continue past
+    # a week. scripts/reconcile_upstream.py covers the long tail by comparing
+    # per-day counts against the source and re-fetching what actually drifted.
+    WATERMARK_EXTRA_LOOKBACK_DAYS = 7
+
     def _run(self, db) -> tuple[int, int, datetime | None]:
         where = self.build_where_since(DATE_FIELD, db)
         if COMPLAINT_TYPE_FILTER:
