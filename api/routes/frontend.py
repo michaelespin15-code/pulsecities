@@ -930,6 +930,7 @@ def _build_neighborhood_page(
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <meta name="robots" content="index, follow">
 <title>{e(page_title)}</title>
 <meta name="description" content="{e(meta_desc)}">
@@ -1526,6 +1527,7 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <meta name="robots" content="{robots}">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
@@ -1687,6 +1689,7 @@ def _minimal_operator_page(display_name: str, operator_class: str) -> str:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <title>{name} | PulseCities</title>
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://pulsecities.com/operators">
@@ -1736,6 +1739,7 @@ def _operator_not_found_page(label: str) -> str:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <title>Operator not found | PulseCities</title>
 <meta name="robots" content="noindex">
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -2105,6 +2109,7 @@ def operators_directory(db: Session = Depends(get_db)):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <title>{_html.escape(title)}</title>
 <meta name="description" content="{_html.escape(desc)}">
 <link rel="canonical" href="https://pulsecities.com/operators">
@@ -2319,6 +2324,7 @@ def neighborhoods_directory(lang: str = "en", db: Session = Depends(get_db)):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <title>{_html.escape(title)}</title>
 <meta name="description" content="{_html.escape(desc)}">
 <link rel="canonical" href="{canonical}">
@@ -2570,6 +2576,7 @@ def borough_page(slug: str, lang: str = "en", db: Session = Depends(get_db)):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <title>{_html.escape(title)}</title>
 <meta name="description" content="{_html.escape(desc)}">
 <link rel="canonical" href="{page_url}">
@@ -2767,6 +2774,7 @@ def flip_watch_page(db: Session = Depends(get_db)):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <title>{_html.escape(title)}</title>
 <meta name="description" content="{_html.escape(desc)}">
 <link rel="canonical" href="https://pulsecities.com/flips">
@@ -3022,6 +3030,7 @@ def flips_editions_page(db: Session = Depends(get_db)):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <title>{_html.escape(title)}</title>
 <meta name="description" content="{_html.escape(desc)}">
 <link rel="canonical" href="https://pulsecities.com/flips/editions">
@@ -3256,6 +3265,7 @@ def speculation_radar_page(db: Session = Depends(get_db)):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <title>{_html.escape(title)}</title>
 <meta name="description" content="{_html.escape(desc)}">
 <link rel="canonical" href="https://pulsecities.com/radar">
@@ -3637,6 +3647,7 @@ def week_edition_page(slug: str, db: Session = Depends(get_db)):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
 <link rel="canonical" href="{canonical}">
@@ -3736,6 +3747,7 @@ def week_archive_index(db: Session = Depends(get_db)):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
 <link rel="canonical" href="{canonical}">
@@ -3927,6 +3939,7 @@ def this_week_page(db: Session = Depends(get_db)):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
 <link rel="canonical" href="https://pulsecities.com/this-week">
@@ -4261,6 +4274,7 @@ def displacement_page(db: Session = Depends(get_db)):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="https://pulsecities.com/displacement">
@@ -4717,6 +4731,7 @@ def evictions_page(lang: str = "en", db: Session = Depends(get_db)):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="{canonical}">
@@ -4909,6 +4924,7 @@ def who_owns_page(db: Session = Depends(get_db)):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="https://pulsecities.com/who-owns-my-building">
@@ -5082,6 +5098,7 @@ def _llc_head(title: str, desc: str, url: str, robots: str, jsonld: str,
     e = _html.escape
     return f"""<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111823">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
 <meta name="robots" content="{robots}">
