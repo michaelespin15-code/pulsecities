@@ -25,7 +25,7 @@ from slowapi.util import get_remote_address
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from api.freshness import ACRIS_THROUGH_SQL
+from api.freshness import ACRIS_THROUGH_SQL, staleness_days
 from models.database import get_db
 
 logger = logging.getLogger(__name__)
@@ -54,8 +54,13 @@ SOURCES = [
 # weekend adds two more, so anything under a week would flap on a healthy feed.
 # A week-old daily source is genuinely stuck; weeks-old (DCWP, ACRIS) is the
 # real failure this guards against.
+#
+# ACRIS reads its threshold from api/freshness.py rather than restating it. The
+# other daily feeds keep a tighter public number on purpose: telling a visitor a
+# feed is delayed is cheap, paging Michael at 3am is not, so the public badge is
+# allowed to flip before the alerting path does.
 _FRESHNESS = {
-    "acris_ownership": timedelta(days=21),   # deeds publish with a ~2-week natural lag
+    "acris_ownership": timedelta(days=staleness_days("acris_ownership")),
     "evictions":       timedelta(days=7),
     "hpd_violations":  timedelta(days=7),
     "311_complaints":  timedelta(days=7),

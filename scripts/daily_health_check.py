@@ -23,6 +23,7 @@ from pathlib import Path
 import requests
 from sqlalchemy import text
 
+from api.freshness import db_through_sql, staleness_days
 from config.nyc import SOCRATA_BASE_URL
 from models.database import get_scraper_db
 from scheduler.alerts import flush_alerts, send_alert
@@ -30,19 +31,16 @@ from scheduler.alerts import flush_alerts, send_alert
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-# (scraper_name, dataset_id, date_column, threshold_days, db_table, db_date_col)
+# (scraper_name, dataset_id, upstream date column). The threshold and the
+# matching local query both come from api/freshness.py: this job alerts, it does
+# not get to hold its own opinion about how stale a feed is.
 FRESHNESS_CHECKS = [
-    ("acris_ownership", "bnx9-e6tj", "recorded_datetime", 7,  "ownership_raw",  "doc_date"),
-    ("dob_permits",     "ipu4-2q9a", "dobrundate",        10, "permits_raw",    "filing_date"),
-    ("evictions",       "6z8x-wfk4", "executed_date",     14, "evictions_raw",  "executed_date"),
-    ("311_complaints",  "erm2-nwe9", "created_date",       10, "complaints_raw", "created_date"),
-    ("hpd_violations",  "wvxf-dwi5", "inspectiondate",    10, "violations_raw", "inspection_date"),
+    ("acris_ownership", "bnx9-e6tj", "recorded_datetime"),
+    ("dob_permits",     "ipu4-2q9a", "dobrundate"),
+    ("evictions",       "6z8x-wfk4", "executed_date"),
+    ("311_complaints",  "erm2-nwe9", "created_date"),
+    ("hpd_violations",  "wvxf-dwi5", "inspectiondate"),
 ]
-
-# dobrundate is a plain text field in the permits dataset — MAX() on text sorts lexicographically,
-# which happens to be correct for YYYYMMDD strings, but the API rejects MAX() on text columns.
-# Query by ORDER DESC instead and parse the returned value.
-DOBRUNDATE_DATASET = "ipu4-2q9a"
 
 
 def _app_token_params():
@@ -56,41 +54,14 @@ def fetch_upstream_max(dataset_id, date_col):
     """
     Return the upstream max date for a dataset as a date object, or None on failure.
 
-    For dobrundate (text field in ipu4-2q9a), uses ORDER DESC + LIMIT 1 instead
-    of MAX() to avoid Socrata rejecting an aggregate on a text column.
+    Every dataset takes the same MAX() aggregate. The permits feed used to get a
+    bespoke branch, on the theory that all of ipu4-2q9a's date columns are text
+    and so MAX() would sort lexicographically. dobrundate, the column actually
+    checked here, is a calendar_date. Worse, the workaround ordered by
+    issuance_date, which really is text, so it reproduced the exact bug it was
+    written to avoid and reported a one-day-old feed as 1,974 days stale.
     """
     params = _app_token_params()
-
-    if dataset_id == DOBRUNDATE_DATASET:
-        # All date columns in ipu4-2q9a are stored as text (MM/DD/YYYY).
-        # MAX() on text sorts lexicographically and returns wrong results.
-        # Order by issuance_date DESC and read the filing_date field from the
-        # first result — both columns track the same activity.
-        params.update({"$order": "issuance_date DESC", "$limit": 1,
-                       "$select": "filing_date"})
-        url = f"{SOCRATA_BASE_URL}/{dataset_id}.json"
-        try:
-            resp = requests.get(url, params=params, timeout=15)
-            resp.raise_for_status()
-            rows = resp.json()
-            if not rows:
-                return None
-            raw = rows[0].get("filing_date")
-            if raw is None:
-                return None
-            raw = str(raw).strip()
-            for fmt in ("%m/%d/%Y %H:%M:%S", "%m/%d/%Y", "%Y-%m-%d"):
-                try:
-                    return datetime.strptime(raw, fmt).date()
-                except ValueError:
-                    continue
-            logger.warning("dob_permits: could not parse filing_date value %r", raw)
-            return None
-        except Exception as exc:
-            logger.warning("dob_permits upstream fetch failed: %s", exc)
-            return None
-
-    # Standard path: MAX() aggregate via $select
     params.update({"$select": f"MAX({date_col}) AS max_dt", "$limit": 1})
     url = f"{SOCRATA_BASE_URL}/{dataset_id}.json"
     try:
@@ -115,12 +86,16 @@ def fetch_upstream_max(dataset_id, date_col):
         return None
 
 
-def fetch_db_max(db, table, date_col):
-    """Return the max value of date_col from table as a date object, or None."""
+def fetch_db_max(db, scraper_name):
+    """Newest record we hold for this feed that is not dated in the future.
+
+    A bare MAX() trusted two ACRIS rows carrying a filer-typed doc_date ten days
+    out, which put db_stale_days at -10. No threshold can be exceeded by a
+    negative number, so this half of the check was green by construction and
+    would have stayed green through a total ingest failure.
+    """
     try:
-        row = db.execute(
-            text(f"SELECT MAX({date_col}) FROM {table}")  # noqa: S608 — table names are hardcoded
-        ).scalar()
+        row = db.execute(text(db_through_sql(scraper_name))).scalar()
         if row is None:
             return None
         if isinstance(row, datetime):
@@ -129,7 +104,7 @@ def fetch_db_max(db, table, date_col):
             return row
         return None
     except Exception as exc:
-        logger.warning("%s.%s db query failed: %s", table, date_col, exc)
+        logger.warning("%s db freshness query failed: %s", scraper_name, exc)
         return None
 
 
@@ -158,9 +133,10 @@ def run_checks(db):
     today = date.today()
     results = []
 
-    for scraper_name, dataset_id, date_col, threshold, db_table, db_date_col in FRESHNESS_CHECKS:
+    for scraper_name, dataset_id, date_col in FRESHNESS_CHECKS:
+        threshold = staleness_days(scraper_name)
         upstream_date = fetch_upstream_max(dataset_id, date_col)
-        db_date = fetch_db_max(db, db_table, db_date_col)
+        db_date = fetch_db_max(db, scraper_name)
 
         up_days = stale_days(upstream_date, today)
         db_days = stale_days(db_date, today)
@@ -175,7 +151,8 @@ def run_checks(db):
                 )
             if db_days is not None and db_days > threshold:
                 parts.append(
-                    f"DB table {db_table} max date {db_date} is {db_days}d old (threshold {threshold}d)"
+                    f"our newest {scraper_name} record {db_date} is {db_days}d old "
+                    f"(threshold {threshold}d)"
                 )
             body = "; ".join(parts) if parts else "source data stale — check manually"
             send_alert(f"Source data stale: {scraper_name}", body)

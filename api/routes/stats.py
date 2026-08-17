@@ -54,12 +54,12 @@ _STATS_TTL = 3600  # 1 hour — counts change nightly, not per request
 _FRESHNESS_CACHE: dict = {}
 _FRESHNESS_TTL = 300  # 5 minutes
 
-# Signal freshness thresholds (days). Same values as daily_health_check.py.
-# Queries come from api/freshness.py so /api/stats, /api/status and the health
-# check cannot drift into quoting three different dates for one feed again.
+# Thresholds and queries both come from api/freshness.py so /api/stats,
+# /api/status and the nightly health checks cannot drift into quoting three
+# different dates for one feed again.
 _FRESHNESS_CHECKS = [
-    (name, through_sql(table, column), threshold)
-    for name, table, column, threshold in FRESHNESS_SOURCES
+    (slug, through_sql(table, column), threshold)
+    for slug, _scraper, table, column, threshold in FRESHNESS_SOURCES
 ]
 
 

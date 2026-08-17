@@ -7,14 +7,14 @@ threshold is breached.
 
 Exit-nonzero conditions:
   - Any key scraper has status='failure' on its latest run
-  - ACRIS source frozen > 14 days (ownership_raw not updated)
+  - ACRIS source frozen past the shared threshold (ownership_raw not updated)
   - displacement_scores max < 40 (scoring collapsed)
   - live avg vs latest score_history avg diverges by > 30 %
   - latest score_history avg < 50 % of previous day avg
 
 Does NOT exit nonzero for:
   - DOB rolling-average warning after a bulk recovery run
-  - ACRIS frozen <= 14 days (warn only)
+  - ACRIS frozen within the shared threshold (warn only)
   - Any non-critical scraper in degraded state
 
 Usage:
@@ -28,7 +28,7 @@ from typing import Any
 
 from sqlalchemy import text
 
-from api.freshness import ACRIS_THROUGH_SQL
+from api.freshness import ACRIS_THROUGH_SQL, staleness_days
 from models.database import get_scraper_db
 
 # Key scrapers for which status=failure triggers a nonzero exit.
@@ -41,7 +41,10 @@ KEY_SCRAPERS = [
     "hpd_violations",
 ]
 
-ACRIS_FROZEN_CRITICAL_DAYS = 14  # exit nonzero above this threshold
+# Exit nonzero above this threshold. Shared with /api/status and the nightly
+# freshness check: a local 14 here meant this script exited CRITICAL on a feed
+# the public page was calling healthy.
+ACRIS_FROZEN_CRITICAL_DAYS = staleness_days("acris_ownership")
 SCORE_MAX_FLOOR = 40.0            # displacement_scores max must exceed this
 LIVE_HISTORY_DRIFT_PCT = 0.30     # live avg vs history avg tolerance
 HISTORY_DAY_OVER_DAY_PCT = 0.50  # today's history avg must be >= 50 % of yesterday
