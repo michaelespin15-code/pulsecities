@@ -655,7 +655,7 @@ def render_zip_digest(
             <tr><td style="padding:22px 0;border-top:1px solid {_RULE};">
               {_field_label("The Week, In Plain English")}
               <p style="margin:0;font-family:{_SERIF};font-size:15px;color:{_INK};line-height:1.75;">{_html_escape(narrative)}</p>
-              <p style="margin:10px 0 0;font-family:{_MONO};font-size:10px;color:{_FAINT};">Written by AI from this week's exact counts. The numbers below are the record.</p>
+              <p style="margin:10px 0 0;font-family:{_MONO};font-size:10px;color:{_FAINT};">Drawn from this week's exact counts. The numbers below are the record.</p>
             </td></tr>"""
 
     subject = f"PulseCities Weekly Watch: {area} update"
@@ -1066,7 +1066,7 @@ def render_citywide_digest(subscription: dict, summary: dict, narrative: str | N
             <tr><td style="padding:22px 0;border-top:1px solid {_RULE};">
               {_field_label("The Week, In Plain English")}
               <p style="margin:0;font-family:{_SERIF};font-size:15px;color:{_INK};line-height:1.75;">{_html_escape(narrative)}</p>
-              <p style="margin:10px 0 0;font-family:{_MONO};font-size:10px;color:{_FAINT};">Written by AI from this week's exact counts. The numbers below are the record.</p>
+              <p style="margin:10px 0 0;font-family:{_MONO};font-size:10px;color:{_FAINT};">Drawn from this week's exact counts. The numbers below are the record.</p>
             </td></tr>"""
 
     if movers:
