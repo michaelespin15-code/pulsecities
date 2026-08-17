@@ -80,6 +80,7 @@
             padding: 0;
             box-sizing: border-box;
         }
+        h1, h2, h3 { text-wrap: balance; }
         body {
             font-family: 'DM Sans', sans-serif;
             overflow: hidden;
@@ -2569,7 +2570,11 @@
                         evictSec.classList.remove('hidden');
                         appendWithMore(data.recent_evictions, evictList, item => {
                             const el = document.createElement('div');
-                            el.className = 'py-2 border-b border-base-content/10 last:border-0 rounded focus:outline-none focus:ring-2 focus:ring-red-400/50';
+                            // Focus ring is sky, not red: red is the alarm color in this
+                            // panel, and a red halo on the focused row reads as a severity
+                            // flag. Full opacity, and focus-visible so a mouse click on the
+                            // row doesn't paint one.
+                            el.className = 'py-2 border-b border-base-content/10 last:border-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400';
                             el.setAttribute('tabindex', '0');
                             el.setAttribute('role', 'listitem');
                             const dateStr = item.executed_date ? new Date(item.executed_date + 'T00:00:00').toLocaleDateString(_locale(), {month:'short',day:'numeric'}) : '';

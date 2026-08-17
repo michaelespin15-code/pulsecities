@@ -959,6 +959,7 @@ def _build_neighborhood_page(
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&family=JetBrains+Mono:wght@400&display=swap"></noscript>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+h1,h2,h3{{text-wrap:balance}}
 :root{{--bg:#111823;--border:rgba(147,161,173,.1);--text:#eef2f5;--muted:#93a1ad;--dim:#85929d;--faint:#78838d;--accent:#ed6317}}
 body{{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}}
 a{{color:inherit;text-decoration:none}}
@@ -1553,6 +1554,7 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str
 
     css = """<style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+h1,h2,h3{text-wrap:balance}
 :root{--bg:#111823;--border:rgba(147,161,173,.1);--text:#eef2f5;--muted:#93a1ad;--dim:#85929d;--faint:#78838d;--accent:#ed6317}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
@@ -1697,6 +1699,7 @@ def _minimal_operator_page(display_name: str, operator_class: str) -> str:
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>
   *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+  h1,h2,h3{{text-wrap:balance}}
   body{{font-family:'DM Sans',sans-serif;background:#111823;color:#e4e8ec;line-height:1.7;
        min-height:100vh;display:flex;flex-direction:column}}
   a{{color:#6fb1d8;text-decoration:none}}
@@ -1746,6 +1749,7 @@ def _operator_not_found_page(label: str) -> str:
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&display=swap"></noscript>
 <style>
   *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+  h1,h2,h3{{text-wrap:balance}}
   body{{font-family:'DM Sans',sans-serif;background:#111823;color:#e4e8ec;line-height:1.7;
        min-height:100vh;display:flex;flex-direction:column}}
   a{{color:#6fb1d8;text-decoration:none}}
@@ -2128,6 +2132,7 @@ def operators_directory(db: Session = Depends(get_db)):
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap"></noscript>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+h1,h2,h3{{text-wrap:balance}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
@@ -2346,6 +2351,7 @@ def neighborhoods_directory(lang: str = "en", db: Session = Depends(get_db)):
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+h1,h2,h3{{text-wrap:balance}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
@@ -2600,6 +2606,7 @@ def borough_page(slug: str, lang: str = "en", db: Session = Depends(get_db)):
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+h1,h2,h3{{text-wrap:balance}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
@@ -2793,6 +2800,7 @@ def flip_watch_page(db: Session = Depends(get_db)):
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+h1,h2,h3{{text-wrap:balance}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
@@ -3049,6 +3057,7 @@ def flips_editions_page(db: Session = Depends(get_db)):
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+h1,h2,h3{{text-wrap:balance}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh;line-height:1.65}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
@@ -3284,6 +3293,7 @@ def speculation_radar_page(db: Session = Depends(get_db)):
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+h1,h2,h3{{text-wrap:balance}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
@@ -3515,6 +3525,7 @@ def _stat_cells_html(counts) -> str:
 
 
 _WEEK_CSS = """*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+h1,h2,h3{text-wrap:balance}
 body{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}
 nav{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}
 .nav-inner{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -3961,6 +3972,7 @@ def this_week_page(db: Session = Depends(get_db)):
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+h1,h2,h3{{text-wrap:balance}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
@@ -4296,6 +4308,7 @@ def displacement_page(db: Session = Depends(get_db)):
 
     css = """<style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+h1,h2,h3{text-wrap:balance}
 body{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 nav{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0;position:sticky;top:0;background:rgba(17,24,35,0.92);backdrop-filter:blur(8px);z-index:5}
@@ -4326,7 +4339,9 @@ ul{list-style:none}
 .arc:hover .arc-addr{color:#ed6317}
 .arc-sub{font-size:0.75rem;color:var(--muted);margin-top:2px}
 .arc-line{font-size:0.78rem;color:#93a1ad;margin-top:5px;line-height:1.4}
-.arc-gain{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.35rem;color:#e4483b;white-space:nowrap}
+/* .arc-gain and .row-val are the only number columns on the site not set in
+   JetBrains Mono, so they are the only two that need tabular figures asked for. */
+.arc-gain{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.35rem;color:#e4483b;white-space:nowrap;font-variant-numeric:tabular-nums}
 .row{border-bottom:1px solid rgba(147,161,173,0.08);cursor:pointer}
 .row:hover{background:rgba(147,161,173,0.04)}
 .row a{display:flex;align-items:center;gap:14px;padding:13px 0}
@@ -4334,7 +4349,7 @@ ul{list-style:none}
 .row-name{flex:1;min-width:0;font-size:0.92rem;color:#e4e8ec;font-weight:500}
 .row:hover .row-name{color:#ed6317}
 .row-sub{display:block;font-size:0.75rem;color:var(--muted);font-weight:400;margin-top:2px}
-.row-val{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.15rem;display:flex;flex-direction:column;align-items:flex-end;line-height:1}
+.row-val{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.15rem;display:flex;flex-direction:column;align-items:flex-end;line-height:1;font-variant-numeric:tabular-nums}
 .row-tier{font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-top:4px;opacity:0.85}
 .row-arrow{color:var(--dim);font-size:1.1rem}
 .row:hover .row-arrow{color:#ed6317}
@@ -4753,6 +4768,7 @@ def evictions_page(lang: str = "en", db: Session = Depends(get_db)):
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+h1,h2,h3{{text-wrap:balance}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
@@ -4943,6 +4959,7 @@ def who_owns_page(db: Session = Depends(get_db)):
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+h1,h2,h3{{text-wrap:balance}}
 body{{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}}
 nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner{{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
@@ -5056,6 +5073,7 @@ _SLUG_SQL = "btrim(regexp_replace(lower(party_name_normalized), '[^a-z0-9]+', '-
 
 _LLC_PAGE_CSS = """
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+h1,h2,h3{text-wrap:balance}
 body{font-family:'DM Sans',sans-serif;background:#111823;color:#eef2f5;min-height:100vh}
 nav{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}
 .nav-inner{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
