@@ -26,9 +26,13 @@
 
 set -euo pipefail
 
+APP_DIR=/root/pulsecities
 ARCHIVE_DIR=/var/backups/pulsecities/raw_data_archive
 STAMP=$(date -u +%Y%m%d)
 PSQL="sudo -u postgres psql -d pulsecities -v ON_ERROR_STOP=1"
+
+# shellcheck source=scripts/lib/r2_creds.sh
+. "$APP_DIR/scripts/lib/r2_creds.sh"
 
 archive_one() {
     local table=$1 key=$2
@@ -45,7 +49,16 @@ archive_one() {
         echo "[$table] VERIFY FAILED: archive holds $got rows, table holds $expected" >&2
         exit 1
     fi
-    sha256sum "$out" >> "$ARCHIVE_DIR/MANIFEST"
+    # Replace this file's line rather than appending one. A re-run used to add
+    # a second entry for the same name, which is harmless while the bytes are
+    # identical and actively misleading the moment they are not: two hashes for
+    # one filename, no way to tell which is the live archive.
+    local manifest="$ARCHIVE_DIR/MANIFEST"
+    if [ -f "$manifest" ]; then
+        grep -vF "  $out" "$manifest" > "$manifest.tmp" || true
+        mv "$manifest.tmp" "$manifest"
+    fi
+    sha256sum "$out" >> "$manifest"
     echo "[$table] verified: $got rows, $(du -h "$out" | cut -f1)"
 }
 
@@ -53,13 +66,42 @@ cmd_archive() {
     mkdir -p "$ARCHIVE_DIR"
     archive_one complaints_raw unique_key
     archive_one violations_raw violation_id
-    if command -v rclone >/dev/null && rclone listremotes 2>/dev/null | grep -q .; then
-        remote=$(rclone listremotes | head -1)
-        echo "uploading archives to ${remote}"
-        rclone copy "$ARCHIVE_DIR" "${remote}pulsecities-backups/raw_data_archive/" --include "*_${STAMP}.ndjson.zst"
-    else
-        echo "NOTE: rclone remote not found; archives are local-only until uploaded" >&2
+    # Offsite, through the same credential path as the nightly dump. The first
+    # version of this used `rclone listremotes | head -1` and wrote to a bucket
+    # called pulsecities-backups; that name is a prefix inside vs-archive, and
+    # the ambient remote has no access to either, so it 403'd after both
+    # archives had been written and verified.
+    if ! command -v rclone >/dev/null; then
+        echo "NOTE: rclone not installed; archives are local-only" >&2
+        return 0
     fi
+    if ! r2_load_credentials "$APP_DIR"; then
+        echo "NOTE: no R2 credentials; archives are local-only until uploaded" >&2
+        return 0
+    fi
+
+    local failed=0
+    for f in "$ARCHIVE_DIR"/*_"${STAMP}".ndjson.zst; do
+        local base key local_bytes remote_bytes
+        base=$(basename "$f")
+        key="raw_data_archive/$base"
+        local_bytes=$(stat -c%s "$f")
+        echo "uploading $base -> $R2_BUCKET/$R2_PREFIX/$key"
+        if ! rclone copyto --s3-no-check-bucket --retries 3 --low-level-retries 10 \
+                "$f" "R2:$R2_BUCKET/$R2_PREFIX/$key"; then
+            echo "[$base] upload failed" >&2; failed=1; continue
+        fi
+        remote_bytes=$(r2_remote_size "$key")
+        if [ "$remote_bytes" != "$local_bytes" ]; then
+            echo "[$base] size mismatch: local $local_bytes vs remote ${remote_bytes:-none}" >&2
+            failed=1; continue
+        fi
+        echo "[$base] verified offsite: $remote_bytes bytes"
+    done
+    [ "$failed" -eq 0 ] || {
+        echo "one or more archives are local-only; do NOT run 'drop' until they are offsite" >&2
+        return 1
+    }
     echo "archive phase complete. Manifest: $ARCHIVE_DIR/MANIFEST"
 }
 

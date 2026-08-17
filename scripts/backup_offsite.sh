@@ -58,20 +58,14 @@ PY
     exit 1
 }
 
-# --- credentials: project .env overrides, shared vl .env as the default -----
-set -a; . "$APP_DIR/.env" 2>/dev/null || true; set +a
-TOKEN="${PULSECITIES_R2_TOKEN:-}"
-ACCOUNT="${PULSECITIES_R2_ACCOUNT_ID:-}"
-BUCKET="${PULSECITIES_R2_BUCKET:-}"
-PREFIX="pulsecities-backups"
-if [ -z "$TOKEN" ] || [ -z "$ACCOUNT" ]; then
-    set -a; . "$CRED_ENV" 2>/dev/null || true; set +a
-    TOKEN="${R2_CLOUDFLARE_API_TOKEN:-}"
-    ACCOUNT="${CLOUDFLARE_ACCOUNT_ID:-}"
-    BUCKET="${BUCKET:-vs-archive}"
-fi
-[ -n "$TOKEN" ] || fail "no R2 token (PULSECITIES_R2_TOKEN or $CRED_ENV)"
-[ -n "$ACCOUNT" ] || fail "no R2 account id"
+# --- credentials -------------------------------------------------------------
+# Derivation lives in scripts/lib/r2_creds.sh so retire_raw_data.sh can reach
+# the same bucket by the same route; it had its own attempt and got a 403.
+# shellcheck source=scripts/lib/r2_creds.sh
+. "$APP_DIR/scripts/lib/r2_creds.sh"
+r2_load_credentials "$APP_DIR" "$CRED_ENV" || fail "could not derive R2 credentials"
+BUCKET="$R2_BUCKET"
+PREFIX="$R2_PREFIX"
 
 # --- pick the newest completed dump ------------------------------------------
 DUMP=$(ls -t "$BACKUP_DIR"/pulsecities_*.sql.gz 2>/dev/null | head -1)
@@ -88,22 +82,13 @@ echo "$(date -u '+%F %T') pushing $DUMP (${BYTES}B) -> ${KEYS[*]} (bucket=$BUCKE
 [ "$DRY" -eq 1 ] && { echo "dry-run: stopping before upload"; exit 0; }
 
 # --- derived S3 credentials (never printed) ----------------------------------
-S3_KEYID=$(curl -s --max-time 15 -H "Authorization: Bearer $TOKEN" \
-    "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT/tokens/verify" \
-    | python3 -c "import json,sys;print(json.load(sys.stdin)['result']['id'])" 2>/dev/null)
-[ -n "$S3_KEYID" ] || fail "could not verify the R2 token / derive its id"
-S3_SECRET=$(printf '%s' "$TOKEN" | sha256sum | cut -d' ' -f1)
-S3_EP="https://$ACCOUNT.r2.cloudflarestorage.com"
+# r2_load_credentials already derived and exported these, along with the
+# RCLONE_CONFIG_R2_* vars that define the R2: remote. Kept under the local
+# names the rest of this script (and the state-archive encryption below) uses.
+S3_KEYID="$R2_S3_KEYID"
+S3_SECRET="$R2_S3_SECRET"
+S3_EP="$R2_S3_ENDPOINT"
 EMPTY_SHA=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-
-# Upload via rclone: curl --aws-sigv4 cannot sign a streamed (-T) body on this
-# box's curl 7.81 (it drops x-amz-content-sha256 from the canonical request,
-# guaranteed 403) and --data-binary slurps the whole 1.6GB dump into memory.
-# rclone streams and multiparts properly.
-export RCLONE_CONFIG_R2_TYPE=s3
-export RCLONE_CONFIG_R2_ACCESS_KEY_ID="$S3_KEYID"
-export RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="$S3_SECRET"
-export RCLONE_CONFIG_R2_ENDPOINT="$S3_EP"
 command -v rclone >/dev/null || fail "rclone not installed (apt-get install rclone)"
 
 for key in "${KEYS[@]}"; do
