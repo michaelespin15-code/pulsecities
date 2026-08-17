@@ -108,6 +108,31 @@ reconciled.
 > Fix the class, then write the test that enumerates the class. The instance you
 > found is rarely the only one.
 
+**2026-08-17, the sharpest instance so far.** The note in this file said to check
+`dob_permits`, which paginated on `filing_date` where the base class defaults to
+`:id`. The one-line fix took a minute. Writing the test that enumerates the class
+took ten, and it failed on **eight** scrapers, not one: every scraper except
+`dhcr_rs` had overridden the stable default with its own date column.
+
+Offset pagination only visits each row once when the sort key is unique. Dates
+never are. Where rows tie across a page boundary their order between two requests
+is unspecified, so the same row lands on both pages and another lands on neither.
+Measured live against `wvxf-dwi5`, two consecutive 1,000-row pages ordered by
+`inspectiondate` returned 370 duplicates and 1,630 distinct rows where 2,000 were
+expected. The duplicates were free, because every scraper upserts on a natural
+key. The 370 dropped rows were the loss, and they looked like nothing: the run
+succeeded and reported a plausible count.
+
+`hpd_violations` pulls more than one 50,000-row page nightly, so this was live,
+not latent: `reconcile_upstream` measured **1,007 rows missing across 19 days**,
+all recovered by a rewind once the ordering was stable.
+
+Three things generalize. Ordering by a date reads naturally, which is exactly why
+it spread to eight files. The safe default already existed and the overrides were
+each written to be helpful. And the estimate of blast radius came from the note
+that found the first instance, so it was wrong by a factor of eight: the class is
+worth enumerating even when you believe you already know its size.
+
 ---
 
 ## 5. Silence read as health
@@ -205,13 +230,24 @@ asserting a feed is either reconciled or excluded deliberately. That is shape 3:
 a check that reports a healthy system as broken is as useless as one that cannot
 fail, and it burns the same credibility.
 
+## Closed 2026-08-17 (later)
+
+- The redundant `/var/backups/pulsecities` prune line is out of the crontab, so
+  `backup_db.sh` is the only place retention is written.
+- Pagination ordering: fixed across all eight scrapers, guarded by
+  `tests/test_pagination_stability.py`, 1,007 lost `hpd_violations` rows
+  recovered. Written up under shape 4 above.
+- R2 slot age now reports in `weekly_ops_health`, fed by a record
+  `backup_offsite.sh` writes after each verified push rather than a second copy
+  of the bucket credentials.
+- The dead-man's-switch ping is written (`scheduler/heartbeat.py`) and wired to
+  every exit path of the nightly run. Inert until `HEARTBEAT_BASE_URL` is set.
+- A stale feed now says whether the publisher stopped or our ingest fell behind,
+  and only the second one pages nightly. See `stale_cause()`.
+
 ## Still manual
 
-- Remove the redundant `/var/backups/pulsecities` prune line from the crontab.
-  Harmless now that `backup_db.sh` matches it, but it is a second copy of a rule.
-- Add the nightly reconciler and an external dead-man's-switch ping to cron.
-- Report R2 slot age in `weekly_ops_health`.
-- `dob_permits` paginates ordered by `filing_date`, which is text upstream. The
-  3-year window is 30,038 rows against a 50,000 page size. Past that it will
-  paginate over a lexicographic sort with heavy ties and can skip rows between
-  pages. Switch the order to `:id` before the window crosses the threshold.
+- Create the healthchecks.io check and set `HEARTBEAT_BASE_URL` in `.env`. Until
+  that exists the ping is a no-op and the box is still its own only witness.
+- Add the nightly reconciler to cron. It runs inside the pipeline today, so this
+  is only about running it when the pipeline itself does not.

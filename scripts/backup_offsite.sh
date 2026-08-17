@@ -32,6 +32,7 @@ set -uo pipefail
 
 APP_DIR="/root/pulsecities"
 BACKUP_DIR="/var/backups/pulsecities"
+LOG_DIR="/var/log/pulsecities"
 CRED_ENV="/root/violation-leads/.env"
 
 DRY=0
@@ -119,6 +120,34 @@ for key in "${KEYS[@]}"; do
         | awk 'tolower($1) == "content-length:" {print $2}' | tr -dc '0-9')
     [ "$remote_bytes" = "$BYTES" ] || fail "size mismatch on $key: local $BYTES vs remote $remote_bytes"
     echo "$(date -u '+%F %T') verified $PREFIX/$key ($remote_bytes bytes)"
+
+    # Record the verified push so weekly_ops_health can age each slot without
+    # re-deriving these credentials. The seven daily slots are overwritten on a
+    # weekly rotation, so one failing weekday leaves a slot quietly rotting while
+    # the other six stay fresh and the newest-backup check still reads green:
+    # the 'sat' slot went nine days stale exactly that way. Reporting the newest
+    # object cannot catch it. Ages per slot can.
+    SLOTS_JSON="$LOG_DIR/backup_offsite_slots.json"
+    python3 - "$SLOTS_JSON" "$key" "$remote_bytes" <<'PY' || echo "warn: could not record slot state"
+import json, os, sys
+from datetime import datetime, timezone
+
+path, key, size = sys.argv[1], sys.argv[2], sys.argv[3]
+try:
+    with open(path) as fh:
+        state = json.load(fh)
+    if not isinstance(state, dict):
+        state = {}
+except Exception:
+    state = {}
+
+state[key] = {"pushed_at": datetime.now(timezone.utc).isoformat(), "bytes": int(size)}
+tmp = path + ".tmp"
+os.makedirs(os.path.dirname(path), exist_ok=True)
+with open(tmp, "w") as fh:
+    json.dump(state, fh, indent=1, sort_keys=True)
+os.replace(tmp, path)
+PY
 done
 
 # --- secrets + curated state -------------------------------------------------

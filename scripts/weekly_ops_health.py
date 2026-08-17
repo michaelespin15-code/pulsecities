@@ -40,6 +40,16 @@ logger = logging.getLogger(__name__)
 RESTORE_RESULT = Path("/var/log/pulsecities/backup_restore_test.json")
 BACKUP_DIR = Path("/var/backups/pulsecities")
 
+# Written by backup_offsite.sh after each verified push. Reading its record
+# rather than listing R2 keeps the bucket credentials in one place.
+OFFSITE_SLOTS = Path("/var/log/pulsecities/backup_offsite_slots.json")
+
+# The seven daily slots rotate weekly, so a healthy slot is at most 7 days old.
+# One day of slack absorbs a late run without crying wolf.
+OFFSITE_SLOT_MAX_AGE_DAYS = 8
+
+_WEEKDAY_SLOTS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+
 # A snooze is an alert we have chosen not to hear. Past this age, say so weekly:
 # the DCWP entry outlived its own justification and nothing was watching it.
 SNOOZE_REVIEW_DAYS = 30
@@ -161,7 +171,75 @@ def gather(db) -> dict:
         lines.append("  restore-test: never run")
         attention.append("backup restore-test has never run")
 
+    lines.extend(_offsite_lines(attention))
+
     return {"attention": attention, "body": "\n".join(lines)}
+
+
+def _offsite_lines(attention: list) -> list:
+    """Age each R2 weekday slot, appending anything worth a look to attention.
+
+    The offsite copy rotates through seven daily slots, so a single weekday that
+    stops pushing leaves one slot rotting while the other six look current. Every
+    check we had reported the newest object, which stays fresh throughout: the
+    'sat' slot sat nine days stale and nothing said so. Only a per-slot age can
+    see it.
+    """
+    lines = ["", "OFFSITE (R2)"]
+
+    if not OFFSITE_SLOTS.exists():
+        lines.append("  no slot pushes recorded yet")
+        attention.append("offsite slot ages not recorded yet")
+        return lines
+
+    try:
+        state = json.loads(OFFSITE_SLOTS.read_text())
+        if not isinstance(state, dict):
+            raise ValueError("slot state is not an object")
+    except (json.JSONDecodeError, OSError, ValueError) as exc:
+        lines.append(f"  slot state unreadable: {exc}")
+        attention.append("offsite slot state unreadable")
+        return lines
+
+    now = datetime.now(timezone.utc)
+    ages = {}
+    for key, rec in state.items():
+        stamp = (rec or {}).get("pushed_at")
+        if not stamp:
+            continue
+        try:
+            ages[key] = (now - datetime.fromisoformat(stamp)).days
+        except (TypeError, ValueError):
+            continue
+
+    # Until a full rotation has been observed, an unseen slot means "not yet
+    # recorded", not "failing". Reporting it as a fault on day one would train
+    # the reader to skip this section during the week it is least reliable.
+    tracking_days = max(ages.values()) if ages else 0
+    rotation_observed = tracking_days >= OFFSITE_SLOT_MAX_AGE_DAYS
+
+    for day in _WEEKDAY_SLOTS:
+        key = f"daily/{day}.sql.gz"
+        age = ages.get(key)
+        if age is None:
+            if rotation_observed:
+                lines.append(f"  daily/{day}  never pushed  << slot has never landed")
+                attention.append(f"offsite slot {day} has never been pushed")
+            else:
+                lines.append(f"  daily/{day}  not yet recorded")
+            continue
+        flag = ""
+        if age > OFFSITE_SLOT_MAX_AGE_DAYS:
+            flag = f"  << {age}d old, that weekday's push is failing"
+            attention.append(f"offsite slot {day} is {age}d old")
+        lines.append(f"  daily/{day}  {age}d old{flag}")
+
+    monthly = sorted(k for k in ages if k.startswith("monthly/"))
+    if monthly:
+        newest = monthly[-1]
+        lines.append(f"  {newest}  {ages[newest]}d old")
+
+    return lines
 
 
 def run(dry_run: bool = False) -> None:

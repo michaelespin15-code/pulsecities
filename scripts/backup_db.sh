@@ -22,7 +22,9 @@ BACKUP_DIR="/var/backups/pulsecities"
 #
 # This was 7 while a crontab line pruned the same directory at -mtime +1 an hour
 # later. The cron ran last so the cron won, and the repo described a week of
-# dumps that never existed. One policy, in the file that gets deployed.
+# dumps that never existed. That line was removed on 2026-08-17, so this is now
+# the only place the policy is written. Raising it is a free decision again;
+# each dump is ~1.6GB, so a week costs about 11GB of the local disk.
 RETENTION_DAYS=1
 
 mkdir -p "$BACKUP_DIR"
