@@ -30,8 +30,8 @@ class TestUpstreamQuery:
         assert "created_date<'2026-08-15T00:00:00'" in where
 
     def test_text_dates_match_exactly(self):
-        """permits stores filing_date as MM/DD/YYYY text, so a range would sort
-        lexicographically. Equality on the formatted day is correct there."""
+        """Kept for any future text-dated feed: a range over MM/DD/YYYY text
+        sorts lexicographically, so equality on the formatted day is correct."""
         where = _feed(upstream_is_text=True, upstream_field="filing_date").upstream_where(
             date(2026, 8, 14)
         )
@@ -165,9 +165,21 @@ class TestRewind:
 
 
 class TestFeedCoverage:
-    def test_every_daily_feed_is_reconciled(self):
+    def test_every_countable_daily_feed_is_reconciled(self):
         names = {f.scraper_name for f in rec.FEEDS}
-        assert {"311_complaints", "hpd_violations", "evictions", "dob_permits"} <= names
+        assert {"311_complaints", "hpd_violations", "evictions"} <= names
+
+    def test_a_feed_is_either_reconciled_or_excluded_with_a_reason(self):
+        """Silently dropping a feed is how coverage rots. Say why."""
+        names = {f.scraper_name for f in rec.FEEDS}
+        for scraper in ("311_complaints", "hpd_violations", "evictions", "dob_permits"):
+            assert scraper in names or scraper in rec.UNRECONCILABLE, scraper
+
+    def test_permits_is_excluded_because_counting_rows_does_not_apply(self):
+        """permits_raw dedupes several upstream rows into one, so a row-count
+        comparison reports a permanent shortfall that is the dedupe working."""
+        assert "dob_permits" not in {f.scraper_name for f in rec.FEEDS}
+        assert "dedupes" in rec.UNRECONCILABLE["dob_permits"]
 
     def test_every_feed_declares_a_settle_window(self):
         for f in rec.FEEDS:

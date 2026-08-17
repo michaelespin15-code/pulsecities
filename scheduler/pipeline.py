@@ -13,8 +13,10 @@ Run order (sequential — no parallel to avoid DB contention):
   8. HPD Violations   — daily (Class B+C, 90-day scoring window)
 
 After all scrapers complete:
-  9. Scoring engine   — recomputes displacement scores per zip code
-  10. MTEK monitor    — flags new violations/permits/evictions on MTEK portfolio
+  9. Reconciliation   — compares our row counts against each source and rewinds
+                        any feed that drifted, so tomorrow's run re-reads it
+  10. Scoring engine  — recomputes displacement scores per zip code
+  11. MTEK monitor    — flags new violations/permits/evictions on MTEK portfolio
 
 Each scraper is wrapped with tenacity retries (3 attempts).
 A failing scraper logs the failure to ScraperRun and continues — we do not
@@ -40,6 +42,12 @@ from scrapers.permits import PermitsScraper
 from scrapers.pluto import PlutoScraper
 from scrapers.violations import ViolationsScraper
 from scripts.mtek_monitor import run_mtek_monitor
+from scripts.reconcile_upstream import (
+    FEEDS,
+    earliest_drift,
+    reconcile_feed,
+    rewind_watermark,
+)
 from scoring.compute import snapshot_scores  # re-exported for test imports
 
 logger = logging.getLogger(__name__)
@@ -53,6 +61,11 @@ DOF_MIN_INTERVAL_DAYS = 30
 # 350k rows nightly was 92.5% of the pipeline's wall clock for data nothing
 # reads that night. data_health_check already classifies this feed as annual.
 HPD_REGISTRY_MIN_INTERVAL_DAYS = 30
+
+# How far back the nightly reconciliation compares our row counts against the
+# source. Each feed only judges days older than its own settle window, so this is
+# an outer bound rather than the number of days actually checked.
+RECONCILE_WINDOW_DAYS = 14
 
 
 def _cleanup_stale_runs(db) -> None:
@@ -134,6 +147,12 @@ def run_nightly_pipeline() -> bool:
     with get_scraper_db() as db:
         if not _run_hpd_registry_if_due(db):
             had_failures = True
+
+    # Repair before scoring, so the scores reflect anything recovered. This runs
+    # after the scrapers because a rewind issued before them would be overwritten
+    # by the same run's watermark.
+    with get_scraper_db() as db:
+        _safe_reconcile(db)
 
     # Scoring engine runs after all scrapers complete
     if not _run_scoring():
@@ -273,6 +292,65 @@ def _run_hpd_registry_if_due(db) -> bool:
 
     logger.info("HPD registry run is due — starting...")
     return _run_scraper_with_retry("dhcr_rs", DhcrRsScraper)
+
+
+def _safe_reconcile(db) -> None:
+    """Run the repair step without ever letting it take the run down.
+
+    The scrape has already happened by this point. A reconciliation that cannot
+    reach Socrata is a repair we skip tonight, not a failed pipeline.
+    """
+    try:
+        _reconcile_and_heal(db)
+    except Exception as exc:  # noqa: BLE001 — a repair step must not fail the run
+        logger.error("Reconciliation failed (non-fatal): %s", exc, exc_info=True)
+
+
+def _reconcile_and_heal(db) -> None:
+    """Compare our row counts against each source and rewind whatever drifted.
+
+    This asks the one question none of the other checks ask. Freshness, pipeline
+    health and the weekly heartbeat all measure how new the newest record is, so
+    all three stayed green while 311 quietly lost 1 to 3.5% of every day to a
+    watermark that only moves forward.
+
+    Rewinding only, deliberately. Tonight's scrapers have already run, so the
+    re-read happens on tomorrow's pass through the normal path. That keeps the
+    nightly wall clock flat and means healed rows go through the same parse,
+    quarantine and upsert as any other night.
+
+    Silent on the first night a feed drifts: a rewind that lands is a fix in
+    progress. When the watermark is already behind the drifted range and the gap
+    is still there, last night's heal did not work, and that is worth an email.
+    """
+    for feed in FEEDS:
+        result = reconcile_feed(db, feed, RECONCILE_WINDOW_DAYS)
+        start = earliest_drift(result)
+        if start is None:
+            continue
+
+        drifted = [r for r in result["rows"] if r["drifted"]]
+        short = sum(r["gap"] for r in drifted)
+        worst = max(drifted, key=lambda r: r["pct"])
+
+        moved = rewind_watermark(db, feed.scraper_name, start - timedelta(days=1))
+        if moved:
+            logger.info(
+                "%s drifted %d day(s), %d rows short; watermark rewound to %s, "
+                "tomorrow's run re-reads the range",
+                feed.scraper_name, len(drifted), short, start,
+            )
+            continue
+
+        send_alert(
+            f"Ingestion drift persists: {feed.scraper_name}",
+            f"{len(drifted)} settled day(s) short against {feed.dataset_id}, "
+            f"{short:,} rows total. Worst: {worst['day']} missing {worst['gap']:,} "
+            f"({worst['pct']*100:.1f}%).\n\n"
+            f"The watermark is already behind {start}, so a rewind cannot widen "
+            f"what the next run reads. Automatic healing has not closed this gap.\n\n"
+            f"  python -m scripts.reconcile_upstream --feed {feed.scraper_name} --days 30",
+        )
 
 
 def _run_scoring() -> bool:

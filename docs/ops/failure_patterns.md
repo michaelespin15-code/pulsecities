@@ -175,6 +175,36 @@ quarantine and upsert as any other night.
 
 ---
 
+## The reconciler is wired into the nightly run
+
+`run_nightly_pipeline` calls it after the scrapers and before scoring, so a
+repair lands in the same night's scores. It rewinds only. Tonight's scrapers have
+already run, so the re-read happens on tomorrow's pass through the normal path,
+which keeps the nightly wall clock flat: the step costs about 30 seconds.
+
+It is silent the first night a feed drifts, because a rewind that lands is a fix
+in progress. It emails only when the watermark is already behind the drifted
+range and the gap is still there, which means automatic healing did not work.
+A crash in the step can never fail the run; the scrape is already in.
+
+Two things it taught within an hour of being written, both instances of shapes
+above:
+
+**A watermark is not private state.** `/api/status` read it as the public
+data-through date, so the first rewind advertised a healthy permits feed as three
+weeks delayed. That is shape 1: one value serving two purposes drifts apart the
+moment one of them moves. Every source with a table now anchors its data-through
+to that table via `api/freshness.py`, and the watermark is a resume pointer only.
+
+**Counting rows only works when our table holds one row per upstream row.**
+`permits_raw` dedupes on `(bbl, filing_date, permit_type, work_type)`, so 39
+upstream rows on 2026-07-15 reduce to exactly the 29 we hold. Reconciling it by
+count reports a permanent 25% shortfall that is the dedupe working as designed.
+It is excluded, by name, with the reason recorded in `UNRECONCILABLE` and a test
+asserting a feed is either reconciled or excluded deliberately. That is shape 3:
+a check that reports a healthy system as broken is as useless as one that cannot
+fail, and it burns the same credibility.
+
 ## Still manual
 
 - Remove the redundant `/var/backups/pulsecities` prune line from the crontab.

@@ -25,7 +25,7 @@ from slowapi.util import get_remote_address
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from api.freshness import ACRIS_THROUGH_SQL, staleness_days
+from api.freshness import FRESHNESS_SOURCES, db_through_sql, staleness_days
 from models.database import get_db
 
 logger = logging.getLogger(__name__)
@@ -77,6 +77,11 @@ _DEFAULT_FRESHNESS = timedelta(days=7)
 # forever for lack of a watermark.
 _SNAPSHOT_SOURCES = {"dhcr_rs"}
 
+# Sources whose data-through comes from their own table rather than the scraper
+# watermark. Everything api/freshness.py knows how to date qualifies; dcwp and
+# dhcr_rs have no per-row date to anchor to and keep the watermark.
+_TABLE_ANCHORED = {scraper for _slug, scraper, _t, _c, _d in FRESHNESS_SOURCES}
+
 # Sources with a known upstream pause carry an explanatory note when delayed.
 _DELAY_NOTES = {
     "acris_ownership": "Source feed paused upstream at NYC Open Data.",
@@ -124,17 +129,26 @@ def get_status(request: Request, response: Response, db: Session = Depends(get_d
         last_success = run.started_at if run else None
         watermark = run.watermark_timestamp if run else None
 
-        # ACRIS watermarks come from the feed's recorded_datetime, which can
-        # run days ahead of the doc dates that actually persisted. Freshness
-        # must describe what the site serves, so anchor to the table.
-        # Excludes future-dated instruments. Two rows dated ahead of the
-        # calendar were enough to publish a sitewide "data through" of a date
-        # thirteen days out, since most_recent below takes the newest watermark
-        # across every source and /about and /status both render it.
-        if key == "acris_ownership":
-            max_doc = db.execute(text(ACRIS_THROUGH_SQL)).scalar()
-            if max_doc is not None:
-                watermark = datetime.combine(max_doc, datetime.min.time(), tzinfo=timezone.utc)
+        # Anchor freshness to the table rather than the scraper watermark,
+        # wherever we have a table to anchor to.
+        #
+        # A watermark is a resume pointer, and it can sit either side of the
+        # truth. ACRIS watermarks track recorded_datetime and ran days ahead of
+        # the doc dates that actually persisted: two rows dated ahead of the
+        # calendar published a sitewide "data through" thirteen days out, since
+        # most_recent below takes the newest watermark across every source.
+        # Rewinding a watermark to repair ingestion pushes it the other way, and
+        # advertised a healthy permits feed as three weeks delayed.
+        #
+        # Freshness has to describe what the site serves, which is what is in the
+        # table. Future dates are excluded; see api/freshness.py.
+        if key in _TABLE_ANCHORED:
+            max_row = db.execute(text(db_through_sql(key))).scalar()
+            if max_row is not None:
+                if isinstance(max_row, datetime):
+                    watermark = max_row if max_row.tzinfo else max_row.replace(tzinfo=timezone.utc)
+                else:
+                    watermark = datetime.combine(max_row, datetime.min.time(), tzinfo=timezone.utc)
 
         state = _source_state(key, watermark, last_success, now)
 

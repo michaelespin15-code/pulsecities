@@ -99,9 +99,20 @@ FEEDS = [
     Feed("311_complaints", "erm2-nwe9", "created_date",    "complaints_raw", "created_date",    settle_days=3),
     Feed("hpd_violations", "wvxf-dwi5", "inspectiondate",  "violations_raw", "inspection_date", settle_days=12),
     Feed("evictions",      "6z8x-wfk4", "executed_date",   "evictions_raw",  "executed_date",   settle_days=14),
-    Feed("dob_permits",    "ipu4-2q9a", "filing_date",     "permits_raw",    "filing_date",     settle_days=28,
-         upstream_is_text=True),
 ]
+
+# dob_permits is deliberately absent. Counting rows only works when our table
+# holds one row per upstream row, and permits_raw does not: the unique index
+# uq_permits_raw_bbl_date_type_work collapses several genuine filings that share
+# a BBL, day, permit type and work type. On 2026-07-15 the source published 39
+# rows which reduce to exactly the 29 distinct tuples we hold. Reconciling it by
+# count reports a permanent 25% shortfall that is the dedupe working as designed.
+#
+# Reconciling permits needs a comparison against distinct keys rather than rows,
+# which SoQL cannot express for this shape. Left out rather than left crying wolf.
+UNRECONCILABLE = {
+    "dob_permits": "permits_raw dedupes on (bbl, filing_date, permit_type, work_type)",
+}
 
 
 def _token_params() -> dict:
