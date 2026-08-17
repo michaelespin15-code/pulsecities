@@ -101,7 +101,7 @@
         }
         /* Borough filter pills — used in both desktop sidebar and mobile drawer */
         .borough-pill {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
             padding: 2px 8px;
@@ -121,7 +121,7 @@
         }
         /* Score history range toggle pills */
         .history-pill {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
             padding: 4px 10px;
@@ -212,8 +212,8 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 11px;
-                color: rgba(147,161,173,0.7);
+                font-size: 12px;
+                color:#85929d;
                 text-decoration: none;
                 height: 56px;
                 white-space: nowrap;
@@ -257,7 +257,7 @@
                 z-index: 35 !important;
                 font-size: 13px !important;
                 padding: 5px 10px !important;
-                color: rgba(238,242,245,0.7) !important;
+                color:#eef2f5 !important;
                 background: rgba(17,24,35,0.88) !important;
             }
             #map-credit svg {
@@ -362,8 +362,8 @@
             #sidebar-header-block > .flex { margin-bottom: 0 !important; }
             /* Brand row: left-aligned, compact fonts */
             #sidebar-top .text-center { text-align: left !important; }
-            #sidebar-top h1 { font-size: 0.95rem !important; line-height: 1.2; }
-            #sidebar-top #app-subtitle { font-size: 0.68rem !important; margin-top: 1px !important; }
+            #sidebar-top h1 { font-size:0.95rem !important; line-height: 1.2; }
+            #sidebar-top #app-subtitle { font-size:0.75rem !important; margin-top: 1px !important; }
             #sidebar-header-block { margin-bottom: 4px !important; }
             /* Drag handle: reduce bottom margin */
             #sidebar-top > div:first-child { margin-bottom: 0 !important; }
@@ -423,29 +423,29 @@
                 style="position:absolute;right:0;top:50%;transform:translateY(-50%);z-index:10;
                        width:18px;height:48px;align-items:center;justify-content:center;
                        background:#1b2534;border:1px solid rgba(255,255,255,0.1);border-right:none;
-                       border-radius:6px 0 0 6px;color:#677686;font-size:0.85rem;cursor:pointer;">›</button>
+                       border-radius:6px 0 0 6px;color:#93a1ad;font-size:0.85rem;cursor:pointer;">›</button>
             <!-- Map legend — bottom-left, always visible -->
-            <div id="map-legend" class="absolute bottom-9 left-4 z-10 rounded-lg px-3 py-2 flex flex-col gap-1" style="background:rgba(17,24,35,0.88);backdrop-filter:blur(6px);border:1px solid rgba(147,161,173,0.15);font-size:11px;">
-                <div class="text-slate-400 font-mono uppercase tracking-wider mb-0.5" style="font-size:10px;letter-spacing:0.08em;"><span id="legend-header">displacement risk</span></div>
+            <div id="map-legend" class="absolute bottom-9 left-4 z-10 rounded-lg px-3 py-2 flex flex-col gap-1" style="background:rgba(17,24,35,0.88);backdrop-filter:blur(6px);border:1px solid rgba(147,161,173,0.15);font-size:12px;">
+                <div class="text-slate-400 font-mono uppercase tracking-wider mb-0.5" style="font-size:12px;letter-spacing:0.08em;"><span id="legend-header">displacement risk</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#3E6B54;display:inline-block;flex-shrink:0;"></span><span id="legend-low" class="text-slate-300">Low 0-33</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#C08B2D;display:inline-block;flex-shrink:0;"></span><span id="legend-moderate" class="text-slate-300">Moderate 34-66</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ed6317;display:inline-block;flex-shrink:0;"></span><span id="legend-high" class="text-slate-300">High 67-84</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#e4483b;display:inline-block;flex-shrink:0;"></span><span id="legend-critical" class="text-slate-300">Critical 85+</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#303c4c;display:inline-block;flex-shrink:0;"></span><span id="legend-no-data" class="text-slate-300">No data</span></div>
-                <div id="map-data-updated" class="text-slate-500 mt-1" style="font-size:10px;"></div>
+                <div id="map-data-updated" class="text-slate-400 mt-1" style="font-size:12px;"></div>
                 <div id="replay-row" class="mt-1 pt-1.5" style="border-top:1px solid rgba(147,161,173,0.12);">
-                    <button id="replay-open" class="font-mono text-slate-400 hover:text-slate-200" style="font-size:10px;letter-spacing:0.06em;background:none;border:none;cursor:pointer;padding:2px 0;min-height:24px;">
+                    <button id="replay-open" class="font-mono text-slate-400 hover:text-slate-200" style="font-size:12px;letter-spacing:0.06em;background:none;border:none;cursor:pointer;padding:2px 0;min-height:24px;">
                         <span id="replay-open-label">&#9654; 6-month replay</span>
                     </button>
                     <div id="replay-controls" style="display:none;align-items:center;gap:8px;">
                         <button id="replay-play" aria-label="Play" class="text-slate-300 hover:text-white" style="font-size:12px;background:none;border:none;cursor:pointer;min-height:24px;min-width:18px;padding:0;">&#9654;</button>
                         <input id="replay-slider" type="range" min="0" max="0" value="0" aria-label="Score history timeline" style="width:120px;accent-color:#ed6317;height:14px;">
-                        <span id="replay-date" class="font-mono text-slate-300" style="font-size:10px;min-width:66px;"></span>
-                        <button id="replay-exit" aria-label="Back to live scores" class="text-slate-500 hover:text-slate-200" style="font-size:11px;background:none;border:none;cursor:pointer;min-height:24px;padding:0 2px;">&#x2715;</button>
+                        <span id="replay-date" class="font-mono text-slate-300" style="font-size:12px;min-width:66px;"></span>
+                        <button id="replay-exit" aria-label="Back to live scores" class="text-slate-400 hover:text-slate-200" style="font-size:12px;background:none;border:none;cursor:pointer;min-height:24px;padding:0 2px;">&#x2715;</button>
                     </div>
                 </div>
                 <div style="margin-top:8px;padding-top:7px;border-top:1px solid rgba(147,161,173,0.1);">
-                    <button id="operator-layer-btn" type="button" onclick="toggleOperatorLayer()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:3px 0;min-height:28px;color:rgba(147,161,173,0.55);font-size:11px;" aria-pressed="false">
+                    <button id="operator-layer-btn" type="button" onclick="toggleOperatorLayer()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:3px 0;min-height:28px;color:#78838d;font-size:12px;" aria-pressed="false">
                         <span id="operator-layer-dot" style="width:9px;height:9px;border-radius:50%;background:rgba(237,99,23,0.3);border:1px solid rgba(237,99,23,0.4);flex-shrink:0;display:inline-block;transition:background 0.15s;"></span>
                         <span id="operator-layer-label">Operator portfolios</span>
                     </button>
@@ -456,14 +456,14 @@
             <div id="last-visit-banner" class="hidden absolute top-4 left-0 right-0 flex justify-center z-10 pointer-events-none">
                 <div class="bg-slate-900/90 backdrop-blur-sm text-xs text-slate-200 px-4 py-2 rounded-full border border-slate-700 shadow-lg flex items-center gap-2 pointer-events-auto" style="max-width:min(92%,560px);">
                     <span id="last-visit-text" class="truncate font-mono" style="cursor:pointer;" role="button" tabindex="0"></span>
-                    <button id="last-visit-dismiss" class="text-slate-500 hover:text-slate-200 transition-colors leading-none" aria-label="Dismiss" style="min-height:32px;min-width:32px;font-size:1rem;">&times;</button>
+                    <button id="last-visit-dismiss" class="text-slate-400 hover:text-slate-200 transition-colors leading-none" aria-label="Dismiss" style="min-height:32px;min-width:32px;font-size:1rem;">&times;</button>
                 </div>
             </div>
             <!-- Comparison mode overlay — floats over map center while user picks a second zip -->
             <div id="compare-hint" class="hidden absolute top-4 left-0 right-0 flex justify-center z-10 pointer-events-none">
                 <div class="bg-slate-900/90 backdrop-blur-sm text-sm text-slate-200 px-4 py-2.5 rounded-full border border-slate-700 shadow-lg flex items-center gap-3 pointer-events-auto">
                     <span id="compare-hint-text">Select a second neighborhood to compare</span>
-                    <button id="exit-compare-btn" onclick="exitCompareMode()" class="text-slate-500 hover:text-slate-200 transition-colors leading-none" aria-label="Exit comparison mode" style="min-height:44px;min-width:44px;font-size:1rem;">&times;</button>
+                    <button id="exit-compare-btn" onclick="exitCompareMode()" class="text-slate-400 hover:text-slate-200 transition-colors leading-none" aria-label="Exit comparison mode" style="min-height:44px;min-width:44px;font-size:1rem;">&times;</button>
                 </div>
             </div>
         </div>
@@ -479,7 +479,7 @@
                 <!-- Header -->
                 <div id="sidebar-header-block" class="mb-3 md:mb-6">
                 <div class="flex items-center justify-between mb-2">
-                    <a id="home-link" href="/" class="text-xs text-slate-500 hover:text-slate-300 transition-colors" style="min-height:32px;display:flex;align-items:center;">&#8592; Home</a>
+                    <a id="home-link" href="/" class="text-xs text-slate-400 hover:text-slate-300 transition-colors" style="min-height:32px;display:flex;align-items:center;">&#8592; Home</a>
                     <div class="flex items-center gap-1">
                         <button id="lang-toggle" class="text-xs text-slate-400 hover:text-base-content" aria-label="Toggle language" style="min-height:44px;min-width:44px;">
                             EN / ES
@@ -566,17 +566,17 @@
                     <!-- AI read: grounded model narration of the numbers in this panel -->
                     <div id="ai-read" class="hidden mt-3 pt-3 border-t border-base-content/[0.07]">
                         <div class="flex items-center gap-2 mb-1.5">
-                            <span id="ai-read-label" class="text-xs font-mono uppercase tracking-wider" style="font-size:10px;color:rgba(111,177,216,0.7);">The read</span>
-                            <span id="ai-read-loading" class="hidden text-slate-500" style="font-size:10px;">generating&hellip;</span>
+                            <span id="ai-read-label" class="text-xs font-mono uppercase tracking-wider" style="font-size:12px;color:#6fb1d8;">The read</span>
+                            <span id="ai-read-loading" class="hidden text-slate-400" style="font-size:12px;">generating&hellip;</span>
                         </div>
                         <p id="ai-read-text" class="text-xs text-base-content/70 leading-relaxed"></p>
-                        <p id="ai-read-note" class="text-slate-500 mt-1.5" style="font-size:10px;line-height:1.5;"></p>
+                        <p id="ai-read-note" class="text-slate-400 mt-1.5" style="font-size:12px;line-height:1.5;"></p>
                     </div>
                     <!-- Actions -->
                     <div class="flex items-center justify-between mt-3 pt-3 border-t border-base-content/[0.07]">
                         <button id="watch-btn" onclick="toggleWatch()"
                                 class="flex items-center gap-1.5 text-xs font-medium transition-colors rounded-md px-2.5 py-1.5 border border-sky-400/20 hover:border-sky-400/40"
-                                style="min-height:32px;color:rgba(111,177,216,0.7);">
+                                style="min-height:32px;color:#6fb1d8;">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                             <span>Watch</span>
                         </button>
@@ -610,7 +610,7 @@
                     <div id="history-chart-wrap" style="position:relative;height:110px;display:none;">
                         <canvas id="history-chart"></canvas>
                     </div>
-                    <p id="history-projection-note" class="hidden text-slate-500" style="font-size:10px;margin-top:6px;line-height:1.5;">Dashed: 14-day trend projection from recent scores. A trend read, not a prediction.</p>
+                    <p id="history-projection-note" class="hidden text-slate-400" style="font-size:12px;margin-top:6px;line-height:1.5;">Dashed: 14-day trend projection from recent scores. A trend read, not a prediction.</p>
                 </div>
 
                 <!-- Recent activity — 3 most recent events from pulse data, no extra fetch needed -->
@@ -638,23 +638,23 @@
                         <summary class="text-xs font-semibold text-slate-400 uppercase tracking-wider cursor-pointer select-none mb-3 flex items-center justify-between">
                             <div class="flex items-baseline gap-2">
                                 <span id="pulse-section-title">Neighborhood Pulse</span>
-                                <span id="pulse-last-days" class="text-slate-500 text-[10px] normal-case tracking-normal font-normal">past 90 days</span>
+                                <span id="pulse-last-days" class="text-slate-400 text-[10px] normal-case tracking-normal font-normal">past 90 days</span>
                             </div>
-                            <svg class="details-chevron text-slate-500 shrink-0" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
+                            <svg class="details-chevron text-slate-400 shrink-0" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
                         </summary>
 
                         <!-- LLC Acquisitions subsection -->
                         <div id="pulse-llc-section" class="hidden mb-4 mt-3">
                             <h4 id="pulse-llc-header" class="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-2">LLC Acquisitions</h4>
                             <div id="pulse-llc-list" class="flex flex-col gap-1 text-sm"></div>
-                            <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:rgba(147,161,173,0.35);">Source: NYC ACRIS (bnx9-e6tj)</div>
+                            <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:#78838d;">Source: NYC ACRIS (bnx9-e6tj)</div>
                         </div>
 
                         <!-- Recent Permits subsection -->
                         <div id="pulse-permits-section" class="hidden mb-4">
                             <h4 id="pulse-permits-header" class="text-xs font-semibold text-sky-400 uppercase tracking-wider mb-2">Recent Permits</h4>
                             <div id="pulse-permits-list" class="flex flex-col gap-1 text-sm"></div>
-                            <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:rgba(147,161,173,0.35);">Source: NYC DOB (ipu4-2q9a)</div>
+                            <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:#78838d;">Source: NYC DOB (ipu4-2q9a)</div>
                         </div>
 
                         <!-- Recent Evictions subsection -->
@@ -676,7 +676,7 @@
                     <details id="signal-breakdown-details">
                         <summary class="text-xs font-semibold text-slate-400 uppercase tracking-wider cursor-pointer select-none flex items-center justify-between">
                             <span id="signal-breakdown-title">Signal Breakdown</span>
-                            <svg class="details-chevron text-slate-500" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
+                            <svg class="details-chevron text-slate-400" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
                         </summary>
                         <p id="signal-breakdown-note" class="text-xs text-slate-400 mt-2 mb-3">Scores are 0–100 relative to all NYC neighborhoods, normalized per residential unit. Signals measured over the past 365 days.</p>
                         <div id="signal-rows" class="flex flex-col gap-2"></div>
@@ -790,7 +790,7 @@
 
             <!-- Landlord portfolio search — power-user feature, below primary address search -->
             <div class="bg-base-300 rounded-xl p-3 mt-4 mb-4">
-                <h3 id="landlord-section-title" class="text-xs text-slate-500 mb-2">Search landlord or LLC name</h3>
+                <h3 id="landlord-section-title" class="text-xs text-slate-400 mb-2">Search landlord or LLC name</h3>
                 <div class="flex gap-2">
                     <input
                         id="landlord-input"
@@ -850,7 +850,7 @@
                 <!-- Watch area subscribe row -->
                 <div class="pt-3 pb-2 border-t border-base-content/[0.08]">
                     <div id="subscribe-area-label" class="text-xs font-semibold text-slate-300 mb-0.5">Watch an area</div>
-                    <div id="subscribe-area-body" class="text-xs text-slate-500 mb-2 leading-snug">Select a neighborhood on the map to get updates.</div>
+                    <div id="subscribe-area-body" class="text-xs text-slate-400 mb-2 leading-snug">Select a neighborhood on the map to get updates.</div>
                     <div id="subscribe-form-wrap" class="flex gap-2">
                         <input
                             id="subscribe-email"
@@ -869,21 +869,21 @@
                         >Watch</button>
                     </div>
                     <div id="subscribe-msg" class="hidden text-xs mt-1.5" aria-live="polite"></div>
-                    <div id="subscribe-helper" class="hidden text-xs text-slate-500 mt-1.5">You'll only get updates for this area. Unsubscribe anytime.</div>
+                    <div id="subscribe-helper" class="hidden text-xs text-slate-400 mt-1.5">You'll only get updates for this area. Unsubscribe anytime.</div>
                     <div class="mt-2">
                         <button id="subscribe-citywide-btn" type="button"
-                            class="text-xs text-slate-500 hover:text-slate-300 transition-colors duration-150 underline underline-offset-2 bg-transparent border-none cursor-pointer p-0"
+                            class="text-xs text-slate-400 hover:text-slate-300 transition-colors duration-150 underline underline-offset-2 bg-transparent border-none cursor-pointer p-0"
                         >Get NYC-wide updates instead</button>
                     </div>
                 </div>
                 <!-- Attribution -->
-                <div id="sidebar-attribution" class="pt-3 border-t border-base-content/10 text-[13px] sm:text-xs text-slate-500 text-center">
+                <div id="sidebar-attribution" class="pt-3 border-t border-base-content/10 text-[13px] sm:text-xs text-slate-400 text-center">
                     <div class="mb-2 flex justify-center gap-4 flex-wrap">
-                        <a href="/" class="text-slate-500 hover:text-slate-300 transition-colors duration-150">Home</a>
-                        <a href="/operators" class="text-slate-500 hover:text-slate-300 transition-colors duration-150">Operators</a>
-                        <a href="/methodology" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-slate-300 transition-colors duration-150">Methodology</a>
-                        <a href="/about" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-slate-300 transition-colors duration-150">About</a>
-                        <a href="/status" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-slate-300 transition-colors duration-150">Status</a>
+                        <a href="/" class="text-slate-400 hover:text-slate-300 transition-colors duration-150">Home</a>
+                        <a href="/operators" class="text-slate-400 hover:text-slate-300 transition-colors duration-150">Operators</a>
+                        <a href="/methodology" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-slate-300 transition-colors duration-150">Methodology</a>
+                        <a href="/about" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-slate-300 transition-colors duration-150">About</a>
+                        <a href="/status" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-slate-300 transition-colors duration-150">Status</a>
                     </div>
                     <span id="sidebar-built-by">Built by</span>
                     <a
@@ -932,8 +932,8 @@
                 <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#ec6a5e;flex-shrink:0;display:inline-block;"></span><span id="meth-sig-hpd">HPD violations</span></li>
                 <li style="display:flex;align-items:center;gap:8px;" class="text-base-content/70"><span style="width:6px;height:6px;border-radius:50%;background:#93a1ad;flex-shrink:0;display:inline-block;"></span><span id="meth-sig-rs">Rent-stabilized unit loss</span></li>
             </ul>
-            <p id="meth-modal-note" class="text-xs text-slate-500 mb-3">Higher scores mean more displacement-pressure signals. They are not predictions about any individual tenant or building.</p>
-            <p id="meth-modal-sources" class="text-xs text-slate-500 mb-5">Sources include NYC DOB, HPD, ACRIS, 311, eviction records, DHCR, and MapPLUTO.</p>
+            <p id="meth-modal-note" class="text-xs text-slate-400 mb-3">Higher scores mean more displacement-pressure signals. They are not predictions about any individual tenant or building.</p>
+            <p id="meth-modal-sources" class="text-xs text-slate-400 mb-5">Sources include NYC DOB, HPD, ACRIS, 311, eviction records, DHCR, and MapPLUTO.</p>
             <a id="methodology-full-link" href="/methodology" class="block text-center text-xs text-sky-400 hover:text-sky-300 underline">Read full methodology &rarr;</a>
         </div>
     </div>
@@ -945,7 +945,7 @@
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Michael Espin on LinkedIn"
-        style="position:fixed;bottom:8px;left:8px;z-index:20;display:inline-flex;align-items:center;gap:4px;background:rgba(17,24,35,0.72);backdrop-filter:blur(4px);color:#93a1ad;font-size:11px;font-family:'DM Sans',sans-serif;padding:3px 7px;border-radius:4px;text-decoration:none;transition:color 0.15s;"
+        style="position:fixed;bottom:8px;left:8px;z-index:20;display:inline-flex;align-items:center;gap:4px;background:rgba(17,24,35,0.72);backdrop-filter:blur(4px);color:#93a1ad;font-size:12px;font-family:'DM Sans',sans-serif;padding:3px 7px;border-radius:4px;text-decoration:none;transition:color 0.15s;"
         onmouseover="this.style.color='#0A66C2'"
         onmouseout="this.style.color='#93a1ad'"
     >
@@ -1001,7 +1001,7 @@
     </div>
 
     <!-- Sparkline tooltip div — positioned absolutely, shown on SVG hover -->
-    <div id="sparkline-tip" style="display:none;position:absolute;pointer-events:none;background:#1b2534;color:#eef2f5;font-size:11px;padding:3px 7px;border-radius:4px;white-space:nowrap;z-index:1000;"></div>
+    <div id="sparkline-tip" style="display:none;position:absolute;pointer-events:none;background:#1b2534;color:#eef2f5;font-size:12px;padding:3px 7px;border-radius:4px;white-space:nowrap;z-index:1000;"></div>
 
     <!-- MapLibre GL JS 5.2.0, served from this origin. See vendor/README.md -->
     <script src="/vendor/maplibre-gl.js"></script>
@@ -2535,7 +2535,7 @@
                             el.innerHTML = `
                                 <div class="flex justify-between items-baseline gap-2">
                                     <span class="text-xs font-medium text-base-content/90 leading-snug">${esc(titleCase(item.address) || item.bbl)}</span>
-                                    ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
+                                    ${dateStr ? `<span class="text-xs text-slate-400 shrink-0">${dateStr}</span>` : ''}
                                 </div>
                                 <div class="text-xs text-slate-400 mt-0.5">${t('pulse', 'acquired_by')} ${esc(titleCase(item.buyer_name) || '')}</div>
                             `;
@@ -2554,7 +2554,7 @@
                             el.innerHTML = `
                                 <div class="flex justify-between items-baseline gap-2">
                                     <span class="text-xs font-medium text-base-content/90 leading-snug">${esc(titleCase(item.address) || item.bbl)}</span>
-                                    ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
+                                    ${dateStr ? `<span class="text-xs text-slate-400 shrink-0">${dateStr}</span>` : ''}
                                 </div>
                                 <div class="text-xs text-slate-400 mt-0.5">${esc(translatePermitLabel(item.permit_type_label || item.permit_type))} ${t('pulse', 'filed')}</div>
                             `;
@@ -2577,7 +2577,7 @@
                             el.innerHTML = `
                                 <div class="flex justify-between items-baseline gap-2">
                                     <span class="text-xs font-medium text-base-content/90 leading-snug">${esc(titleCase(item.address) || t('civic', 'unknown_address'))}</span>
-                                    ${dateStr ? `<span class="text-xs text-slate-500 shrink-0">${dateStr}</span>` : ''}
+                                    ${dateStr ? `<span class="text-xs text-slate-400 shrink-0">${dateStr}</span>` : ''}
                                 </div>
                                 <div class="text-xs text-slate-400 mt-0.5">${typeStr}</div>
                             `;
@@ -2618,7 +2618,7 @@
                             '<a href="' + opHref + '" target="_blank" rel="noopener noreferrer" ' +
                             'class="font-mono text-sm text-orange-400 hover:text-orange-300 transition-colors">' +
                             esc(b.operator_root) + '</a>' +
-                            '<span class="text-xs text-slate-500 font-mono">' +
+                            '<span class="text-xs text-slate-400 font-mono">' +
                             b.acquisitions_in_zip + ' acquisition' + (b.acquisitions_in_zip !== 1 ? 's' : '') +
                             '</span>';
                         list.appendChild(row);
@@ -2792,7 +2792,7 @@
                     const barPct = numVal !== null ? Math.max(0, Math.min(100, numVal)) : 0;
                     const rawN = counts[key];
                     const countLine = (rawN > 0 && _countLabel[key])
-                        ? `<div class="text-xs text-slate-500 mt-0.5">${_countLabel[key](rawN)}</div>`
+                        ? `<div class="text-xs text-slate-400 mt-0.5">${_countLabel[key](rawN)}</div>`
                         : '';
 
                     const row = document.createElement('div');
@@ -3115,7 +3115,7 @@
                     barRow.className = 'flex items-center gap-2 mb-1 last:mb-0';
 
                     const zipLbl = document.createElement('span');
-                    zipLbl.className = 'font-mono text-xs text-slate-500 w-11 shrink-0';
+                    zipLbl.className = 'font-mono text-xs text-slate-400 w-11 shrink-0';
                     zipLbl.textContent = zip;
                     barRow.appendChild(zipLbl);
 
@@ -3540,7 +3540,7 @@
             const _seeLegendBtn = document.createElement('button');
             _seeLegendBtn.id = 'see-legend-btn';
             _seeLegendBtn.textContent = t('ui', 'see_legend');
-            _seeLegendBtn.style.cssText = 'display:none;position:absolute;top:8px;right:8px;z-index:31;font-size:10px;color:rgba(147,161,173,0.7);background:rgba(17,24,35,0.8);border:1px solid rgba(147,161,173,0.15);border-radius:4px;padding:4px 8px;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);';
+            _seeLegendBtn.style.cssText = 'display:none;position:absolute;top:8px;right:8px;z-index:31;font-size:12px;color:#85929d;background:rgba(17,24,35,0.8);border:1px solid rgba(147,161,173,0.15);border-radius:4px;padding:4px 8px;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);';
             const _mapEl    = document.getElementById('map');
             const _drawerHandle = document.getElementById('mobile-drawer-handle');
             let _hideTimer  = null;
@@ -3747,7 +3747,7 @@
             left.className = 'flex items-baseline gap-2 min-w-0';
 
             const rankEl = document.createElement('span');
-            rankEl.className = 'text-xs text-slate-500 font-mono w-4 shrink-0 text-right';
+            rankEl.className = 'text-xs text-slate-400 font-mono w-4 shrink-0 text-right';
             rankEl.textContent = n.rank;
 
             const zipEl = document.createElement('span');
@@ -3991,7 +3991,7 @@
 
                 if (dateStr) {
                     const date = document.createElement('span');
-                    date.className = 'text-xs text-slate-500 shrink-0 font-mono';
+                    date.className = 'text-xs text-slate-400 shrink-0 font-mono';
                     date.textContent = dateStr;
                     top.appendChild(date);
                 }
@@ -4072,7 +4072,7 @@
 
             function makeGroupLabel(text) {
                 const h = document.createElement('p');
-                h.className = 'text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5';
+                h.className = 'text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5';
                 h.style.marginTop = inner.children.length ? '12px' : '0';
                 h.textContent = text;
                 return h;
@@ -4336,7 +4336,7 @@
                 el.innerHTML = `
                     <div class="flex justify-between items-baseline gap-2">
                         <span class="text-xs font-medium text-base-content/90 leading-snug">${esc(ev.addr)}</span>
-                        <span class="text-xs text-slate-500 shrink-0">${ev.dateStr}</span>
+                        <span class="text-xs text-slate-400 shrink-0">${ev.dateStr}</span>
                     </div>
                     <div class="text-xs ${meta.color} mt-0.5">${ev.sublabel}</div>
                 `;

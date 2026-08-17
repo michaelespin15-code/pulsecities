@@ -62,7 +62,7 @@ def _idx_color(v: float) -> str:
         return "#ed6317"
     if v >= 45:
         return "#C08B2D"
-    return "rgba(147,161,173,0.45)"
+    return "#93a1ad"
 
 
 _CSS = """
@@ -75,29 +75,29 @@ nav{border-bottom:1px solid var(--border);padding:12px 0}
 .nav-links a{font-size:.78rem;color:var(--muted);margin-left:16px;transition:color .15s}
 .nav-links a:hover{color:var(--text)}
 .container{max-width:740px;margin:0 auto;padding:32px 20px 80px}
-.brief-label{font-size:.66rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.brief-label{font-size:0.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
 h1{font-size:1.42rem;font-weight:600;line-height:1.3;margin-bottom:4px}
-.generated{font-size:.74rem;color:var(--faint);margin-bottom:28px}
+.generated{font-size:0.75rem;color:var(--faint);margin-bottom:28px}
 .summary{font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:32px;padding:16px 20px;border-left:2px solid var(--accent);background:rgba(237,99,23,.04)}
-h2{font-size:.67rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
+h2{font-size:0.75rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
 section{margin-bottom:32px}
 table{width:100%;border-collapse:collapse;margin-bottom:8px}
-th{font-size:.63rem;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:6px 0;border-bottom:1px solid var(--border);text-align:left}
+th{font-size:0.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:6px 0;border-bottom:1px solid var(--border);text-align:left}
 th.tr{text-align:right}
 td{padding:10px 0;border-bottom:1px solid rgba(147,161,173,.06);vertical-align:top;font-size:.86rem}
 .td-r{text-align:right;font-family:'JetBrains Mono',monospace;white-space:nowrap}
 .td-label{color:var(--text)}
-.td-sub{display:block;font-size:.7rem;color:var(--faint);margin-top:2px}
+.td-sub{display:block;font-size:0.75rem;color:var(--faint);margin-top:2px}
 .score-row{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;padding:16px 20px;border:1px solid var(--border);border-radius:6px;background:rgba(255,255,255,.02);margin-bottom:20px}
 .score-big{font-size:2.4rem;font-weight:700;font-family:'JetBrains Mono',monospace;line-height:1}
 .score-denom{font-size:.9rem;color:var(--muted);font-family:'JetBrains Mono',monospace;align-self:flex-end;padding-bottom:3px}
-.score-tier-lbl{font-size:.63rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;align-self:flex-end;padding-bottom:5px;margin-left:10px}
+.score-tier-lbl{font-size:0.75rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;align-self:flex-end;padding-bottom:5px;margin-left:10px}
 .metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:8px}
 .metric{padding:12px 16px;border:1px solid var(--border);border-radius:6px;background:rgba(255,255,255,.02)}
 .metric-val{font-family:'JetBrains Mono',monospace;font-size:1.25rem;font-weight:600;margin-bottom:2px}
-.metric-key{font-size:.72rem;color:var(--muted)}
+.metric-key{font-size:0.75rem;color:var(--muted)}
 .entity-list{list-style:none;padding:0;margin:0;columns:2;column-gap:24px}
-.entity-list li{font-family:'JetBrains Mono',monospace;font-size:.73rem;color:var(--muted);padding:3px 0;break-inside:avoid}
+.entity-list li{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--muted);padding:3px 0;break-inside:avoid}
 .source-note{font-size:.77rem;color:var(--faint);line-height:1.65;margin-bottom:8px}
 .disclaimer{font-size:.77rem;color:var(--faint);line-height:1.65;padding:14px 18px;border:1px solid var(--border);border-radius:6px;margin-bottom:24px;margin-top:24px}
 .btn-primary{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--accent);color:#fff;border-radius:6px;font-size:.85rem;font-weight:500;text-decoration:none;transition:opacity .15s}
@@ -147,7 +147,7 @@ def _nav_html() -> str:
     return """<nav><div class="nav-inner">
   <a href="/" style="display:flex;align-items:center;gap:8px;">
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#1a1a2e"/><polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#ed6317" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span style="font-size:.85rem;color:rgba(147,161,173,.55);">PulseCities</span>
+    <span style="font-size:.85rem;color:#93a1ad;">PulseCities</span>
   </a>
   <div class="nav-links"><a href="/map">Map</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="/press">Press</a></div>
 </div></nav>"""

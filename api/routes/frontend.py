@@ -196,31 +196,31 @@ def _tier_info(score: float) -> tuple[str, str]:
     if score >= 85: return "Critical", "#e4483b"
     if score >= 67: return "High",     "#ed6317"
     if score >= 34: return "Moderate", "#C08B2D"
-    return "Low", "#677686"
+    return "Low", "#93a1ad"
 
 
 def _idx_color(v: float) -> str:
     if v >= 70: return "#ed6317"
     if v >= 45: return "#C08B2D"
-    return "rgba(147,161,173,0.55)"
+    return "#93a1ad"
 
 
 # One footer for every SSR page, same link set as the static pages.
 # test_footer_consistency.py fails the suite if the two drift apart.
 # Interpolate as {_FOOTER_HTML} inside the page f-strings.
 _FOOTER_HTML = """<footer>
-  <div style="font-size:11px;color:#677686;margin-bottom:8px;text-align:center;">Built by Michael Espin</div>
+  <div style="font-size:12px;color:#93a1ad;margin-bottom:8px;text-align:center;">Built by Michael Espin</div>
   <div class="footer-links">
-    <a href="/" style="color:#677686;" onmouseover="this.style.color='#93a1ad'" onmouseout="this.style.color='#677686'">Home</a>
-    <a href="/neighborhoods" style="color:#677686;" onmouseover="this.style.color='#93a1ad'" onmouseout="this.style.color='#677686'">Neighborhoods</a>
-    <a href="/displacement" style="color:#677686;" onmouseover="this.style.color='#93a1ad'" onmouseout="this.style.color='#677686'">Displacement</a>
-    <a href="/methodology" style="color:#677686;" onmouseover="this.style.color='#93a1ad'" onmouseout="this.style.color='#677686'">Methodology</a>
-    <a href="/about" style="color:#677686;" onmouseover="this.style.color='#93a1ad'" onmouseout="this.style.color='#677686'">About</a>
-    <a href="/press" style="color:#677686;" onmouseover="this.style.color='#93a1ad'" onmouseout="this.style.color='#677686'">Press</a>
-    <a href="/status" style="color:#677686;" onmouseover="this.style.color='#93a1ad'" onmouseout="this.style.color='#677686'">Status</a>
-    <a href="mailto:nycdisplacement@gmail.com" style="color:#677686;" onmouseover="this.style.color='#93a1ad'" onmouseout="this.style.color='#677686'">Contact</a>
-    <a href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" style="color:#677686;" onmouseover="this.style.color='#93a1ad'" onmouseout="this.style.color='#677686'">LinkedIn</a>
-    <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="color:#677686;text-decoration:none;display:inline-flex;align-items:center;" onmouseover="this.style.color='#93a1ad'" onmouseout="this.style.color='#677686'"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+    <a href="/" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">Home</a>
+    <a href="/neighborhoods" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">Neighborhoods</a>
+    <a href="/displacement" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">Displacement</a>
+    <a href="/methodology" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">Methodology</a>
+    <a href="/about" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">About</a>
+    <a href="/press" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">Press</a>
+    <a href="/status" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">Status</a>
+    <a href="mailto:nycdisplacement@gmail.com" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">Contact</a>
+    <a href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">LinkedIn</a>
+    <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="color:#93a1ad;text-decoration:none;display:inline-flex;align-items:center;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
   </div>
 </footer>"""
 
@@ -267,7 +267,7 @@ _SSR_NAV_LABELS = {
 
 _LANG_TOGGLE_BTN = (
     '<button id="lang-toggle" style="font-family:\'JetBrains Mono\',monospace;'
-    'font-size:0.72rem;color:rgba(147,161,173,0.5);background:none;border:none;'
+    'font-size:0.75rem;color:var(--faint);background:none;border:none;'
     'cursor:pointer;padding:4px 2px;min-height:32px;">EN / ES</button>'
 )
 
@@ -277,7 +277,7 @@ _SSR_NAV_BRAND = (
     '<rect width="32" height="32" rx="6" fill="#1a1a2e"/>'
     '<polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" '
     'stroke="#ed6317" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-    '<span style="font-size:0.85rem;color:rgba(147,161,173,0.6);">PulseCities</span></a>'
+    '<span style="font-size:0.85rem;color:var(--dim);">PulseCities</span></a>'
 )
 
 
@@ -300,9 +300,9 @@ def _ssr_nav(active: str = "", lang: str = "en", toggle_html: str = "", track: b
         onclick = (f" onclick=\"plausible('Showcase Nav',{{props:{{to:'{key.replace('_', '-')}'}}}})\""
                    if track else "")
         parts.append(
-            f'<a href="{path}"{onclick} style="font-size:0.78rem;color:rgba(147,161,173,0.5);" '
-            f'onmouseover="this.style.color=\'#93a1ad\'" '
-            f'onmouseout="this.style.color=\'rgba(147,161,173,0.5)\'">{label}</a>'
+            f'<a href="{path}"{onclick} style="font-size:0.78rem;color:var(--muted);" '
+            f'onmouseover="this.style.color=\'#e4e8ec\'" '
+            f'onmouseout="this.style.color=\'#93a1ad\'">{label}</a>'
         )
     links = "".join(parts)
     # One row at every width: the links scroll horizontally instead of
@@ -626,7 +626,7 @@ def _build_neighborhood_page(
         meta_desc    = L["desc_scored"].format(name=name, zip=zip_code,
                                                tier=_TIER_WORDS[lang][tier_label].lower())
     else:
-        tier_label, tier_color = "Unknown", "#677686"
+        tier_label, tier_color = "Unknown", "#93a1ad"
         score_str    = "N/A"
         page_title   = L["title_unscored"].format(name=name, zip=zip_code, borough=borough_disp)
         social_title = page_title
@@ -650,10 +650,10 @@ def _build_neighborhood_page(
         i_col = _idx_color(float(idx) if idx is not None else 0.0)
         if key == "rs_unit_loss":
             cnt_s = L["rs_none"]
-            c_col = "rgba(147,161,173,0.4)"
+            c_col = "#78838d"
         elif count == 0:
             cnt_s = "0"
-            c_col = "rgba(147,161,173,0.4)"
+            c_col = "#78838d"
         else:
             cnt_s = f"{count:,}"
             c_col = "#eef2f5"
@@ -673,7 +673,7 @@ def _build_neighborhood_page(
         f'<span class="score-tier" style="color:{tier_color};">{tier_line}</span>'
         f'</div>'
         if score is not None
-        else f'<div class="score-block"><p style="color:rgba(147,161,173,0.5);font-size:0.9rem;">{L["no_score"]}</p></div>'
+        else f'<div class="score-block"><p style="color:var(--faint);font-size:0.9rem;">{L["no_score"]}</p></div>'
     )
     summary_html = f'<p class="summary">{e(summary)}</p>' if summary else ""
 
@@ -773,7 +773,7 @@ def _build_neighborhood_page(
         pct = ""
         if petitions.get("prior"):
             change = (petitions["recent"] - petitions["prior"]) / petitions["prior"] * 100
-            arrow_color = "#e4483b" if change >= 10 else ("#3E6B54" if change <= -10 else "var(--muted)")
+            arrow_color = "#e4483b" if change >= 10 else ("#6fa287" if change <= -10 else "var(--muted)")
             prior_s = f"{petitions['prior']:,}"
             pct = (f' <span style="font-family:\'JetBrains Mono\',monospace;color:{arrow_color};">'
                    f'{change:+.0f}%</span> <span style="color:var(--faint);">'
@@ -877,9 +877,9 @@ def _build_neighborhood_page(
     alt_url = f"{base_url}?lang=es" if lang == "en" else base_url
     nav_toggle = (
         f'<a href="{e(alt_url)}" id="lang-toggle" aria-label="{L["lang_toggle_aria"]}" '
-        f'style="font-size:0.78rem;color:rgba(147,161,173,0.5);" '
-        f'onmouseover="this.style.color=\'#93a1ad\'" '
-        f'onmouseout="this.style.color=\'rgba(147,161,173,0.5)\'">{L["lang_toggle_label"]}</a>'
+        f'style="font-size:0.78rem;color:var(--faint);" '
+        f'onmouseover="this.style.color=\'#e4e8ec\'" '
+        f'onmouseout="this.style.color=\'#93a1ad\'">{L["lang_toggle_label"]}</a>'
     )
 
     # Watch-this-block CTA: subscribes the reader's email to this ZIP straight
@@ -904,7 +904,7 @@ def _build_neighborhood_page(
         "var b=document.getElementById('watch-btn'),m=document.getElementById('watch-msg'),"
         "el=document.getElementById('watch-email');"
         "if(!b)return;"
-        "function show(t,ok){m.textContent=t;m.style.color=ok?'#3E6B54':'#e4483b';m.style.display='block';}"
+        "function show(t,ok){m.textContent=t;m.style.color=ok?'#6fa287':'#e4483b';m.style.display='block';}"
         "async function go(){var v=(el.value||'').trim();"
         "if(!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(v)){show(" + _j(L["watch_invalid"]) + ",false);return;}"
         "b.disabled=true;b.textContent='\\u2026';"
@@ -958,7 +958,7 @@ def _build_neighborhood_page(
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&family=JetBrains+Mono:wght@400&display=swap"></noscript>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
-:root{{--bg:#111823;--border:rgba(147,161,173,.1);--text:#eef2f5;--muted:rgba(147,161,173,.65);--faint:rgba(147,161,173,.35);--accent:#ed6317}}
+:root{{--bg:#111823;--border:rgba(147,161,173,.1);--text:#eef2f5;--muted:#93a1ad;--dim:#85929d;--faint:#78838d;--accent:#ed6317}}
 body{{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}}
 a{{color:inherit;text-decoration:none}}
 nav{{border-bottom:1px solid var(--border);padding:12px 0}}
@@ -971,24 +971,24 @@ nav{{border-bottom:1px solid var(--border);padding:12px 0}}
 .breadcrumb a{{color:var(--muted)}}
 .breadcrumb a:hover{{color:var(--text)}}
 h1{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.45rem;font-weight:600;line-height:1.3;margin-bottom:6px}}
-.kicker{{font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.18em;color:#ed6317;text-transform:uppercase;margin-bottom:8px}}
+.kicker{{font-family:'JetBrains Mono',monospace;font-size:0.75rem;letter-spacing:0.18em;color:#ed6317;text-transform:uppercase;margin-bottom:8px}}
 .subline{{font-size:.82rem;color:var(--muted);margin-bottom:28px}}
 .score-block{{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;padding:20px 24px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;margin-bottom:20px}}
 .score-num{{font-size:2.8rem;font-weight:700;font-family:'JetBrains Mono',monospace;line-height:1}}
 .score-denom{{font-size:1rem;color:var(--muted);font-family:'JetBrains Mono',monospace;align-self:flex-end;padding-bottom:4px}}
-.score-tier{{font-size:.68rem;font-weight:600;letter-spacing:.08em;align-self:flex-end;padding-bottom:6px;margin-left:8px}}
+.score-tier{{font-size:0.75rem;font-weight:600;letter-spacing:.08em;align-self:flex-end;padding-bottom:6px;margin-left:8px}}
 .summary{{font-size:.92rem;color:var(--muted);line-height:1.7;margin-bottom:32px}}
-h2{{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}}
+h2{{font-size:0.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}}
 .section-sub{{font-size:.82rem;color:var(--muted);margin-bottom:14px}}
 .table-wrap{{overflow-x:auto;margin-bottom:12px}}
 table{{width:100%;border-collapse:collapse}}
-th{{font-size:.64rem;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:6px 0;border-bottom:1px solid var(--border)}}
+th{{font-size:0.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:6px 0;border-bottom:1px solid var(--border)}}
 th:not(:first-child){{text-align:right}}
 td{{padding:12px 0;border-bottom:1px solid rgba(147,161,173,.06);vertical-align:top}}
 .sc{{font-size:.87rem}}
-.sw{{display:block;font-size:.71rem;color:var(--faint);margin-top:2px}}
+.sw{{display:block;font-size:0.75rem;color:var(--faint);margin-top:2px}}
 .sr,.si{{font-size:.87rem;font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap}}
-.data-note{{font-size:.74rem;color:var(--faint);margin-top:10px;margin-bottom:36px;line-height:1.55}}
+.data-note{{font-size:0.75rem;color:var(--faint);margin-top:10px;margin-bottom:36px;line-height:1.55}}
 .faq-list{{margin-bottom:36px}}
 .faq-item{{padding:16px 0;border-bottom:1px solid var(--border)}}
 .faq-item:first-child{{border-top:1px solid var(--border)}}
@@ -1551,13 +1551,13 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str
 
     css = """<style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#111823;--border:rgba(147,161,173,.1);--text:#eef2f5;--muted:rgba(147,161,173,.65);--faint:rgba(147,161,173,.35);--accent:#ed6317}
+:root{--bg:#111823;--border:rgba(147,161,173,.1);--text:#eef2f5;--muted:#93a1ad;--dim:#85929d;--faint:#78838d;--accent:#ed6317}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 nav{border-bottom:1px solid var(--border);padding:12px 0}
 .nav-inner{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .nav-inner>div::-webkit-scrollbar{display:none}
-.brand{font-size:.85rem;color:rgba(147,161,173,.55)}
+.brand{font-size:.85rem;color:var(--faint)}
 .container{max-width:720px;margin:0 auto;padding:28px 20px 72px}
 .breadcrumb{font-size:.78rem;color:var(--muted);margin-bottom:18px}
 .breadcrumb a:hover{color:var(--text)}
@@ -1566,25 +1566,25 @@ h1{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;font-
 .score-block{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;padding:16px 20px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;margin-bottom:26px}
 .score-num{font-size:2.2rem;font-weight:700;font-family:'JetBrains Mono',monospace;line-height:1}
 .score-denom{font-size:.9rem;color:var(--muted);font-family:'JetBrains Mono',monospace;align-self:flex-end;padding-bottom:3px}
-.score-tier{font-size:.62rem;font-weight:600;letter-spacing:.08em;align-self:flex-end;padding-bottom:5px;margin-left:8px}
-h2{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
+.score-tier{font-size:0.75rem;font-weight:600;letter-spacing:.08em;align-self:flex-end;padding-bottom:5px;margin-left:8px}
+h2{font-size:0.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
 .section-sub{font-size:.82rem;color:var(--muted)}
 .table-wrap{overflow-x:auto;margin-bottom:10px}
 table{width:100%;border-collapse:collapse}
-th{font-size:.64rem;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:6px 0;border-bottom:1px solid var(--border);text-align:left}
+th{font-size:0.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:6px 0;border-bottom:1px solid var(--border);text-align:left}
 th:not(:first-child){text-align:right}
 td{padding:11px 0;border-bottom:1px solid rgba(147,161,173,.06);vertical-align:top}
 .sc{font-size:.86rem}
-.sw{display:block;font-size:.71rem;color:var(--faint);margin-top:2px}
+.sw{display:block;font-size:0.75rem;color:var(--faint);margin-top:2px}
 .sr,.si{font-size:.85rem;font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap}
-.data-note{font-size:.73rem;color:var(--faint);margin-top:8px;line-height:1.5}
+.data-note{font-size:0.75rem;color:var(--faint);margin-top:8px;line-height:1.5}
 .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin:28px 0 4px}
 .btn-map{display:inline-flex;align-items:center;padding:10px 18px;background:var(--accent);color:#fff;border-radius:6px;font-size:.84rem;font-weight:500}
 .btn-map:hover{opacity:.9}
 .btn-copy{display:inline-flex;align-items:center;padding:10px 18px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:6px;font-size:.84rem}
 .btn-copy:hover{color:var(--text);border-color:rgba(147,161,173,.3)}
-.foot-note{font-size:.72rem;color:var(--faint);margin-top:20px;line-height:1.5}
-footer{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-inset-bottom,0px) + 24px);text-align:center;margin-top:20px;font-size:12px;color:#677686}
+.foot-note{font-size:0.75rem;color:var(--faint);margin-top:20px;line-height:1.5}
+footer{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-inset-bottom,0px) + 24px);text-align:center;margin-top:20px;font-size:12px;color:var(--muted)}
 .footer-links{display:flex;justify-content:center;gap:20px;flex-wrap:wrap}
 </style>
 """
@@ -1701,7 +1701,7 @@ def _minimal_operator_page(display_name: str, operator_class: str) -> str:
   nav{{border-bottom:1px solid rgba(147,161,173,0.12);padding:0 24px;height:52px;display:flex;align-items:center;gap:16px}}
   .brand{{font-size:14px;font-weight:600;color:#ed6317}}
   .wrap{{flex:1;max-width:620px;margin:0 auto;padding:72px 24px;width:100%}}
-  .label{{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#93a1ad;margin-bottom:12px}}
+  .label{{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#93a1ad;margin-bottom:12px}}
   h1{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:clamp(22px,4vw,28px);font-weight:600;margin-bottom:10px}}
   .klass{{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;color:#c9d2da;
          border:1px solid rgba(147,161,173,0.25);border-radius:6px;padding:4px 10px;margin-bottom:20px}}
@@ -1902,10 +1902,10 @@ def operator_page(root: str, db: Session = Depends(get_db)):
         acq_body += (
             "<tr>"
             f'<td style="padding:8px 16px;color:rgba(238,242,245,0.85);">{addr_cell}</td>'
-            f'<td class="mono" style="padding:8px 16px;color:rgba(147,161,173,0.75);font-size:0.72rem;">{zip_cell}</td>'
-            f'<td class="mono" style="padding:8px 16px;color:#93a1ad;font-size:0.7rem;">{_e(r.buyer or "")}</td>'
-            f'<td class="mono" style="padding:8px 16px;color:rgba(147,161,173,0.75);font-size:0.72rem;">{_e(doc_date)}</td>'
-            f'<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:#93a1ad;font-size:0.72rem;">{_e(amount)}</td>'
+            f'<td class="mono" style="padding:8px 16px;color:var(--dim);font-size:0.75rem;">{zip_cell}</td>'
+            f'<td class="mono" style="padding:8px 16px;color:#93a1ad;font-size:0.75rem;">{_e(r.buyer or "")}</td>'
+            f'<td class="mono" style="padding:8px 16px;color:var(--dim);font-size:0.75rem;">{_e(doc_date)}</td>'
+            f'<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:#93a1ad;font-size:0.75rem;">{_e(amount)}</td>'
             "</tr>"
         )
 
@@ -1972,8 +1972,8 @@ def operator_page(root: str, db: Session = Depends(get_db)):
         1,
     )
     html = html.replace(
-        '<div id="op-summary" style="font-size: 0.82rem; color: #93a1ad; margin-top: 5px;"></div>',
-        f'<div id="op-summary" style="font-size: 0.82rem; color: #93a1ad; margin-top: 5px;">{_e(summary_html)}</div>',
+        '<div id="op-summary" style="font-size:0.82rem; color: #93a1ad; margin-top: 5px;"></div>',
+        f'<div id="op-summary" style="font-size:0.82rem; color: #93a1ad; margin-top: 5px;">{_e(summary_html)}</div>',
         1,
     )
     html = html.replace('<div class="stat-val" id="stat-properties"></div>',
@@ -2129,34 +2129,34 @@ nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
-footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:var(--muted)}}
 .footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
 @media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
 .op-list{{list-style:none;padding:0;margin:0}}
 .op-row{{border-bottom:1px solid rgba(147,161,173,0.07);cursor:pointer;}}
 .op-row:hover{{background:rgba(147,161,173,0.04)}}
 .op-row a{{display:flex;align-items:flex-start;gap:12px;padding:14px 0;text-decoration:none;color:inherit;}}
-.op-rank{{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:rgba(147,161,173,0.5);min-width:24px;padding-top:3px;flex-shrink:0;}}
+.op-rank{{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);min-width:24px;padding-top:3px;flex-shrink:0;}}
 .op-body{{display:flex;flex-direction:column;gap:3px;}}
 .op-name{{font-family:'JetBrains Mono',monospace;font-size:0.88rem;color:#e4e8ec;letter-spacing:0.04em;font-weight:500;}}
 .op-row:hover .op-name{{color:#ed6317;}}
 .op-meta{{font-size:0.78rem;color:#93a1ad;}}
-.op-geo{{font-size:0.73rem;color:rgba(147,161,173,0.65);}}
-.op-cta{{font-size:0.72rem;color:rgba(237,99,23,0.75);font-family:'JetBrains Mono',monospace;margin-top:2px;}}
-.op-row:hover .op-cta{{color:rgba(237,99,23,0.95);}}
+.op-geo{{font-size:0.75rem;color:var(--dim);}}
+.op-cta{{font-size:0.75rem;color:var(--accent);font-family:'JetBrains Mono',monospace;margin-top:2px;}}
+.op-row:hover .op-cta{{color:var(--accent);}}
 </style>
 </head>
 <body>
 {_ssr_nav("/operators", toggle_html=_LANG_TOGGLE_BTN)}
 <div class="container">
   <div style="margin-bottom:8px;">
-    <a href="/" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">&#8592; Home</a>
+    <a href="/" style="font-size:0.75rem;color:var(--faint);">&#8592; Home</a>
   </div>
   <h1 id="dir-heading" style="font-size:1.4rem;font-weight:600;margin-bottom:6px;">The biggest NYC landlords</h1>
   <p id="dir-desc" style="font-size:0.82rem;color:#93a1ad;margin-bottom:8px;line-height:1.6;">
     Ownership clusters identified in NYC deed records. Each groups LLCs by naming patterns and acquisition activity. Public records only.
   </p>
-  <p id="dir-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(147,161,173,0.55);margin-bottom:8px;">{n_visible} clusters tracked across an 18-month public records window.</p>
+  <p id="dir-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-bottom:8px;">{n_visible} clusters tracked across an 18-month public records window.</p>
   <p id="dir-ledger-link" style="font-size:0.78rem;margin-bottom:28px;">Looking for a specific company instead? <a href="/llc" style="color:#6fb1d8;">Search the full ledger of LLC buyers &rarr;</a></p>
   <ul class="op-list">
 {rows_html}  </ul>
@@ -2298,9 +2298,9 @@ def neighborhoods_directory(lang: str = "en", db: Session = Depends(get_db)):
     alt_url = f"{base_url}?lang=es" if lang == "en" else base_url
     nav_toggle = (
         f'<a href="{alt_url}" id="lang-toggle" aria-label="{LL["toggle_aria"]}" '
-        f'style="font-size:0.78rem;color:rgba(147,161,173,0.5);" '
-        f'onmouseover="this.style.color=\'#93a1ad\'" '
-        f'onmouseout="this.style.color=\'rgba(147,161,173,0.5)\'">{LL["toggle"]}</a>'
+        f'style="font-size:0.78rem;color:var(--faint);" '
+        f'onmouseover="this.style.color=\'#e4e8ec\'" '
+        f'onmouseout="this.style.color=\'#93a1ad\'">{LL["toggle"]}</a>'
     )
     jsonld = _jsonld({
         "@context": "https://schema.org",
@@ -2346,7 +2346,7 @@ nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
-footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:var(--muted)}}
 .footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
 @media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
 .nb-borough{{margin-bottom:36px}}
@@ -2367,13 +2367,13 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 {_ssr_nav("/neighborhoods", lang=lang, toggle_html=nav_toggle)}
 <div class="container">
   <div style="margin-bottom:8px;">
-    <a href="/" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">{LL['back_home']}</a>
+    <a href="/" style="font-size:0.75rem;color:var(--faint);">{LL['back_home']}</a>
   </div>
   <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.4rem;font-weight:600;margin-bottom:6px;">{LL['dir_h1']}</h1>
   <p style="font-size:0.82rem;color:#93a1ad;margin-bottom:8px;line-height:1.6;">
     {LL['dir_intro']}
   </p>
-  <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(147,161,173,0.55);margin-bottom:28px;">{LL['dir_count'].format(n=n)}</p>
+  <p style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-bottom:28px;">{LL['dir_count'].format(n=n)}</p>
   {sections_html}
 </div>
 {_FOOTERS.get(lang, _FOOTER_HTML)}
@@ -2534,9 +2534,9 @@ def borough_page(slug: str, lang: str = "en", db: Session = Depends(get_db)):
     alt_url = f"{base_url}?lang=es" if lang == "en" else base_url
     nav_toggle = (
         f'<a href="{alt_url}" id="lang-toggle" aria-label="{LL["toggle_aria"]}" '
-        f'style="font-size:0.78rem;color:rgba(147,161,173,0.5);" '
-        f'onmouseover="this.style.color=\'#93a1ad\'" '
-        f'onmouseout="this.style.color=\'rgba(147,161,173,0.5)\'">{LL["toggle"]}</a>'
+        f'style="font-size:0.78rem;color:var(--faint);" '
+        f'onmouseover="this.style.color=\'#e4e8ec\'" '
+        f'onmouseout="this.style.color=\'#93a1ad\'">{LL["toggle"]}</a>'
     )
     jsonld = _jsonld({
         "@context": "https://schema.org",
@@ -2561,7 +2561,7 @@ def borough_page(slug: str, lang: str = "en", db: Session = Depends(get_db)):
     })
 
     others = " · ".join(
-        f'<a href="/{s}{lsuf}" style="color:rgba(147,161,173,0.6);">{b}</a>'
+        f'<a href="/{s}{lsuf}" style="color:var(--dim);">{b}</a>'
         for s, b in _BOROUGH_SLUGS.items() if s != slug
     )
 
@@ -2599,13 +2599,13 @@ nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
-footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:var(--muted)}}
 .footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
 @media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
 .stat-row{{display:flex;gap:28px;flex-wrap:wrap;margin-bottom:28px}}
 .stat{{display:flex;flex-direction:column;gap:2px}}
 .stat-num{{font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:600;color:#e4e8ec}}
-.stat-label{{font-size:0.68rem;color:rgba(147,161,173,0.55);text-transform:uppercase;letter-spacing:0.06em}}
+.stat-label{{font-size:0.75rem;color:var(--faint);text-transform:uppercase;letter-spacing:0.06em}}
 .nb-list{{list-style:none;padding:0;margin:0}}
 .nb-row{{border-bottom:1px solid rgba(147,161,173,0.07)}}
 .nb-row:hover{{background:rgba(147,161,173,0.04)}}
@@ -2622,7 +2622,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 {_ssr_nav("/neighborhoods", lang=lang, toggle_html=nav_toggle)}
 <div class="container">
   <div style="margin-bottom:8px;">
-    <a href="/neighborhoods{lsuf}" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">{LL['back_all']}</a>
+    <a href="/neighborhoods{lsuf}" style="font-size:0.75rem;color:var(--faint);">{LL['back_all']}</a>
   </div>
   <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.4rem;font-weight:600;margin-bottom:6px;">{LL['b_h1'].format(borough=borough)}</h1>
   <p style="font-size:0.82rem;color:#93a1ad;margin-bottom:20px;line-height:1.6;">
@@ -2635,7 +2635,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   </div>
   <ul class="nb-list">
 {rows_html}  </ul>
-  <p style="font-size:0.75rem;color:rgba(147,161,173,0.5);margin-top:24px;">{LL['b_others']} {others}</p>
+  <p style="font-size:0.75rem;color:var(--faint);margin-top:24px;">{LL['b_others']} {others}</p>
 </div>
 {_FOOTERS.get(lang, _FOOTER_HTML)}
 <script>
@@ -2791,7 +2791,7 @@ nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
-footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:var(--muted)}}
 .footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
 @media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
 .flip-list{{list-style:none;padding:0;margin:0}}
@@ -2801,13 +2801,13 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 .flip-main{{display:flex;flex-direction:column;gap:3px;min-width:0;}}
 .flip-addr{{font-family:'JetBrains Mono',monospace;font-size:0.9rem;color:#e4e8ec;letter-spacing:0.03em;font-weight:500;}}
 .flip-row:hover .flip-addr{{color:#ed6317;}}
-.flip-geo{{font-size:0.76rem;color:rgba(147,161,173,0.7);}}
-.flip-buyer{{font-family:'JetBrains Mono',monospace;font-size:0.74rem;color:#93a1ad;margin-top:2px;}}
-.flip-when{{font-size:0.72rem;color:rgba(147,161,173,0.55);margin-top:2px;}}
-.flip-when-label{{color:rgba(147,161,173,0.4);}}
+.flip-geo{{font-size:0.76rem;color:var(--dim);}}
+.flip-buyer{{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:#93a1ad;margin-top:2px;}}
+.flip-when{{font-size:0.75rem;color:var(--faint);margin-top:2px;}}
+.flip-when-label{{color:var(--faint);}}
 .flip-side{{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;text-align:right;}}
 .flip-gap{{font-family:'JetBrains Mono',monospace;font-size:1.05rem;font-weight:500;color:#ed6317;line-height:1.1;}}
-.flip-gap-label{{font-size:0.62rem;color:rgba(147,161,173,0.5);text-transform:uppercase;letter-spacing:0.06em;margin-top:1px;}}
+.flip-gap-label{{font-size:0.75rem;color:var(--faint);text-transform:uppercase;letter-spacing:0.06em;margin-top:1px;}}
 .flip-amount{{font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:#c9d2da;margin-top:8px;}}
 .flip-empty{{padding:24px 0;font-size:0.82rem;color:#93a1ad;}}
 </style>
@@ -2816,18 +2816,18 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 {_ssr_nav("/flips", toggle_html=_LANG_TOGGLE_BTN)}
 <div class="container">
   <div style="margin-bottom:8px;">
-    <a href="/" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">&#8592; Home</a>
+    <a href="/" style="font-size:0.75rem;color:var(--faint);">&#8592; Home</a>
   </div>
   <h1 id="fw-heading" style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.4rem;font-weight:600;margin-bottom:6px;">Flip Watch</h1>
   <p id="fw-desc" style="font-size:0.82rem;color:#93a1ad;margin-bottom:8px;line-height:1.6;">
     Buildings where an LLC took the deed and filed a renovation permit within {FLIP_WINDOW_DAYS} days. That fast turn is one of the clearest early signals of a building being repositioned. Public records only.
   </p>
-  <p id="fw-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(147,161,173,0.55);margin-bottom:6px;">{n} flips detected across NYC in the past 12 months.</p>
-  <p style="font-size:0.75rem;margin-bottom:28px;"><a href="/flips/editions" id="fw-editions-link" style="color:rgba(237,99,23,0.75);">Weekly reviewed editions &rarr;</a></p>
+  <p id="fw-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-bottom:6px;">{n} flips detected across NYC in the past 12 months.</p>
+  <p style="font-size:0.75rem;margin-bottom:28px;"><a href="/flips/editions" id="fw-editions-link" style="color:var(--accent);">Weekly reviewed editions &rarr;</a></p>
   <ul class="flip-list">
 {rows_html}  </ul>
-  <p id="fw-note" style="font-size:0.72rem;color:rgba(147,161,173,0.45);margin-top:24px;line-height:1.6;">
-    A renovation permit alone is not wrongdoing. This page reports the public-record pattern, not a conclusion about any owner. <a href="/methodology" style="color:rgba(237,99,23,0.75);">How this is measured &rarr;</a>
+  <p id="fw-note" style="font-size:0.75rem;color:var(--faint);margin-top:24px;line-height:1.6;">
+    A renovation permit alone is not wrongdoing. This page reports the public-record pattern, not a conclusion about any owner. <a href="/methodology" style="color:var(--accent);">How this is measured &rarr;</a>
   </p>
 </div>
 {_FOOTER_HTML}
@@ -2861,7 +2861,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     set('fw-sub', s.sub);
     var d = document.getElementById('fw-desc'); if (d) d.textContent = s.desc;
     var note = document.getElementById('fw-note');
-    if (note) note.innerHTML = s.note + ' <a href="/methodology" style="color:rgba(237,99,23,0.75);">' + (l === 'es' ? 'C\\u00f3mo se mide \\u2192' : 'How this is measured \\u2192') + '</a>';
+    if (note) note.innerHTML = s.note + ' <a href="/methodology" style="color:var(--accent);">' + (l === 'es' ? 'C\\u00f3mo se mide \\u2192' : 'How this is measured \\u2192') + '</a>';
     document.querySelectorAll('.flip-when-label').forEach(function(el) {{ el.textContent = s.bought; }});
     document.querySelectorAll('.flip-gap-label').forEach(function(el) {{ el.textContent = s.gap; }});
     var btn = document.getElementById('lang-toggle');
@@ -3046,22 +3046,22 @@ nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
-footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:var(--muted)}}
 .footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
 @media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
 .edition{{margin-bottom:36px}}
 .edition-week{{font-family:'JetBrains Mono',monospace;font-size:0.85rem;font-weight:600;color:#ed6317;letter-spacing:0.06em;margin-bottom:14px;text-transform:uppercase}}
-.edition-date{{color:rgba(147,161,173,0.5);font-weight:400;text-transform:none;letter-spacing:0}}
+.edition-date{{color:var(--faint);font-weight:400;text-transform:none;letter-spacing:0}}
 .arc-card{{background:#16202d;border:1px solid rgba(147,161,173,0.12);border-radius:12px;padding:16px 18px 14px;margin-bottom:12px}}
 .arc-head{{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}}
 .arc-addr{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.02rem;font-weight:600;color:#e4e8ec}}
 .arc-addr:hover{{color:#ed6317}}
 .arc-gain{{font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:600;color:#e4483b;border:1.5px solid rgba(228,72,59,0.5);border-radius:4px;padding:1px 8px;white-space:nowrap}}
-.arc-geo{{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:rgba(147,161,173,0.55);margin:2px 0 12px}}
+.arc-geo{{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin:2px 0 12px}}
 .arc-steps{{list-style:none;margin:0 0 12px;display:flex;flex-direction:column;gap:7px}}
 .arc-steps li{{font-size:0.85rem;color:#c9d2da}}
-.arc-date{{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#ed6317;display:block}}
-.arc-ids{{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:rgba(147,161,173,0.45);border-top:1px solid rgba(147,161,173,0.08);padding-top:10px;word-break:break-word}}
+.arc-date{{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:#ed6317;display:block}}
+.arc-ids{{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);border-top:1px solid rgba(147,161,173,0.08);padding-top:10px;word-break:break-word}}
 .ed-empty{{font-size:0.85rem;color:#93a1ad;padding:24px 0}}
 </style>
 </head>
@@ -3069,15 +3069,15 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 {_ssr_nav("/flips", toggle_html=_LANG_TOGGLE_BTN)}
 <div class="container">
   <div style="margin-bottom:8px;">
-    <a href="/flips" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">&#8592; Flip Watch</a>
+    <a href="/flips" style="font-size:0.75rem;color:var(--faint);">&#8592; Flip Watch</a>
   </div>
   <h1 id="ed-heading" style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.4rem;font-weight:600;margin-bottom:6px;">Eviction Flips: weekly editions</h1>
   <p id="ed-desc" style="font-size:0.82rem;color:#93a1ad;margin-bottom:28px;line-height:1.6;">
     The arc this site exists to document: a residential eviction, an LLC purchase, and a markup resale on the same lot. Every step is a public record with its ACRIS document ID. A new edition publishes each week after human review; nothing appears here unreviewed.
   </p>
 {sections_html}
-  <p id="ed-note" style="font-size:0.72rem;color:rgba(147,161,173,0.45);margin-top:24px;line-height:1.6;">
-    An eviction followed by a sale is not by itself wrongdoing. This page reports the public-record pattern, not a conclusion about any owner. <a href="/methodology" style="color:rgba(237,99,23,0.75);">How this is measured &rarr;</a>
+  <p id="ed-note" style="font-size:0.75rem;color:var(--faint);margin-top:24px;line-height:1.6;">
+    An eviction followed by a sale is not by itself wrongdoing. This page reports the public-record pattern, not a conclusion about any owner. <a href="/methodology" style="color:var(--accent);">How this is measured &rarr;</a>
   </p>
 </div>
 {_FOOTER_HTML}
@@ -3119,7 +3119,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     set('ed-heading', s.heading);
     set('ed-desc', s.desc);
     var note = document.getElementById('ed-note');
-    if (note) note.innerHTML = s.note + ' <a href="/methodology" style="color:rgba(237,99,23,0.75);">' + s.how + '</a>';
+    if (note) note.innerHTML = s.note + ' <a href="/methodology" style="color:var(--accent);">' + s.how + '</a>';
     document.querySelectorAll('.arc-line').forEach(function(el) {{
       var t = s[el.dataset.t];
       if (t) el.textContent = fill(t, el.dataset);
@@ -3280,7 +3280,7 @@ nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
-footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:var(--muted)}}
 .footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
 @media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
 .radar-list{{list-style:none;padding:0;margin:0}}
@@ -3288,18 +3288,18 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 .radar-head{{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}}
 .radar-main{{display:flex;flex-direction:column;gap:3px;min-width:0;}}
 .radar-buyer{{font-family:'JetBrains Mono',monospace;font-size:0.9rem;color:#e4e8ec;letter-spacing:0.03em;font-weight:500;}}
-.radar-geo{{font-size:0.76rem;color:rgba(147,161,173,0.7);}}
-.radar-when{{font-size:0.72rem;color:rgba(147,161,173,0.55);margin-top:2px;}}
-.radar-when-label{{color:rgba(147,161,173,0.4);}}
+.radar-geo{{font-size:0.76rem;color:var(--dim);}}
+.radar-when{{font-size:0.75rem;color:var(--faint);margin-top:2px;}}
+.radar-when-label{{color:var(--faint);}}
 .radar-side{{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;text-align:right;}}
 .radar-count{{font-family:'JetBrains Mono',monospace;font-size:1.35rem;font-weight:500;color:#ed6317;line-height:1.1;}}
-.radar-count-label{{font-size:0.62rem;color:rgba(147,161,173,0.5);text-transform:uppercase;letter-spacing:0.06em;margin-top:1px;}}
+.radar-count-label{{font-size:0.75rem;color:var(--faint);text-transform:uppercase;letter-spacing:0.06em;margin-top:1px;}}
 .radar-amount{{font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:#c9d2da;margin-top:8px;}}
 .radar-props{{list-style:none;padding:0;margin:10px 0 0 0;border-left:2px solid rgba(237,99,23,0.25);}}
 .radar-prop{{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:4px 0 4px 12px;}}
 .radar-prop:hover .radar-prop-addr{{color:#ed6317;}}
 .radar-prop-addr{{font-family:'JetBrains Mono',monospace;font-size:0.76rem;color:#93a1ad;}}
-.radar-prop-amt{{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(147,161,173,0.55);flex-shrink:0;}}
+.radar-prop-amt{{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);flex-shrink:0;}}
 .radar-empty{{padding:24px 0;font-size:0.82rem;color:#93a1ad;}}
 </style>
 </head>
@@ -3307,17 +3307,17 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 {_ssr_nav("/radar", toggle_html=_LANG_TOGGLE_BTN)}
 <div class="container">
   <div style="margin-bottom:8px;">
-    <a href="/" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">&#8592; Home</a>
+    <a href="/" style="font-size:0.75rem;color:var(--faint);">&#8592; Home</a>
   </div>
   <h1 id="sr-heading" style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.4rem;font-weight:600;margin-bottom:6px;">Speculation Radar</h1>
   <p id="sr-desc" style="font-size:0.82rem;color:#93a1ad;margin-bottom:8px;line-height:1.6;">
     One LLC taking the deed on {MIN_BUILDINGS} or more buildings in the same ZIP within {RADAR_WINDOW_DAYS} days. Concentrated buying like that is a position being assembled, not a one-off purchase, and it usually shows up months before anything changes on the block. Public records only.
   </p>
-  <p id="sr-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(147,161,173,0.55);margin-bottom:28px;">{n} buying runs detected across NYC in the past {RADAR_WINDOW_DAYS} days.</p>
+  <p id="sr-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-bottom:28px;">{n} buying runs detected across NYC in the past {RADAR_WINDOW_DAYS} days.</p>
   <ul class="radar-list">
 {rows_html}  </ul>
-  <p id="sr-note" style="font-size:0.72rem;color:rgba(147,161,173,0.45);margin-top:24px;line-height:1.6;">
-    Buying several buildings is not wrongdoing. This page reports the public-record pattern, not a conclusion about any buyer. <a href="/methodology" style="color:rgba(237,99,23,0.75);">How this is measured &rarr;</a>
+  <p id="sr-note" style="font-size:0.75rem;color:var(--faint);margin-top:24px;line-height:1.6;">
+    Buying several buildings is not wrongdoing. This page reports the public-record pattern, not a conclusion about any buyer. <a href="/methodology" style="color:var(--accent);">How this is measured &rarr;</a>
   </p>
 </div>
 {_FOOTER_HTML}
@@ -3351,7 +3351,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     set('sr-sub', s.sub);
     var d = document.getElementById('sr-desc'); if (d) d.textContent = s.desc;
     var note = document.getElementById('sr-note');
-    if (note) note.innerHTML = s.note + ' <a href="/methodology" style="color:rgba(237,99,23,0.75);">' + (l === 'es' ? 'C\\u00f3mo se mide \\u2192' : 'How this is measured \\u2192') + '</a>';
+    if (note) note.innerHTML = s.note + ' <a href="/methodology" style="color:var(--accent);">' + (l === 'es' ? 'C\\u00f3mo se mide \\u2192' : 'How this is measured \\u2192') + '</a>';
     document.querySelectorAll('.radar-when-label').forEach(function(el) {{ el.textContent = s.deeds; }});
     document.querySelectorAll('.radar-count-label').forEach(function(el) {{ el.textContent = s.buildings; }});
     var btn = document.getElementById('lang-toggle');
@@ -3511,32 +3511,32 @@ nav{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}
 .nav-inner>div::-webkit-scrollbar{display:none}
 .container{max-width:860px;margin:0 auto;padding:32px 20px 80px}
 a{color:inherit;text-decoration:none}
-h2{font-size:0.78rem;font-weight:600;color:rgba(147,161,173,0.75);text-transform:uppercase;letter-spacing:0.1em;margin:32px 0 4px}
+h2{font-size:0.78rem;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:0.1em;margin:32px 0 4px}
 .tw-list{list-style:none;padding:0;margin:0}
 .tw-row{border-bottom:1px solid rgba(147,161,173,0.07);cursor:pointer}
 .tw-row:hover{background:rgba(147,161,173,0.04)}
 .tw-row a{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 0}
 .tw-name{font-family:'JetBrains Mono',monospace;font-size:0.88rem;color:#e4e8ec;font-weight:500}
 .tw-row:hover .tw-name{color:#ed6317}
-.tw-sub{font-family:'DM Sans',sans-serif;font-size:0.76rem;color:rgba(147,161,173,0.7);font-weight:400;margin-left:6px}
+.tw-sub{font-family:'DM Sans',sans-serif;font-size:0.76rem;color:var(--dim);font-weight:400;margin-left:6px}
 .tw-side{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0}
 .tw-delta{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:500;line-height:1.1}
-.tw-score{font-size:0.68rem;color:rgba(147,161,173,0.55)}
+.tw-score{font-size:0.75rem;color:var(--faint)}
 .tw-empty{padding:18px 0;font-size:0.8rem;color:#93a1ad}
 .tw-stats{display:flex;flex-wrap:wrap;gap:10px 36px;margin-top:12px;padding:12px 2px;border-top:1px solid rgba(147,161,173,0.22);border-bottom:1px solid rgba(147,161,173,0.1)}
 .tw-stat{display:flex;align-items:baseline;gap:8px}
 .tw-stat-n{font-family:'JetBrains Mono',monospace;font-size:1.25rem;font-weight:600;color:#eef2f5;line-height:1}
-.tw-stat-l{font-size:0.68rem;color:#93a1ad;text-transform:uppercase;letter-spacing:0.06em}
+.tw-stat-l{font-size:0.75rem;color:#93a1ad;text-transform:uppercase;letter-spacing:0.06em}
 .wk-nav{display:flex;justify-content:space-between;gap:12px;margin-top:36px;font-family:'JetBrains Mono',monospace;font-size:0.75rem}
-.wk-nav a{color:rgba(237,99,23,0.8)}
+.wk-nav a{color:var(--accent)}
 .wk-idx{list-style:none;padding:0;margin:0}
 .wk-idx-row{border-bottom:1px solid rgba(147,161,173,0.07)}
 .wk-idx-row a{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:14px 0}
 .wk-idx-row:hover{background:rgba(147,161,173,0.04)}
 .wk-idx-range{font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:#e4e8ec}
 .wk-idx-row:hover .wk-idx-range{color:#ed6317}
-.wk-idx-top{font-size:0.76rem;color:rgba(147,161,173,0.7);text-align:right}
-footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}
+.wk-idx-top{font-size:0.76rem;color:var(--dim);text-align:right}
+footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:var(--muted)}
 .footer-links{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
 @media(max-width:767px){.container{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}"""
 
@@ -3660,7 +3660,7 @@ def week_edition_page(slug: str, db: Session = Depends(get_db)):
 {_week_nav_html()}
 <div class="container">
   <div style="margin-bottom:8px;">
-    <a href="/this-week/archive" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">&#8592; Weekly review archive</a>
+    <a href="/this-week/archive" style="font-size:0.75rem;color:var(--faint);">&#8592; Weekly review archive</a>
   </div>
   <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;font-weight:600;margin-bottom:6px;">NYC displacement, week of {e(range_label)}</h1>
   <p style="font-size:0.82rem;color:#93a1ad;margin-bottom:8px;line-height:1.6;">
@@ -3668,18 +3668,18 @@ def week_edition_page(slug: str, db: Session = Depends(get_db)):
   </p>
 
   <h2>Score movers</h2>
-  <p style="font-size:0.75rem;color:rgba(147,161,173,0.6);margin-bottom:4px;">Largest displacement-pressure increases over the week.</p>
+  <p style="font-size:0.75rem;color:var(--dim);margin-bottom:4px;">Largest displacement-pressure increases over the week.</p>
   <ul class="tw-list">
 {_movers_rows_html(movers, e)}  </ul>
 
   <h2>New on the record</h2>
-  <p style="font-size:0.75rem;color:rgba(147,161,173,0.6);">Citywide filings dated within this week.</p>
+  <p style="font-size:0.75rem;color:var(--dim);">Citywide filings dated within this week.</p>
   <div class="tw-stats">{_stat_cells_html(counts)}</div>
 
   {wk_nav}
 
-  <p style="font-size:0.72rem;color:rgba(147,161,173,0.45);margin-top:28px;line-height:1.6;">
-    Counts reflect records published by NYC agencies, which can lag the events they describe. Scores are risk indicators, not claims of wrongdoing. <a href="/methodology" style="color:rgba(237,99,23,0.75);">How scores work &rarr;</a>
+  <p style="font-size:0.75rem;color:var(--faint);margin-top:28px;line-height:1.6;">
+    Counts reflect records published by NYC agencies, which can lag the events they describe. Scores are risk indicators, not claims of wrongdoing. <a href="/methodology" style="color:var(--accent);">How scores work &rarr;</a>
   </p>
 </div>
 {_FOOTER_HTML}
@@ -3759,7 +3759,7 @@ def week_archive_index(db: Session = Depends(get_db)):
 {_week_nav_html()}
 <div class="container">
   <div style="margin-bottom:8px;">
-    <a href="/this-week" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">&#8592; This week</a>
+    <a href="/this-week" style="font-size:0.75rem;color:var(--faint);">&#8592; This week</a>
   </div>
   <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;font-weight:600;margin-bottom:6px;">Weekly review archive</h1>
   <p style="font-size:0.82rem;color:#93a1ad;margin-bottom:20px;line-height:1.6;">
@@ -3954,23 +3954,23 @@ nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
-h2{{font-size:0.78rem;font-weight:600;color:rgba(147,161,173,0.75);text-transform:uppercase;letter-spacing:0.1em;margin:32px 0 4px}}
+h2{{font-size:0.78rem;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:0.1em;margin:32px 0 4px}}
 .tw-list{{list-style:none;padding:0;margin:0}}
 .tw-row{{border-bottom:1px solid rgba(147,161,173,0.07);cursor:pointer}}
 .tw-row:hover{{background:rgba(147,161,173,0.04)}}
 .tw-row a{{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 0}}
 .tw-name{{font-family:'JetBrains Mono',monospace;font-size:0.88rem;color:#e4e8ec;font-weight:500}}
 .tw-row:hover .tw-name{{color:#ed6317}}
-.tw-sub{{font-family:'DM Sans',sans-serif;font-size:0.76rem;color:rgba(147,161,173,0.7);font-weight:400;margin-left:6px}}
+.tw-sub{{font-family:'DM Sans',sans-serif;font-size:0.76rem;color:var(--dim);font-weight:400;margin-left:6px}}
 .tw-side{{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0}}
 .tw-delta{{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:500;line-height:1.1}}
-.tw-score{{font-size:0.68rem;color:rgba(147,161,173,0.55)}}
+.tw-score{{font-size:0.75rem;color:var(--faint)}}
 .tw-empty{{padding:18px 0;font-size:0.8rem;color:#93a1ad}}
 .tw-stats{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px}}
 .tw-stat{{background:rgba(27,37,52,0.5);border:1px solid rgba(147,161,173,0.1);border-radius:10px;padding:16px}}
 .tw-stat-n{{font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:600;color:#eef2f5}}
-.tw-stat-l{{font-size:0.72rem;color:#93a1ad;margin-top:4px}}
-footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
+.tw-stat-l{{font-size:0.75rem;color:#93a1ad;margin-top:4px}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:var(--muted)}}
 .footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
 @media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
 </style>
@@ -3979,30 +3979,30 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 {_ssr_nav("/this-week")}
 <div class="container">
   <div style="margin-bottom:8px;">
-    <a href="/" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">&#8592; Home</a>
+    <a href="/" style="font-size:0.75rem;color:var(--faint);">&#8592; Home</a>
   </div>
   <h1 id="tw-heading" style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;font-weight:600;margin-bottom:6px;">This week in NYC displacement</h1>
-  <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(147,161,173,0.55);margin-bottom:4px;">{e(range_label)}</p>
+  <p style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-bottom:4px;">{e(range_label)}</p>
   <p id="tw-intro" style="font-size:0.82rem;color:#93a1ad;margin-bottom:8px;line-height:1.6;">
-    <span id="tw-intro-text">The week's movement across all NYC neighborhoods, from the same public records that drive the map. This page always shows the current week.</span> <a id="tw-archive-link" href="/this-week/archive" style="color:rgba(237,99,23,0.8);">Past weeks &rarr;</a>
+    <span id="tw-intro-text">The week's movement across all NYC neighborhoods, from the same public records that drive the map. This page always shows the current week.</span> <a id="tw-archive-link" href="/this-week/archive" style="color:var(--accent);">Past weeks &rarr;</a>
   </p>
 
   <h2 id="tw-movers-h">Score movers</h2>
-  <p id="tw-movers-sub" style="font-size:0.75rem;color:rgba(147,161,173,0.6);margin-bottom:4px;">Largest displacement-pressure increases over the past 7 days.</p>
+  <p id="tw-movers-sub" style="font-size:0.75rem;color:var(--dim);margin-bottom:4px;">Largest displacement-pressure increases over the past 7 days.</p>
   <ul class="tw-list">
 {movers_html}  </ul>
 
   <h2 id="tw-records-h">New on the record</h2>
-  <p id="tw-records-sub" style="font-size:0.75rem;color:rgba(147,161,173,0.6);">Citywide filings dated within the past 7 days.</p>
+  <p id="tw-records-sub" style="font-size:0.75rem;color:var(--dim);">Citywide filings dated within the past 7 days.</p>
   <div class="tw-stats">{stat_cells}</div>
 
   <h2 id="tw-flips-h">Newest flips</h2>
-  <p style="font-size:0.75rem;color:rgba(147,161,173,0.6);margin-bottom:4px;">LLC bought, then filed to renovate. <a href="/flips" style="color:rgba(237,99,23,0.75);">Full feed &rarr;</a></p>
+  <p style="font-size:0.75rem;color:var(--dim);margin-bottom:4px;">LLC bought, then filed to renovate. <a href="/flips" style="color:var(--accent);">Full feed &rarr;</a></p>
   <ul class="tw-list">
 {flips_html}  </ul>
 
-  <p style="font-size:0.72rem;color:rgba(147,161,173,0.45);margin-top:28px;line-height:1.6;">
-    <span id="tw-note">Counts reflect records published by NYC agencies, which can lag the events they describe. Scores are risk indicators, not claims of wrongdoing.</span> <a id="tw-meth-link" href="/methodology" style="color:rgba(237,99,23,0.75);">How scores work &rarr;</a>
+  <p style="font-size:0.75rem;color:var(--faint);margin-top:28px;line-height:1.6;">
+    <span id="tw-note">Counts reflect records published by NYC agencies, which can lag the events they describe. Scores are risk indicators, not claims of wrongdoing.</span> <a id="tw-meth-link" href="/methodology" style="color:var(--accent);">How scores work &rarr;</a>
   </p>
 </div>
 {_FOOTER_HTML}
@@ -4290,41 +4290,41 @@ nav{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0;position:stick
 .nav-links{display:flex;gap:18px;font-size:0.82rem;color:#93a1ad;flex-wrap:wrap}
 .nav-links a:hover{color:#ed6317}
 .wrap{max-width:900px;margin:0 auto;padding:40px 20px 72px}
-.eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.18em;color:#ed6317;text-transform:uppercase;margin-bottom:14px}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.75rem;letter-spacing:0.18em;color:#ed6317;text-transform:uppercase;margin-bottom:14px}
 h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(2rem,5.4vw,3.1rem);line-height:1.04;letter-spacing:-0.02em;margin-bottom:14px}
 .lede{font-size:1.05rem;color:#93a1ad;max-width:620px;line-height:1.5}
 .stats{display:flex;flex-wrap:wrap;gap:10px 40px;margin:34px 0 8px;padding:14px 2px;border-top:1px solid rgba(147,161,173,0.22);border-bottom:1px solid rgba(147,161,173,0.1)}
 .stat{display:flex;align-items:baseline;gap:8px}
 .stat-num{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:1.35rem;line-height:1;color:#eef2f5}
-.stat-unit{font-size:0.8rem;color:#677686;font-weight:600}
-.stat-label{font-size:0.68rem;color:#93a1ad;text-transform:uppercase;letter-spacing:0.06em;line-height:1.3}
+.stat-unit{font-size:0.8rem;color:var(--muted);font-weight:600}
+.stat-label{font-size:0.75rem;color:#93a1ad;text-transform:uppercase;letter-spacing:0.06em;line-height:1.3}
 @media(max-width:640px){.stats{gap:10px 24px}}
 .section{margin-top:44px}
 .sec-h{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:1.3rem;letter-spacing:-0.01em;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-.sec-more{font-family:'JetBrains Mono',monospace;font-size:0.74rem;color:#ed6317;white-space:nowrap}
+.sec-more{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:#ed6317;white-space:nowrap}
 .sec-more:hover{text-decoration:underline}
-.sec-sub{font-size:0.86rem;color:#677686;margin-top:5px;margin-bottom:14px;max-width:640px;line-height:1.45}
+.sec-sub{font-size:0.86rem;color:var(--muted);margin-top:5px;margin-bottom:14px;max-width:640px;line-height:1.45}
 ul{list-style:none}
 .arc{border-bottom:1px solid rgba(147,161,173,0.08);cursor:pointer}
 .arc:hover{background:rgba(147,161,173,0.04)}
 .arc a{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 0}
 .arc-addr{font-family:'JetBrains Mono',monospace;font-size:0.9rem;color:#e4e8ec;font-weight:600;letter-spacing:0.02em}
 .arc:hover .arc-addr{color:#ed6317}
-.arc-sub{font-size:0.74rem;color:#677686;margin-top:2px}
+.arc-sub{font-size:0.75rem;color:var(--muted);margin-top:2px}
 .arc-line{font-size:0.78rem;color:#93a1ad;margin-top:5px;line-height:1.4}
 .arc-gain{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.35rem;color:#e4483b;white-space:nowrap}
 .row{border-bottom:1px solid rgba(147,161,173,0.08);cursor:pointer}
 .row:hover{background:rgba(147,161,173,0.04)}
 .row a{display:flex;align-items:center;gap:14px;padding:13px 0}
-.rank{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:#677686;min-width:26px}
+.rank{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--muted);min-width:26px}
 .row-name{flex:1;min-width:0;font-size:0.92rem;color:#e4e8ec;font-weight:500}
 .row:hover .row-name{color:#ed6317}
-.row-sub{display:block;font-size:0.74rem;color:#677686;font-weight:400;margin-top:2px}
+.row-sub{display:block;font-size:0.75rem;color:var(--muted);font-weight:400;margin-top:2px}
 .row-val{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.15rem;display:flex;flex-direction:column;align-items:flex-end;line-height:1}
-.row-tier{font-family:'DM Sans',sans-serif;font-size:0.62rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-top:4px;opacity:0.85}
-.row-arrow{color:#46525f;font-size:1.1rem}
+.row-tier{font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-top:4px;opacity:0.85}
+.row-arrow{color:var(--dim);font-size:1.1rem}
 .row:hover .row-arrow{color:#ed6317}
-.empty{padding:16px 0;color:#677686;font-size:0.86rem}
+.empty{padding:16px 0;color:var(--muted);font-size:0.86rem}
 .cta{margin-top:52px;border:1px solid rgba(237,99,23,0.25);border-radius:14px;padding:26px 22px;background:rgba(237,99,23,0.04);text-align:center}
 .cta-h{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:1.2rem;margin-bottom:6px}
 .cta-sub{font-size:0.88rem;color:#93a1ad;margin-bottom:16px}
@@ -4334,9 +4334,9 @@ ul{list-style:none}
 .btn-primary:hover{background:#fb8c3a}
 .btn-secondary{border:1px solid rgba(147,161,173,0.25);color:#e4e8ec}
 .btn-secondary:hover{border-color:#ed6317;color:#ed6317}
-.note{margin-top:26px;font-size:0.72rem;color:#46525f;line-height:1.5;text-align:center}
-.note a{color:rgba(237,99,23,0.75)}
-footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:40px;font-size:12px;color:#677686}
+.note{margin-top:26px;font-size:0.78rem;color:var(--faint);line-height:1.5;text-align:center}
+.note a{color:var(--accent)}
+footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:40px;font-size:12px;color:var(--muted)}
 .footer-links{display:flex;justify-content:center;gap:20px;flex-wrap:wrap}
 </style>
 """
@@ -4635,10 +4635,10 @@ def evictions_page(lang: str = "en", db: Session = Depends(get_db)):
                          f'height="{bh:.1f}" fill="{fill}"/>')
             parts.append(f'<text x="{x + bar_w / 2:.1f}" y="{y - 5:.1f}" font-size="9.5" '
                          f'text-anchor="middle" font-family="JetBrains Mono,monospace" '
-                         f'fill="rgba(147,161,173,0.75)">{c:,}</text>')
+                         f'fill="#93a1ad">{c:,}</text>')
             parts.append(f'<text x="{x + bar_w / 2:.1f}" y="{h - 8:.1f}" font-size="9.5" '
                          f'text-anchor="middle" font-family="JetBrains Mono,monospace" '
-                         f'fill="rgba(147,161,173,0.45)">{_MONTHS[r.m.month]}</text>')
+                         f'fill="#93a1ad">{_MONTHS[r.m.month]}</text>')
         base_y = pad_t + plot_h
         parts.append(f'<line x1="{pad_l}" y1="{base_y:.1f}" x2="{pad_l + plot_w:.1f}" '
                      f'y2="{base_y:.1f}" stroke="rgba(147,161,173,0.25)" stroke-width="1"/>')
@@ -4665,7 +4665,7 @@ def evictions_page(lang: str = "en", db: Session = Depends(get_db)):
                else "https://pulsecities.com/evictions?lang=es")
     nav_toggle = (
         f'<a href="{alt_url}" id="lang-toggle" aria-label="{L["toggle_aria"]}" '
-        f'style="font-size:0.72rem;color:rgba(147,161,173,0.5);">{L["toggle"]}</a>'
+        f'style="font-size:0.75rem;color:var(--faint);">{L["toggle"]}</a>'
     )
 
     title = "NYC evictions tracker: marshal evictions by neighborhood | PulseCities"
@@ -4744,37 +4744,37 @@ nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:860px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
-footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:var(--muted)}}
 .footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
 @media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
-.eyebrow{{font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.18em;color:#ed6317;text-transform:uppercase;margin-bottom:10px}}
+.eyebrow{{font-family:'JetBrains Mono',monospace;font-size:0.75rem;letter-spacing:0.18em;color:#ed6317;text-transform:uppercase;margin-bottom:10px}}
 h1{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;font-weight:600;margin-bottom:6px}}
 h2{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.05rem;font-weight:600;margin:34px 0 4px}}
 .sub{{font-size:0.82rem;color:#93a1ad;line-height:1.6;max-width:640px}}
 .stats{{display:flex;flex-wrap:wrap;gap:10px 40px;margin:26px 0 4px;padding:14px 2px;border-top:1px solid rgba(147,161,173,0.22);border-bottom:1px solid rgba(147,161,173,0.1)}}
 .stat{{display:flex;align-items:baseline;gap:8px}}
 .stat-num{{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:1.35rem;line-height:1;color:#eef2f5}}
-.stat-label{{font-size:0.68rem;color:#93a1ad;text-transform:uppercase;letter-spacing:0.06em;line-height:1.3}}
-.mono-note{{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(147,161,173,0.55);margin-top:6px}}
-.section-sub{{font-size:0.76rem;color:rgba(147,161,173,0.65);margin-bottom:10px}}
+.stat-label{{font-size:0.75rem;color:#93a1ad;text-transform:uppercase;letter-spacing:0.06em;line-height:1.3}}
+.mono-note{{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-top:6px}}
+.section-sub{{font-size:0.76rem;color:var(--dim);margin-bottom:10px}}
 .ev-list{{list-style:none;padding:0;margin:0}}
 .ev-row{{border-bottom:1px solid rgba(147,161,173,0.07)}}
 .ev-row a,.ev-static{{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:12px 0}}
 .ev-row a:hover .ev-addr{{color:#ed6317}}
 .ev-addr{{font-family:'JetBrains Mono',monospace;font-size:0.86rem;font-weight:500;color:#e4e8ec;letter-spacing:0.02em}}
-.ev-geo{{font-size:0.74rem;color:rgba(147,161,173,0.7);margin-top:2px}}
-.ev-when{{font-family:'JetBrains Mono',monospace;font-size:0.74rem;color:#93a1ad;flex-shrink:0}}
+.ev-geo{{font-size:0.75rem;color:var(--dim);margin-top:2px}}
+.ev-when{{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:#93a1ad;flex-shrink:0}}
 .table-wrap{{overflow-x:auto}}
 table{{width:100%;border-collapse:collapse;font-size:0.82rem}}
-th{{text-align:left;font-family:'JetBrains Mono',monospace;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.08em;color:rgba(147,161,173,0.6);font-weight:500;padding:8px 12px 8px 0;border-bottom:1px solid rgba(147,161,173,0.22)}}
+th{{text-align:left;font-family:'JetBrains Mono',monospace;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--dim);font-weight:500;padding:8px 12px 8px 0;border-bottom:1px solid rgba(147,161,173,0.22)}}
 td{{padding:9px 12px 9px 0;border-bottom:1px solid rgba(147,161,173,0.07)}}
 td a{{color:#6fb1d8}}
 td a:hover{{text-decoration:underline}}
 th.num,td.num{{text-align:right;font-family:'JetBrains Mono',monospace}}
 .faq-item h3{{font-size:0.88rem;font-weight:600;margin:18px 0 4px}}
 .faq-item p{{font-size:0.8rem;color:#93a1ad;line-height:1.6;max-width:640px}}
-.note{{font-size:0.72rem;color:rgba(147,161,173,0.45);margin-top:26px;line-height:1.6}}
-.note a,.cross a{{color:rgba(237,99,23,0.75)}}
+.note{{font-size:0.75rem;color:var(--faint);margin-top:26px;line-height:1.6}}
+.note a,.cross a{{color:var(--accent)}}
 .cross{{font-size:0.82rem;color:#93a1ad;line-height:1.6;max-width:640px}}
 </style>
 </head>
@@ -4782,7 +4782,7 @@ th.num,td.num{{text-align:right;font-family:'JetBrains Mono',monospace}}
 {_ssr_nav("/evictions", lang=lang, toggle_html=nav_toggle)}
 <div class="container">
   <div style="margin-bottom:8px;">
-    <a href="/" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">{L["home"]}</a>
+    <a href="/" style="font-size:0.75rem;color:var(--faint);">{L["home"]}</a>
   </div>
   <div class="eyebrow">{L["kicker"]}</div>
   <h1 id="ev-heading">{esc(L["heading"])}</h1>
@@ -4933,10 +4933,10 @@ nav{{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}}
 .nav-inner>div::-webkit-scrollbar{{display:none}}
 .container{{max-width:720px;margin:0 auto;padding:32px 20px 80px}}
 a{{color:inherit;text-decoration:none}}
-footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}}
+footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:var(--muted)}}
 .footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
 @media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
-.eyebrow{{font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.18em;color:#ed6317;text-transform:uppercase;margin-bottom:10px}}
+.eyebrow{{font-family:'JetBrains Mono',monospace;font-size:0.75rem;letter-spacing:0.18em;color:#ed6317;text-transform:uppercase;margin-bottom:10px}}
 h1{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.7rem;font-weight:600;margin-bottom:8px}}
 h2{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.05rem;font-weight:600;margin:34px 0 6px}}
 p{{font-size:0.86rem;color:#93a1ad;line-height:1.65;max-width:640px}}
@@ -4944,27 +4944,27 @@ p a,.body-link{{color:#6fb1d8}}
 p a:hover{{text-decoration:underline}}
 .search-row{{display:flex;gap:10px;margin:22px 0 6px;max-width:560px}}
 .search-row input{{flex:1;font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:#e4e8ec;background:#16202d;border:1px solid rgba(147,161,173,0.2);border-radius:8px;padding:12px 14px;min-width:0}}
-.search-row input::placeholder{{color:rgba(147,161,173,0.5)}}
+.search-row input::placeholder{{color:var(--faint)}}
 .search-row button{{font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;color:#111823;background:#ed6317;border:none;border-radius:8px;padding:12px 22px;cursor:pointer}}
 .search-row button:hover{{background:#f0854b}}
-.search-hint{{font-size:0.74rem;color:rgba(147,161,173,0.55);margin-bottom:4px}}
+.search-hint{{font-size:0.75rem;color:var(--faint);margin-bottom:4px}}
 .buyer-list{{list-style:none;padding:0;margin:8px 0 0}}
 .buyer-row{{border-bottom:1px solid rgba(147,161,173,0.07)}}
 .buyer-row a{{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:11px 0}}
 .buyer-name{{font-family:'JetBrains Mono',monospace;font-size:0.85rem;font-weight:500;color:#e4e8ec}}
 .buyer-row a:hover .buyer-name{{color:#ed6317}}
-.buyer-count{{font-family:'JetBrains Mono',monospace;font-size:0.74rem;color:#93a1ad;flex-shrink:0}}
+.buyer-count{{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:#93a1ad;flex-shrink:0}}
 .faq-item h3{{font-size:0.9rem;font-weight:600;margin:20px 0 4px}}
 .faq-item p{{font-size:0.82rem}}
-.note{{font-size:0.72rem;color:rgba(147,161,173,0.45);margin-top:26px;line-height:1.6}}
-.note a{{color:rgba(237,99,23,0.75)}}
+.note{{font-size:0.75rem;color:var(--faint);margin-top:26px;line-height:1.6}}
+.note a{{color:var(--accent)}}
 </style>
 </head>
 <body>
 {_ssr_nav("", toggle_html="")}
 <div class="container">
   <div style="margin-bottom:8px;">
-    <a href="/" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">&#8592; Home</a>
+    <a href="/" style="font-size:0.75rem;color:var(--faint);">&#8592; Home</a>
   </div>
   <div class="eyebrow">NYC ownership records</div>
   <h1>Who owns my building?</h1>
@@ -5046,34 +5046,34 @@ nav{border-bottom:1px solid rgba(147,161,173,0.08);padding:12px 0}
 .nav-inner>div::-webkit-scrollbar{display:none}
 .container{max-width:860px;margin:0 auto;padding:32px 20px 80px}
 a{color:inherit;text-decoration:none}
-footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:#677686}
+footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:var(--muted)}
 .footer-links{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
 @media(max-width:767px){.container{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}
-.eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.18em;color:#ed6317;text-transform:uppercase;margin-bottom:10px}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.75rem;letter-spacing:0.18em;color:#ed6317;text-transform:uppercase;margin-bottom:10px}
 h1{font-family:'JetBrains Mono',monospace;font-size:1.35rem;font-weight:500;letter-spacing:0.03em;margin-bottom:6px}
 h2{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.05rem;font-weight:600;margin:34px 0 4px}
 .sub{font-size:0.82rem;color:#93a1ad;line-height:1.6;max-width:640px}
 .stats{display:flex;flex-wrap:wrap;gap:10px 40px;margin:26px 0 4px;padding:14px 2px;border-top:1px solid rgba(147,161,173,0.22);border-bottom:1px solid rgba(147,161,173,0.1)}
 .stat{display:flex;align-items:baseline;gap:8px}
 .stat-num{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:1.35rem;line-height:1;color:#eef2f5}
-.stat-label{font-size:0.68rem;color:#93a1ad;text-transform:uppercase;letter-spacing:0.06em;line-height:1.3}
-.section-sub{font-size:0.76rem;color:rgba(147,161,173,0.65);margin-bottom:10px}
+.stat-label{font-size:0.75rem;color:#93a1ad;text-transform:uppercase;letter-spacing:0.06em;line-height:1.3}
+.section-sub{font-size:0.76rem;color:var(--dim);margin-bottom:10px}
 .rec-list{list-style:none;padding:0;margin:0}
 .rec-row{border-bottom:1px solid rgba(147,161,173,0.07)}
 .rec-row a,.rec-static{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:12px 0}
 .rec-row a:hover .rec-addr{color:#ed6317}
 .rec-addr{font-family:'JetBrains Mono',monospace;font-size:0.86rem;font-weight:500;color:#e4e8ec;letter-spacing:0.02em;overflow-wrap:anywhere}
-.rec-geo{font-size:0.74rem;color:rgba(147,161,173,0.7);margin-top:2px}
+.rec-geo{font-size:0.75rem;color:var(--dim);margin-top:2px}
 .rec-side{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;text-align:right}
 .rec-amt{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:#c9d2da}
-.rec-date{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(147,161,173,0.55);margin-top:2px}
+.rec-date{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-top:2px}
 .cross{font-size:0.82rem;color:#93a1ad;line-height:1.6;max-width:640px}
 .faq-item h3{font-size:0.9rem;font-weight:600;margin:20px 0 4px;color:#e4e8ec}
 .faq-item p{font-size:0.82rem;color:#93a1ad;line-height:1.6;max-width:640px}
-.cross a{color:rgba(237,99,23,0.75)}
-.note{font-size:0.72rem;color:rgba(147,161,173,0.45);margin-top:26px;line-height:1.6}
-.note a{color:rgba(237,99,23,0.75)}
-.mono-note{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(147,161,173,0.55);margin-top:6px}
+.cross a{color:var(--accent)}
+.note{font-size:0.75rem;color:var(--faint);margin-top:26px;line-height:1.6}
+.note a{color:var(--accent)}
+.mono-note{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-top:6px}
 """
 
 
@@ -5153,7 +5153,7 @@ def llc_directory(db: Session = Depends(get_db)):
 {_ssr_nav("", toggle_html="")}
 <div class="container">
   <div style="margin-bottom:8px;">
-    <a href="/" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">&#8592; Home</a>
+    <a href="/" style="font-size:0.75rem;color:var(--faint);">&#8592; Home</a>
   </div>
   <div class="eyebrow">NYC deed record</div>
   <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.5rem;letter-spacing:0;font-weight:600;">The LLC buyers</h1>
@@ -5306,7 +5306,7 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
 <body>
 {_ssr_nav("", toggle_html="")}
 <div class="container">
-  <p style="margin-bottom:8px;font-size:0.75rem;color:rgba(147,161,173,0.5);"><a href="/llc">&#8592; All LLC buyers</a></p>
+  <p style="margin-bottom:8px;font-size:0.75rem;color:var(--faint);"><a href="/llc">&#8592; All LLC buyers</a></p>
   <div class="eyebrow">NYC deed record</div>
   <h1>{esc(name)}</h1>
   <p class="sub">Every entry below is a recorded deed naming this entity, from ACRIS public records. The deed record here begins in 2025.</p>
@@ -5421,7 +5421,7 @@ def rent_stabilized_page(db: Session = Depends(get_db)):
 {_ssr_nav("", toggle_html="")}
 <div class="container" style="max-width:720px;">
   <div style="margin-bottom:8px;">
-    <a href="/" style="font-size:0.75rem;color:rgba(147,161,173,0.5);">&#8592; Home</a>
+    <a href="/" style="font-size:0.75rem;color:var(--faint);">&#8592; Home</a>
   </div>
   <div class="eyebrow">NYC housing records</div>
   <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.7rem;letter-spacing:0;font-weight:600;">Is my building rent stabilized?</h1>
@@ -5430,7 +5430,7 @@ def rent_stabilized_page(db: Session = Depends(get_db)):
     <input type="text" name="q" placeholder="Enter an address, ZIP, or neighborhood" aria-label="Search an address, ZIP, or neighborhood" style="flex:1;font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:#e4e8ec;background:#16202d;border:1px solid rgba(147,161,173,0.2);border-radius:8px;padding:12px 14px;min-width:0;">
     <button type="submit" style="font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;color:#111823;background:#ed6317;border:none;border-radius:8px;padding:12px 22px;cursor:pointer;">Search</button>
   </form>
-  <p style="font-size:0.74rem;color:rgba(147,161,173,0.55);margin-bottom:4px;">Free, no signup. Public records only</p>
+  <p style="font-size:0.75rem;color:var(--faint);margin-bottom:4px;">Free, no signup. Public records only</p>
 
   <h2>The definitive answer: your rent history</h2>
   <p class="sub" style="font-size:0.86rem;">New York State keeps the registration record for every stabilized apartment. Request your unit's rent history free through the <a href="https://portal.hcr.ny.gov/" target="_blank" rel="noopener noreferrer" style="color:#6fb1d8;">Ask HCR portal</a>, run by <a href="https://hcr.ny.gov/" target="_blank" rel="noopener noreferrer" style="color:#6fb1d8;">NYS Homes and Community Renewal</a>. It shows every registered rent for your apartment, which answers the question and often more.</p>
