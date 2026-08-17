@@ -235,7 +235,7 @@ def zip_brief(zip_code: str, db: Session = Depends(get_db)):
 
     if not row:
         return _error_page(404, "No brief for this ZIP code",
-                           "PulseCities tracks 178 residential NYC ZIP codes. This one is not among them.")
+                           "PulseCities tracks 177 residential NYC ZIP codes. This one is not among them.")
 
     name       = row.name or zip_code
     score      = float(row.score) if row.score is not None else None
