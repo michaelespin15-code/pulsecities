@@ -340,10 +340,22 @@ class TestCanonicalTierBands:
             assert legacy not in app, f"legacy tier threshold '{legacy}' is back in app.html"
 
     def test_og_images_use_canonical_thresholds(self):
+        """The card must not carry its own copy of the bands.
+
+        This used to assert the literal "score >= 85" was present, which was the
+        right check while every module hand-wrote its thresholds. The bands now
+        live in scoring.tiers and og_images imports them, so the literal being
+        absent is the passing state; requiring it would forbid the fix. What is
+        still worth asserting is that no threshold is written here at all, and
+        the agreement itself is checked in tests/test_tier_bands.py.
+        """
         og = (Path(__file__).parent.parent / "api" / "routes" / "og_images.py").read_text()
         for legacy in ("score >= 70", "score >= 55", "score >= 35"):
             assert legacy not in og, f"legacy tier threshold '{legacy}' in og_images.py"
-        assert "score >= 85" in og
+        assert "from scoring.tiers import" in og, \
+            "og_images.py no longer imports the canonical bands"
+        assert "score >= 85" not in og, \
+            "og_images.py hardcodes a tier band again instead of using scoring.tiers"
 
     def test_canonical_thresholds_present(self):
         app = self._app()

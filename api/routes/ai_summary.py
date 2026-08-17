@@ -31,6 +31,7 @@ from sqlalchemy.orm import Session
 
 from api.ratelimit import per_worker
 from models.database import get_db
+from scoring.tiers import tier
 from models.neighborhoods import Neighborhood
 from models.scores import DisplacementScore
 from api.routes.neighborhoods import _fetch_raw_counts, _borough_from_zip, _SIGNAL_LABELS
@@ -61,21 +62,10 @@ _SYSTEM_PROMPT = (
     "no bullet points, no closing question."
 )
 
-# Bands mirror the map legend and weekly digest (the canonical thresholds) so the
-# summary's tier word never contradicts the color a reader sees on the map.
-_TIERS = [
-    (85, "Critical"),
-    (67, "High"),
-    (34, "Moderate"),
-    (0, "Low"),
-]
-
-
+# Bands come from scoring.tiers so the summary's tier word can never contradict
+# the colour a reader sees on the map.
 def _tier(score: float) -> str:
-    for threshold, label in _TIERS:
-        if score >= threshold:
-            return label
-    return "Low"
+    return tier(score)
 
 
 # --- caching -----------------------------------------------------------------

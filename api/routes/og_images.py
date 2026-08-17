@@ -21,6 +21,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from models.database import get_db
+from scoring.tiers import floor_for, tier
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["og-images"])
@@ -41,20 +42,22 @@ _MUTED  = (103, 118, 134)
 _DIM    = (20, 32, 56)
 
 
-# Canonical bands: Low 0-33, Moderate 34-66, High 67-84, Critical 85+.
-# Must match the map legend, panel, summaries, and digest.
+# Card palette: the risk ramp, as RGB for PIL. Low is the ramp green rather
+# than the page grey because the card reads as a map, not as body text.
+_TIER_RGB = {
+    "Critical": (228, 72, 59),
+    "High":     (237, 99, 23),
+    "Moderate": (192, 139, 45),
+    "Low":      (62, 107, 84),
+}
+
+
 def _score_color(score: float) -> tuple:
-    if score >= 85: return (228, 72, 59)
-    if score >= 67: return (237, 99, 23)
-    if score >= 34: return (192, 139, 45)
-    return (62, 107, 84)
+    return _TIER_RGB[tier(score)]
 
 
 def _score_tier(score: float) -> str:
-    if score >= 85: return "CRITICAL"
-    if score >= 67: return "HIGH"
-    if score >= 34: return "MODERATE"
-    return "LOW"
+    return tier(score).upper()
 
 
 def _render(
@@ -107,7 +110,7 @@ def _render(
     # Right — score
     if score is not None:
         sc = _score_color(score)
-        tier = _score_tier(score)
+        tier_label = _score_tier(score)
 
         score_str = f"{score:.0f}"
         sb = draw.textbbox((0, 0), score_str, font=f_score)
@@ -115,9 +118,9 @@ def _render(
         draw.text((W - sw - 90, 160), score_str, font=f_score, fill=sc)
         draw.text((W - 120, 290),     "/100",    font=f_denom, fill=_MUTED)
 
-        tb = draw.textbbox((0, 0), tier, font=f_tier)
+        tb = draw.textbbox((0, 0), tier_label, font=f_tier)
         tw = tb[2] - tb[0]
-        draw.text((W - tw - 90, 340), tier, font=f_tier, fill=sc)
+        draw.text((W - tw - 90, 340), tier_label, font=f_tier, fill=sc)
 
         draw.text((W - 220, 375), "PRESSURE", font=f_label, fill=_MUTED)
 
@@ -564,8 +567,9 @@ def this_week_og_image(db: Session = Depends(get_db)):
         FROM now_s JOIN then_s ON then_s.zip_code = now_s.zip_code
     """)).scalar() or 0
 
-    agg = db.execute(text("""
-        SELECT COUNT(*) FILTER (WHERE score >= 67) AS high, ROUND(AVG(score)) AS avg
+    agg = db.execute(text(f"""
+        SELECT COUNT(*) FILTER (WHERE score >= {floor_for('High')}) AS high,
+               ROUND(AVG(score)) AS avg
         FROM displacement_scores WHERE score IS NOT NULL
     """)).fetchone()
 

@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 
 from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
 from models.database import get_db
+from scoring.tiers import tier
 from models.neighborhoods import Neighborhood
 from models.scores import DisplacementScore
 
@@ -781,19 +782,16 @@ def _build_summary(score: float | None, breakdown: dict[str, Any], raw_counts: d
 
     s = round(score, 1)
 
-    # Tier label and opening clause
-    if s >= 85:
-        tier = "Critical"
-        opening = T["open_critical"].format(s=s)
-    elif s >= 67:
-        tier = "High"
-        opening = T["open_high"].format(s=s)
-    elif s >= 34:
-        tier = "Moderate"
-        opening = T["open_moderate"].format(s=s)
-    else:
-        tier = "Low"
-        opening = T["open_low"].format(s=s)
+    # Tier label and opening clause. The band comes from scoring.tiers so this
+    # summary cannot describe a neighbourhood as one tier while the map paints
+    # another; the copy for each band is local because it is translated.
+    tier_label = tier(s)
+    opening = T[{
+        "Critical": "open_critical",
+        "High":     "open_high",
+        "Moderate": "open_moderate",
+        "Low":      "open_low",
+    }[tier_label]].format(s=s)
 
     # Find top signals above threshold
     active = sorted(
@@ -811,7 +809,7 @@ def _build_summary(score: float | None, breakdown: dict[str, Any], raw_counts: d
             count_parts.append(T["counts"][key](n))
 
     labels = T["labels"]
-    if tier == "Low":
+    if tier_label == "Low":
         detail = T["detail_low"]
     elif not active:
         detail = T["detail_none"]

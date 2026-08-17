@@ -23,6 +23,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from models.database import get_db
+from scoring.tiers import tier
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["briefs"])
@@ -42,19 +43,20 @@ def _now_str() -> str:
     return datetime.now(timezone.utc).strftime("%B %-d, %Y at %H:%M UTC")
 
 
-def _score_tier(score: float) -> tuple[str, str]:
-    """Return (label, hex_color) for a displacement score.
+# Brief-surface palette. Bands come from scoring.tiers; Low is #677686 here
+# rather than the page's #93a1ad because briefs also render on paper.
+_TIER_COLORS = {
+    "Critical": "#e4483b",
+    "High":     "#ed6317",
+    "Moderate": "#C08B2D",
+    "Low":      "#677686",
+}
 
-    Bands match the canonical tiers everywhere else on the site:
-    Low 0-33, Moderate 34-66, High 67-84, Critical 85+.
-    """
-    if score >= 85:
-        return "Critical", "#e4483b"
-    if score >= 67:
-        return "High", "#ed6317"
-    if score >= 34:
-        return "Moderate", "#C08B2D"
-    return "Low", "#677686"
+
+def _score_tier(score: float) -> tuple[str, str]:
+    """Return (label, hex_color) for a displacement score."""
+    label = tier(score)
+    return label, _TIER_COLORS[label]
 
 
 def _idx_color(v: float) -> str:

@@ -22,6 +22,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from models.database import get_db
+from scoring.tiers import tier
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["frontend"])
@@ -187,16 +188,21 @@ def _crumbs(*pairs) -> dict:
     }
 
 
+# Tier colours for the dark page. The bands themselves live in scoring.tiers;
+# only the palette is local, because each surface renders the same tier
+# differently on purpose (see that module).
+_TIER_COLORS = {
+    "Critical": "#e4483b",
+    "High":     "#ed6317",
+    "Moderate": "#C08B2D",
+    "Low":      "#93a1ad",
+}
+
+
 def _tier_info(score: float) -> tuple[str, str]:
-    """
-    Returns (display_label, hex_color) for the score tier.
-    Bands must match the map legend, weekly digest, and _build_summary:
-    Low 0-33, Moderate 34-66, High 67-84, Critical 85+.
-    """
-    if score >= 85: return "Critical", "#e4483b"
-    if score >= 67: return "High",     "#ed6317"
-    if score >= 34: return "Moderate", "#C08B2D"
-    return "Low", "#93a1ad"
+    """Returns (display_label, hex_color) for the score tier."""
+    label = tier(score)
+    return label, _TIER_COLORS[label]
 
 
 def _idx_color(v: float) -> str:

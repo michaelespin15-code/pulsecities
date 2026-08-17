@@ -20,6 +20,7 @@ from sqlalchemy import text
 from config.logging_config import configure_logging
 from config.schedule import DIGEST_SEND_DAY
 from models.database import SessionLocal  # imports load_dotenv() as a side effect
+from scoring.tiers import floor_for, tier
 from scripts.digest_narrative import generate_narrative, generate_citywide_narrative
 
 # The API process sets this in api/routes/subscribe.py; this script runs
@@ -72,11 +73,17 @@ def _display_risk(score: float) -> tuple[str, str]:
     return "LOW RISK", "#3E6B54"
 
 
+# Email palette: the risk ramp, matching the map rather than the page greys.
+_TIER_COLORS = {
+    "Critical": "#e4483b",
+    "High":     "#ed6317",
+    "Moderate": "#C08B2D",
+    "Low":      "#3E6B54",
+}
+
+
 def _score_color(score: float) -> str:
-    if score >= 85: return "#e4483b"
-    if score >= 67: return "#ed6317"
-    if score >= 34: return "#C08B2D"
-    return "#3E6B54"
+    return _TIER_COLORS[tier(score)]
 
 
 def _send_tier(score: float) -> str:
@@ -499,12 +506,17 @@ _RULE  = "#D9D4C9"
 _PULSE = "#E4590F"
 
 
+# The same bands in ink weights that hold contrast on paper.
+_TIER_INK = {
+    "Critical": "#B3261E",
+    "High":     "#C2410C",
+    "Moderate": "#966A08",
+    "Low":      "#1F7A44",
+}
+
+
 def _tier_ink(value: float) -> str:
-    """Canonical bands (85/67/34) in ink weights that hold contrast on paper."""
-    if value >= 85: return "#B3261E"
-    if value >= 67: return "#C2410C"
-    if value >= 34: return "#966A08"
-    return "#1F7A44"
+    return _TIER_INK[tier(value)]
 
 
 def _delta_ink(delta: float) -> str:
@@ -638,8 +650,7 @@ def render_zip_digest(
     elevated = summary["elevated"]
     token    = subscription["unsubscribe_token"]
 
-    tier_label = ("CRITICAL" if score >= 85 else "HIGH" if score >= 67
-                  else "MODERATE" if score >= 34 else "LOW")
+    tier_label = tier(score).upper()
     tier_color = _tier_ink(score)
     delta_text = _delta_text(delta)
     delta_ink  = _delta_ink(delta)
@@ -830,8 +841,10 @@ def is_meaningful_citywide_update(db) -> tuple[bool, list[str]]:
         if movers >= 3:
             reasons.append(f"{movers} ZIP codes moved by 3+ points this week")
 
-        # 67 is the canonical High threshold (map legend, _tier_info, ai_summary).
-        new_high = [r for r in rows if float(r[1] or 0) >= 67 and float(r[2] or 0) < 67]
+        # Crossings into High, against the one canonical floor.
+        high_floor = floor_for("High")
+        new_high = [r for r in rows
+                    if float(r[1] or 0) >= high_floor and float(r[2] or 0) < high_floor]
         if new_high:
             names = ", ".join(r[0] for r in new_high[:3])
             reasons.append(f"{len(new_high)} ZIP(s) entered High tier: {names}")

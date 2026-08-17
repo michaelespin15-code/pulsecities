@@ -22,6 +22,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from models.database import get_db
+from scoring.tiers import sql_tier_counts
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["ops"])
@@ -105,12 +106,13 @@ def ops_summary(t: str = Query(default=""), x_ops_token: str = Header(default=""
     """)).fetchone()
 
     # --- Score distribution ---
-    dist = db.execute(text("""
+    # Band predicates generated from scoring.tiers rather than typed here: this
+    # was the copy a Python-side threshold change would have walked straight
+    # past, leaving the ops dashboard counting to different cut points than
+    # every page it reports on.
+    dist = db.execute(text(f"""
         SELECT
-            COUNT(*) FILTER (WHERE score >= 85)               AS critical,
-            COUNT(*) FILTER (WHERE score >= 67 AND score < 85) AS high,
-            COUNT(*) FILTER (WHERE score >= 34 AND score < 67) AS moderate,
-            COUNT(*) FILTER (WHERE score < 34)                AS low,
+            {sql_tier_counts('score')},
             COUNT(*) FILTER (WHERE score IS NOT NULL)         AS scored,
             COUNT(*)                                          AS total
         FROM displacement_scores
