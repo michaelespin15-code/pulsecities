@@ -1068,18 +1068,70 @@ A second bug: it matched Socrata rows to DB rows by document_id alone, so a
 buyer's address could land on the seller's row. Now matched on
 (document_id, party_type, name).
 
-**A full backfill was running when this session ended** (started 05:13 UTC,
-141,154 rows, ~68 min, log at scratchpad/backfill.log; safe to re-run, it only
-touches rows where party_addr_1 IS NULL).
+**The backfill COMPLETED.** 141,154 rows, then a second pass for 750 rows that
+five Socrata 503s had skipped. It is idempotent (only touches
+`party_addr_1 IS NULL`), so re-running is always safe.
 
-**When it finishes, re-run the family clustering.** Filing address is one of the
-two signals `api/entity_families.py` needs, 71% of LLC buyers had none, and it
-is the signal that found FLGSP. Expect more families than the current 10, so:
+    buyer deed rows with an address   19,511 -> 68,223   (28% -> 99%)
+    LLC buyers with NO address        11,160 -> 0        (71% -> 0%)
 
-    venv/bin/python -m pytest tests/test_entity_families.py -q
-    venv/bin/python -m scripts.generate_sitemap
-    systemctl reload pulsecities
+**The clustering was re-run and the site redeployed on the new data:**
 
-Then re-read the new families for anything with FLGSP's shape. That is the
-pipeline from data fix to press pitch, which is the only thing that touches the
-backlink ceiling.
+    entity families   10 -> 19        entities covered   179 -> 256
+
+New families that did not exist before, all of them invisible while the
+addresses were missing: BRICKS (22 entities, 8 held + 17 sold), TSADIK (16),
+REDROCK (14), 1 PARK ROW COMMERCIAL (10), BSP (9), SNF (9), SCHUMAN, BAHM,
+MBSD, DDG. PHANTOM also grew from 27 entities / 57 buildings to 35 / 70.
+Sitemap carries 18 `/network/` URLs; suite green at 1,227.
+
+
+## >>> START HERE after /clear (2026-08-18, session 2 end) <<<
+
+Everything below is done, deployed, committed and green (1,227 passed). Nothing
+is half-finished and no process is running.
+
+**Read first:** `docs/seo/PLAN.md` (all 6 steps DONE),
+`docs/outreach/pitch-flgsp-portfolio.md` (unsent),
+`docs/seo/crawler_readiness.md`, `docs/seo/resubmit_sitemap.md`.
+
+**Michael resubmitted the sitemap to Search Console and Bing on 2026-08-18, and
+it worked.** Within the hour, from real remote crawler IPs: Googlebot fetched
+the sitemap 4x, bingbot 10x, and both began crawling the page types that did
+not exist that morning (`/evictions/wakefield`, `/network/flgsp`,
+`/network/bsp-smk`). 365 crawler responses, 364 of them 200, **zero rate-limit
+rejections**. Every 429 in that day's log came from 127.0.0.1 and was this
+session's own load testing.
+
+**The single highest-value action remains unsent and needs no code:** the FLGSP
+pitch. 82 buildings, 4,941 units of which 4,793 are DHCR-registered
+rent-stabilized, traded in one day for ~$435.9M, 10,350 open violations. Live at
+`/network/flgsp`. Three caveats are in the doc and must survive into any
+version: 93 of the 94 evictions PREDATE the sale, the deeds do not say who is
+behind FLGSP, and check whether the trade was already covered when it closed.
+
+**Next build, in order:**
+1. **Read the 9 new families for another FLGSP.** BRICKS sold 17 buildings and
+   holds 8; BSP holds nothing and sold 11. A portfolio being unwound is the
+   shape that produced the last story. This is the pipeline from data to press,
+   and press is the only lever on the backlink ceiling.
+2. **`retire_raw_data.sh`** — 9.3GB of a 16GB database, never run. Two phases;
+   needs a code commit removing `raw_data` from the models and scrapers FIRST,
+   then gunicorn reload, then `drop`. Wants a maintenance window.
+3. **IndexNow** — the only Bing-specific lever, and the single WARN left in
+   `scripts/crawl_audit.py`.
+4. **17,114 condo-unit deed BBLs are absent from PLUTO**, so a quarter of the
+   deed record resolves to no address. LLC pages recover the ZIP from the tax
+   block where that block is unambiguous; the addresses are still missing.
+5. **A third clustering signal**: the FLGSP *sellers* (1023/1038/1042 REALTY
+   LLC) still do not form a family, because they share only "REALTY" and a
+   street number and REALTY is a stop word. Linking them needs
+   "counterparties in one bulk transfer", which is a different claim from
+   sharing an identity. Deliberately not done.
+
+**Method notes worth keeping.** Unique-word overlap is not a duplication
+measure (`/neighborhood` scores 92-97% on it); use 5-gram containment over
+digit-bearing tokens, calibrated against a page you already trust. And every
+content bug this session was found by reading rendered output, not by reasoning
+about code: doubled deed rows, "Llc", "addresss", a false claim about shared
+filing addresses, and 127 eviction pages shipped without their borough.
