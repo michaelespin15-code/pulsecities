@@ -752,3 +752,71 @@ P2 sitemap gates: property (intersection -> substantive-record threshold) and LL
 (drop `blocks >= 2`). Cheapest wins, pages already exist and render.
 P3 CTR pass on rent-stabilized / who-owns / operators — they rank and nobody clicks.
 P4 retitle /flips and /radar to intent-bearing titles.
+
+## Bing Webmaster read (2026-08-18) — small sample, but it supplies the missing variable
+
+34 impressions and 1 click across three months (May 18 – Aug 16), against Google's
+hundreds in 28 days. **Do not optimise for Bing.** Its value here is two things
+Google's export did not give us: an independent sample, and **average position**.
+
+### Position is the missing diagnosis: we rank 5–10, not 1–3
+
+Every meaningful query sits on the bottom of page 1 or on page 2:
+
+    nyc displacement map                      6 imp   pos 8.50
+    53 west 174th st ... eviction cases       8 imp   pos 6.88
+    nyc displacement risk map                 2 imp   pos 9.00
+    marshal evictions nyc                     1 imp   pos 10.0
+    ny marshall eviction list by zipcode      1 imp   pos 5.00
+    displacement risk by neighbohood nyc      1 imp   pos 8.00
+    bronx gs properties llc                   1 imp   pos 2.00
+    michael espin                             1 imp   pos 6.00  -> 1 click (100% CTR)
+
+This revises what I told Michael from the Google export. I said the zero-click
+clusters were "ranking or snippet"; the evidence now leans **ranking**. The sharpest
+case: `/map` is titled exactly **"NYC Displacement Risk Map"**, which is verbatim the
+query, and it still averages position 8.5–9. On-page targeting is already correct, so
+rewriting titles will not move that term. That is a domain-authority problem, and it
+is the same "distribution, not features" conclusion the earlier checkpoint reached,
+now visible in the data.
+
+The exception is LLC-name queries: `bronx gs properties llc` ranks **position 2**.
+Entity-name pages rank well because nobody else competes for them. That is consistent
+with LLC pages being the best converter on Google (3 of 5 clicks) and is the strongest
+argument for loosening the LLC sitemap gate.
+
+### Independent confirmation of all four Google clusters
+
+Address (`971 dean street nyc`), address+eviction, LLC (`bredif ms seller llc`,
+`bredif wb high point llc`, `water view castle llc`), and **raw BBL**
+(`3068410001`, `6469640028`) all reappear in a separate engine's sample. Two
+independent samples agreeing means these patterns are real, not a Google artifact.
+Note `/property/3009970039` — Google's 37-impression BBL query — renders 200 and is
+**still not sitemapped**, same gate as finding #2.
+
+### New query shapes worth building for
+
+- **`ny marshall eviction list by zipcode`** — the eviction cluster asked for
+  explicitly *by ZIP*. That is the pivot P1 should use.
+- **`53 west 174th st bronx ny 10453 eviction cases`** (top Bing query, 8) — address
+  **+** eviction in one query. Supports P1 and P2 simultaneously: per-address eviction
+  history is a page shape we already have data for.
+- **`how much did water view castle llc purchase 1341 ocan parkway brooklyn ny for`**
+  — natural-language transaction question. **Already answerable**: property pages
+  carry an "Ownership transfers" table with an Amount column rendering `$26.7M` style
+  figures (82,460 of 137,570 deeds have a `doc_amount`). I initially recorded this as
+  a content gap and was wrong — the first two BBLs I sampled simply had no transfers
+  in window. It is a coverage/ranking problem, not a missing-content one.
+- **`laggy accris`** — someone searching for ACRIS being slow. A positioning angle
+  rather than a build: the site is, functionally, a faster ACRIS for the questions
+  people actually ask.
+- **`michael espin`** produced the only Bing click, at 100% CTR. Personal-brand search
+  converts; relevant given what the project is for.
+
+### What this does not change
+
+P1–P4 in the Google section still stand, in the same order. Bing sharpens *why*: P2
+and P3 (sitemap gates, entity pages) target query shapes where we can realistically
+rank, because entity and address names have little competition. The category term
+("nyc displacement map") is the one we are targeting correctly and still losing, and
+no amount of on-page work will win it.
