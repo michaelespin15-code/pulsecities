@@ -2831,6 +2831,50 @@ def operators_directory(db: Session = Depends(get_db)):
         })
 
     n_visible = len(operators)
+    tot_acqs = sum(int(o.acqs or 0) for o in operators)
+    tot_entities = sum(int(o.entities or 0) for o in operators)
+    tot_zips = len({z for o in operators for z in (o.zips or [])})
+    biggest = operators[0] if operators else None
+
+    # This page ranked for "biggest landlords in nyc" on 72 visible words: a
+    # list with nothing said about it. The questions below are the ones that
+    # query is actually asking.
+    dir_faq = [
+        ("Who are the biggest landlords in NYC?",
+         f"By measurable buying activity in the ACRIS deed record, PulseCities "
+         f"tracks {n_visible} ownership networks accounting for {tot_acqs:,} "
+         f"acquisitions across {tot_zips:,} ZIP codes. "
+         + (f"{biggest.operator_root} leads the list with {int(biggest.acqs):,} "
+            f"acquisitions held through {int(biggest.entities):,} separate LLCs. "
+            if biggest else "")
+         + "This ranks by recorded purchasing, not by total units owned: an "
+           "owner who bought decades ago and has not transacted since will not "
+           "appear."),
+        ("Why is NYC property held through so many LLCs?",
+         f"Buying each building through its own limited liability company is "
+         f"ordinary practice: it separates liability, simplifies financing and "
+         f"eases resale. The side effect is that a portfolio of "
+         f"{tot_entities:,} entities can read as {tot_entities:,} unrelated "
+         f"owners in the public record. Grouping them back together is the "
+         f"point of this directory."),
+        ("How does PulseCities group LLCs into one network?",
+         "Entities are clustered where the public record supports it: shared "
+         "naming stems across numbered siblings, shared filing addresses on the "
+         "deeds, and overlapping acquisition activity. Financial institutions, "
+         "government bodies, servicers taking title in foreclosure and "
+         "nonprofit HDFCs are classified separately and excluded, so a bank "
+         "that forecloses is never listed as a landlord."),
+        ("What does an acquisition count actually measure?",
+         "One recorded deed naming that network as the buyer. It counts tax "
+         "lots, so a condominium purchased whole records one deed per unit and "
+         "can inflate a raw count. Each profile page shows the buildings behind "
+         "the number so the figure can be checked rather than taken."),
+    ]
+    dir_faq_html = "".join(
+        f'<div class="dir-faq"><h3>{_html.escape(q)}</h3><p>{_html.escape(ans)}</p></div>'
+        for q, ans in dir_faq
+    )
+
     title = "Biggest NYC Landlords by Acquisition Volume | PulseCities"
     desc = (
         f"The biggest NYC landlords by acquisition volume: {n_visible} ownership networks "
@@ -2839,6 +2883,13 @@ def operators_directory(db: Session = Depends(get_db)):
     jsonld = _jsonld({
         "@context": "https://schema.org",
         "@graph": [{
+            "@type": "FAQPage",
+            "mainEntity": [
+                {"@type": "Question", "name": q,
+                 "acceptedAnswer": {"@type": "Answer", "text": ans}}
+                for q, ans in dir_faq
+            ],
+        }, {
             "@type": "ItemList",
             "name": "Biggest NYC landlords by acquisition volume",
             "description": desc,
@@ -2882,6 +2933,12 @@ a{{color:inherit;text-decoration:none}}
 footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) + 24px);border-top:1px solid rgba(147,161,173,0.08);margin-top:32px;font-size:12px;color:var(--muted)}}
 .footer-links{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}}
 @media(max-width:767px){{.container{{padding:32px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}}}}
+.dir-h2{{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.05rem;font-weight:600;margin-bottom:8px}}
+.dir-p{{font-size:0.86rem;color:#93a1ad;line-height:1.7;margin-bottom:12px;max-width:64ch}}
+.dir-p a{{color:#ed6317}}
+.dir-p a:hover{{text-decoration:underline}}
+.dir-faq h3{{font-size:0.9rem;font-weight:600;color:#e4e8ec;margin:18px 0 4px}}
+.dir-faq p{{font-size:0.84rem;color:#93a1ad;line-height:1.7;max-width:64ch}}
 .op-list{{list-style:none;padding:0;margin:0}}
 .op-row{{border-bottom:1px solid rgba(147,161,173,0.07);cursor:pointer;}}
 .op-row:hover{{background:rgba(147,161,173,0.04)}}
@@ -2910,6 +2967,34 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <p id="dir-ledger-link" style="font-size:0.78rem;margin-bottom:28px;">Looking for a specific company instead? <a href="/llc" style="color:#6fb1d8;">Search the full ledger of LLC buyers &rarr;</a></p>
   <ul class="op-list">
 {rows_html}  </ul>
+
+  <section style="margin-top:36px;">
+    <h2 class="dir-h2">What this list is</h2>
+    <p class="dir-p">These {n_visible} networks account for {tot_acqs:,} recorded
+    acquisitions held through {tot_entities:,} separate limited liability
+    companies across {tot_zips:,} NYC ZIP codes. Every one of those numbers comes
+    from deeds filed with the city, so the list ranks measurable buying rather
+    than total holdings: an owner who bought in 1988 and has not transacted
+    since does not appear here at all.</p>
+    <p class="dir-p">The reason a directory like this needs to exist is that NYC
+    property is almost never held in the owner's own name. It is held one
+    building at a time, each in its own LLC, which is ordinary practice and also
+    why a single operation can appear in the record as thirty unrelated
+    strangers. Reassembling those entities is what turns a deed filing into an
+    answer about who owns the block.</p>
+    <p class="dir-p">Financial institutions, government bodies, loan servicers
+    taking title in foreclosure and nonprofit HDFCs are classified separately
+    and kept off this list, because a bank completing a foreclosure is not a
+    landlord acquiring a building. Looking for one specific company rather than
+    a network? The <a href="/llc">full ledger of LLC buyers</a> is searchable by
+    name, and every building has <a href="/who-owns-my-building">its own
+    ownership page</a>.</p>
+  </section>
+
+  <section style="margin-top:32px;">
+    <h2 class="dir-h2">Common questions</h2>
+    {dir_faq_html}
+  </section>
 </div>
 {_FOOTER_HTML}
 <script>
@@ -3506,7 +3591,9 @@ def flip_watch_page(db: Session = Depends(get_db)):
             'current window. Check back after the next nightly refresh.</li>\n'
         )
 
-    title = "Flip Watch | PulseCities"
+    # "Flip Watch" is a name we invented; nobody types it. The H1 and nav
+    # keep the brand, the title says what the page is.
+    title = "NYC buildings bought and renovated after an eviction | PulseCities"
     desc = (
         f"{n} NYC buildings where an LLC bought and filed a renovation permit within "
         f"{FLIP_WINDOW_DAYS} days, sourced from ACRIS deeds and DOB permits. Updated nightly."
@@ -3532,14 +3619,14 @@ def flip_watch_page(db: Session = Depends(get_db)):
 <title>{_html.escape(title)}</title>
 <meta name="description" content="{_html.escape(desc)}">
 <link rel="canonical" href="https://pulsecities.com/flips">
-<meta property="og:title" content="Flip Watch | PulseCities">
+<meta property="og:title" content="{_html.escape(title)}">
 <meta property="og:description" content="{_html.escape(desc)}">
 <meta property="og:url" content="https://pulsecities.com/flips">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
 <meta property="og:image" content="https://pulsecities.com/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Flip Watch | PulseCities">
+<meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
@@ -4009,7 +4096,8 @@ def speculation_radar_page(db: Session = Depends(get_db)):
             'in the current window. Check back after the next nightly refresh.</li>\n'
         )
 
-    title = "Speculation Radar | PulseCities"
+    # Same as /flips: the brand is not the query.
+    title = "NYC LLC buying clusters: one buyer, one ZIP, one window | PulseCities"
     desc = (
         f"{n} NYC buying runs where one LLC took the deed on {MIN_BUILDINGS} or more "
         f"buildings in the same ZIP within {RADAR_WINDOW_DAYS} days, sourced from ACRIS "
@@ -4036,14 +4124,14 @@ def speculation_radar_page(db: Session = Depends(get_db)):
 <title>{_html.escape(title)}</title>
 <meta name="description" content="{_html.escape(desc)}">
 <link rel="canonical" href="https://pulsecities.com/radar">
-<meta property="og:title" content="Speculation Radar | PulseCities">
+<meta property="og:title" content="{_html.escape(title)}">
 <meta property="og:description" content="{_html.escape(desc)}">
 <meta property="og:url" content="https://pulsecities.com/radar">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
 <meta property="og:image" content="https://pulsecities.com/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Speculation Radar | PulseCities">
+<meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
@@ -5052,14 +5140,14 @@ def displacement_page(db: Session = Depends(get_db)):
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="https://pulsecities.com/displacement">
-<meta property="og:title" content="{esc(title)}">
+<meta property="og:title" content="{_html.escape(title)}">
 <meta property="og:description" content="{esc(desc)}">
 <meta property="og:url" content="https://pulsecities.com/displacement">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
 <meta property="og:image" content="https://pulsecities.com/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{esc(title)}">
+<meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{esc(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23ed6317' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
@@ -5546,14 +5634,14 @@ def evictions_page(lang: str = "en", db: Session = Depends(get_db)):
 <link rel="alternate" hreflang="en" href="https://pulsecities.com/evictions">
 <link rel="alternate" hreflang="es" href="https://pulsecities.com/evictions?lang=es">
 <link rel="alternate" hreflang="x-default" href="https://pulsecities.com/evictions">
-<meta property="og:title" content="{esc(title)}">
+<meta property="og:title" content="{_html.escape(title)}">
 <meta property="og:description" content="{esc(desc)}">
 <meta property="og:url" content="https://pulsecities.com/evictions">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
 <meta property="og:image" content="https://pulsecities.com/og/site/evictions.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{esc(title)}">
+<meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{esc(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og/site/evictions.png">
 <script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
@@ -6216,14 +6304,14 @@ def who_owns_page(db: Session = Depends(get_db)):
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="https://pulsecities.com/who-owns-my-building">
-<meta property="og:title" content="{esc(title)}">
+<meta property="og:title" content="{_html.escape(title)}">
 <meta property="og:description" content="{esc(desc)}">
 <meta property="og:url" content="https://pulsecities.com/who-owns-my-building">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PulseCities">
 <meta property="og:image" content="https://pulsecities.com/og/site/who-owns.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{esc(title)}">
+<meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{esc(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og/site/who-owns.png">
 <script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
