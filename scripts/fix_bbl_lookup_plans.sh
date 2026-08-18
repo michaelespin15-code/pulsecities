@@ -21,8 +21,16 @@
 # retried.
 
 set -euo pipefail
-cd "$(dirname "$0")/.."
-set -a; . ./.env; set +a
+APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+# Same pattern as backup_db.sh. .env is not valid shell (ALERT_SNOOZE carries a
+# value with spaces and a colon), so sourcing it exits 127; only this one
+# variable is needed anyway.
+DATABASE_URL=$(grep -E '^DATABASE_URL=' "$APP_DIR/.env" | cut -d= -f2-)
+if [ -z "${DATABASE_URL:-}" ]; then
+    echo "ERROR: DATABASE_URL not found in $APP_DIR/.env" >&2
+    exit 1
+fi
 
 run() {
     echo ">>> $1"

@@ -1,16 +1,36 @@
 """
-Regenerate frontend/sitemap.xml from the live database.
+Regenerate the sitemap set from the live database.
 
-Core pages are listed first, then the tracked operator profiles under their
-canonical slugs, then every neighborhood page that has a score, then the
-substantive property pages. Neighborhood pages carry today's lastmod because
-scores refresh nightly.
+Writes a sitemap index at frontend/sitemap.xml (the URL robots.txt and Search
+Console already point at) plus the child files it names. The split is forced by
+volume: the sitemaps spec caps a single file at 50,000 URLs.
 
-Property pages are deliberately NOT sitemapped en masse: ~912k parcels sit in a
-scored ZIP and would render index,follow, but almost all are thin. Only the
-buildings that carry BOTH an ownership transfer and an eviction filing (the
-eviction-to-resale arc the site documents, ~1.5k parcels) are listed, at low
-priority, so the sitemap points crawlers at substance rather than doorway pages.
+    sitemap.xml             index
+    sitemap-core.xml        hubs, neighborhoods, boroughs, weeks, operators, LLCs
+    sitemap-property-N.xml  property pages, 45,000 per file
+
+**The gate that matters is not here.** A page is indexed because
+`_build_property_page` renders `index, follow`, not because this file lists it.
+That rule used to pass on the ZIP-level displacement score, so 596,432 parcels
+carrying no deed, eviction, violation or permit told Google to index ~429 words
+of boilerplate running 81% identical page to page. It now requires a
+building-level record, and this file's gate is set to match rather than to
+compensate for it.
+
+Sitemapped property pages are the ones with a deed or an eviction: the
+ownership-and-displacement story the site is actually about, and the shape of
+the address queries in the search exports. Measured 5-gram overlap by record
+profile, against /neighborhood at 68-69% as the known-good benchmark:
+
+    deed + eviction   52% mean    sitemapped, priority 0.6
+    deed only         69% mean    sitemapped, priority 0.5
+    eviction only     68% mean    sitemapped, priority 0.5
+    violations only   66% mean    indexable, not sitemapped
+    no records        75% mean    noindex
+
+lastmod is the date of that page's newest record, not the date this ran. 2,111
+of the old 2,159 URLs claimed the same lastmod, which tells a crawler nothing
+and costs credibility on the ones that did change.
 
 Run manually or from cron after the nightly scoring pass:
     python -m scripts.generate_sitemap
@@ -25,7 +45,13 @@ from sqlalchemy import text
 
 from models.database import SessionLocal
 
-_OUT = Path(__file__).resolve().parent.parent / "frontend" / "sitemap.xml"
+_FRONTEND = Path(__file__).resolve().parent.parent / "frontend"
+_OUT = _FRONTEND / "sitemap.xml"
+_BASE = "https://pulsecities.com"
+
+# The spec caps a sitemap at 50,000 URLs; leave headroom so a growth spurt
+# between runs cannot silently push a file over the line.
+_URLS_PER_FILE = 45_000
 
 # (path, changefreq, priority, lastmod or None for today)
 _CORE = [
@@ -85,7 +111,8 @@ def _completed_week_slugs(db) -> list[tuple[str, str]]:
 _OPERATORS = ["mtek-nyc", "phantom-capital", "bredif"]
 
 
-def build() -> str:
+def build() -> dict[str, str]:
+    """Returns {filename: xml}. sitemap.xml is the index; the rest are children."""
     today = date.today().isoformat()
 
     with SessionLocal() as db:
@@ -97,91 +124,147 @@ def build() -> str:
             ORDER BY n.zip_code
         """)).fetchall()]
 
-        # Substantive property pages only: a deed transfer AND an eviction on the
-        # same lot, in a named/scored neighborhood. This is the arc the site is
-        # about (~1.5k parcels), not the ~912k thin parcels that merely inherit a
-        # ZIP score. ORDER BY keeps the nightly output stable (no diff churn).
-        property_bbls = [r.bbl for r in db.execute(text("""
-            SELECT DISTINCT p.bbl
+        # Property pages carrying a deed or an eviction, with the date of the
+        # newest of the two as lastmod and a priority that reflects whether the
+        # page tells the full arc or half of it. ORDER BY keeps nightly output
+        # stable so the file does not churn in git.
+        property_rows = db.execute(text("""
+            SELECT p.bbl,
+                   GREATEST(COALESCE(d.last_deed, DATE '1900-01-01'),
+                            COALESCE(e.last_evict, DATE '1900-01-01')) AS lastmod,
+                   (d.last_deed IS NOT NULL AND e.last_evict IS NOT NULL) AS full_arc
             FROM parcels p
-            JOIN ownership_raw o ON o.bbl = p.bbl
-            JOIN evictions_raw e ON e.bbl = p.bbl
             JOIN neighborhoods n ON n.zip_code = p.zip_code
             JOIN displacement_scores ds ON ds.zip_code = p.zip_code
+            LEFT JOIN LATERAL (
+                SELECT max(o.doc_date) AS last_deed FROM ownership_raw o
+                WHERE o.bbl = p.bbl AND o.doc_type = 'DEED'
+            ) d ON true
+            LEFT JOIN LATERAL (
+                SELECT max(ev.executed_date) AS last_evict FROM evictions_raw ev
+                WHERE ev.bbl = p.bbl
+            ) e ON true
             WHERE p.address IS NOT NULL AND n.name IS NOT NULL AND ds.score IS NOT NULL
+              AND (d.last_deed IS NOT NULL OR e.last_evict IS NOT NULL)
             ORDER BY p.bbl
-        """)).fetchall()]
+        """)).fetchall()
 
         week_slugs = _completed_week_slugs(db)
 
-        # LLC entity pages, gated exactly as the route's robots policy is:
-        # 3+ lots across 2+ buildings (a whole-condo buy records one deed per
-        # unit but is a single building), and a real buyer rather than a
-        # servicer or trustee. _is_buyer_entity is imported rather than
-        # restated so the two rules cannot drift apart.
-        from api.routes.frontend import _is_buyer_entity, _LLC_SLUG_RE
-
-        llc_slugs = sorted({
-            r.slug for r in db.execute(text("""
-                SELECT party_name_normalized AS name,
-                       btrim(regexp_replace(lower(party_name_normalized),
-                             '[^a-z0-9]+', '-', 'g'), '-') AS slug,
-                       max(doc_date) AS last_deed
-                FROM ownership_raw
-                WHERE doc_type = 'DEED' AND party_type = '2'
-                  AND party_name_normalized LIKE '%LLC%'
-                GROUP BY 1, 2
-                HAVING count(DISTINCT bbl) >= 3
-                   AND count(DISTINCT substring(bbl, 1, 6)) >= 2
-            """)).fetchall()
-            if r.slug and _LLC_SLUG_RE.match(r.slug) and _is_buyer_entity(r.name)
-        })
-
-    lines = [
-        '<?xml version="1.0" encoding="UTF-8"?>',
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ]
-
-    def entry(path: str, changefreq: str, priority: str, lastmod: str) -> None:
-        lines.append(
-            f"  <url>\n"
-            f"    <loc>https://pulsecities.com{path}</loc>\n"
-            f"    <lastmod>{lastmod}</lastmod>\n"
-            f"    <changefreq>{changefreq}</changefreq>\n"
-            f"    <priority>{priority}</priority>\n"
-            f"  </url>"
+        # LLC entity pages, gated exactly as the route's robots policy is, by
+        # importing the rule rather than restating it so the two cannot drift.
+        # _BUILDING_KEY_SQL collapses a condominium's unit lots to the one
+        # building they are; counting tax blocks instead used to exclude
+        # NORWORTH HOLDINGS LLC, three buildings on one block, which had earned
+        # 3 of the site's 5 total clicks while marked noindex.
+        from api.routes.frontend import (
+            _BUILDING_KEY_SQL, _is_buyer_entity, _LLC_MIN_BUILDINGS, _LLC_SLUG_RE,
         )
 
+        llc_rows = db.execute(text(f"""
+            SELECT party_name_normalized AS name,
+                   btrim(regexp_replace(lower(party_name_normalized),
+                         '[^a-z0-9]+', '-', 'g'), '-') AS slug,
+                   max(doc_date) AS last_deed
+            FROM ownership_raw
+            WHERE doc_type = 'DEED' AND party_type = '2'
+              AND party_name_normalized LIKE '%LLC%'
+            GROUP BY 1, 2
+            HAVING count(DISTINCT bbl) >= 3
+               AND count(DISTINCT ({_BUILDING_KEY_SQL})) >= {_LLC_MIN_BUILDINGS}
+        """)).fetchall()
+        llcs = sorted(
+            {(r.slug, r.last_deed.isoformat() if r.last_deed else today)
+             for r in llc_rows
+             if r.slug and _LLC_SLUG_RE.match(r.slug) and _is_buyer_entity(r.name)}
+        )
+
+        # Newest record anywhere, so the hub pages claim a date they can defend.
+        hub_lastmod = db.execute(text("""
+            SELECT max(d) FROM (
+                SELECT max(doc_date) AS d FROM ownership_raw
+                UNION ALL SELECT max(executed_date) FROM evictions_raw
+            ) t
+        """)).scalar()
+        hub_lastmod = hub_lastmod.isoformat() if hub_lastmod else today
+
+    def urlset(entries) -> str:
+        lines = ['<?xml version="1.0" encoding="UTF-8"?>',
+                 '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+        for path, freq, prio, lastmod in entries:
+            lines.append(
+                f"  <url>\n"
+                f"    <loc>{_BASE}{path}</loc>\n"
+                f"    <lastmod>{lastmod}</lastmod>\n"
+                f"    <changefreq>{freq}</changefreq>\n"
+                f"    <priority>{prio}</priority>\n"
+                f"  </url>"
+            )
+        lines.append("</urlset>")
+        return "\n".join(lines) + "\n"
+
+    core: list[tuple[str, str, str, str]] = []
     for path, freq, prio, lastmod in _CORE:
-        entry(path, freq, prio, lastmod or today)
+        core.append((path, freq, prio, lastmod or hub_lastmod))
     for slug in _OPERATORS:
-        entry(f"/operator/{slug}", "weekly", "0.6", today)
+        core.append((f"/operator/{slug}", "weekly", "0.6", hub_lastmod))
     for z in zips:
-        entry(f"/neighborhood/{z}", "daily", "0.7", today)
-    # Substantive property pages (deed + eviction on the lot). Low priority so
-    # they read as secondary to the hub pages; weekly since records lag.
-    for bbl in property_bbls:
-        entry(f"/property/{bbl}", "weekly", "0.5", today)
+        core.append((f"/neighborhood/{z}", "daily", "0.7", today))
     # Historical weekly editions never change once past; lastmod = their Sunday.
     for slug, sunday_iso in week_slugs:
-        entry(f"/week/{slug}", "monthly", "0.5", sunday_iso)
-    # Multi-property LLC buyer pages; the ledger moves only when deeds land.
-    for slug in llc_slugs:
-        entry(f"/llc/{slug}", "monthly", "0.5", today)
+        core.append((f"/week/{slug}", "monthly", "0.5", sunday_iso))
+    # An entity ledger moves only when a deed lands, so say when that was.
+    for slug, last_deed in llcs:
+        core.append((f"/llc/{slug}", "monthly", "0.5", last_deed))
 
-    lines.append("</urlset>")
-    return "\n".join(lines) + "\n"
+    # changefreq is "monthly" because a property page changes when a record
+    # lands, which for most lots is never. The old blanket "weekly" was a claim
+    # the data did not support on 1,792 URLs.
+    prop = [
+        (f"/property/{r.bbl}", "monthly", "0.6" if r.full_arc else "0.5",
+         r.lastmod.isoformat())
+        for r in property_rows
+    ]
+
+    files: dict[str, str] = {"sitemap-core.xml": urlset(core)}
+    chunks = [prop[i:i + _URLS_PER_FILE] for i in range(0, len(prop), _URLS_PER_FILE)] or [[]]
+    for i, chunk in enumerate(chunks, 1):
+        files[f"sitemap-property-{i}.xml"] = urlset(chunk)
+
+    index = ['<?xml version="1.0" encoding="UTF-8"?>',
+             '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for name in files:
+        index.append(f"  <sitemap>\n"
+                     f"    <loc>{_BASE}/{name}</loc>\n"
+                     f"    <lastmod>{today}</lastmod>\n"
+                     f"  </sitemap>")
+    index.append("</sitemapindex>")
+    files["sitemap.xml"] = "\n".join(index) + "\n"
+    return files
+
+
+def _write_atomic(path: Path, body: str) -> None:
+    """nginx serves these straight from disk, so a crawler must never catch one
+    half-written."""
+    fd, tmp_path = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        fh.write(body)
+    # mkstemp creates 0600; nginx workers need world-read or they serve 403.
+    os.chmod(tmp_path, 0o644)
+    os.replace(tmp_path, path)
 
 
 if __name__ == "__main__":
-    xml = build()
-    # Atomic replace: nginx serves this file straight from disk, so a crawler
-    # must never catch it half-written.
-    fd, tmp_path = tempfile.mkstemp(dir=_OUT.parent, prefix=".sitemap.", suffix=".tmp")
-    with os.fdopen(fd, "w", encoding="utf-8") as fh:
-        fh.write(xml)
-    # mkstemp creates 0600; nginx workers need world-read or they serve 403.
-    os.chmod(tmp_path, 0o644)
-    os.replace(tmp_path, _OUT)
-    count = xml.count("<url>")
-    print(f"wrote {_OUT} with {count} urls")
+    files = build()
+    # Children first: the index must never name a file that is not there yet.
+    for name in sorted(files, key=lambda n: n == "sitemap.xml"):
+        _write_atomic(_FRONTEND / name, files[name])
+        print(f"wrote {name} with {files[name].count('<url>') or files[name].count('<sitemap>')} entries")
+
+    # Old single-file runs left no other children, but a shrinking property set
+    # would: drop any chunk this run did not write, or the index and the disk
+    # disagree.
+    for stale in _FRONTEND.glob("sitemap-property-*.xml"):
+        if stale.name not in files:
+            stale.unlink()
+            print(f"removed stale {stale.name}")

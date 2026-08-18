@@ -23,6 +23,8 @@ audits/*.json
 # churn every cron run; tracking them means permanent dirt and a git checkout
 # away from rolling back live state.
 frontend/sitemap.xml
+frontend/sitemap-core.xml
+frontend/sitemap-property-*.xml
 frontend/llms.txt
 scripts/building_alerts_state.json
 scripts/eviction_flips_state.json

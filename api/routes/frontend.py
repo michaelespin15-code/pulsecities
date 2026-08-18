@@ -1707,7 +1707,27 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     evicts = sig.get("evictions_last_12mo") or []
     permits = sig.get("permits_last_12mo") or []
     complaints = sig.get("complaints_last_12mo") or []
-    has_signals = bool(owners or evicts or permits) or score is not None
+
+    # Indexability turns on this lot having a record of its own.
+    #
+    # It used to also pass on `score is not None`, and the score is ZIP-level,
+    # so every parcel in a scored ZIP was "index, follow". Measured: 596,432
+    # parcels with no deed, no eviction, no violation and no permit were
+    # telling Google to index 429 words of boilerplate that runs **81%**
+    # identical page to page. That is the doorway-page failure the SEO plan
+    # warns about, arriving through the robots tag rather than the sitemap,
+    # which is why a sitemap-only reading of the problem missed it.
+    #
+    # The windowed lists above cover twelve months; robots policy should not
+    # flip because a building's only eviction aged out, so the all-time facts
+    # decide it.
+    has_signals = bool(
+        (facts or {}).get("documents")
+        or ((facts or {}).get("evictions") or {}).get("n")
+        or (facts or {}).get("violations")
+        or (facts or {}).get("rs")
+        or owners or evicts or permits
+    )
 
     def _section(h2, note, heads, rows):
         if not rows:
@@ -5768,6 +5788,36 @@ def _is_buyer_entity(name: str) -> bool:
     return bool(_ENTITY_FORM_RE.search(name)) and not _NOT_A_BUYER_RE.search(name)
 
 
+# How many actual buildings sit behind an entity's deeds.
+#
+# A condominium records one deed per unit, so a raw lot count reads as
+# portfolio breadth it does not have. The old rule proxied for this with
+# "2+ tax blocks", which does exclude a whole-condo buy but also excludes a
+# genuine three-building portfolio that happens to sit on one block. That cost
+# real traffic: NORWORTH HOLDINGS LLC is three buildings on one block, it was
+# noindex and unsitemapped, and it earned 3 of the site's 5 total clicks.
+#
+# Collapsing unit lots (1001 and up) to their block counts what a reader would
+# count. Verified against both failure modes: NORWORTH scores 3, while
+# JOBER EXECUTIVE HOUSE LLC's 53 unit deeds score 1.
+_BUILDING_KEY_SQL = (
+    "substring(bbl, 1, 6) || CASE WHEN substring(bbl, 7, 4) >= '1001' "
+    "THEN '0000' ELSE substring(bbl, 7, 4) END"
+)
+_LLC_MIN_BUILDINGS = 3
+
+
+def _building_count(bbls) -> int:
+    """Python twin of _BUILDING_KEY_SQL, for the route's own robots decision."""
+    keys = set()
+    for bbl in bbls:
+        if not bbl or len(bbl) < 10:
+            continue
+        block, lot = bbl[:6], bbl[6:10]
+        keys.add(block + ("0000" if lot >= "1001" else lot))
+    return len(keys)
+
+
 def _lot_label(bbls: int, blocks: int) -> str:
     """Whole-condo purchases record one deed per unit, so a raw lot count
     reads as portfolio breadth it does not have."""
@@ -5869,7 +5919,7 @@ def llc_directory(db: Session = Depends(get_db)):
           AND party_name_normalized LIKE '%LLC%'
         GROUP BY 1, 2
         HAVING count(DISTINCT bbl) >= 3
-           AND count(DISTINCT substring(bbl, 1, 6)) >= 2
+           AND count(DISTINCT ({_BUILDING_KEY_SQL})) >= {_LLC_MIN_BUILDINGS}
         ORDER BY blocks DESC, bbls DESC, last_seen DESC LIMIT 100
     """)).fetchall()
 
@@ -6477,8 +6527,9 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
 
     # Thin-page guard: a whole-condo purchase is one building however
     # many unit deeds it records, and servicers are not buyers.
+    n_buildings = _building_count(r.bbl for r in buys)
     is_indexable = (_is_buyer_entity(name) and "LLC" in name
-                    and n_bbls >= 3 and n_blocks >= 2)
+                    and n_bbls >= 3 and n_buildings >= _LLC_MIN_BUILDINGS)
     robots = "index, follow" if is_indexable else "noindex, follow"
     title = f"{name}: NYC property purchases, deed history | PulseCities"
     desc = (f"{name} appears as the buyer on {n_bbls} NYC "
