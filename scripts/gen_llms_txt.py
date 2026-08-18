@@ -147,25 +147,29 @@ Scoring methodology: each signal is normalized 0 to 100 relative to all NYC neig
 
 ## Key pages
 
-- https://pulsecities.com/: landing page with live stats, the week's verified eviction-flip finding, and top-risk neighborhoods
-- https://pulsecities.com/map: interactive heatmap of all NYC neighborhoods
-- https://pulsecities.com/neighborhoods: directory of every scored ZIP, grouped by borough and ranked
-- https://pulsecities.com/brooklyn (also /manhattan, /queens, /bronx, /staten-island): borough-level ranked ZIP lists
-- https://pulsecities.com/neighborhood/{{zip}}: per-neighborhood detail with signal breakdown and six-month score trend (e.g. /neighborhood/11216)
-- https://pulsecities.com/operators: directory of tracked LLC operator networks
-- https://pulsecities.com/operator/{{name}}: LLC operator portfolio profiles
-- https://pulsecities.com/flips: Flip Watch, citywide feed of buildings bought by an LLC and filed for renovation within 60 days
-- https://pulsecities.com/flips/editions: human-reviewed weekly editions of eviction-to-resale arcs with ACRIS document IDs
-- https://pulsecities.com/radar: Speculation Radar, one LLC taking 3+ buildings in one ZIP within 90 days
-- https://pulsecities.com/this-week: current week in NYC displacement (score movers, new filings, newest flips)
-- https://pulsecities.com/this-week/archive: every past weekly edition at /week/{{YYYY-Www}}
-- https://pulsecities.com/evictions: citywide marshal-eviction tracker, updated nightly
-- https://pulsecities.com/llc: every LLC on a recorded NYC deed, with per-entity deed pages at /llc/{{slug}}
-- https://pulsecities.com/who-owns-my-building: how to find the owner of any NYC address
-- https://pulsecities.com/is-my-building-rent-stabilized: how to check rent-stabilization status
-- https://pulsecities.com/press: verified findings with ACRIS document IDs and downloadable paper-trail CSVs
-- https://pulsecities.com/developers: public API documentation with endpoint reference and usage terms
-- https://pulsecities.com/methodology: full scoring methodology
+Markdown links, because the llms.txt convention is a link list and a bare URL
+reads as prose to the parsers that check it.
+
+- [Landing page](https://pulsecities.com/): live stats, the week's verified eviction-flip finding, and top-risk neighborhoods
+- [Interactive map](https://pulsecities.com/map): heatmap of all NYC neighborhoods
+- [Neighborhood directory](https://pulsecities.com/neighborhoods): every scored ZIP, grouped by borough and ranked
+- [Brooklyn](https://pulsecities.com/brooklyn), [Manhattan](https://pulsecities.com/manhattan), [Queens](https://pulsecities.com/queens), [Bronx](https://pulsecities.com/bronx), [Staten Island](https://pulsecities.com/staten-island): borough-level ranked ZIP lists
+- [Neighborhood detail](https://pulsecities.com/neighborhood/11216): signal breakdown and six-month score trend, one page per ZIP at /neighborhood/{{zip}}
+- [Displacement arcs](https://pulsecities.com/displacement): documented eviction-to-resale sequences with ACRIS document IDs
+- [Operator directory](https://pulsecities.com/operators): tracked LLC operator networks, with profiles at /operator/{{name}}
+- [Entity families](https://pulsecities.com/network/flgsp): portfolios held one LLC at a time, reassembled from shared names and filing addresses, at /network/{{slug}}
+- [Flip Watch](https://pulsecities.com/flips): buildings bought by an LLC and filed for renovation within 60 days
+- [Flip Watch editions](https://pulsecities.com/flips/editions): human-reviewed weekly eviction-to-resale arcs
+- [Speculation Radar](https://pulsecities.com/radar): one LLC taking 3+ buildings in one ZIP within 90 days
+- [This week](https://pulsecities.com/this-week): score movers, new filings and newest flips
+- [Weekly archive](https://pulsecities.com/this-week/archive): every past edition at /week/{{YYYY-Www}}
+- [Evictions tracker](https://pulsecities.com/evictions): citywide marshal executions, updated nightly, with per-neighborhood pages at /evictions/{{name}}
+- [LLC buyers](https://pulsecities.com/llc): every LLC on a recorded NYC deed, with per-entity ledgers at /llc/{{slug}}
+- [Who owns my building](https://pulsecities.com/who-owns-my-building): how to find the owner of any NYC address
+- [Is my building rent stabilized](https://pulsecities.com/is-my-building-rent-stabilized): how to check rent-stabilization status
+- [Press findings](https://pulsecities.com/press): verified findings with ACRIS document IDs and paper-trail CSVs
+- [API documentation](https://pulsecities.com/developers): endpoint reference and usage terms
+- [Methodology](https://pulsecities.com/methodology): full scoring methodology
 
 ## About
 
