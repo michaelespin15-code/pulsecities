@@ -115,8 +115,14 @@ class TestClusteringIsConservative:
         )
 
     def test_every_family_clears_the_building_floor(self):
-        thin = [f"{f['slug']}: {f['buildings']}" for f in FAMS.values()
-                if f["buildings"] < 5 or len(f["entities"]) < 3]
+        """Qualifies on whichever side is larger: a family that has sold its
+        whole portfolio held those buildings, and holds none now."""
+        thin = [
+            f"{f['slug']}: held {f['buildings']}, sold {f.get('sold', 0)}, "
+            f"{len(f['entities'])} entities"
+            for f in FAMS.values()
+            if max(f["buildings"], f.get("sold", 0)) < 5 or len(f["entities"]) < 3
+        ]
         assert not thin, "families under the floor:\n  " + "\n  ".join(thin)
 
     def test_condo_units_do_not_inflate_a_family(self):
@@ -247,3 +253,55 @@ class TestFamilyHubs:
 
     def test_unknown_family_is_404(self):
         assert client.get("/network/nosuchfamily").status_code == 404
+
+
+class TestSellerSideFamilies:
+    """Clustering buyers only made half of every portfolio trade invisible.
+    The 82-building sale of 2026-03-31 is the case: the buyers were 82 FLGSP
+    companies and the sellers were 1023/1038/1042 REALTY LLC and siblings,
+    which is just as much a family. A family that has sold everything still
+    held those buildings, and the exit is usually the more interesting half."""
+
+    def _seller_only(self):
+        return [(s, f) for s, f in FAMS.items()
+                if f.get("sold", 0) and not f["buildings"]]
+
+    def test_a_family_may_qualify_on_the_sold_side(self):
+        assert any(f.get("sold", 0) for f in FAMS.values()), \
+            "no family has a sold side; clustering is buyer-only again"
+
+    def test_seller_only_families_do_not_claim_zero_buildings(self):
+        """The page said 'holding 0 buildings between them' and titled itself
+        '0 NYC buildings', which reads as a broken page rather than a portfolio
+        that has been sold on."""
+        broken = []
+        for slug, fam in self._seller_only():
+            resp = client.get(f"/network/{slug}", follow_redirects=False)
+            if resp.status_code != 200:
+                continue
+            body = _text(resp.text)
+            title = re.search(r"<title>(.*?)</title>", resp.text)
+            if re.search(r"(?<![1-9])0 buildings", body):
+                broken.append(f"{slug}: body says 0 buildings")
+            if title and re.search(r"(?<![1-9])0 NYC buildings", title.group(1)):
+                broken.append(f"{slug}: title says 0 NYC buildings")
+        assert not broken, "\n  ".join(broken)
+
+    def test_seller_only_families_still_link_their_buildings(self):
+        """The holdings query filtered to party_type='2', so a family that had
+        sold everything rendered with no building links at all."""
+        for slug, fam in self._seller_only():
+            resp = client.get(f"/network/{slug}", follow_redirects=False)
+            if resp.status_code != 200:
+                continue
+            links = set(re.findall(r'href="/property/\d+"', resp.text))
+            assert links, f"/network/{slug} sold {fam['sold']} buildings and links to none"
+
+    def test_entity_wording_matches_the_side(self):
+        for slug, fam in self._seller_only():
+            resp = client.get(f"/network/{slug}", follow_redirects=False)
+            if resp.status_code != 200:
+                continue
+            body = _text(resp.text)
+            assert "appears as a buyer of record" not in body, \
+                f"/network/{slug} calls its sellers buyers"

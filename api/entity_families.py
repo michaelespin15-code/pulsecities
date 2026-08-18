@@ -113,21 +113,36 @@ class _Union:
 def compute_families(db, is_buyer_entity) -> dict[str, dict]:
     """Returns {slug: family}. `is_buyer_entity` is injected rather than
     imported so this module stays independent of the route layer."""
+    # Both sides of the deed, not just the buyer.
+    #
+    # Clustering buyers only made half of every portfolio trade invisible. The
+    # 82-building sale of 2026-03-31 is the case: the buyers were 82 companies
+    # named FLGSP, and the sellers were 1023 REALTY LLC, 1038 REALTY LLC and
+    # their siblings, which is just as much a family and was nowhere on the
+    # site. A seller family is often the more interesting one, because it is a
+    # portfolio being assembled or unwound rather than merely held.
     rows = db.execute(text(f"""
         SELECT party_name_normalized AS name,
                max(party_addr_1) AS addr,
                max(party_zip) AS pzip,
-               count(DISTINCT bbl) AS lots,
-               array_agg(DISTINCT ({_BUILDING_KEY_SQL})) AS building_keys,
+               count(DISTINCT bbl) FILTER (WHERE party_type = '2') AS lots,
+               coalesce(array_agg(DISTINCT ({_BUILDING_KEY_SQL}))
+                        FILTER (WHERE party_type = '2'), '{{}}') AS building_keys,
+               coalesce(array_agg(DISTINCT ({_BUILDING_KEY_SQL}))
+                        FILTER (WHERE party_type = '1'), '{{}}') AS sold_keys,
                max(doc_date) AS last_deed,
-               sum(doc_amount) FILTER (WHERE doc_amount > 0) AS volume
+               sum(doc_amount) FILTER (WHERE doc_amount > 0 AND party_type = '2') AS volume
         FROM ownership_raw
-        WHERE doc_type = 'DEED' AND party_type = '2'
+        WHERE doc_type = 'DEED'
+          AND party_type IN ('1', '2')
           AND party_name_normalized IS NOT NULL
         GROUP BY 1
     """)).fetchall()
 
-    # LLC-form buyers only: every member must have a /llc/ page to link to.
+    # LLC-form parties only: every member must have a /llc/ page to link to.
+    # is_buyer_entity is the same gate either way; it excludes servicers,
+    # trustees and referees, which are exactly the parties that appear on the
+    # selling side of a foreclosure without being an owner in any real sense.
     members = [r for r in rows if "LLC" in (r.name or "") and is_buyer_entity(r.name)]
     if not members:
         return {}
@@ -191,8 +206,11 @@ def compute_families(db, is_buyer_entity) -> dict[str, dict]:
         if len(names) < _MIN_ENTITIES:
             continue
         keys = {k for n in names for k in (info[n].building_keys or [])}
+        sold = {k for n in names for k in (info[n].sold_keys or [])}
         buildings = len(keys)
-        if buildings < _MIN_BUILDINGS:
+        # A family that has sold everything still held those buildings, and is
+        # often the story. Qualify on whichever side is larger.
+        if max(buildings, len(sold)) < _MIN_BUILDINGS:
             continue
 
         # Label with the name a reader would actually use. The shared stem
@@ -244,6 +262,7 @@ def compute_families(db, is_buyer_entity) -> dict[str, dict]:
             "label": label,
             "entities": sorted(names),
             "buildings": buildings,
+            "sold": len(sold),
             "lots": sum(int(info[n].lots or 0) for n in names),
             "volume": float(sum(info[n].volume or 0 for n in names)),
             "addresses": addrs,

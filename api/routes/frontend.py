@@ -7366,11 +7366,13 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
     holdings = db.execute(text("""
         SELECT o.bbl, max(p.address) AS address, max(p.zip_code) AS zip_code,
                max(n.name) AS hood, max(o.doc_date) AS last_deed,
-               max(o.doc_amount) AS amount
+               max(o.doc_amount) AS amount,
+               bool_or(o.party_type = '2') AS bought,
+               bool_or(o.party_type = '1') AS sold
         FROM ownership_raw o
         LEFT JOIN parcels p ON p.bbl = o.bbl
         LEFT JOIN neighborhoods n ON n.zip_code = p.zip_code
-        WHERE o.doc_type = 'DEED' AND o.party_type = '2'
+        WHERE o.doc_type = 'DEED' AND o.party_type IN ('1', '2')
           AND o.party_name_normalized = ANY(:names)
         GROUP BY o.bbl
         ORDER BY max(o.doc_date) DESC NULLS LAST
@@ -7410,10 +7412,22 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
     ranked = sorted(zips.items(), key=lambda kv: (-kv[1]["n"], kv[0]))
     dates = [h.last_deed for h in holdings if h.last_deed]
 
+    held, sold_n = fam["buildings"], fam.get("sold", 0)
+    if held and sold_n:
+        holding_line = (f", holding {_count(held, 'building')} between them and "
+                        f"having sold {sold_n:,} more")
+    elif held:
+        holding_line = f", holding {_count(held, 'building')} between them"
+    else:
+        # A family that has sold everything still held those buildings, and the
+        # exit is usually the more interesting half of the record.
+        holding_line = (f". Between them they have sold "
+                        f"{_count(sold_n, 'building')} and hold none in the "
+                        f"current record")
     lede = _para(
         f"{e(label)} appears in the NYC deed record as "
-        f"{_count(len(names), 'separate limited liability company')}, holding "
-        f"{_count(fam['buildings'], 'building')} between them.",
+        f"{_count(len(names), 'separate limited liability company')}"
+        f"{holding_line}.",
         # One filing date across a portfolio this size is the story, not a
         # formatting artefact, so it gets its own sentence.
         (f"Every one of those deeds was recorded on the same day, "
@@ -7425,7 +7439,7 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
          f"{_fmt_amount(fam['volume'])}." if fam.get("volume") else ""),
         (f"That is close to one building per company, which is what holding "
          f"property one LLC at a time looks like from the outside."
-         if fam["buildings"] <= len(names) * 1.3 else
+         if held and held <= len(names) * 1.3 else
          f"Nothing in the deed record puts these companies on the same page."),
     )
 
@@ -7434,9 +7448,11 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
         f'<div><div class="rec-addr">{e(_entity_title(n))}</div></div></a></li>'
         for n in names
     )
+    side_word = ("buyer" if held and not sold_n else
+                 "seller" if sold_n and not held else "buyer or seller")
     ent_sec = (f"<h2>The {e(label)} entities</h2>"
-               + _para(f"Every company below files as a buyer under the "
-                       f"{e(label)} name. Each has its own deed ledger.")
+               + _para(f"Every company below appears as a {side_word} of record "
+                       f"under the {e(label)} name. Each has its own deed ledger.")
                + f'<ul class="sib-list">{ent_rows}</ul>')
 
     bld_rows = "".join(
@@ -7448,7 +7464,7 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
         f'</a></li>'
         for h in holdings[:40]
     )
-    bld_sec = (f"<h2>What {e(label)} holds</h2>"
+    bld_sec = (f"<h2>{'What ' + e(label) + ' holds' if held else 'What ' + e(label) + ' sold'}</h2>"
                + _para(f"The buildings behind those companies, newest deed first."
                        + (f" Showing 40 of {len(holdings):,}." if len(holdings) > 40 else ""))
                + f'<ul class="sib-list">{bld_rows}</ul>') if holdings else ""
@@ -7510,15 +7526,23 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
     faq = [
         (f"Who is {label}?",
          f"{label} is the name shared by {len(names)} limited liability companies "
-         f"that appear as buyers in the NYC deed record, holding "
-         f"{fam['buildings']} buildings between them. The deed record shows the "
-         f"shared name and the shared filing address; it does not name the people "
-         f"behind the companies."),
-        (f"How many NYC buildings does {label} own?",
-         f"{fam['buildings']} buildings across {len(names)} companies, counted "
-         f"from deeds filed with the city. Condominium unit deeds are collapsed "
-         f"to the building they sit in, so a whole-condo purchase does not read "
-         f"as a portfolio."),
+         f"that appear as parties in the NYC deed record, "
+         + (f"holding {held} buildings between them. " if held else
+            f"having sold {sold_n} buildings between them and holding none in the "
+            f"current record. ")
+         + f"The deed record shows the shared name and the shared filing address; "
+           f"it does not name the people behind the companies."),
+        ((f"How many NYC buildings does {label} own?" if held else
+          f"What did {label} sell?"),
+         (f"{held} buildings across {len(names)} companies, counted from deeds "
+          f"filed with the city."
+          + (f" It has also sold {sold_n}." if sold_n else "")
+          if held else
+          f"{sold_n} buildings across {len(names)} companies. Every one has been "
+          f"sold on, so this family holds nothing in the current record: it is a "
+          f"portfolio that has already been unwound.")
+         + " Condominium unit deeds are collapsed to the building they sit in, "
+           "so a whole-condo purchase does not read as a portfolio."),
         (f"Why is {label} split across so many companies?",
          "Holding each building in its own limited liability company is standard "
          "practice in New York: it separates liability between buildings, "
@@ -7538,11 +7562,12 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
         f'<div class="faq-item"><h3>{e(q)}</h3><p>{e(a)}</p></div>' for q, a in faq
     )
 
-    title = (f"{label}: {fam['buildings']} NYC buildings across "
-             f"{len(names)} LLCs | PulseCities")
+    n_shown = held or sold_n
+    verb = "holding" if held else "that sold"
+    title = f"{label}: {n_shown} NYC buildings across {len(names)} LLCs | PulseCities"
     desc = (f"{label} appears in the NYC deed record as {len(names)} separate LLCs "
-            f"holding {fam['buildings']} buildings. Every company and every "
-            f"building, from ACRIS public records.")
+            f"{verb} {n_shown} buildings. Every company and every building, from "
+            f"ACRIS public records.")
     if len(desc) > 165:
         desc = desc[:162].rsplit(" ", 1)[0] + "."
     url = f"https://pulsecities.com/network/{slug}"
@@ -7558,8 +7583,10 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
     stats = (
         f'<div class="stat"><div class="stat-num">{len(names)}</div>'
         f'<div class="stat-label">companies</div></div>'
-        f'<div class="stat"><div class="stat-num">{fam["buildings"]}</div>'
-        f'<div class="stat-label">buildings</div></div>'
+        + (f'<div class="stat"><div class="stat-num">{held}</div>'
+           f'<div class="stat-label">buildings held</div></div>' if held else "")
+        + (f'<div class="stat"><div class="stat-num">{sold_n}</div>'
+           f'<div class="stat-label">buildings sold</div></div>' if sold_n else "")
         + (f'<div class="stat"><div class="stat-num">{len(ranked)}</div>'
            f'<div class="stat-label">ZIP codes</div></div>' if ranked else "")
     )
