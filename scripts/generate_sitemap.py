@@ -155,6 +155,24 @@ def build() -> dict[str, str]:
         # uses for index,follow so the sitemap never lists a noindex page.
         from api.routes.frontend import _EV_AREA_MIN, _ev_area_slug
 
+        # Entity families, gated in api/entity_families.py. A family whose
+        # entities are already covered by a curated /operator profile 301s
+        # there, so it must not be listed here as its own URL.
+        from api.entity_families import compute_families
+        from api.routes.frontend import _is_buyer_entity
+
+        curated_entities = set()
+        for row in db.execute(text(
+            "SELECT jsonb_array_elements_text(llc_entities) AS name FROM operators "
+            "WHERE operator_class = 'operator' AND llc_entities IS NOT NULL"
+        )).fetchall():
+            curated_entities.add(row.name)
+        families = [
+            (f["slug"], f["last_deed"].isoformat() if f["last_deed"] else today)
+            for f in compute_families(db, _is_buyer_entity).values()
+            if not (set(f["entities"]) & curated_entities)
+        ]
+
         eviction_areas = [
             (_ev_area_slug(r.name), r.last.isoformat() if r.last else today)
             for r in db.execute(text("""
@@ -175,7 +193,7 @@ def build() -> dict[str, str]:
         # NORWORTH HOLDINGS LLC, three buildings on one block, which had earned
         # 3 of the site's 5 total clicks while marked noindex.
         from api.routes.frontend import (
-            _BUILDING_KEY_SQL, _is_buyer_entity, _LLC_MIN_BUILDINGS, _LLC_SLUG_RE,
+            _BUILDING_KEY_SQL, _LLC_MIN_BUILDINGS, _LLC_SLUG_RE,
         )
 
         llc_rows = db.execute(text(f"""
@@ -237,6 +255,10 @@ def build() -> dict[str, str]:
     # of unserved demand in the search exports.
     for slug, last_evict in eviction_areas:
         core.append((f"/evictions/{slug}", "weekly", "0.7", last_evict))
+    # Entity families. Substantial by construction and the only pages that
+    # reassemble a portfolio held one LLC at a time.
+    for slug, last_deed in families:
+        core.append((f"/network/{slug}", "monthly", "0.7", last_deed))
 
     # changefreq is "monthly" because a property page changes when a record
     # lands, which for most lots is never. The old blanket "weekly" was a claim

@@ -1507,7 +1507,13 @@ def _plural(n: int, one: str, many: str = "") -> str:
     if sep:
         return f"{head}s of {tail}"
     words = one.split()
-    words[-1] += "es" if words[-1].endswith(("s", "x", "z", "ch", "sh")) else "s"
+    head = words[-1]
+    if head.endswith("y") and len(head) > 1 and head[-2] not in "aeiou":
+        words[-1] = head[:-1] + "ies"          # entity -> entities
+    elif head.endswith(("s", "x", "z", "ch", "sh")):
+        words[-1] = head + "es"                # address -> addresses
+    else:
+        words[-1] = head + "s"
     return " ".join(words)
 
 
@@ -6571,6 +6577,23 @@ def llc_directory(db: Session = Depends(get_db)):
             "url": f"https://pulsecities.com/llc/{r.slug}",
         })
 
+    # Families are the answer to "these forty names are one landlord", so the
+    # directory that lists the names should say so.
+    fams = sorted(_families(db).values(), key=lambda f: -f["buildings"])
+    fam_links = " &middot; ".join(
+        f'<a href="/network/{esc(f["slug"])}">{esc(f["label"])}</a> '
+        f'({f["buildings"]} buildings)'
+        for f in fams
+    )
+    family_section = (
+        '  <h2 style="font-family:\'Bricolage Grotesque\',\'DM Sans\',sans-serif;'
+        'font-size:1.05rem;font-weight:600;margin:34px 0 4px;">Entities that belong together</h2>\n'
+        '  <p class="sub">Some of the names above are one operation filing under many '
+        'companies. Where a shared naming pattern and a shared filing address both '
+        'agree, PulseCities groups them.</p>\n'
+        f'  <p class="cross" style="line-height:2;margin-top:8px;">{fam_links}</p>\n'
+    ) if fam_links else ""
+
     title = "NYC LLC property buyers: the deed record | PulseCities"
     desc = ("The most active LLC buyers in NYC's deed record, ranked by properties "
             "acquired, each with its full purchase history from ACRIS public records.")
@@ -6598,6 +6621,7 @@ def llc_directory(db: Session = Depends(get_db)):
   <p class="sub">Every entity below appears as the buyer on three or more NYC deeds, across more than one building. The deed record here begins in 2025. Each page lists that entity's recorded deeds, with links to every building. Curated operator networks live in the <a href="/operators" style="color:#6fb1d8;">operator directory</a>; this is the raw ledger.</p>
   <ul class="rec-list" style="margin-top:18px;">
 {items}  </ul>
+{family_section}
   <p class="note">A deed names a buyer of record. Appearing here describes documents, not conduct. <a href="/methodology">How PulseCities reads the record &rarr;</a></p>
 </div>
 {_FOOTER_HTML}
@@ -6782,6 +6806,20 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
     if network:
         network_line = (f'<p class="cross" style="margin-top:10px;">This entity is part of the '
                         f'<a href="/operator/{esc(network.slug)}">{esc(network.display_name)} network &rarr;</a></p>')
+    else:
+        # Derived family. An LLC page used to link to its own buildings and
+        # nothing else, so a portfolio held one company at a time read as a
+        # portfolio of strangers.
+        fam = next((f for f in _families(db).values() if name in f["entities"]), None)
+        if fam:
+            others = len(fam["entities"]) - 1
+            network_line = (
+                f'<p class="cross" style="margin-top:10px;">The deed record links this '
+                f'entity to {_count(others, "other company")} filing under the '
+                f'{esc(fam["label"])} name, holding {fam["buildings"]} buildings between '
+                f'them. <a href="/network/{esc(fam["slug"])}">The {esc(fam["label"])} '
+                f'entities &rarr;</a></p>'
+            )
 
     # --- The reading of the ledger -------------------------------------------
     # The page listed deeds and said almost nothing about them. Everything
@@ -6949,12 +6987,19 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
                 f"{esc(_entity_title(filings.addr))}"
                 + (f", {esc(_entity_title(where))}." if where else ".")
             )
+            # This sentence used to say a shared filing address is "how the
+            # same operation appears as many names". Checked against the data,
+            # that is often false: 525 6th Avenue files for APPLEBAUM SPENCER,
+            # CHEN DOROTHY and GOPSTEIN SHELDON, which is a lawyer's office and
+            # not a landlord. State the fact, name both readings, assert
+            # neither.
             fl.append(
                 f"{_count(int(filings.entities), 'separate buying entity')} in the "
                 f"deed record {'files' if filings.entities == 1 else 'file'} from that "
-                f"same address. Numbered LLCs sharing one filing address is the "
-                f"ordinary shape of a portfolio held one building at a time, and it "
-                f"is how the same operation appears as many names."
+                f"same address. That can mean one operation holding buildings one "
+                f"LLC at a time, or simply a managing agent, attorney or title "
+                f"company filing on behalf of clients who have nothing to do with "
+                f"each other. The deed does not say which."
             )
         elif where:
             fl.append(
@@ -7235,6 +7280,305 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
         if len(_llc_page_cache) >= 512:
             _llc_page_cache.clear()
     _llc_page_cache[slug] = (page, time.monotonic() + _PAGE_TTL)
+    return HTMLResponse(page)
+
+
+# --- Entity families: the operation behind the numbered LLCs ------------------
+#
+# The one genuinely new page type the SEO plan asks for. 122 LLC pages were
+# isolated: an entity page linked to its own buildings and to nothing else, so
+# a portfolio held one building at a time read as a portfolio of strangers.
+#
+# The clustering lives in api/entity_families.py, and the reason it is
+# conservative is documented there: a shared filing address alone groups
+# attorneys with their clients. 15 families survive corroboration, covering 166
+# entities. The largest, FLGSP, is 80 entities across 80 buildings filed
+# through three management addresses, which is invisible in the record as 80
+# separate companies.
+
+_family_cache: tuple[dict, float] | None = None
+_FAMILY_TTL = 21600
+_family_page_cache: dict[str, tuple[str, float]] = {}
+
+
+def _families(db) -> dict:
+    """All families, memoised. The computation reads every buyer entity, so it
+    runs once per TTL rather than once per request."""
+    global _family_cache
+    if _family_cache and time.monotonic() < _family_cache[1]:
+        return _family_cache[0]
+    from api.entity_families import compute_families
+    fams = compute_families(db, _is_buyer_entity)
+    _family_cache = (fams, time.monotonic() + _FAMILY_TTL)
+    return fams
+
+
+@router.get("/network/{slug}", include_in_schema=False)
+def entity_family_page(slug: str, db: Session = Depends(get_db)):
+    slug = (slug or "").lower()
+    if not re.match(r"^[a-z0-9][a-z0-9-]{1,70}$", slug):
+        return _not_found()
+
+    hit = _family_page_cache.get(slug)
+    if hit and time.monotonic() < hit[1]:
+        return HTMLResponse(hit[0])
+
+    fam = _families(db).get(slug)
+    if not fam:
+        return _not_found()
+
+    # A curated operator profile already covers some of these. Two pages about
+    # one operation would compete with each other, so the derived hub defers.
+    curated = db.execute(text("""
+        SELECT slug, display_name FROM operators
+        WHERE operator_class = 'operator'
+          AND EXISTS (
+              SELECT 1 FROM jsonb_array_elements_text(llc_entities) AS ent(name)
+              WHERE ent.name = ANY(:names)
+          )
+        LIMIT 1
+    """), {"names": fam["entities"]}).first()
+    if curated:
+        return RedirectResponse(f"/operator/{curated.slug}", status_code=301)
+
+    e = _html.escape
+    label = fam["label"]
+    names = fam["entities"]
+
+    holdings = db.execute(text("""
+        SELECT o.bbl, max(p.address) AS address, max(p.zip_code) AS zip_code,
+               max(n.name) AS hood, max(o.doc_date) AS last_deed,
+               max(o.doc_amount) AS amount
+        FROM ownership_raw o
+        LEFT JOIN parcels p ON p.bbl = o.bbl
+        LEFT JOIN neighborhoods n ON n.zip_code = p.zip_code
+        WHERE o.doc_type = 'DEED' AND o.party_type = '2'
+          AND o.party_name_normalized = ANY(:names)
+        GROUP BY o.bbl
+        ORDER BY max(o.doc_date) DESC NULLS LAST
+    """), {"names": names}).fetchall()
+
+    record = db.execute(text("""
+        WITH held AS (
+            SELECT DISTINCT bbl FROM ownership_raw
+            WHERE doc_type = 'DEED' AND party_type = '2'
+              AND party_name_normalized = ANY(:names)
+        )
+        SELECT
+            count(*) FILTER (WHERE EXISTS (
+                SELECT 1 FROM evictions_raw ev WHERE ev.bbl = h.bbl)) AS with_eviction,
+            (SELECT count(*) FROM evictions_raw ev2
+             WHERE ev2.bbl IN (SELECT bbl FROM held)) AS evictions,
+            count(*) FILTER (WHERE EXISTS (
+                SELECT 1 FROM violations_raw v WHERE v.bbl = h.bbl
+                  AND v.current_status NOT IN :resolved)) AS with_violation,
+            count(*) FILTER (WHERE EXISTS (
+                SELECT 1 FROM rs_buildings rs WHERE rs.bbl = h.bbl
+                  AND rs.source = 'dhcr' AND rs.rs_unit_count > 0)) AS with_rs
+        FROM held h
+    """), {"names": names, "resolved": _VIOLATION_RESOLVED}).first()
+
+    def _para(*parts) -> str:
+        body = " ".join(x for x in parts if x)
+        return f'<p class="prose">{body}</p>' if body else ""
+
+    zips: dict[str, dict] = {}
+    for h in holdings:
+        if h.zip_code:
+            z = zips.setdefault(h.zip_code, {"n": 0, "hood": h.hood or ""})
+            z["n"] += 1
+            if h.hood and not z["hood"]:
+                z["hood"] = h.hood
+    ranked = sorted(zips.items(), key=lambda kv: (-kv[1]["n"], kv[0]))
+    dates = [h.last_deed for h in holdings if h.last_deed]
+
+    lede = _para(
+        f"{e(label)} appears in the NYC deed record as "
+        f"{_count(len(names), 'separate limited liability company')}, holding "
+        f"{_count(fam['buildings'], 'building')} between them.",
+        # One filing date across a portfolio this size is the story, not a
+        # formatting artefact, so it gets its own sentence.
+        (f"Every one of those deeds was recorded on the same day, "
+         f"{_en_date(dates[0])}." if dates and min(dates) == max(dates)
+         else f"The deeds run from {_en_date(min(dates))} to {_en_date(max(dates))}."
+         if len(dates) > 1 else ""),
+        (f"They sit in {_count(len(ranked), 'ZIP code')}." if ranked else ""),
+        (f"Stated consideration across the priced deeds totals "
+         f"{_fmt_amount(fam['volume'])}." if fam.get("volume") else ""),
+        (f"That is close to one building per company, which is what holding "
+         f"property one LLC at a time looks like from the outside."
+         if fam["buildings"] <= len(names) * 1.3 else
+         f"Nothing in the deed record puts these companies on the same page."),
+    )
+
+    ent_rows = "".join(
+        f'<li class="rec-row"><a href="/llc/{e(re.sub(r"[^a-z0-9]+", "-", n.lower()).strip("-"))}">'
+        f'<div><div class="rec-addr">{e(_entity_title(n))}</div></div></a></li>'
+        for n in names
+    )
+    ent_sec = (f"<h2>The {e(label)} entities</h2>"
+               + _para(f"Every company below files as a buyer under the "
+                       f"{e(label)} name. Each has its own deed ledger.")
+               + f'<ul class="sib-list">{ent_rows}</ul>')
+
+    bld_rows = "".join(
+        f'<li class="rec-row"><a href="/property/{e(str(h.bbl))}">'
+        f'<div><div class="rec-addr">'
+        f'{e(_addr_title(h.address)) if h.address else "BBL " + e(str(h.bbl))}</div>'
+        f'<div class="rec-geo">{e((h.hood + ", ") if h.hood else "")}{e(h.zip_code or "")}</div></div>'
+        f'<div class="rec-side"><div class="rec-date">{_en_date(h.last_deed)}</div></div>'
+        f'</a></li>'
+        for h in holdings[:40]
+    )
+    bld_sec = (f"<h2>What {e(label)} holds</h2>"
+               + _para(f"The buildings behind those companies, newest deed first."
+                       + (f" Showing 40 of {len(holdings):,}." if len(holdings) > 40 else ""))
+               + f'<ul class="sib-list">{bld_rows}</ul>') if holdings else ""
+
+    geo_sec = ""
+    if ranked:
+        top = ranked[0]
+        links = ", ".join(
+            f'<a href="/neighborhood/{e(z)}">{e(v["hood"] or z)} {e(z)}</a> ({v["n"]})'
+            for z, v in ranked[:8]
+        )
+        geo_sec = f"<h2>Where {e(label)} buys</h2>" + _para(
+            f"The heaviest concentration is {e(top[0])}"
+            + (f" ({e(top[1]['hood'])})" if top[1]["hood"] else "")
+            + f", with {_count(top[1]['n'], 'building')}.",
+            f"Across the portfolio: {links}."
+        )
+
+    rec_sec = ""
+    if record:
+        rp = []
+        if record.with_eviction:
+            rp.append(
+                f"{_count_open(int(record.with_eviction), 'building')} in this "
+                f"portfolio {'carries' if record.with_eviction == 1 else 'carry'} "
+                f"an executed marshal eviction, {int(record.evictions):,} in total."
+            )
+        else:
+            rp.append("No building in this portfolio carries an executed "
+                      "marshal eviction in the citywide record.")
+        if record.with_violation:
+            rp.append(
+                f"{_count_open(int(record.with_violation), 'building')} "
+                f"{'has' if record.with_violation == 1 else 'have'} unresolved "
+                f"HPD or DOB violations on file."
+            )
+        if record.with_rs:
+            rp.append(
+                f"{_count_open(int(record.with_rs), 'building')} "
+                f"{'appears' if record.with_rs == 1 else 'appear'} in DHCR "
+                f"rent-stabilization registrations."
+            )
+        rec_sec = f"<h2>What the buildings carry</h2>" + _para(*rp)
+
+    how_sec = "<h2>How the record links these companies</h2>" + _para(
+        f"PulseCities groups entities only where two independent things in the "
+        f"public record agree: a shared naming pattern across numbered siblings, "
+        f"and a shared mailing address on the deed filings themselves.",
+        f"One signal alone is not enough. Dozens of unrelated companies file "
+        f"from a single attorney's or title company's address, and grouping on "
+        f"that would invent a landlord who does not exist. Roughly seven in ten "
+        f"shared-address groups in the deed record fail this test and are not "
+        f"shown as families anywhere on this site.",
+        f"What that leaves is a documented link, not a finding about ownership. "
+        f"The deeds say these companies share a name and a mailing address. They "
+        f"do not say who controls them."
+    )
+
+    faq = [
+        (f"Who is {label}?",
+         f"{label} is the name shared by {len(names)} limited liability companies "
+         f"that appear as buyers in the NYC deed record, holding "
+         f"{fam['buildings']} buildings between them. The deed record shows the "
+         f"shared name and the shared filing address; it does not name the people "
+         f"behind the companies."),
+        (f"How many NYC buildings does {label} own?",
+         f"{fam['buildings']} buildings across {len(names)} companies, counted "
+         f"from deeds filed with the city. Condominium unit deeds are collapsed "
+         f"to the building they sit in, so a whole-condo purchase does not read "
+         f"as a portfolio."),
+        (f"Why is {label} split across so many companies?",
+         "Holding each building in its own limited liability company is standard "
+         "practice in New York: it separates liability between buildings, "
+         "simplifies financing and makes a later sale cleaner. The side effect "
+         "is that one owner appears in the public record as many unrelated "
+         "names, which is what this page undoes."),
+    ]
+    if record and record.with_eviction:
+        faq.append((
+            f"Have there been evictions in {label} buildings?",
+            f"{int(record.evictions):,} executed marshal evictions appear across "
+            f"{int(record.with_eviction)} of its buildings. PulseCities reports "
+            f"what the public record contains and makes no claim about why any "
+            f"eviction happened.",
+        ))
+    faq_html = "".join(
+        f'<div class="faq-item"><h3>{e(q)}</h3><p>{e(a)}</p></div>' for q, a in faq
+    )
+
+    title = (f"{label}: {fam['buildings']} NYC buildings across "
+             f"{len(names)} LLCs | PulseCities")
+    desc = (f"{label} appears in the NYC deed record as {len(names)} separate LLCs "
+            f"holding {fam['buildings']} buildings. Every company and every "
+            f"building, from ACRIS public records.")
+    if len(desc) > 165:
+        desc = desc[:162].rsplit(" ", 1)[0] + "."
+    url = f"https://pulsecities.com/network/{slug}"
+    jsonld = _jsonld({"@context": "https://schema.org", "@graph": [
+        {"@type": "Organization", "name": label, "url": url,
+         "subOrganization": [{"@type": "Organization", "name": n} for n in names[:50]]},
+        {"@type": "FAQPage", "mainEntity": [
+            {"@type": "Question", "name": q,
+             "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]},
+        _crumbs(("Home", "/"), ("LLC buyers", "/llc"), (label, f"/network/{slug}")),
+    ]})
+
+    stats = (
+        f'<div class="stat"><div class="stat-num">{len(names)}</div>'
+        f'<div class="stat-label">companies</div></div>'
+        f'<div class="stat"><div class="stat-num">{fam["buildings"]}</div>'
+        f'<div class="stat-label">buildings</div></div>'
+        + (f'<div class="stat"><div class="stat-num">{len(ranked)}</div>'
+           f'<div class="stat-label">ZIP codes</div></div>' if ranked else "")
+    )
+
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+{_llc_head(title, desc, url, "index, follow", jsonld)}
+</head>
+<body>
+{_ssr_nav("", toggle_html="")}
+<div class="container" style="max-width:760px;">
+  <p style="margin-bottom:8px;font-size:0.75rem;color:var(--faint);">
+    <a href="/">Home</a> &middot; <a href="/llc">LLC buyers</a>
+  </p>
+  <div class="eyebrow">NYC deed record</div>
+  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.6rem;letter-spacing:0;font-weight:600;">{e(label)}</h1>
+  <div class="stats">{stats}</div>
+  {lede}
+  {ent_sec}
+  {bld_sec}
+  {geo_sec}
+  {rec_sec}
+  {how_sec}
+  <h2>Common questions</h2>
+  {faq_html}
+  <p class="note">A deed names a buyer of record. This page describes documents,
+  not conduct, and makes no claim of wrongdoing.
+  <a href="/methodology">How PulseCities reads the record &rarr;</a></p>
+</div>
+{_FOOTER_HTML}
+</body>
+</html>"""
+
+    if len(_family_page_cache) >= 128:
+        _family_page_cache.clear()
+    _family_page_cache[slug] = (page, time.monotonic() + _FAMILY_TTL)
     return HTMLResponse(page)
 
 
