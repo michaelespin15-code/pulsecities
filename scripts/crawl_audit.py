@@ -218,9 +218,15 @@ for ua, name in [
     time.sleep(PACE)
     rr = get(probe, headers={"User-Agent": ua})
     (OK if rr.status_code == 200 else FAIL)(f"{name}: {probe} returns {rr.status_code}")
-if "IndexNow" not in robots:
-    WARN("no IndexNow key file referenced; Bing/Yandex accept instant submission "
-         "and it is the one Bing-specific lever available")
+# IndexNow ownership is proved by a key file at the site root, not by a
+# robots.txt line: robots.txt has no such directive and validators mark one as
+# an error. So probe for a key file rather than reading robots.
+_probe = get("/4494ce2738a74028c1babaef305aec53.txt")
+if _probe.status_code == 200 and _probe.text.strip():
+    OK("IndexNow key file serves; instant submission is available to Bing and Yandex")
+else:
+    WARN("no IndexNow key file at the site root; Bing/Yandex accept instant "
+         "submission and it is the one Bing-specific lever available")
 
 print("\n" + "=" * 60)
 print(f"PASS {len(ok)}   WARN {len(warn)}   FAIL {len(fail)}")

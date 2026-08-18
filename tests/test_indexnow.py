@@ -36,11 +36,13 @@ class TestKeyMaterial:
         assert 8 <= len(KEY) <= 128
         assert all(c in "0123456789abcdefABCDEF-" for c in KEY)
 
-    def test_robots_names_the_same_key(self):
-        line = [l for l in ROBOTS.read_text().splitlines()
-                if l.lower().startswith("indexnow:")]
-        assert line, "robots.txt does not reference the IndexNow key"
-        assert line[0].split(":", 1)[1].strip() == KEY
+    def test_robots_carries_no_indexnow_directive(self):
+        """The key file at the site root is the proof of ownership. An
+        `IndexNow:` line in robots.txt adds nothing and Lighthouse scores it as
+        an unknown directive, which cost 8 SEO points the day it was added."""
+        bad = [l for l in ROBOTS.read_text().splitlines()
+               if l.strip().lower().startswith("indexnow:")]
+        assert not bad, f"robots.txt carries a non-standard directive: {bad}"
 
     def test_key_file_is_world_readable(self):
         """nginx workers serve it from disk; 0600 means a 403 and a dead key."""

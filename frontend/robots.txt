@@ -4,7 +4,3 @@ Disallow: /ops
 Disallow: /api/
 
 Sitemap: https://pulsecities.com/sitemap.xml
-
-# IndexNow key, for Bing and Yandex instant submission. The key file
-# at the site root is the proof of ownership.
-IndexNow: 4494ce2738a74028c1babaef305aec53
