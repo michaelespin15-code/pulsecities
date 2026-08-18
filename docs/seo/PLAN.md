@@ -1,5 +1,39 @@
 # SEO plan — written 2026-08-18, act on this directly
 
+## Status: step 1 is DONE and live. Start at step 2.
+
+Shipped 2026-08-18, same day: `/property` and `/llc` deepened with FAQ blocks,
+`ItemList` on `/llc`, and the internal linking of step 3 as far as those two
+templates reach. Measured across 180 live pages: property 479-640 visible words
+(from 100), LLC 450-777 (from 84-210), no page under the 450 floor, FAQPage on
+both. Guarded by `tests/test_content_depth.py`.
+
+**One acceptance criterion below was wrong and has been replaced.** "Two LLC
+pages share <50% of unique vocabulary" is not achievable and does not measure
+duplication: `/neighborhood`, the template this plan holds up as the good one,
+scores **92-97%** on it. Any two pages in one language on one subject share
+nearly all their word types. The replacement is 5-gram containment over tokens
+that include digits, which is what near-duplicate detection actually runs on.
+On that measure: hand-written hubs 0-1%, deepened property/LLC mean 49-50%,
+`/neighborhood` 68-69%. Do not re-derive the vocabulary number; it is noise.
+
+Two data findings from doing the work, both of which change later steps:
+
+- **ACRIS party addresses are populated**, contrary to the note that killed
+  entity resolution step 3. 19,511 buyer-side deed rows carry one, and they
+  cluster hard: 42 separate entities file from one Midtown suite, 35 from
+  another, 27 from 520 Fifth Avenue. **This is a better spine for the step 2
+  family hubs than numbered name stems**, and it is the unblock for entity
+  resolution. LLC pages now use it, printing the street line only where two or
+  more entities share it.
+- **17,114 of 64,849 deed BBLs (26%) are condo unit lots absent from PLUTO**,
+  so a quarter of the deed record joined to no address, ZIP, or neighbourhood.
+  LLC pages now recover the ZIP from the tax block where the block sits in one
+  ZIP (92% of blocks) and say plainly when a lot resolves to no building file.
+  The addresses are still missing and that is a real ingestion gap.
+
+---
+
 **Read this file and `docs/seo/baseline_2026-08-18.md`. Nothing else is needed to start.**
 Michael pulled Google Search Console, Bing Webmaster and the Bing crawl export on
 2026-08-18; every claim below was verified against the database or the live site, not
@@ -20,7 +54,7 @@ problem no code change touches.
 
 ## Do these, in this order
 
-### 1. Deepen `/property` and `/llc`, with FAQ blocks as the vehicle
+### 1. Deepen `/property` and `/llc`, with FAQ blocks as the vehicle  — DONE 2026-08-18
 
 These are 1,914 of 2,159 sitemap URLs and the thinnest templates on the site. Their
 demand also arrives phrased as questions ("who owns this building", "how much did
@@ -42,8 +76,18 @@ Do it as one task, not two. The FAQ *is* the prose these pages lack.
 - Follow the existing FAQPage pattern in `/evictions`, `/who-owns-my-building`,
   `/neighborhood`, `/is-my-building-rent-stabilized`.
 
-**Acceptance:** both templates >450 visible words; two different LLC pages share
-<50% of unique vocabulary (82% today); FAQPage validates.
+**Acceptance (met):** both templates >450 visible words; FAQPage validates. The
+vocabulary criterion was replaced, see the status note at the top.
+
+What shipped beyond the list above, because the record was already there and
+nothing was reading it: open violations by HPD/DOB class, a building-against-its-ZIP
+comparison, the deed-record end date on both templates (the `/flips` honesty rule,
+which these 1,914 pages were breaking), and, on LLC pages, the portfolio's own
+eviction and violation record, the filing-address cluster, and the ZIP
+displacement scores. Two correctness fixes fell out of it: the transfers table
+rendered one row per ACRIS *party*, so every deed appeared twice and the seller
+sat under a column headed "Buyer" on all 82,756 parcels with a deed; and entity
+names were being `str.title()`d into "Llc".
 
 ### 2. Build entity-family hubs — the one genuinely new page type
 
@@ -57,10 +101,16 @@ internal links, matches demand Bing already logged by name (`bredif ms seller ll
 
 **Acceptance:** 49 hubs; every LLC page links to its family; family pages >600 words.
 
-### 3. Fix internal linking (free authority routing, nothing external needed)
+### 3. Fix internal linking (free authority routing, nothing external needed)  — PARTLY DONE
 
-Verified: an LLC page links only to nav plus its own properties. **It links to no
-sibling entity and to none of the neighbourhoods its buildings sit in.** With zero
+Done: every LLC page now links to the neighbourhoods it buys in (verified on 120
+of them, none without), and property pages link out to the rent-stabilization
+guide and to sibling buildings in the same owner network. **Still missing: the
+sibling-entity link**, which belongs with the family hubs in step 2.
+
+Original finding: an LLC page linked only to nav plus its own properties. **It
+linked to no sibling entity and to none of the neighbourhoods its buildings sit
+in.** With zero
 external backlinks, the internal graph is the only authority distribution available and
 it is currently shallow. Property → LLC → family → neighbourhood → borough should all
 be reciprocal.
@@ -94,7 +144,7 @@ to fill the new template", not on an arbitrary count.
 
 - `/operators` is **130 words**, the thinnest page on the site, and ranks for
   "biggest landlords in nyc". Add prose and rows.
-- `/llc` is the only directory page with no `ItemList` schema.
+- ~~`/llc` is the only directory page with no `ItemList` schema.~~ DONE 2026-08-18.
 - Retitle `/flips` ("Flip Watch") and `/radar` ("Speculation Radar") — brand names
   nobody searches. Compare `/who-owns-my-building`, literally a query.
 - Sitemap `lastmod`: 2,111 of 2,159 URLs claim the same date, and property pages

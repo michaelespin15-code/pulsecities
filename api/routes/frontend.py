@@ -1393,8 +1393,286 @@ _BOROUGH_SLUGS = {
     "Bronx": "bronx", "Staten Island": "staten-island",
 }
 
+# PLUTO land-use codes. Only the residential and mixed classes get a building
+# noun; the rest stay generic, because calling a parking lot a "building" in
+# the lede is the kind of error a reader notices immediately.
+_LAND_USE = {
+    "01": "one and two family building",
+    "02": "multi-family walk-up",
+    "03": "multi-family elevator building",
+    "04": "mixed residential and commercial building",
+    "05": "commercial or office building",
+    "06": "industrial or manufacturing property",
+    "07": "transportation or utility property",
+    "08": "public facility or institution",
+    "09": "open space or recreation lot",
+    "10": "parking facility",
+    "11": "vacant lot",
+}
 
-def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str:
+# HPD grades a violation by hazard; DOB class I is the immediately hazardous
+# one that carries a vacate order.
+_VIOLATION_CLASS = {
+    "A": "non-hazardous", "B": "hazardous",
+    "C": "immediately hazardous", "I": "class I, immediately hazardous",
+}
+
+# A violation stops mattering when it is closed or thrown out. Everything else
+# in the status vocabulary still describes live enforcement.
+_VIOLATION_RESOLVED = ("VIOLATION CLOSED", "VIOLATION DISMISSED")
+
+
+# str.title() turns LLC into Llc, which is how a records page announces that
+# nobody read it. Acronyms and the ordinals in numbered entities stay put.
+_ENTITY_ACRONYMS = {
+    "LLC", "PLLC", "LLP", "LP", "INC", "CORP", "CO", "LTD", "HDFC", "NYC", "NY",
+    "USA", "US", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "XI", "XII",
+    "LC", "PC", "REIT", "TRS", "JV", "DBA", "MTA", "HPD", "NYCHA", "SPE",
+    "MTEK",
+}
+
+# A short token with no vowel is an initialism, not a word: GS, MGMT, BK. This
+# catches the long tail the list above cannot enumerate, and `bronx gs
+# properties llc` is a query the site already ranks for.
+_VOWELLESS = re.compile(r"^[BCDFGHJKLMNPQRSTVWXZ]{2,4}$")
+
+
+def _entity_title(name: str) -> str:
+    if not name:
+        return ""
+    out = []
+    for token in name.split():
+        bare = token.strip(".,()").upper()
+        if not bare:
+            # PLUTO owner names carry stray separators ("ASSOCIATES    .") on
+            # 27,900 parcels. A detached period is not part of the name, and
+            # left in it becomes a second full stop mid-sentence.
+            continue
+        keep_caps = bare in _ENTITY_ACRONYMS or _VOWELLESS.match(bare)
+        out.append(token.upper() if keep_caps else token.title())
+    joined = " ".join(out).strip(" ,&-")
+    return re.sub(r"(\d)(St|Nd|Rd|Th)\b", lambda m: m.group(1) + m.group(2).lower(),
+                  joined)
+
+
+def _sentence(body: str) -> str:
+    """One terminal period, however the record punctuated the name that ends it."""
+    body = body.rstrip()
+    return body if body.endswith((".", "?", "!")) else body + "."
+
+
+_SPELLED = ["zero", "one", "two", "three", "four", "five", "six", "seven",
+            "eight", "nine", "ten"]
+
+
+def _plural(n: int, one: str, many: str = "") -> str:
+    """Pluralises the head noun, so 'of the building' becomes 'of the
+    buildings' rather than 'of the buildingss'."""
+    if n == 1:
+        return one
+    if many:
+        return many
+    head, sep, tail = one.partition(" of ")
+    if sep:
+        return f"{head}s of {tail}"
+    words = one.split()
+    words[-1] += "es" if words[-1].endswith(("s", "x", "z", "ch", "sh")) else "s"
+    return " ".join(words)
+
+
+def _count(n: int, one: str, many: str = "") -> str:
+    return f"{n:,} {_plural(n, one, many)}"
+
+
+def _count_open(n: int, one: str, many: str = "") -> str:
+    """Same, for the start of a sentence, where a bare numeral reads as a typo."""
+    word = _SPELLED[n].capitalize() if 0 <= n <= 10 else f"{n:,}"
+    return f"{word} {_plural(n, one, many)}"
+
+
+def _en_date(d) -> str:
+    """Dates in prose read as dates, not as ISO stamps. Thin wrapper so the
+    English-only callers do not each repeat the lang argument."""
+    return _long_date(d, "en") if d else ""
+
+
+def _hold_length(start, end) -> str:
+    """How long an owner held, in the units a reader thinks in."""
+    months = (end.year - start.year) * 12 + (end.month - start.month)
+    if months < 1:
+        days = (end - start).days
+        return _count(max(days, 0), "day")
+    if months < 24:
+        return _count(months, "month")
+    years, rem = divmod(months, 12)
+    if rem == 0:
+        return _count(years, "year")
+    return f"{years} {_plural(years, 'year')} {_count(rem, 'month')}"
+
+
+_zip_ctx_cache: dict[str, tuple[dict, float]] = {}
+_ZIP_CTX_TTL = 21600
+
+
+def _zip_context(zip_code: str, db) -> dict:
+    """ZIP-level comparison figures for a property page.
+
+    Identical for every building in the ZIP, so computing it per property was
+    paying a full-ZIP scan 918,338 times over. The peer count alone measured
+    402ms on 11207 and there are ZIPs half again that size. There are ~180
+    ZIPs, so the whole table fits in a dict.
+    """
+    hit = _zip_ctx_cache.get(zip_code)
+    if hit and time.monotonic() < hit[1]:
+        return hit[0]
+
+    ctx: dict = {}
+    peer = db.execute(text("""
+        SELECT count(*) AS tracked,
+               count(*) FILTER (
+                   WHERE EXISTS (SELECT 1 FROM evictions_raw e WHERE e.bbl = p.bbl)
+               ) AS with_eviction,
+               count(*) FILTER (
+                   WHERE EXISTS (SELECT 1 FROM ownership_raw o
+                                 WHERE o.bbl = p.bbl AND o.doc_type = 'DEED')
+               ) AS with_deed
+        FROM parcels p WHERE p.zip_code = :zip
+    """), {"zip": zip_code}).first()
+    ctx["peers"] = {
+        "tracked": int(peer.tracked or 0),
+        "with_eviction": int(peer.with_eviction or 0),
+        "with_deed": int(peer.with_deed or 0),
+    } if peer else {}
+
+    hood = db.execute(text(
+        "SELECT name FROM neighborhoods WHERE zip_code = :zip LIMIT 1"
+    ), {"zip": zip_code}).first()
+    ctx["hood"] = hood.name if hood and hood.name else ""
+
+    rank = db.execute(text("""
+        SELECT count(*) FILTER (WHERE score >= (
+                   SELECT score FROM displacement_scores WHERE zip_code = :zip
+               )) AS rank,
+               count(*) AS total
+        FROM displacement_scores WHERE score IS NOT NULL
+    """), {"zip": zip_code}).first()
+    if rank and rank.rank:
+        ctx["zip_rank"] = (int(rank.rank), int(rank.total))
+
+    _zip_ctx_cache[zip_code] = (ctx, time.monotonic() + _ZIP_CTX_TTL)
+    return ctx
+
+
+def _property_facts(bbl: str, zip_code: str, db) -> dict:
+    """Everything the property body says in sentences rather than table rows.
+
+    The page had the records and none of the reading of them: 100 visible
+    words across four tables, near-identical to every other property page. The
+    queries here are the ones that turn a row into a claim, and they run behind
+    the same page cache as the rest of the body.
+    """
+    facts: dict = {}
+
+    # Deed chain. ownership_raw carries assignments too, and an assignment is a
+    # lender moving paper, not a sale, so the chain reads DEED rows only.
+    deeds = db.execute(text("""
+        SELECT o.document_id, o.doc_date, max(o.doc_amount) AS amount,
+               max(o.party_name_normalized) FILTER (WHERE o.party_type = '2') AS buyer,
+               max(o.party_name_normalized) FILTER (WHERE o.party_type = '1') AS seller
+        FROM ownership_raw o
+        WHERE o.bbl = :bbl AND o.doc_type = 'DEED'
+        GROUP BY o.document_id, o.doc_date
+        ORDER BY o.doc_date DESC NULLS LAST
+        LIMIT 20
+    """), {"bbl": bbl}).fetchall()
+    facts["deeds"] = [
+        {"date": d.doc_date, "amount": float(d.amount) if d.amount else 0.0,
+         "buyer": d.buyer or "", "seller": d.seller or ""}
+        for d in deeds if d.doc_date
+    ]
+
+    # Same grouping for the visible table. It used to render one row per party
+    # row, so a single deed appeared twice and the seller was printed under a
+    # column headed "Buyer". 82,756 parcels carry a seller row.
+    docs = db.execute(text("""
+        SELECT o.document_id, o.doc_type, o.doc_date, max(o.doc_amount) AS amount,
+               max(o.party_name_normalized) FILTER (WHERE o.party_type = '2') AS buyer,
+               max(o.party_name_normalized) FILTER (WHERE o.party_type = '1') AS seller
+        FROM ownership_raw o
+        WHERE o.bbl = :bbl
+        GROUP BY o.document_id, o.doc_type, o.doc_date
+        ORDER BY o.doc_date DESC NULLS LAST
+        LIMIT 20
+    """), {"bbl": bbl}).fetchall()
+    facts["documents"] = [
+        {"date": d.doc_date, "doc_type": d.doc_type or "",
+         "amount": float(d.amount) if d.amount else 0.0,
+         "buyer": d.buyer or "", "seller": d.seller or ""}
+        for d in docs
+    ]
+
+    # Evictions run past the 12-month signal window the panel uses; the record
+    # itself starts 2024-04-12 and the page should say what it really holds.
+    ev = db.execute(text("""
+        SELECT count(*) AS n, min(executed_date) AS first, max(executed_date) AS last,
+               count(*) FILTER (WHERE eviction_type = 'Residential') AS residential
+        FROM evictions_raw WHERE bbl = :bbl
+    """), {"bbl": bbl}).first()
+    facts["evictions"] = {
+        "n": int(ev.n or 0), "first": ev.first, "last": ev.last,
+        "residential": int(ev.residential or 0),
+    } if ev else {"n": 0}
+
+    viol = db.execute(text("""
+        SELECT violation_class, count(*) AS n,
+               count(*) FILTER (WHERE current_status NOT IN :resolved) AS open
+        FROM violations_raw WHERE bbl = :bbl
+        GROUP BY violation_class
+    """), {"bbl": bbl, "resolved": _VIOLATION_RESOLVED}).fetchall()
+    facts["violations"] = {r.violation_class: {"n": int(r.n), "open": int(r.open or 0)}
+                           for r in viol if r.violation_class}
+
+    # Registration history is the displacement signal, so both endpoints of the
+    # series matter, not just the latest count.
+    rs = db.execute(text("""
+        SELECT year, rs_unit_count, source FROM rs_buildings
+        WHERE bbl = :bbl AND source = 'dhcr' AND rs_unit_count > 0
+        ORDER BY year
+    """), {"bbl": bbl}).fetchall()
+    facts["rs"] = [{"year": int(r.year), "units": int(r.rs_unit_count)} for r in rs]
+
+    if zip_code:
+        facts.update(_zip_context(zip_code, db))
+
+    # Same rule as /flips and /radar: a page that shows deeds says where the
+    # deed record stops. ACRIS publishes on its own schedule and has frozen
+    # for weeks at a time.
+    facts["deeds_through"] = _deeds_through_line(db)
+    return facts
+
+
+def _sibling_buildings(bbl: str, op, db) -> list[dict]:
+    """Other addresses in the same owner network. The property page linked up
+    to the operator profile but never sideways, so a crawler that landed on one
+    building found no path to the rest of the portfolio."""
+    if op is None:
+        return []
+    rows = db.execute(text("""
+        SELECT p.bbl, p.address, p.zip_code, n.name AS hood
+        FROM operator_parcels op
+        JOIN parcels p ON p.bbl = op.bbl
+        LEFT JOIN neighborhoods n ON n.zip_code = p.zip_code
+        WHERE op.operator_id = (SELECT id FROM operators WHERE slug = :slug)
+          AND op.bbl <> :bbl AND p.address IS NOT NULL
+        ORDER BY p.zip_code, p.address
+        LIMIT 8
+    """), {"slug": op.slug, "bbl": bbl}).fetchall()
+    return [{"bbl": r.bbl, "address": _addr_title(r.address),
+             "zip": r.zip_code or "", "hood": r.hood or ""} for r in rows]
+
+
+def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
+                         parcel=None, facts=None, siblings=None) -> str:
     """Server-rendered content body for a single building: its public-record
     history (deeds, evictions, permits, complaints) plus links up to the ZIP,
     borough, and owning operator. Replaces the old map-shell body so the page is
@@ -1446,24 +1724,34 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str
         matching also caught people ("... AS TRUSTEE"), so the form token has
         to stand on its own."""
         name = o.get("buyer") or ""
+        shown = _entity_title(name)
         if ((o.get("doc_type") or "").upper() == "DEED"
                 and _ENTITY_FORM_RE.search(name)
                 and not _NOT_A_BUYER_RE.search(name)):
             slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
             if _LLC_SLUG_RE.match(slug):
-                return f'<a href="/llc/{e(slug)}" style="color:#6fb1d8;">{e(name)}</a>'
-        return e(name)
+                return f'<a href="/llc/{e(slug)}" style="color:#6fb1d8;">{e(shown)}</a>'
+        return e(shown)
 
-    own_rows = "".join(
-        f'<tr><td class="sc">{_buyer_cell(o)}<span class="sw">{e(o.get("doc_type") or "")}</span></td>'
-        f'<td class="sr">{_d(o.get("date"))}</td><td class="si">{_money(o.get("amount"))}</td></tr>'
-        for o in owners
+    # One row per document, not per party row. An ACRIS document names both
+    # sides; printing each side as its own transfer doubled every sale and put
+    # the seller under a column headed "Buyer".
+    documents = (facts or {}).get("documents") or []
+    doc_rows = "".join(
+        f'<tr><td class="sc">{_buyer_cell({"buyer": d["buyer"], "doc_type": d["doc_type"]})}'
+        f'<span class="sw">{e(d["doc_type"])}'
+        + (f' from {e(_entity_title(d["seller"]))}' if d["seller"] else "")
+        + '</span></td>'
+        f'<td class="sr">{_d(d["date"].isoformat()) if d["date"] else ""}</td>'
+        f'<td class="si">{_money(d["amount"])}</td></tr>'
+        for d in documents
     )
     own_sec = _section(
         "Ownership transfers",
-        "Deeds recorded in ACRIS. Amount is the stated consideration; $0 often marks a "
-        "non-arms-length transfer.",
-        ("Buyer", "Recorded", "Amount"), own_rows,
+        "Deeds and assignments recorded in ACRIS, one row per document. Amount is the "
+        "stated consideration; $0 often marks a non-arms-length transfer. An assignment "
+        "moves a lender's paper and is not a sale.",
+        ("Party taking title", "Recorded", "Amount"), doc_rows,
     )
 
     ev_rows = "".join(
@@ -1508,6 +1796,326 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str
             f'<span class="score-denom">/100</span>'
             f'<span class="score-tier" style="color:{color}">{tier.upper()} AREA PRESSURE</span></div>'
         )
+
+    # --- The reading of the record ------------------------------------------
+    # Everything below turns rows into sentences. It is what the page was
+    # missing: the tables were already here, and nothing said what they meant.
+    facts = facts or {}
+    parcel = parcel or {}
+    siblings = siblings or []
+    hood = facts.get("hood") or ""
+    place = f"{hood}, {borough}" if hood else borough
+    deed_chain = facts.get("deeds") or []
+    ev_facts = facts.get("evictions") or {}
+    rs_series = facts.get("rs") or []
+    peers = facts.get("peers") or {}
+
+    def _para(*sentences) -> str:
+        text_ = " ".join(s for s in sentences if s)
+        return f'<p class="prose">{text_}</p>' if text_ else ""
+
+    def _prose_section(h2, *paragraphs) -> str:
+        inner = "".join(p for p in paragraphs if p)
+        if not inner:
+            return ""
+        return f'<section style="margin-bottom:30px;"><h2>{h2}</h2>{inner}</section>'
+
+    # Lede. Every clause is drawn from this lot's own record, which is also
+    # what keeps 1,792 pages from reading as one page.
+    kind = _LAND_USE.get((parcel.get("land_use") or "").zfill(2), "building")
+    built = parcel.get("year_built") or 0
+    units_res = int(parcel.get("units_res") or 0)
+    units_total = int(parcel.get("units_total") or 0)
+
+    lede_bits = [f"{e(address)} is a {e(kind)} in {e(place)}"]
+    if zip_code:
+        lede_bits.append(f"ZIP {e(zip_code)}")
+    lede_open = ", ".join(lede_bits) + "."
+    build_line = ""
+    if built and built > 1700:
+        build_line = f"City records date it to {built}"
+        if units_res:
+            build_line += f" and count {_count(units_res, 'residential unit')}"
+            if units_total > units_res:
+                build_line += f" of {units_total:,} total"
+        build_line += "."
+    elif units_res:
+        build_line = f"City records count {_count(units_res, 'residential unit')} here."
+
+    held_line = ""
+    owner_name = (parcel.get("owner_name") or "").strip()
+    if owner_name:
+        held_line = _sentence(f"The city's property file lists the owner of record "
+                              f"as {e(_entity_title(owner_name))}")
+
+    assessed = parcel.get("assessed_total") or 0
+    assess_line = ""
+    if assessed:
+        assess_line = (f"Its most recent total assessed value is "
+                       f"{_fmt_amount(assessed)}.")
+
+    lede = _para(lede_open, build_line, held_line, assess_line)
+
+    # Ownership chain. A resale inside a short hold with a price jump is the
+    # site's whole thesis, so it gets said outright rather than left to the
+    # reader to compute from two table rows.
+    chain_paras = []
+    if deed_chain:
+        latest = deed_chain[0]
+        first_sentence = f"The most recent recorded deed is dated {_d(latest['date'].isoformat())}"
+        if latest["buyer"]:
+            first_sentence += f", transferring the lot to {e(_entity_title(latest['buyer']))}"
+        if latest["amount"] > 0:
+            first_sentence += f" for a stated {_fmt_amount(latest['amount'])}"
+        chain_paras.append(_sentence(first_sentence))
+
+        if len(deed_chain) > 1:
+            prior = deed_chain[1]
+            hold = _hold_length(prior["date"], latest["date"])
+            resale = f"The deed before it was recorded {_d(prior['date'].isoformat())}"
+            if prior["amount"] > 0:
+                resale += f" at {_fmt_amount(prior['amount'])}"
+            resale += f", so the lot changed hands twice inside {hold}."
+            chain_paras.append(resale)
+            if prior["amount"] > 0 and latest["amount"] > 0:
+                delta = (latest["amount"] - prior["amount"]) / prior["amount"] * 100
+                if abs(delta) >= 5:
+                    verb = "rose" if delta > 0 else "fell"
+                    chain_paras.append(
+                        f"The stated consideration {verb} {abs(delta):.0f}% between "
+                        f"the two deeds."
+                    )
+        chain_paras.append(
+            f"PulseCities holds {_count(len(deed_chain), 'recorded deed')} for this lot."
+        )
+        if facts.get("deeds_through"):
+            chain_paras.append(facts["deeds_through"])
+    chain_note = ('<p class="data-note">A deed names a party of record. Stated '
+                  'consideration of $0 usually marks a transfer between related '
+                  'parties rather than a sale.</p>')
+    chain_sec = _prose_section("The ownership chain", _para(*chain_paras),
+                               chain_note if deed_chain else "")
+
+    # Eviction record, in sentences and over the full window rather than the
+    # rolling twelve months the table shows.
+    ev_paras = []
+    n_ev = int(ev_facts.get("n") or 0)
+    if n_ev:
+        line = (f"City marshals executed {_count(n_ev, 'eviction')} at {e(address)} "
+                f"in the record PulseCities holds")
+        if ev_facts.get("last"):
+            line += f", the most recent on {_d(ev_facts['last'].isoformat())}"
+        line += "."
+        ev_paras.append(line)
+        if n_ev > 1 and ev_facts.get("first") and ev_facts.get("last"):
+            ev_paras.append(
+                f"The first fell on {_d(ev_facts['first'].isoformat())}, so the "
+                f"filings span {_hold_length(ev_facts['first'], ev_facts['last'])}."
+            )
+        res = int(ev_facts.get("residential") or 0)
+        if res and res < n_ev:
+            ev_paras.append(f"{_count_open(res, 'of them was', 'of them were')} residential.")
+        # An eviction shortly before a deed is the pattern the site was built
+        # to surface, so say it on the building's own page.
+        if deed_chain and ev_facts.get("last"):
+            gap_deeds = [dd for dd in deed_chain
+                         if dd["date"] and 0 <= (dd["date"] - ev_facts["last"]).days <= 365]
+            if gap_deeds:
+                ev_paras.append(
+                    f"A deed was recorded {_count((gap_deeds[-1]['date'] - ev_facts['last']).days, 'day')} "
+                    f"after that eviction, the sequence PulseCities tracks citywide."
+                )
+    elif peers:
+        ev_paras.append(
+            f"No executed eviction is on record at {e(address)} in the citywide "
+            f"marshal file, which runs from April 2024."
+        )
+    ev_prose = _prose_section("What the eviction record shows", _para(*ev_paras))
+
+    # Rent stabilization. The registration series is the signal, and a building
+    # that stops registering is the thing worth naming.
+    rs_paras = []
+    if rs_series:
+        newest, oldest = rs_series[-1], rs_series[0]
+        rs_paras.append(
+            f"DHCR registration records list {_count(newest['units'], 'rent-stabilized unit')} "
+            f"at this building in {newest['year']}, the most recent year PulseCities holds."
+        )
+        if len(rs_series) > 1 and oldest["units"] != newest["units"]:
+            direction = "down from" if newest["units"] < oldest["units"] else "up from"
+            rs_paras.append(
+                f"That is {direction} {_count(oldest['units'], 'unit')} in {oldest['year']}."
+            )
+        rs_paras.append(
+            "Registration is building-level and does not settle the status of any "
+            "single apartment; the rent history does."
+        )
+    else:
+        rs_paras.append(
+            f"No DHCR rent-stabilization registration is on file for {e(address)} in "
+            f"the years PulseCities holds. Absence is not proof: an owner who "
+            f"stops registering leaves the same gap as a building that never had "
+            f"stabilized units."
+        )
+    rs_paras.append('Checking your own apartment starts with the free rent history. '
+                    '<a href="/is-my-building-rent-stabilized">How to check '
+                    'rent-stabilized status &rarr;</a>')
+    rs_sec = _prose_section("Rent stabilization at this address", _para(*rs_paras))
+
+    # Violations. New surface: the data was in the DB and on no page.
+    viols = facts.get("violations") or {}
+    viol_sec = ""
+    if viols:
+        total = sum(v["n"] for v in viols.values())
+        open_n = sum(v["open"] for v in viols.values())
+        vp = [f"HPD and DOB inspectors have written {_count(total, 'violation')} "
+              f"against this building, of which {open_n:,} "
+              f"{'remains' if open_n == 1 else 'remain'} unresolved."]
+        worst = [c for c in ("I", "C", "B", "A") if viols.get(c, {}).get("open")]
+        if worst:
+            label = _VIOLATION_CLASS.get(worst[0], worst[0])
+            vp.append(f"The most serious open grade here is {label}, with "
+                      f"{_count(viols[worst[0]]['open'], 'open violation')}.")
+        viol_sec = _prose_section("Open violations", _para(*vp),
+                                  '<p class="data-note">Classes run A (non-hazardous) '
+                                  'to C (immediately hazardous); DOB class I carries a '
+                                  'vacate order.</p>')
+
+    # The building against its ZIP. Turns a lone score into a comparison, and
+    # is the paragraph that earns the link up to the neighbourhood page.
+    cmp_paras = []
+    if zip_code and peers.get("tracked"):
+        tracked = peers["tracked"]
+        cmp_paras.append(
+            f"PulseCities tracks {_count(tracked, 'lot')} in {e(zip_code)}, of which "
+            f"{peers.get('with_eviction', 0):,} carry an executed eviction from the "
+            f"marshal record, which starts in April 2024, and "
+            f"{peers.get('with_deed', 0):,} carry a deed from the shorter ACRIS window."
+        )
+        if n_ev:
+            share = peers.get("with_eviction", 0) / tracked * 100 if tracked else 0
+            cmp_paras.append(
+                f"This building is in that second group, which is {share:.1f}% of "
+                f"the ZIP."
+            )
+        if score is not None and facts.get("zip_rank"):
+            rank, total_z = facts["zip_rank"]
+            cmp_paras.append(
+                f"{e(zip_code)} scores {score:.1f} out of 100 for displacement "
+                f"pressure, {rank} of {total_z} scored NYC ZIP codes."
+            )
+        cmp_paras.append(
+            f'<a href="/neighborhood/{e(zip_code)}">The full signal breakdown for '
+            f'{e(hood) if hood else e(zip_code)} &rarr;</a>'
+        )
+    cmp_sec = _prose_section(f"How {e(address)} compares in {e(zip_code or borough)}",
+                             _para(*cmp_paras))
+
+    # Sideways links. Property to operator existed; operator to sibling
+    # buildings did not, so a portfolio was 30 unconnected pages.
+    sib_sec = ""
+    if siblings:
+        owner_label = e(op.display_name or op.operator_root) if op is not None else "the same owner"
+        rows_html = "".join(
+            f'<li class="rec-row"><a href="/property/{e(s["bbl"])}">'
+            f'<div><div class="rec-addr">{e(s["address"])}</div>'
+            f'<div class="rec-geo">{e(s["hood"] + ", " if s["hood"] else "")}{e(s["zip"])}</div></div>'
+            f'</a></li>' for s in siblings
+        )
+        sib_sec = _prose_section(
+            "Other buildings in this owner network",
+            _para(f"The {owner_label} network holds other NYC buildings PulseCities "
+                  f"tracks. {_count(len(siblings), 'address')} from that portfolio:"),
+            f'<ul class="sib-list">{rows_html}</ul>',
+            _para(f'<a href="/operator/{e(op.slug)}">The full {owner_label} portfolio '
+                  f'&rarr;</a>') if op is not None else "",
+        )
+
+    # FAQ. The queries that reach these pages arrive phrased as questions, and
+    # the answers are already in the record above.
+    faq: list[tuple[str, str]] = []
+    who = ""
+    if deed_chain and deed_chain[0]["buyer"]:
+        who = _entity_title(deed_chain[0]["buyer"])
+    elif owner_name:
+        who = _entity_title(owner_name)
+    if who:
+        ans = (f"The most recent deed on file for {address} names {who}. "
+               f"Deeds record the party that took title, which is often a holding "
+               f"company rather than the operator managing the building.")
+        if deed_chain and deed_chain[0]["date"]:
+            ans += f" That deed was recorded {_d(deed_chain[0]['date'].isoformat())}."
+        faq.append((f"Who owns {address}?", ans))
+
+    if deed_chain and deed_chain[0]["amount"] > 0:
+        faq.append((
+            f"How much did {address} sell for?",
+            f"The most recent deed states a consideration of "
+            f"{_fmt_amount(deed_chain[0]['amount'])}, recorded "
+            f"{_d(deed_chain[0]['date'].isoformat())} in ACRIS. Stated consideration "
+            f"is what the parties filed, and it can differ from the economics of "
+            f"the deal.",
+        ))
+    else:
+        faq.append((
+            f"Has {address} changed hands recently?",
+            f"PulseCities holds {_count(len(deed_chain), 'recorded deed')} for this "
+            f"lot. Deeds appear here once the city publishes them to ACRIS, which "
+            f"runs behind the closing date." if deed_chain else
+            f"No deed for {address} appears in the ACRIS records PulseCities holds. "
+            f"That means no transfer has been published for this lot in the current "
+            f"window, not that the building has never been sold.",
+        ))
+
+    ev_answer = (
+        f"Yes. {_count_open(n_ev, 'marshal-executed eviction')} at {address} "
+        f"{'appears' if n_ev == 1 else 'appear'} in the NYC evictions dataset"
+        + (f", the most recent on {_d(ev_facts['last'].isoformat())}." if ev_facts.get("last") else ".")
+        + " The dataset covers executed evictions only, so it undercounts housing "
+          "court activity: cases that settle or end in a move-out never reach a marshal."
+    ) if n_ev else (
+        f"No executed eviction at {address} appears in the NYC evictions dataset, "
+        f"which PulseCities holds from April 2024 forward. Executed evictions are "
+        f"the end of the process, so a building with none may still have active "
+        f"housing court cases."
+    )
+    faq.append((f"Have there been evictions at {address}?", ev_answer))
+
+    if rs_series:
+        newest = rs_series[-1]
+        faq.append((
+            f"Is {address} rent stabilized?",
+            f"DHCR registrations list {_count(newest['units'], 'stabilized unit')} at "
+            f"this building in {newest['year']}. Registration is building-level, so it "
+            f"does not settle whether one apartment is stabilized. The free rent "
+            f"history from NYS Homes and Community Renewal does.",
+        ))
+    else:
+        faq.append((
+            f"Is {address} rent stabilized?",
+            f"No DHCR registration for {address} appears in the years PulseCities "
+            f"holds. That is a gap in the registration record rather than an answer "
+            f"about any apartment, and the free rent history from NYS Homes and "
+            f"Community Renewal is what settles it.",
+        ))
+
+    if zip_code and peers.get("tracked"):
+        faq.append((
+            f"What is the displacement risk around {address}?",
+            f"{zip_code}"
+            + (f" ({hood})" if hood else "")
+            + (f" scores {score:.1f} out of 100 on the PulseCities displacement index."
+               if score is not None else " has no current displacement score.")
+            + f" The score reads five ZIP-level signals: eviction rate, LLC acquisition "
+              f"rate, permit intensity, assessment spikes, and 311 complaint volume. "
+              f"It describes the area around the building, not the building itself.",
+        ))
+
+    faq_html = "".join(
+        f'<div class="faq-item"><h3>{e(q)}</h3><p>{e(a)}</p></div>' for q, a in faq
+    )
+    faq_sec = (f'<section style="margin-bottom:30px;"><h2>Questions about {e(address)}</h2>'
+               f'{faq_html}</section>') if faq else ""
 
     # Up-links: ZIP, owning operator, borough. These turn the property page from
     # a dead-end into a hub node and give crawlers a path back to the money pages.
@@ -1565,6 +2173,14 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str
         },
     })
     bc_ld = _jsonld({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": crumb_items})
+    faq_ld = _jsonld({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {"@type": "Question", "name": q,
+             "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq
+        ],
+    }) if faq else ""
 
     body_note = ("Sourced from NYC public records: ACRIS deeds, DOB permits, the NYC evictions dataset, "
                  "and 311. Records reflect what agencies have published and can lag events.")
@@ -1597,7 +2213,8 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op) -> str
 <meta name="twitter:image" content="{og_image}">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23ed6317' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <script type="application/ld+json">{place_ld}</script>
-<script type="application/ld+json">{bc_ld}</script>{_PLAUSIBLE}
+<script type="application/ld+json">{bc_ld}</script>
+{f'<script type="application/ld+json">{faq_ld}</script>' if faq_ld else ""}{_PLAUSIBLE}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap"></noscript>
 """
@@ -1632,6 +2249,17 @@ td{padding:11px 0;border-bottom:1px solid rgba(147,161,173,.06);vertical-align:t
 .sw{display:block;font-size:0.75rem;color:var(--faint);margin-top:2px}
 .sr,.si{font-size:.85rem;font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap}
 .data-note{font-size:0.75rem;color:var(--faint);margin-top:8px;line-height:1.5}
+.prose{font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:10px;max-width:64ch}
+.prose a{color:var(--accent)}
+.prose a:hover{text-decoration:underline}
+.faq-item h3{font-size:.9rem;font-weight:600;color:var(--text);margin:18px 0 4px}
+.faq-item p{font-size:.86rem;color:var(--muted);line-height:1.7;max-width:64ch}
+.sib-list{list-style:none;padding:0;margin:6px 0 0}
+.sib-list .rec-row{border-bottom:1px solid rgba(147,161,173,.06)}
+.sib-list a{display:block;padding:10px 0}
+.sib-list a:hover .rec-addr{color:var(--accent)}
+.rec-addr{font-family:'JetBrains Mono',monospace;font-size:.84rem;color:var(--text);overflow-wrap:anywhere}
+.rec-geo{font-size:0.75rem;color:var(--faint);margin-top:2px}
 .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin:28px 0 4px}
 .btn-map{display:inline-flex;align-items:center;padding:10px 18px;background:var(--accent);color:#fff;border-radius:6px;font-size:.84rem;font-weight:500}
 .btn-map:hover{opacity:.9}
@@ -1651,7 +2279,8 @@ footer{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-i
 <h1>{e(address)}</h1>
 <p class="subline">{e(borough)}{(" &middot; " + e(zip_code)) if zip_code else ""} &middot; BBL {e(bbl)}</p>
 {score_block}
-{empty}{own_sec}{ev_sec}{pm_sec}{comp_sec}
+{lede}
+{empty}{chain_sec}{own_sec}{ev_prose}{ev_sec}{rs_sec}{viol_sec}{pm_sec}{comp_sec}{cmp_sec}{sib_sec}{faq_sec}
 <div class="cta-row">{links_html}</div>
 <p class="foot-note">{body_note}</p>
 </div></main>
@@ -1674,6 +2303,8 @@ def property_page(bbl: str, db: Session = Depends(get_db)):
 
     row = db.execute(text("""
         SELECT p.address, p.zip_code,
+               p.year_built, p.units_res, p.units_total, p.land_use,
+               p.owner_name, p.assessed_total,
                CASE
                    WHEN CAST(p.zip_code AS INTEGER) BETWEEN 10001 AND 10282 THEN 'Manhattan'
                    WHEN CAST(p.zip_code AS INTEGER) BETWEEN 10301 AND 10314 THEN 'Staten Island'
@@ -1705,7 +2336,15 @@ def property_page(bbl: str, db: Session = Depends(get_db)):
         "FROM operators o JOIN operator_parcels op ON op.operator_id = o.id "
         "WHERE op.bbl = :bbl AND o.operator_class = 'operator' LIMIT 1"
     ), {"bbl": clean}).fetchone()
-    html = _build_property_page(clean, address, zip_code, borough, score, sig, op)
+    parcel = {
+        "year_built": row.year_built, "units_res": row.units_res,
+        "units_total": row.units_total, "land_use": row.land_use,
+        "owner_name": row.owner_name, "assessed_total": row.assessed_total,
+    }
+    facts = _property_facts(clean, zip_code, db)
+    siblings = _sibling_buildings(clean, op, db)
+    html = _build_property_page(clean, address, zip_code, borough, score, sig, op,
+                                parcel=parcel, facts=facts, siblings=siblings)
 
     # Parcels number in the hundreds of thousands; without a cap a crawler
     # walking /property/ URLs grows this dict until the box runs out of memory.
@@ -5174,6 +5813,9 @@ h2{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.05rem;font
 .rec-amt{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:#c9d2da}
 .rec-date{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-top:2px}
 .cross{font-size:0.82rem;color:#93a1ad;line-height:1.6;max-width:640px}
+.prose{font-size:0.86rem;color:#93a1ad;line-height:1.7;margin-bottom:10px;max-width:64ch}
+.prose a{color:var(--accent)}
+.prose a:hover{text-decoration:underline}
 .faq-item h3{font-size:0.9rem;font-weight:600;margin:20px 0 4px;color:#e4e8ec}
 .faq-item p{font-size:0.82rem;color:#93a1ad;line-height:1.6;max-width:640px}
 .cross a{color:var(--accent)}
@@ -5232,6 +5874,7 @@ def llc_directory(db: Session = Depends(get_db)):
     """)).fetchall()
 
     items = ""
+    listed: list[dict] = []
     for r in rows:
         if not _is_buyer_entity(r.name):
             continue
@@ -5244,12 +5887,21 @@ def llc_directory(db: Session = Depends(get_db)):
             f'<div class="rec-date">latest {esc(r.last_seen.isoformat()) if r.last_seen else ""}</div></div>'
             f'</a></li>\n'
         )
+        listed.append({
+            "@type": "ListItem", "position": len(listed) + 1, "name": r.name,
+            "url": f"https://pulsecities.com/llc/{r.slug}",
+        })
 
     title = "NYC LLC property buyers: the deed record | PulseCities"
     desc = ("The most active LLC buyers in NYC's deed record, ranked by properties "
             "acquired, each with its full purchase history from ACRIS public records.")
-    jsonld = _jsonld({"@context": "https://schema.org",
-                      "@graph": [_crumbs(("Home", "/"), ("LLC buyers", "/llc"))]})
+    # Every other directory on the site declares its list; this one listed 100
+    # entities and declared a breadcrumb.
+    jsonld = _jsonld({"@context": "https://schema.org", "@graph": [
+        {"@type": "ItemList", "name": "NYC LLC property buyers",
+         "numberOfItems": len(listed), "itemListElement": listed},
+        _crumbs(("Home", "/"), ("LLC buyers", "/llc")),
+    ]})
 
     page = f"""<!DOCTYPE html>
 <html lang="en">
@@ -5302,12 +5954,30 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
     name = ent.name
 
     def _side(party_type: str):
+        # 17,114 of 64,849 deed BBLs are condo unit lots (1001 and up) that
+        # PLUTO does not carry, so a quarter of this table joined to nothing:
+        # no address, no ZIP, no neighbourhood link. The tax block is shared
+        # with the parcels PLUTO does carry, and 92% of blocks sit in exactly
+        # one ZIP. Where the block is unambiguous, take the ZIP from it; where
+        # it is not, take nothing. No address is ever guessed this way.
         return db.execute(text("""
             SELECT DISTINCT ON (o.document_id)
-                   o.bbl, o.doc_date, o.doc_amount, p.address, p.zip_code, n.name AS hood
+                   o.bbl, o.doc_date, o.doc_amount, p.address,
+                   coalesce(p.zip_code, blk.zip_code) AS zip_code,
+                   coalesce(n.name, bn.name) AS hood
             FROM ownership_raw o
             LEFT JOIN parcels p ON p.bbl = o.bbl
             LEFT JOIN neighborhoods n ON n.zip_code = p.zip_code
+            LEFT JOIN LATERAL (
+                SELECT max(q.zip_code) AS zip_code
+                FROM parcels q
+                WHERE p.bbl IS NULL
+                  AND q.bbl >= substring(o.bbl, 1, 6) || '0000'
+                  AND q.bbl <= substring(o.bbl, 1, 6) || '9999'
+                  AND q.zip_code IS NOT NULL
+                HAVING count(DISTINCT q.zip_code) = 1
+            ) blk ON true
+            LEFT JOIN neighborhoods bn ON bn.zip_code = blk.zip_code
             WHERE o.doc_type = 'DEED' AND o.party_type = :pt
               AND o.party_name_normalized = :name
             ORDER BY o.document_id, o.doc_date DESC
@@ -5330,6 +6000,72 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
         SELECT slug, display_name FROM operators
         WHERE operator_class = 'operator' AND jsonb_exists(llc_entities, :name) LIMIT 1
     """), {"name": name}).first()
+
+    # What the portfolio itself carries. The page described the deeds and never
+    # the buildings, which is where an entity page stops being a receipt and
+    # starts being worth reading.
+    portfolio = db.execute(text("""
+        WITH held AS (
+            SELECT DISTINCT o.bbl FROM ownership_raw o
+            WHERE o.doc_type = 'DEED' AND o.party_type = '2'
+              AND o.party_name_normalized = :name
+        )
+        SELECT
+            count(*) FILTER (WHERE p.units_res > 0) AS residential,
+            sum(p.units_res) AS units,
+            min(p.year_built) FILTER (WHERE p.year_built > 1700) AS oldest,
+            max(p.year_built) FILTER (WHERE p.year_built > 1700) AS newest,
+            count(*) FILTER (WHERE EXISTS (
+                SELECT 1 FROM evictions_raw e WHERE e.bbl = h.bbl)) AS with_eviction,
+            count(*) FILTER (WHERE EXISTS (
+                SELECT 1 FROM violations_raw v WHERE v.bbl = h.bbl
+                  AND v.current_status NOT IN :resolved)) AS with_violation,
+            count(*) FILTER (WHERE EXISTS (
+                SELECT 1 FROM rs_buildings rs WHERE rs.bbl = h.bbl
+                  AND rs.source = 'dhcr' AND rs.rs_unit_count > 0)) AS with_rs
+        FROM held h LEFT JOIN parcels p ON p.bbl = h.bbl
+    """), {"name": name, "resolved": _VIOLATION_RESOLVED}).first()
+
+    # Where the entity files from. ACRIS party addresses were recorded as
+    # unavailable in an earlier pass; they are populated on ~28% of buyer rows
+    # now, and they cluster: dozens of separate LLCs file from one suite.
+    #
+    # The street line is printed only when two or more buying entities share
+    # it, which is what makes it a registered-agent or management address
+    # rather than somebody's house. A single-entity filing gets its locality
+    # and nothing narrower, because out-of-borough ownership is the signal
+    # worth reporting and the street number adds nothing to it.
+    filings = db.execute(text("""
+        SELECT o.party_addr_1 AS addr, o.party_city AS city, o.party_state AS st,
+               (SELECT count(DISTINCT x.party_name_normalized)
+                FROM ownership_raw x
+                WHERE x.doc_type = 'DEED' AND x.party_type = '2'
+                  AND x.party_addr_1 = o.party_addr_1
+                  AND x.party_zip IS NOT DISTINCT FROM o.party_zip) AS entities
+        FROM ownership_raw o
+        WHERE o.doc_type = 'DEED' AND o.party_type = '2'
+          AND o.party_name_normalized = :name AND o.party_addr_1 IS NOT NULL
+        GROUP BY 1, 2, 3, o.party_zip
+        ORDER BY entities DESC
+        LIMIT 1
+    """), {"name": name}).first()
+
+    # Named buildings behind the pre-purchase eviction count. The count alone
+    # was a number with nothing under it; the addresses are the evidence.
+    ev_before = db.execute(text("""
+        SELECT DISTINCT ON (o.bbl) o.bbl, p.address, p.zip_code,
+               o.doc_date, e.executed_date
+        FROM ownership_raw o
+        JOIN evictions_raw e ON e.bbl = o.bbl
+         AND e.eviction_type = 'Residential'
+         AND e.executed_date < o.doc_date
+         AND e.executed_date >= o.doc_date - 365
+        LEFT JOIN parcels p ON p.bbl = o.bbl
+        WHERE o.doc_type = 'DEED' AND o.party_type = '2'
+          AND o.party_name_normalized = :name AND o.doc_amount > 0
+        ORDER BY o.bbl, e.executed_date DESC
+        LIMIT 6
+    """), {"name": name}).fetchall()
 
     n_bbls = len({r.bbl for r in buys if r.bbl})
     n_blocks = len({r.bbl[:6] for r in buys if r.bbl})
@@ -5368,12 +6104,376 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
         network_line = (f'<p class="cross" style="margin-top:10px;">This entity is part of the '
                         f'<a href="/operator/{esc(network.slug)}">{esc(network.display_name)} network &rarr;</a></p>')
 
+    # --- The reading of the ledger -------------------------------------------
+    # The page listed deeds and said almost nothing about them. Everything
+    # below is derived from this entity's own rows, which is what stops 122
+    # pages from being one page with the name swapped.
+    def _para(*sentences) -> str:
+        body = " ".join(s for s in sentences if s)
+        return f'<p class="prose">{body}</p>' if body else ""
+
+    def _prose_section(h2, *paragraphs) -> str:
+        inner = "".join(p for p in paragraphs if p)
+        return f"<h2>{h2}</h2>{inner}" if inner else ""
+
+    priced = sorted((r for r in buys if r.doc_amount and float(r.doc_amount) > 0),
+                    key=lambda r: float(r.doc_amount), reverse=True)
+    span_start = min(dates) if dates else None
+    span_end = max(dates) if dates else None
+
+    lede_parts = [
+        f"{esc(name)} appears as the buyer of record on "
+        f"{_count(len(buys), 'NYC deed')} in the ACRIS record PulseCities holds."
+    ]
+    if span_start and span_end and span_start != span_end:
+        lede_parts.append(
+            f"Those deeds run from {_en_date(span_start)} to {_en_date(span_end)}, "
+            f"a span of {_hold_length(span_start, span_end)}."
+        )
+    elif span_end:
+        lede_parts.append(f"The single recorded date is {_en_date(span_end)}.")
+    if n_blocks and n_blocks < n_bbls:
+        lede_parts.append(
+            f"They cover {_count(n_bbls, 'tax lot')} across {_count(n_blocks, 'building')}, "
+            f"the gap being whole-building purchases that record one deed per unit."
+        )
+    else:
+        lede_parts.append(f"They cover {_count(n_bbls, 'distinct tax lot')}.")
+    # A deed filed at $10 is not a price. Where every deed is nominal, totalling
+    # them and calling the biggest one "the largest purchase" reports a number
+    # that means nothing, so those lines are suppressed rather than dressed up.
+    nominal = [r for r in priced if float(r.doc_amount) < 1000]
+    all_nominal = bool(priced) and len(nominal) == len(priced)
+
+    if volume and not all_nominal:
+        lede_parts.append(
+            f"Stated consideration across the priced deeds totals {_fmt_amount(volume)}"
+            + (f", an average of {_fmt_amount(volume / len(priced))} per deed."
+               if priced else ".")
+        )
+    if priced and priced[0].address and not all_nominal:
+        lede_parts.append(
+            f"The largest single purchase is {esc(_addr_title(priced[0].address))} at "
+            f"{_fmt_amount(priced[0].doc_amount)}."
+        )
+    if all_nominal:
+        lede_parts.append(
+            f"No deed here states a real price. Every priced deed records a nominal "
+            f"consideration under $1,000, the filing pattern of a transfer between "
+            f"related parties rather than an arm's length sale, so there is no "
+            f"purchase total worth reporting."
+        )
+    elif nominal:
+        lede_parts.append(
+            f"{_count_open(len(nominal), 'of those deeds', 'of those deeds')} record" + ("s" if len(nominal) == 1 else "") + " a nominal "
+            f"consideration under $1,000, which usually marks a related-party transfer."
+        )
+    unpriced = len(buys) - len(priced)
+    if unpriced:
+        lede_parts.append(
+            f"{_count_open(unpriced, 'deed')} carr" + ("ies" if unpriced == 1 else "y") + " no stated amount at all."
+        )
+    # The page said where the record starts and never where it stops, on 122
+    # URLs. Same rule as /flips and /radar: never imply coverage the query
+    # does not have.
+    through = _deeds_through_line(db)
+    if through:
+        lede_parts.append(
+            through + " A deed signed after that date has not been published yet "
+            "and cannot appear here."
+        )
+    lede = _para(*lede_parts)
+
+    # The buildings behind the deeds. A portfolio that carries none of these
+    # records still gets the section: "no evictions, no open violations, no
+    # registered stabilized units" is an answer, and on an entity page it is
+    # often the answer a reader came for.
+    resolved = [r for r in buys if r.address]
+    holdings_sec = ""
+    if portfolio and resolved:
+        hp = []
+        if not (portfolio.with_eviction or portfolio.with_violation
+                or portfolio.with_rs):
+            hp.append(
+                f"None of the {_plural(len(resolved), 'lot')} on this page carries an "
+                f"executed eviction, an unresolved HPD or DOB violation, or a DHCR "
+                f"rent-stabilization registration in the records PulseCities holds."
+            )
+        if portfolio.residential:
+            line = f"{_count_open(int(portfolio.residential), 'of the buildings', 'of the buildings')} "
+            line += "is residential" if portfolio.residential == 1 else "are residential"
+            if portfolio.units:
+                line += f", carrying {_count(int(portfolio.units), 'residential unit')} between them"
+            line += "."
+            hp.append(line)
+        if portfolio.oldest:
+            if portfolio.newest and portfolio.newest != portfolio.oldest:
+                hp.append(f"City records date them between {int(portfolio.oldest)} "
+                          f"and {int(portfolio.newest)}.")
+            else:
+                hp.append(f"City records date them to {int(portfolio.oldest)}.")
+        if portfolio.with_eviction:
+            hp.append(
+                f"{_count_open(int(portfolio.with_eviction), 'building')} in this "
+                f"portfolio {'carries' if portfolio.with_eviction == 1 else 'carry'} "
+                f"an executed marshal eviction in the citywide record."
+            )
+        if portfolio.with_violation:
+            hp.append(
+                f"{_count_open(int(portfolio.with_violation), 'building')} "
+                f"{'has' if portfolio.with_violation == 1 else 'have'} unresolved "
+                f"HPD or DOB violations on file."
+            )
+        if portfolio.with_rs:
+            hp.append(
+                f"{_count_open(int(portfolio.with_rs), 'building')} "
+                f"{'appears' if portfolio.with_rs == 1 else 'appear'} in DHCR "
+                f"rent-stabilization registrations, so stabilized tenants live in "
+                f"what this entity bought."
+            )
+        else:
+            hp.append(
+                "None appear in the DHCR rent-stabilization registrations "
+                "PulseCities holds."
+            )
+        holdings_sec = _prose_section("What the buildings carry", _para(*hp))
+    else:
+        # Condo unit lots (1001 and up) are not in PLUTO, so a quarter of the
+        # deed record resolves to no building file at all. A reader looking at
+        # a page of bare BBLs deserves to be told why, rather than left to
+        # assume the site simply failed.
+        unresolved = [r for r in buys if not r.address]
+        if unresolved:
+            holdings_sec = _prose_section(
+                "What the buildings carry",
+                _para(
+                    f"{_count_open(len(unresolved), 'of the lots', 'of the lots')} on "
+                    f"this page {'resolves' if len(unresolved) == 1 else 'resolve'} to "
+                    f"no entry in the city's property file, which is why "
+                    f"{'it appears' if len(unresolved) == 1 else 'they appear'} above "
+                    f"as a tax lot number rather than an address.",
+                    "That is the ordinary signature of a condominium: each unit gets "
+                    "its own tax lot, and the citywide land-use file carries the "
+                    "building rather than the units. Unit count, year built, "
+                    "violations and evictions are all recorded against the building, "
+                    "so none of them attach to these deeds.",
+                ),
+            )
+
+    filing_sec = ""
+    if filings and (filings.city or filings.entities):
+        fl = []
+        where = ", ".join(x for x in (filings.city, filings.st) if x)
+        if filings.entities and filings.entities > 1:
+            fl.append(
+                f"The deeds list a mailing address for {esc(name)} at "
+                f"{esc(_entity_title(filings.addr))}"
+                + (f", {esc(_entity_title(where))}." if where else ".")
+            )
+            fl.append(
+                f"{_count(int(filings.entities), 'separate buying entity')} in the "
+                f"deed record {'files' if filings.entities == 1 else 'file'} from that "
+                f"same address. Numbered LLCs sharing one filing address is the "
+                f"ordinary shape of a portfolio held one building at a time, and it "
+                f"is how the same operation appears as many names."
+            )
+        elif where:
+            fl.append(
+                f"The deeds list a mailing address for {esc(name)} in "
+                f"{esc(_entity_title(where))}, and no other buying entity in the record "
+                f"files from it."
+            )
+        if fl:
+            fl.append(
+                "A mailing address on a deed is where the filing said to send "
+                "paper. It is not proof of who controls the entity."
+            )
+            filing_sec = _prose_section("Where the filings come from", _para(*fl))
+
+    # Where it buys. The links are the point as much as the prose: an LLC page
+    # pointed at no neighbourhood, so the deed record led nowhere.
+    zips: dict[str, dict] = {}
+    for r in buys:
+        if not r.zip_code:
+            continue
+        z = zips.setdefault(r.zip_code, {"n": 0, "hood": r.hood or ""})
+        z["n"] += 1
+        if r.hood and not z["hood"]:
+            z["hood"] = r.hood
+    ranked_zips = sorted(zips.items(), key=lambda kv: (-kv[1]["n"], kv[0]))
+
+    geo_sec = ""
+    if ranked_zips:
+        top = ranked_zips[0]
+        geo_lines = [
+            f"The purchases sit in {_count(len(ranked_zips), 'ZIP code')}. "
+            f"The heaviest concentration is {esc(top[0])}"
+            + (f" ({esc(top[1]['hood'])})" if top[1]["hood"] else "")
+            + f", with {_count(top[1]['n'], 'recorded deed')}."
+        ]
+        if len(ranked_zips) > 1:
+            rest = ", ".join(
+                f'<a href="/neighborhood/{esc(z)}">{esc(v["hood"] + " " + z if v["hood"] else z)}</a>'
+                f' ({v["n"]})'
+                for z, v in ranked_zips[1:7]
+            )
+            geo_lines.append(f"The rest: {rest}.")
+
+        # Which ZIPs an entity buys in is the question the whole site exists to
+        # answer, and the entity page was the one place not answering it.
+        scored = db.execute(text("""
+            SELECT ds.zip_code, ds.score,
+                   (SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY score)
+                    FROM displacement_scores WHERE score IS NOT NULL) AS median
+            FROM displacement_scores ds
+            WHERE ds.zip_code = ANY(:zips) AND ds.score IS NOT NULL
+            ORDER BY ds.score DESC
+        """), {"zips": [z for z, _ in ranked_zips]}).fetchall()
+        if scored:
+            median = float(scored[0].median or 0)
+            hottest = scored[0]
+            above = sum(1 for r in scored if float(r.score) > median)
+            geo_lines.append(
+                f"On the PulseCities displacement index, the highest-pressure ZIP it "
+                f"buys in is {esc(hottest.zip_code)} at {float(hottest.score):.1f} out "
+                f"of 100, against a citywide median of {median:.1f}."
+            )
+            if len(scored) > 1:
+                geo_lines.append(
+                    "None of its ZIP codes sits above that median."
+                    if above == 0 else
+                    f"{_count_open(above, 'of its ZIP code', 'of its ZIP codes')} "
+                    f"{'sits' if above == 1 else 'sit'} above that median."
+                )
+        geo_lines.append(
+            f'Each of those neighbourhoods carries its own displacement signals. '
+            f'<a href="/neighborhood/{esc(top[0])}">Signals for {esc(top[0])} &rarr;</a>'
+        )
+        geo_sec = _prose_section(f"Where {esc(name)} buys", _para(*geo_lines))
+
+    # Timeline. A cluster of deeds in one month is a different operation from
+    # the same count spread over a year, and only one of them is worth a look.
+    time_sec = ""
+    if dates:
+        by_month: dict[str, list] = {}
+        for d in dates:
+            key = f"{d.year}-{d.month:02d}"
+            slot = by_month.setdefault(key, [0, d])
+            slot[0] += 1
+        busiest = max(((k, v[0], v[1]) for k, v in by_month.items()),
+                      key=lambda kv: (kv[1], kv[0]))
+        time_lines = [
+            f"Every deed PulseCities holds for {esc(name)} was recorded on the same "
+            f"day, {_en_date(span_end)}."
+            if span_start == span_end else
+            f"The first deed PulseCities holds for {esc(name)} was recorded "
+            f"{_en_date(span_start)}, the most recent {_en_date(span_end)}, "
+            f"across {_count(len(by_month), 'calendar month')}."
+        ]
+        if busiest[1] > 1:
+            time_lines.append(
+                f"The busiest month was {_month_year(busiest[2], 'en')}, with {_count(busiest[1], 'deed')} recorded."
+            )
+        if sells:
+            sold_bbls = len({r.bbl for r in sells if r.bbl})
+            time_lines.append(
+                f"The entity also appears as seller on {_count(len(sells), 'deed')} "
+                f"covering {_count(sold_bbls, 'lot')}."
+            )
+        else:
+            time_lines.append(
+                "No deed in the current record names this entity as the seller, so "
+                "nothing here has been resold inside the window."
+            )
+        time_sec = _prose_section("The acquisition timeline", _para(*time_lines))
+
+    # Eviction-before-purchase, with the buildings named.
     post_ev_line = ""
     if post_ev:
         noun = "property" if post_ev == 1 else "properties"
-        post_ev_line = (f'<p class="cross" style="margin-top:10px;">{post_ev} {noun} on this list '
-                        f'with a recorded price had a residential eviction executed within the year before the purchase. '
-                        f'<a href="/evictions">Citywide eviction tracker &rarr;</a></p>')
+        ev_lines = [
+            f"{_count_open(post_ev, noun, noun)} bought by {esc(name)} at a recorded price had a "
+            f"residential eviction executed in the year before the purchase. That "
+            f"sequence is what PulseCities tracks citywide: an eviction, then a "
+            f"transfer, then in many cases a renovation permit."
+        ]
+        named = [r for r in ev_before if r.address]
+        if named:
+            listed = ", ".join(
+                f'<a href="/property/{esc(str(r.bbl))}">{esc(_addr_title(r.address))}</a>'
+                for r in named[:5]
+            )
+            ev_lines.append(f"Those buildings: {listed}.")
+        ev_lines.append(
+            'A recorded sequence is not a finding about conduct. '
+            '<a href="/evictions">Citywide eviction tracker &rarr;</a>'
+        )
+        post_ev_line = _prose_section("Evictions before purchase", _para(*ev_lines))
+
+    # FAQ, answered from this entity's rows. The demand arrives phrased this
+    # way: Bing logged "bredif ms seller llc" and "how much did water view
+    # castle llc purchase 1341 ocan parkway brooklyn ny for".
+    faq: list[tuple[str, str]] = []
+    faq.append((
+        f"How many NYC properties does {name} own?",
+        f"{name} appears as the buyer of record on {len(buys)} "
+        f"{_plural(len(buys), 'deed')} covering {_count(n_bbls, 'tax lot')} in the "
+        f"ACRIS record PulseCities holds. A deed names who took title, so this is "
+        f"what the public record shows rather than a full ownership picture: "
+        f"property held through other entities does not appear on this page.",
+    ))
+    if volume and not all_nominal:
+        faq.append((
+            f"How much has {name} paid for NYC property?",
+            f"Stated consideration on the priced deeds totals {_fmt_amount(volume)} "
+            f"across {_count(len(priced), 'deed')}"
+            + (f", the largest being {_fmt_amount(priced[0].doc_amount)} for "
+               f"{_addr_title(priced[0].address)}." if priced and priced[0].address else ".")
+            + " Stated consideration is the figure filed with the deed. Deeds "
+              "recorded at $0 are usually transfers between related parties.",
+        ))
+    if ranked_zips:
+        top = ranked_zips[0]
+        faq.append((
+            f"Where does {name} buy in NYC?",
+            f"Its recorded purchases fall in {_count(len(ranked_zips), 'ZIP code')}, "
+            f"concentrated in {top[0]}"
+            + (f", {top[1]['hood']}" if top[1]["hood"] else "")
+            + f", where {_count(top[1]['n'], 'deed')} "
+              f"{'is' if top[1]['n'] == 1 else 'are'} on record. Each neighbourhood "
+              f"page carries the displacement signals for that ZIP.",
+        ))
+    if all_nominal:
+        faq.append((
+            f"How much did {name} pay for its NYC property?",
+            f"Nothing in the deed record states a real price. All "
+            f"{len(priced)} priced deeds record a nominal consideration under "
+            f"$1,000, which is how a transfer between related parties is filed. "
+            f"The buildings changed hands on paper; the deeds do not say for what.",
+        ))
+    faq.append((
+        f"Is {name} connected to other entities?",
+        (f"Yes. PulseCities groups it into the {network.display_name} operator "
+         f"network, which clusters entities that share a registered address or "
+         f"principal in the public record."
+         if network else
+         f"Not in the current clustering. Numbered LLCs are the standard way NYC "
+         f"property is held one building at a time, so an entity can be part of a "
+         f"larger operation without the deed record saying so. PulseCities only "
+         f"links entities where the public record supports it."),
+    ))
+    if post_ev:
+        faq.append((
+            f"Did any {name} building have an eviction before it was bought?",
+            f"{_count_open(post_ev, 'of the properties', 'of the properties')} bought at a recorded price had a "
+            f"residential eviction executed by a city marshal within the year "
+            f"before the deed date. PulseCities reports the sequence in the record "
+            f"and makes no claim about why either event happened.",
+        ))
+    faq_html = "".join(
+        f'<div class="faq-item"><h3>{esc(q)}</h3><p>{esc(a)}</p></div>' for q, a in faq
+    )
+    faq_sec = f"<h2>Questions about {esc(name)}</h2>{faq_html}"
 
     # Thin-page guard: a whole-condo purchase is one building however
     # many unit deeds it records, and servicers are not buyers.
@@ -5387,6 +6487,9 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
     url = f"https://pulsecities.com/llc/{slug}"
     jsonld = _jsonld({"@context": "https://schema.org", "@graph": [
         {"@type": "Organization", "name": name, "url": url},
+        {"@type": "FAQPage", "mainEntity": [
+            {"@type": "Question", "name": q,
+             "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]},
         _crumbs(("Home", "/"), ("LLC buyers", "/llc"), (name, f"/llc/{slug}")),
     ]})
 
@@ -5401,9 +6504,12 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
     if sells:
         stat_cells += (f'<div class="stat"><div class="stat-num">{len({r.bbl for r in sells if r.bbl})}</div>'
                        f'<div class="stat-label">sold</div></div>')
-    if volume:
+    if volume and not all_nominal:
         stat_cells += (f'<div class="stat"><div class="stat-num">{_fmt_amount(volume)}</div>'
                        f'<div class="stat-label">volume, priced deeds</div></div>')
+    elif all_nominal:
+        stat_cells += ('<div class="stat"><div class="stat-num">$0</div>'
+                       '<div class="stat-label">arm\'s length volume</div></div>')
 
     page = f"""<!DOCTYPE html>
 <html lang="en">
@@ -5420,13 +6526,19 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
   <div class="stats">{stat_cells}</div>
   {f'<p class="mono-note">Latest recorded deed {last_seen}</p>' if last_seen else ''}
   {network_line}
-  {post_ev_line}
+  {lede}
 
   <h2>Bought</h2>
   <p class="section-sub">Purchase deeds, newest first</p>
   <ul class="rec-list">
 {buys_html}  </ul>
 {sells_section}
+{holdings_sec}
+{filing_sec}
+{geo_sec}
+{time_sec}
+{post_ev_line}
+{faq_sec}
 
   <p class="cross" style="margin-top:26px;">Looking up your own building? <a href="/who-owns-my-building">Who owns my building &rarr;</a></p>
   <p class="note">A deed names a buyer or seller of record. This page describes documents, not conduct, and makes no claim of wrongdoing. <a href="/methodology">How PulseCities reads the record &rarr;</a></p>

@@ -956,3 +956,49 @@ them in sequence. `docs/seo/PLAN.md` is the consolidated, ordered version and
 Headline: shown for the right queries, ranks 5–10, **zero backlinks on every URL**, and
 the two highest-volume templates (`/property` 165 words x1,792, `/llc` 178 words x122)
 are the thinnest content on the site. **Depth before expansion.**
+
+## 2026-08-18 (later) — SEO plan step 1 shipped: both mass templates deepened
+
+`docs/seo/PLAN.md` is updated in place and carries the detail. Headlines only here.
+
+**Shipped, live, suite green (1,174 passed).** `/property` (1,792 sitemapped) and
+`/llc` (122) went from 100 and 84-210 visible words to 479-640 and 450-777,
+measured across 180 live pages. FAQPage on both, answered from each building's or
+entity's own records rather than boilerplate. `ItemList` on `/llc`. Guarded by
+`tests/test_content_depth.py`.
+
+**The plan's duplication metric was wrong. Do not use it again.** "Unique-word
+overlap <50%" is unachievable and does not measure duplication: `/neighborhood`,
+the template the plan calls good, scores 92-97% on it. Replaced with 5-gram
+containment over digit-bearing tokens. Measured: hand-written hubs 0-1%,
+property/LLC mean 49-50% max 63-66%, `/neighborhood` 68-69%.
+
+**Two correctness bugs found by reading the rendered page, not by testing.**
+1. The Ownership transfers table rendered one row per ACRIS *party*, so every
+   deed showed twice and the seller sat under a column headed "Buyer". All
+   82,756 parcels with a deed. Now grouped by document, seller in the sub-line.
+2. Entity names went through `str.title()`, printing "Llc", "Bronx Gs". Fixed
+   with `_entity_title()` (acronym set plus a vowel-less-token rule); it also
+   strips the stray trailing punctuation on 27,900 PLUTO owner names.
+
+**Two data findings that change later work.**
+1. **ACRIS party addresses ARE populated** (19,511 buyer-side deed rows), which
+   contradicts `project_entity_resolution_status`. They cluster: 42 entities at
+   one Midtown suite, 35 at another, 27 at 520 Fifth Ave. This is a better spine
+   for the step 2 family hubs than numbered name stems, and it unblocks entity
+   resolution step 3.
+2. **17,114 of 64,849 deed BBLs (26%) are condo unit lots absent from PLUTO**, so
+   a quarter of the deed record joins to no address, ZIP or neighbourhood. LLC
+   pages now recover the ZIP from the tax block where that block sits in one ZIP
+   (92% of blocks) and say plainly when a lot has no building file. **The
+   addresses are still missing. That is an ingestion gap worth its own pass.**
+
+**Perf note.** The ZIP peer-comparison query is per-ZIP data that was being run
+per-building (402ms on 11207, and there are ZIPs half again that size). Memoised
+in `_zip_context()`: 434ms for the first building in a ZIP, 66ms for every one
+after. ~180 ZIPs, so it is bounded.
+
+**Gotcha for the next session.** `_long_date(d, lang)` already existed; defining a
+one-arg `_long_date` shadowed it and 500'd every neighbourhood page. Only the test
+suite caught it. `frontend.py` is ~6,000 lines in one namespace, so grep before
+naming a helper.
