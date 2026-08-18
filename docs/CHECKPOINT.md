@@ -1054,3 +1054,32 @@ URLs it crawls were noindex, which the widened gate now fixes.
 **Still open:** `retire_raw_data.sh` has never been run (9.3GB of a 16GB DB),
 17,114 condo-unit deed BBLs have no address in PLUTO, and the MTEK/PHANTOM
 press pitch is unsent. Backlinks remain the ranking ceiling.
+
+## 2026-08-18 (session 2, later) — the ACRIS address block was a typo
+
+`scripts/backfill_party_addresses.py` asked Socrata 636b-3b5g for `addr_1`. The
+column is `address_1`. Every fetch returned no address, every update wrote NULL,
+and the project recorded "ACRIS has no party address data" and parked entity
+resolution on it for months. The scraper read `address_1` correctly the whole
+time, which is why rows from May 2026 on have addresses and the April backfill
+left 141,354 empty.
+
+A second bug: it matched Socrata rows to DB rows by document_id alone, so a
+buyer's address could land on the seller's row. Now matched on
+(document_id, party_type, name).
+
+**A full backfill was running when this session ended** (started 05:13 UTC,
+141,154 rows, ~68 min, log at scratchpad/backfill.log; safe to re-run, it only
+touches rows where party_addr_1 IS NULL).
+
+**When it finishes, re-run the family clustering.** Filing address is one of the
+two signals `api/entity_families.py` needs, 71% of LLC buyers had none, and it
+is the signal that found FLGSP. Expect more families than the current 10, so:
+
+    venv/bin/python -m pytest tests/test_entity_families.py -q
+    venv/bin/python -m scripts.generate_sitemap
+    systemctl reload pulsecities
+
+Then re-read the new families for anything with FLGSP's shape. That is the
+pipeline from data fix to press pitch, which is the only thing that touches the
+backlink ceiling.
