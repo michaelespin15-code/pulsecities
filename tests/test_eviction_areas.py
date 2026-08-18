@@ -202,3 +202,31 @@ class TestDiscoverability:
         assert 'href="/evictions"' in html, "no link back to the citywide tracker"
         assert re.search(r'href="/property/\d+"', html), \
             "no link to any of the buildings it names"
+
+
+class TestBoroughContext:
+    """neighborhoods.borough is NULL on all 178 rows. Reading it made borough
+    always None, which silently dropped the borough from every lede and removed
+    the only links between these 127 pages. Derive it from the ZIP instead."""
+
+    def test_pages_name_their_borough(self):
+        missing = []
+        for name, slug in _areas(6):
+            body = _text(client.get(f"/evictions/{slug}").text)
+            if not re.search(rf"evictions in {re.escape(name)}, \w", body):
+                missing.append(slug)
+        assert not missing, (
+            "eviction pages with no borough in the lede: " + ", ".join(missing)
+        )
+
+    def test_pages_link_to_other_areas_in_the_same_borough(self):
+        bare = []
+        for name, slug in _areas(6):
+            html = client.get(f"/evictions/{slug}").text
+            peers = set(re.findall(r'href="/evictions/([a-z0-9-]+)"', html)) - {slug}
+            if len(peers) < 2:
+                bare.append(f"{slug}: {len(peers)} peer links")
+        assert not bare, (
+            "eviction pages that link to no siblings, so the set is 127 "
+            "dead ends:\n  " + "\n  ".join(bare)
+        )

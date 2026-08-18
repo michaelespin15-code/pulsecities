@@ -5777,6 +5777,18 @@ _ev_area_index: dict[str, str] | None = None   # slug -> canonical name
 _ev_counts: dict[str, tuple[int, float]] = {}
 
 
+def _borough_zips(borough: str | None, db) -> list[str]:
+    """ZIPs in a borough, derived from the ZIP ranges rather than from
+    neighborhoods.borough, which is NULL on every row."""
+    if not borough:
+        return []
+    from api.routes.neighborhoods import _borough_from_zip
+    rows = db.execute(text(
+        "SELECT zip_code FROM neighborhoods WHERE zip_code IS NOT NULL"
+    )).fetchall()
+    return [r.zip_code for r in rows if _borough_from_zip(r.zip_code) == borough]
+
+
 def _ev_area_counts(name: str, db) -> int:
     """Executed residential evictions for a neighbourhood name. Memoised: this
     is asked once per neighbourhood page render and the answer moves nightly."""
@@ -5858,7 +5870,12 @@ def eviction_area_page(slug: str, db: Session = Depends(get_db)):
         GROUP BY 1, 2 ORDER BY n DESC, 1
     """), {"name": name}).fetchall()
 
-    borough = next((z.borough for z in zips if z.borough), None)
+    # neighborhoods.borough is NULL on all 178 rows, so reading it here meant
+    # borough was always None: the lede lost its borough and the "Elsewhere in"
+    # section, which is the only path between these 127 pages, never rendered.
+    # The ZIP ranges are the source that actually works.
+    from api.routes.neighborhoods import _borough_from_zip
+    borough = next((b for z in zips if (b := _borough_from_zip(z.zip_code))), None)
 
     # The investigative payload: which buildings the evictions concentrate in.
     top = db.execute(text("""
@@ -6167,10 +6184,11 @@ def eviction_area_page(slug: str, db: Session = Depends(get_db)):
             FROM evictions_raw e
             JOIN neighborhoods n ON n.zip_code = e.zip_code
             WHERE e.eviction_type = 'Residential' AND n.name IS NOT NULL
-              AND n.name <> :name AND n.borough = :borough
+              AND n.name <> :name AND n.zip_code = ANY(:zips)
             GROUP BY 1 HAVING count(*) >= :floor
             ORDER BY count(*) DESC LIMIT 8
-        """), {"name": name, "borough": borough, "floor": _EV_AREA_MIN}).fetchall()
+        """), {"name": name, "floor": _EV_AREA_MIN,
+               "zips": [z for z in _borough_zips(borough, db)]}).fetchall()
         if peers:
             links = ", ".join(
                 f'<a href="/evictions/{_ev_area_slug(pr.name)}">{e(pr.name)}</a>'
