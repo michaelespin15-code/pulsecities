@@ -600,3 +600,155 @@ demand. Notes for later sessions: new SSR routes 404 until nginx gets a
 addresses; property titles now lead with the records promise, not score
 jargon (874dd52). Remaining traction backlog lives in the traction-pages
 memory note.
+
+---
+
+# PulseCities checkpoint, 2026-08-18 — typography, CSP, tier bands, raw_data staged, and the first real Search Console read
+
+## Shipped (7 commits, 96c87ad..ceb20ab, all live, suite green 1,282 passed)
+
+- **96c87ad** tabular figures + `text-wrap: balance`. The premise needed narrowing:
+  Google serves DM Sans with **no `tnum` table**, so `font-variant-numeric` is dead
+  CSS on it, and JetBrains Mono is already fixed-pitch. Only `.arc-gain`/`.row-val`
+  on /displacement qualified (Bricolage is proportional *and* ships tnum). Measured
+  live: gain chips spanned 53.6–74.7px before, 72.38px each after.
+- **0a582a1** CSP report-only + Tailwind content-hash stamping. `npm run build:css`
+  now also runs `scripts/stamp_asset_hash.py`; **commit app.html with
+  tailwind.min.css** and never run `tailwindcss` directly.
+- **1ca54ed** the OG card said "178 NYC ZIP codes". Not staleness — the wrong
+  query: `neighborhoods` carries a **99999 sentinel** row. Canonical is **177**.
+  `scripts/generate_og_image.py` regenerates it from the DB.
+- **0cf5e08** tier bands (85/67/34) were hand-written in **ten** places; now
+  `scoring/tiers.py`. Colour deliberately NOT centralised (dark page / risk ramp /
+  paper ink differ on purpose). Verified behaviour-identical: 7,007 comparisons.
+- **1ea21e4** the raw_data archive's R2 upload had never worked. **R2 layout:
+  bucket `vs-archive`, prefix `pulsecities-backups/`**; derivation now lives once
+  in `scripts/lib/r2_creds.sh`, shared with backup_offsite.sh.
+- **870e2a4** /flips and /radar claimed windows their deeds no longer covered.
+  Both now carry the /evictions-style through-line, EN + ES.
+- **ceb20ab** raw_data drop staged (see below) plus small backlog.
+
+## The one thing waiting on a maintenance window
+
+    ./venv/bin/python -m alembic upgrade head   # applies b8e30d5c1746
+    scripts/retire_raw_data.sh drop             # runs the migration + VACUUM FULL
+
+Archives are done and verified offsite (5,148,918 + 2,070,570 rows). Expect
+16GB -> ~7GB, and the 1.7GB nightly dump falls with it. **Do not restore the old
+ordering**: migration a1f4c07b9e52 made the columns nullable first because both
+were NOT NULL with no server default, and the scrapers build plain dicts for a
+Core insert — deploying the code before the drop would have failed the 02:00
+scrape. Also do `pg_stat_statements` in the same window (config is installed at
+`/etc/postgresql/14/main/conf.d/`, needs a **restart**, then `CREATE EXTENSION`).
+
+## Corrections — believed true, actually false. Do not act on these again.
+
+- **LLC-to-LLC filter is already live in scoring** (`NOT EXISTS` on an LLC grantor
+  in `_aggregate_llc_acquisitions`). The parked "38% corp-to-corp churn" decision
+  is stale.
+- Of five "unused" deps, only **APScheduler** was dead. numpy <- shapely; xlrd,
+  openpyxl, tqdm <- nycdb, used as a CLI by backfill_rs_history.py.
+- **idx_parcels_geometry stays.** 74MB / zero scans is true, but it is the GiST
+  index on a mapping product's geometry column and worth <1% post-drop.
+- A health_check.log CRITICAL dated **before 2026-08-17 16:38 UTC** is a false
+  alarm from the old local 14-day ACRIS threshold (fixed in 278a8ee).
+- `scripts/data_health_check.json` is tracked and reports "critical" from
+  **2026-04-18**; dof_assessments has succeeded twice since. The script is not in
+  cron. Revive or delete, don't half-keep.
+
+## ACRIS is frozen upstream at 2026-07-31
+
+Verified against the city's API — newest `recorded_datetime` genuinely is 07-31.
+Real threshold is 21 days, so a **genuine** CRITICAL fires ~2026-08-21. That means
+"NYC stopped publishing", not "we broke something".
+
+## Search Console — first real read (315 queries, ~5 clicks). READ THIS BEFORE SEO WORK.
+
+Michael pasted the query export on 2026-08-18. Headline: **impressions are real and
+CTR is ~0.** This is a coverage-and-CTR problem, not a demand problem. Four findings,
+in priority order. All numbers below are impressions unless noted.
+
+### 1. "eviction marshal {neighborhood}" is the biggest cluster and nothing targets it
+
+~35 distinct neighborhood variants, **~200 impressions, 0 clicks**:
+`nyc marshal eviction list` **52**, `eviction marshal wakefield` 15,
+`... mott haven` 11, `nyc eviction williamsbridge` 10, `marshal eviction list` 8,
+`... bushwick` 8, `... washington heights` 7, `... midtown` 7, `... ozone park` 7,
+`... upper east side` 6, `... east village` 6, then a long tail of st. george,
+highbridge, east new york, queens, lower east side, bronx, upper west side,
+brownsville, east harlem, borough park, bay ridge, flatbush, co-op city, crown
+heights, richmond hill, manhattan, brooklyn, bed-stuy, jackson heights, east
+flatbush. Plus `nyc marshal docket number search`, `nyc marshal list`.
+
+We **have** this data (marshal evictions, 2024-04-12 onward, per BBL/ZIP) and
+`/evictions` is citywide only. **The build: neighborhood-level eviction pages** on
+the query's own shape. This is the clearest opportunity in the export. Guard against
+the doorway-page trap by making each page carry real counts, dates and marshal
+detail, not a ZIP score restated.
+
+### 2. The property sitemap gate excludes the addresses people actually search
+
+Address queries are a large slice: `134 macon st brooklyn ny` **35**,
+`1339 lincoln pl brooklyn ny 11213` 23, `882 morris ave bronx ny` 7,
+`2258 morris ave bronx ny` 7, `286 audubon avenue` 7, `265 west 34th street` 7,
+`161 veronica place` 6, `1905 atlantic ave` 6, `303 troutman street` 5, and ~60 more
+at 1–4. Also `3009970039` — **37 impressions, 1 click — that is a raw BBL.**
+
+**Every address I sampled already has a working /property page. None are in the
+sitemap.** `generate_sitemap.py` requires a deed **AND** an eviction (~1,792 of
+918,338 parcels); these have deeds and no eviction. The rule was written to avoid
+912k thin doorway pages, which is right in spirit and too narrow in practice — a
+parcel with 6 recorded deeds is not thin. Revisit the threshold (e.g. N records of
+any kind) rather than the intersection. Scale to weigh: 82,756 parcels have a deed,
+19,448 have an eviction.
+
+### 3. LLC pages convert best, and the gate excludes the best one
+
+`norworth holdings llc` — 5 impressions, **3 clicks. That is 3 of the site's 5 total
+clicks**, and `/llc/norworth-holdings-llc` renders 200 but is **NOT sitemapped**: it
+has 3 BBLs on 1 block and the gate is `count(DISTINCT bbl) >= 3 AND
+count(DISTINCT substring(bbl,1,6)) >= 2`. The `blocks >= 2` half is excluding the
+highest-CTR page on the site. Also `mf blue valley apartments llc` 12/1 click,
+`terra developers` 12/1 click.
+
+Sitemapped LLC pages: **122**. LLC grantees with 2+ deeds: **1,557**. Total distinct
+LLC grantees: 17,161. Loosening the gate is the highest-confidence lever here.
+
+Caveat, do not over-promise: some demand is unanswerable. `15 west 26th street llc
+deed acris` (32) and `wooster street llc ...` (16+9+1) are **not in ownership_raw at
+all** — our slice is 198,446 rows, not a full ACRIS mirror.
+
+### 4. Pages that already rank and get no clicks — a title/snippet problem
+
+- **Rent-stabilized**: ~24 distinct phrasings, ~30 impressions, **0 clicks**, and
+  `/is-my-building-rent-stabilized` exists. `is my building rent stabilized` 6,
+  `how to check if apartment is rent stabilized nyc` 2, plus twenty near-identical
+  long-tail phrasings. Ranking or snippet, not coverage.
+- **"who owns"**: ~20 impressions across `who owns this` 4, `find building owner` 2,
+  `who owns my building` 2, `nyc landlord search`, `who owns what in nyc`, etc. Page
+  exists. 0 clicks.
+- **Landlords**: `biggest landlords in nyc` 3, `largest landlords in nyc` 1.
+  /operators is already titled for this. 0 clicks.
+- **ZIP lookups** are a real intent we half-serve: the `10032` family alone is ~16
+  impressions across ten phrasings; also 11219, 11413, 11355, 11427, 11104, 10044.
+- **Spanish is surfacing**: `queens codigo postal` 3, `codigo postal far rockaway` 2,
+  `codigo postal staten island` 1+1, `codigo de queens` 1. The ES pages earn
+  impressions; worth serving ZIP-lookup intent in Spanish deliberately.
+
+### Also worth noting
+
+- `/flips` and `/radar` are titled **"Flip Watch"** and **"Speculation Radar"** —
+  brand names nobody searches. Compare `/who-owns-my-building`, which is literally a
+  query and was built from Search Console demand. Retitling those two costs nothing.
+- `nyc displacement risk map` 6 and `vulnerability assessment nyc` 6 are the only
+  product-category queries in the whole export.
+- Ignore the `1_1751...` / `2_1729...` numeric queries; they are tracking IDs, not
+  human intent.
+
+### Suggested order when Michael returns
+
+P1 neighborhood eviction pages (new demand, we have the data).
+P2 sitemap gates: property (intersection -> substantive-record threshold) and LLC
+(drop `blocks >= 2`). Cheapest wins, pages already exist and render.
+P3 CTR pass on rent-stabilized / who-owns / operators — they rank and nobody clicks.
+P4 retitle /flips and /radar to intent-bearing titles.
