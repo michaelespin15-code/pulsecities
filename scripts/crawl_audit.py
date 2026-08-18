@@ -30,7 +30,6 @@ import re
 import sys
 import time
 import xml.etree.ElementTree as ET
-from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
@@ -207,14 +206,18 @@ for k, v in prob.items():
         OK(f"{k}: clean")
 
 print("\n=== 6. engine-specific ===")
+# Probe a URL taken from the sitemap, not a hardcoded one. A path baked in from
+# whichever site this script was written on 404s everywhere else, and then
+# reports every engine as blocked when nothing is wrong.
+probe = urlparse(sample[0]).path if sample else "/"
 for ua, name in [
     ("Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)", "Googlebot"),
     ("Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)", "bingbot"),
     ("Mozilla/5.0 (compatible; Google-InspectionTool/1.0)", "Google-InspectionTool"),
 ]:
-    rr = get("/property/1002770002", headers={"User-Agent": ua})
-    same = rr.status_code == 200
-    (OK if same else FAIL)(f"{name}: /property returns {rr.status_code}")
+    time.sleep(PACE)
+    rr = get(probe, headers={"User-Agent": ua})
+    (OK if rr.status_code == 200 else FAIL)(f"{name}: {probe} returns {rr.status_code}")
 if "IndexNow" not in robots:
     WARN("no IndexNow key file referenced; Bing/Yandex accept instant submission "
          "and it is the one Bing-specific lever available")

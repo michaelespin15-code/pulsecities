@@ -97,12 +97,30 @@ record. A sitemap-only reading of the problem reported it as tight.
 
 ---
 
+## Using this in another repo
+
+**Copy the script, not the fixes.** `scripts/crawl_audit.py` is one file with no
+repo dependencies beyond `requests`, verified running from /tmp under system
+python against a remote URL. Drop it in and run it.
+
+The fixes are a different matter. "Do the same fixes here" is the wrong
+instruction, and it will produce bad work: the fixes on this site were for
+*this* site's bugs, a 5r/s nginx limit and an indexability rule keyed off a
+ZIP-level score. Another site will have neither. Told to reproduce them, an
+agent will either change things that were never broken or report success
+against a checklist it did not actually run.
+
+The transferable thing is **the audit and the habit**, not the diff. So the
+instruction is "run this, tell me what is actually wrong here, fix that".
+
 ## Asking Claude Code to run this on another site
 
 Paste this. It does not assume the site is like this one.
 
-> Audit this site's crawler readiness end to end. Do not tell me it looks fine
-> without measuring.
+> Copy `crawl_audit.py` into this repo and run it against <URL>. Then audit
+> this site's crawler readiness end to end. Do not tell me it looks fine
+> without measuring, and do not port fixes from another project: find what is
+> wrong *here*.
 >
 > 1. Fetch robots.txt and every sitemap it declares. Verify the index is
 >    well-formed and correctly namespaced, that no child exceeds 50,000 URLs or
