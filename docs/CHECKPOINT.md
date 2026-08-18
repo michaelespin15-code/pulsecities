@@ -1002,3 +1002,55 @@ after. ~180 ZIPs, so it is bounded.
 one-arg `_long_date` shadowed it and 500'd every neighbourhood page. Only the test
 suite caught it. `frontend.py` is ~6,000 lines in one namespace, so grep before
 naming a helper.
+
+## 2026-08-18 (session 2) — SEO plan steps 1-6 shipped
+
+`docs/seo/PLAN.md` carries the table. Only the outreach item is left, and no
+code change touches it.
+
+**The finding that mattered most was not in the plan.** `_build_property_page`
+decided robots with `bool(owners or evicts or permits) or score is not None`.
+The score is ZIP-level, so every parcel in a scored ZIP rendered `index,
+follow`: **596,432 parcels with no building record at all**, ~429 words each,
+81% identical by 5-gram containment. The plan looked at the sitemap (1,792
+URLs) and concluded the gate was tight. The sitemap was never the gate.
+
+**Shipped, live, suite green (1,216 passed).**
+- /property and /llc deepened, FAQPage on both, ItemList on /llc.
+- Robots gate now requires a building-level record.
+- Sitemap 2,159 -> 65,810 URLs, split into a sitemap index (spec caps a file at
+  50k), per-URL lastmod from each page's newest record (751 distinct values in
+  the first property file, against 2,111 URLs sharing one date before).
+- /evictions/{neighbourhood}: 127 pages, 515-716 words, keyed on NAME not ZIP
+  because three ZIPs are called Bushwick.
+- /network/{slug}: 8 entity families. FLGSP = 80 companies / 80 buildings.
+- /operators 72 -> 482 words; /flips and /radar retitled off their brand names.
+- `complaints_raw(bbl, created_date DESC)` + `violations_raw(bbl,
+  inspection_date DESC)`: the 85.8s property page is now 48ms.
+
+**Correctness bugs found by reading rendered output, not by testing.**
+1. Ownership transfers rendered one row per ACRIS *party*: every deed twice,
+   seller under a column headed "Buyer", on 82,756 parcels.
+2. `str.title()` printed "Llc" and "Bronx Gs" on every entity name.
+3. `_plural` produced "addresss", "entitys", "buildingss".
+4. "BANK" as a family token merged Flagstar with US Bank; summing per-entity
+   building counts read five condo units as five buildings.
+5. An LLC-page sentence claimed a shared filing address is "how the same
+   operation appears as many names". At 525 6th Avenue that is an attorney's
+   office. Corrected to state the fact and name both readings.
+
+**Method note worth keeping.** Unique-word overlap is not a duplication
+measure: /neighborhood, the template the plan calls good, scores 92-97% on it.
+5-gram containment over digit-bearing tokens separates correctly (hand-written
+hubs 0-1%, /neighborhood 68-69%) and is what every content test here uses.
+Calibrate a metric against a page you already believe is fine before optimising
+toward it.
+
+**Crawl reality, measured from nginx logs.** Googlebot fetched 988 distinct
+/property and 999 distinct /llc URLs in 14 days, so crawl budget is not the
+bottleneck and this work will be seen in days to weeks. But ~877 of the 999 LLC
+URLs it crawls were noindex, which the widened gate now fixes.
+
+**Still open:** `retire_raw_data.sh` has never been run (9.3GB of a 16GB DB),
+17,114 condo-unit deed BBLs have no address in PLUTO, and the MTEK/PHANTOM
+press pitch is unsent. Backlinks remain the ranking ceiling.

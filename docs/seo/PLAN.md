@@ -1,6 +1,30 @@
 # SEO plan — written 2026-08-18, act on this directly
 
-## Status: step 1 is DONE and live. Start at step 2.
+## Status: steps 1-6 are DONE and live (2026-08-18). Only outreach is left.
+
+| step | state |
+|---|---|
+| 1. Deepen /property and /llc | DONE. 479-640 and 450-777 words, FAQPage on both |
+| 2. Entity-family hubs | DONE, but **8 hubs, not 49**. See below |
+| 3. Internal linking | DONE for property, LLC, family, eviction and neighbourhood pages |
+| 4. Eviction-by-ZIP | DONE as **127 per-neighbourhood pages**, 515-716 words |
+| 5. Sitemap gates | DONE. 2,159 -> 65,810 URLs, split into a sitemap index |
+| 6. Leftovers | DONE. /operators 72 -> 482 words, /flips and /radar retitled, per-URL lastmod, ItemList on /llc |
+
+**The biggest single finding was not on this list.** The property page decided
+robots with `... or score is not None`, and the score is ZIP-level, so
+**596,432 parcels with no deed, eviction, violation or permit were rendering
+`index, follow`** on ~429 words running 81% identical to each other. This plan
+read the sitemap as the gate; the sitemap was never the gate. Fixed, with a
+test that checks the invariant directly rather than by proxy.
+
+Also fixed while working: the Ownership transfers table rendered one row per
+ACRIS *party*, so every deed appeared twice and the seller sat under a column
+headed "Buyer" on all 82,756 parcels with a deed. And `complaints_raw` had no
+`(bbl, created_date)` index, so one property page took **85.8 seconds** and
+Googlebot 504'd on it four times; now 48ms.
+
+
 
 Shipped 2026-08-18, same day: `/property` and `/llc` deepened with FAQ blocks,
 `ItemList` on `/llc`, and the internal linking of step 3 as far as those two
@@ -19,6 +43,13 @@ On that measure: hand-written hubs 0-1%, deepened property/LLC mean 49-50%,
 
 Two data findings from doing the work, both of which change later steps:
 
+- **Step 2 yields 8 families, not 49, and that is the honest number.** Name
+  stems give 21 groups covering 108 entities. Filing addresses cover 867, and
+  clustering on them alone is wrong: 525 6th Avenue files for APPLEBAUM SPENCER,
+  CHEN DOROTHY and GOPSTEIN SHELDON, an attorney's office. Requiring two
+  independent signals drops 139 of 193 address groups. What survives is
+  defensible, and the largest is a real story: **FLGSP is 80 companies, 80
+  buildings, $435.9M, 97 executed evictions, every deed recorded on one day.**
 - **ACRIS party addresses are populated**, contrary to the note that killed
   entity resolution step 3. 19,511 buyer-side deed rows carry one, and they
   cluster hard: 42 separate entities file from one Midtown suite, 35 from
