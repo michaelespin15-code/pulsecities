@@ -899,3 +899,48 @@ idea in the export that adds substance rather than surface area.
 
 Ignore two things in the export: `/status` shows `Document size 0` but serves 13,560
 bytes (stale Bing record), and the single "Title too long >70 chars" warning.
+
+## Structured data + titles audit (2026-08-18)
+
+Bing's validator said "1 markup type found" on an LLC page; that is just the first
+block it rendered. Actual coverage, measured across every template:
+
+    /                       Dataset, Organization, WebSite, SearchAction, Place, SoftwareApplication...
+    /neighborhood/{zip}     Dataset, FAQPage, Place, PropertyValue, Breadcrumb
+    /evictions              Dataset, FAQPage, Organization, Breadcrumb
+    /who-owns-my-building   FAQPage, Breadcrumb
+    /is-my-building-...     FAQPage, Breadcrumb
+    /llc/{slug}             Organization, Breadcrumb
+    /property/{bbl}         Place, PostalAddress, Breadcrumb
+    /operators /flips /radar /brooklyn    ItemList, Breadcrumb
+    /llc                    Breadcrumb ONLY          <- gap
+
+Coverage is good. Two real gaps and two non-issues.
+
+**Gap 1: `/llc` is the only directory page without `ItemList`.** /operators, /flips,
+/radar and /brooklyn all declare one; the LLC directory lists 122 entities and
+declares nothing. Straight inconsistency, cheap fix.
+
+**Gap 2 — and this is the one that matters: no `FAQPage` on the two mass templates.**
+`/property` (x1,792) and `/llc` (x122) are the thinnest pages on the site AND the ones
+whose queries are phrased as questions. From the exports: "who owns this building",
+"how much did water view castle llc purchase 1341 ocan parkway brooklyn ny for",
+"find the owner of a building", "53 west 174th st ... eviction cases". The site
+already uses FAQPage well on four other templates, so the pattern exists.
+
+Adding a FAQ block to the property and LLC templates, answered from that building's or
+entity's own records, does three jobs at once: it supplies the prose those pages lack
+(165 and 178 words today), it makes them eligible for FAQ rich results, and it matches
+the observed query phrasing verbatim. **This is the same work as "deepen the
+templates" in the section above, not a separate task** — do it as one change.
+
+**Non-issue 1: titles over 70 chars.** Three templates exceed it, and because two are
+the mass types it is really ~1,914 pages, not the "1 instance" Bing reported. But all
+three lead with the query-matching text — `65 Broadway, Manhattan NY 10006: ...`,
+`BRONX GS PROPERTIES LLC: ...`, `Is my building rent stabilized? ...` — so what
+truncates is the tail and the ` | PulseCities` suffix. Google truncates on pixel width
+anyway. Low priority; do not spend the deepening effort here.
+
+**Non-issue 2: og:title mismatches** on /map (`PulseCities | NYC Displacement Risk Map`
+vs the title's reverse order) and /neighborhood (a pipe separator). Cosmetic. og:title
+drives social cards, not ranking, and brand-first is defensible there.
