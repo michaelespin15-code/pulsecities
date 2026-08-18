@@ -31,3 +31,5 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 # Both alert through scheduler.alerts and exit nonzero on breach.
 40 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.daily_health_check >> /var/log/pulsecities/health_check.log 2>&1
 45 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.pipeline_health >> /var/log/pulsecities/health_check.log 2>&1
+# IndexNow: submit what the sitemap says changed, after it is regenerated
+25 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.indexnow_submit >> /var/log/pulsecities/sitemap.log 2>&1

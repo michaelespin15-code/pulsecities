@@ -1,3 +1,118 @@
+# PulseCities checkpoint, 2026-08-18 (session 3) — reading the families for the next FLGSP
+
+The handoff asked for one thing: read the nine new entity families and find
+another story the size of FLGSP. Two came out of it, and the reading turned up
+four clustering bugs that were quietly wrong on the live site.
+
+## The two stories
+
+**A Washington private-equity firm is buying Brooklyn's small buildings.**
+`docs/outreach/pitch-carlyle-townhouses.md`. Ten LLCs have taken title to 42
+small Brooklyn buildings since April 2025, 38 of them bought from outside
+sellers for **$197.5M**. Seven are called TOWNHOUSE RENTAL plus a roman numeral;
+five deed party rows give the filing address as **THE CARLYLE GROUP, Washington
+DC 20004**, and two adjacent names (BROOKLYN TOWNHOUSE PROPERTY OWNER III and
+IV, 202 8TH STREET OWNER) file from the same place. 202 units, 35 of 42 built
+before 1974, **zero evictions**, 47 open violations. The story is what kind of
+building institutional money is buying, not harm: there is none on the record.
+The pitch says plainly that an ACRIS party address is what the filer typed.
+
+**$549.6M of nursing home real estate moved in five weeks.**
+`docs/outreach/pitch-snf-nursing-homes.md`. Nine properties changed hands on one
+day, 2026-03-13, for **$474.6M**, each bought by a company named
+`<address> SNF REALTY LLC`, all nine filing from one Lakewood NJ address. A
+tenth on the same pattern paid $75M for a Flushing property two weeks earlier.
+Corroboration: PLUTO classes all ten as institutional, and on the same day as
+each deed the mortgage was assigned to **Huntington National Bank**, off
+Greystone Funding, M&T and Bank Hapoalim. This is a health-care desk story, not
+a housing one, and the pitch says so.
+
+**The FLGSP pitch was wrong and is now corrected.** It said $436M and 94
+evictions. The real figures are **$451,300,000** (the 82 per-building prices sum
+to that exactly) and **99 evictions, 98 of them predating the sale**. The old
+numbers were low because two FLGSP companies were missing from the family, for
+the reason below.
+
+## `scripts/family_stories.py`, so the next one is found by running something
+
+Profiles every family for story shape: bulk trade, unwind, assembly or hold;
+units, DHCR registrations, open violations, evictions split by whether they
+predate the family's own deed, counterparties, per-building deed IDs. Writes
+`family_stories.json` and a ranked `family_stories.txt`. Rerun it after every
+clustering change.
+
+## Four clustering bugs the reading exposed
+
+1. **Filing-address variants split a group.** `C/O: SUMMIT MALLS MANAGEMENT,
+   LLC` and `C/O: SUMMIT MALL MANAGEMENT, LLC` keyed as different addresses, so
+   two of the 82 FLGSP companies never joined the family and /network/flgsp was
+   two buildings and $15.4M short. `_addr_key()` now normalises care-of,
+   punctuation and entity form; `_zip5()` normalises the 10,638 ZIP+4 rows.
+2. **No third way in for an orphan.** Adoption now pulls in an entity carrying a
+   family's coined label when it files from a ZIP that family already uses, on
+   the same exclusivity test the label rule applies.
+3. **Cross-address merging on a common token invented a landlord.** MARINE PARK
+   in Rockaway, DSA on West 72nd and 1 PARK ROW in Grand Rapids were one family
+   on the shared token "PARK". /network/1-park-row-commercial is gone; the merge
+   now requires the token to be coined.
+4. **Transfers to yourself counted as sales.** TOWNHOUSE RENTAL "sold 9" when
+   all nine moved between its own companies. Intra-family transfers are now
+   excluded and the five-building floor is re-applied afterwards, which also
+   retired /network/ddg.
+
+Families went 19 to 26. New hubs: JOBER (Bronstein Properties), THOR (Thor
+Equities), RSS (Rialto), KEYSTONE, LBUZ, MEEKER (Cedar Park Capital, and it
+bought the BSP Greenpoint portfolio), LORDAE, HOLDINGZ, RAVE, FEROZE. Every
+existing slug is preserved except the two that were wrong.
+
+## Family pages carry their own record now
+
+Building rows show units, rent-stabilized count, year built, open violations,
+price and date instead of an address and a date. Added a price range, a
+portfolio totals sentence, a "Who was on the other side" section naming
+counterparties, and an explicit line when the deeds are internal transfers
+(REDROCK's nine same-day deeds are exactly that). This also cleared the
+near-duplicate guard, which the thinner new families were failing at 70-71%.
+
+Copy fixes on the way through: `_entity_title` printed "Flgsp" (the vowel-less
+rule only matched 4 letters) and "Carroll ST"; stat chips read "1 ZIP codes" and
+"1 buildings sold"; a seller-only family had a heading reading "Where X buys";
+four user-visible British spellings of "neighbourhood" against 131 American ones.
+
+## IndexNow shipped too (handoff item 3)
+
+The one Bing-specific lever, and the last WARN in `scripts/crawl_audit.py`.
+Key `4494ce2738a74028c1babaef305aec53`, served at
+`frontend/<key>.txt` (the catch-all nginx location picks it up, no config
+change) and named in robots.txt. `scripts/indexnow_submit.py` reads the
+generated sitemaps for {url: lastmod}, submits only what moved against
+`indexnow_state.json`, core URLs first, capped at 5,000 a run so the first pass
+does not dump 65,962 URLs at an endpoint that rate-limits for exactly that. Cron
+at 03:25, after the 03:15 sitemap. **First real submission returned HTTP 202**,
+which is accept-with-key-validation-pending; the backlog drains over the next
+nights. `tests/test_indexnow.py` guards that the key file, robots.txt and the
+script agree, that the file stays world-readable, and that unchanged URLs are
+never resubmitted.
+
+## Data notes worth keeping
+
+- `rs_buildings` holds two sources. `dhcr` is registrations; `hpd_jurisdiction`
+  is HPD multiple-dwelling apartment counts and **is not rent stabilization**.
+  Filter `source='dhcr'` for any claim with the word stabilized in it. Mixing
+  them inflated a portfolio by a third in the first draft of this work.
+- PLUTO `units_res` can be badly stale: 438 4th Avenue reads 17 units against 51
+  DHCR-registered units in 2022 and 2023.
+- Deed amounts are per document. Where one price appears on two documents from
+  the same seller on the same day, decide which reading you mean before
+  printing a total (the Carlyle pitch gives both).
+
+## New guards
+
+`tests/test_entity_families.py` gained: filing-address variants collapse to one
+key; no entity carrying a family's coined label from a family ZIP is left
+outside it; every member shares a token or stem with the label. 20 tests there,
+suite green.
+
 # PulseCities checkpoint, 2026-07-15 (later) — #8 shared SSR nav DONE
 
 The one real refactor the prior handoff queued is done and live (faedc35).
