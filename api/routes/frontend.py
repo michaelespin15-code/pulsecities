@@ -21,6 +21,7 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Resp
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from api.freshness import ACRIS_THROUGH_SQL
 from models.database import get_db
 from scoring.tiers import tier
 
@@ -186,6 +187,49 @@ def _crumbs(*pairs) -> dict:
             for i, (n, p) in enumerate(pairs, 1)
         ],
     }
+
+
+_MONTHS_SHORT = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+
+def _acris_through(db) -> date | None:
+    """Newest deed date actually in hand, via the canonical freshness query."""
+    try:
+        return db.execute(text(ACRIS_THROUGH_SQL)).scalar()
+    except Exception:
+        logger.warning("acris through-date query failed", exc_info=True)
+        return None
+
+
+def _deeds_through_line(db, lang: str = "en") -> str:
+    """One sentence naming where the deed record actually stops.
+
+    /flips and /radar are built entirely on ACRIS, whose windows are anchored
+    to CURRENT_DATE while its data ends whenever the city last published. On
+    2026-08-18 that gap was eighteen days: /radar said "detected across NYC in
+    the past 90 days" over a window whose final eighteen days held no deeds at
+    all, and nothing on the page said so. A reader checking our numbers against
+    a deed recorded last week would find us silently wrong.
+
+    Same shape as the /evictions through-line, and the same rule as the
+    homepage LLC chip: never let a page imply coverage the query does not have.
+    Returns "" when the date is unavailable rather than inventing one.
+    """
+    through = _acris_through(db)
+    if not through:
+        return ""
+    stamp = f"{_MONTHS_SHORT[through.month]} {through.day}"
+    if lang == "es":
+        return (f"Escrituras registradas hasta el {through.day} de "
+                f"{_ES_MONTHS_LONG[through.month]}, el último día "
+                f"publicado por la ciudad.")
+    return (f"Deeds recorded through {stamp}, the most recent day the city "
+            f"has published.")
+
+
+_ES_MONTHS_LONG = ["", "enero", "febrero", "marzo", "abril", "mayo", "junio",
+                   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
 
 
 # Tier colours for the dark page. The bands themselves live in scoring.tiers;
@@ -2707,6 +2751,13 @@ def flip_watch_page(db: Session = Depends(get_db)):
     from api.routes.flips import query_flips, LOOKBACK_DAYS, FLIP_WINDOW_DAYS
     flips = query_flips(db)
 
+    # The 12-month lookback runs to today; the deeds in it stop wherever the
+    # city last published. "Updated nightly" is true of the job, not the record.
+    through_en = _deeds_through_line(db)
+    through_es = _deeds_through_line(db, "es")
+    through_en_js = through_en.replace("'", "\\'")
+    through_es_js = through_es.replace("'", "\\'").encode("ascii", "backslashreplace").decode()
+
     _MONTHS = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -2845,6 +2896,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     Buildings where an LLC took the deed and filed a renovation permit within {FLIP_WINDOW_DAYS} days. That fast turn is one of the clearest early signals of a building being repositioned. Public records only.
   </p>
   <p id="fw-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-bottom:6px;">{n} flips detected across NYC in the past 12 months.</p>
+  <p id="fw-through" style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-bottom:6px;">{through_en}</p>
   <p style="font-size:0.75rem;margin-bottom:28px;"><a href="/flips/editions" id="fw-editions-link" style="color:var(--accent);">Weekly reviewed editions &rarr;</a></p>
   <ul class="flip-list">
 {rows_html}  </ul>
@@ -2861,6 +2913,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
       heading: 'Flip Watch',
       desc: 'Buildings where an LLC took the deed and filed a renovation permit within {FLIP_WINDOW_DAYS} days. That fast turn is one of the clearest early signals of a building being repositioned. Public records only.',
       sub: '{n} flips detected across NYC in the past 12 months.',
+      through: '{through_en_js}',
       note: 'A renovation permit alone is not wrongdoing. This page reports the public-record pattern, not a conclusion about any owner.',
       bought: 'Bought',
       gap: 'buy \\u2192 permit',
@@ -2870,6 +2923,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
       heading: 'Vigilancia de reventas',
       desc: 'Edificios donde una LLC tom\\u00f3 la escritura y solicit\\u00f3 un permiso de renovaci\\u00f3n en un plazo de {FLIP_WINDOW_DAYS} d\\u00edas. Ese giro r\\u00e1pido es una de las se\\u00f1ales tempranas m\\u00e1s claras de que un edificio est\\u00e1 siendo reposicionado. Solo registros p\\u00fablicos.',
       sub: '{n} reventas detectadas en NYC en los \\u00faltimos 12 meses.',
+      through: '{through_es_js}',
       note: 'Un permiso de renovaci\\u00f3n por s\\u00ed solo no es una infracci\\u00f3n. Esta p\\u00e1gina informa el patr\\u00f3n de registro p\\u00fablico, no una conclusi\\u00f3n sobre ning\\u00fan propietario.',
       bought: 'Comprado',
       gap: 'compra \\u2192 permiso',
@@ -2881,6 +2935,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     var set = function(id, val) {{ var el = document.getElementById(id); if (el) el.textContent = val; }};
     set('fw-heading', s.heading);
     set('fw-sub', s.sub);
+    set('fw-through', s.through);
     var d = document.getElementById('fw-desc'); if (d) d.textContent = s.desc;
     var note = document.getElementById('fw-note');
     if (note) note.innerHTML = s.note + ' <a href="/methodology" style="color:var(--accent);">' + (l === 'es' ? 'C\\u00f3mo se mide \\u2192' : 'How this is measured \\u2192') + '</a>';
@@ -3193,6 +3248,13 @@ def speculation_radar_page(db: Session = Depends(get_db)):
     from api.routes.radar import query_radar, RADAR_WINDOW_DAYS, MIN_BUILDINGS
     clusters = query_radar(db)
 
+    # The radar window is anchored to CURRENT_DATE but the deeds in it end
+    # whenever the city last published, so the page has to say where they stop.
+    through_en = _deeds_through_line(db)
+    through_es = _deeds_through_line(db, "es")
+    through_en_js = through_en.replace("'", "\\'")
+    through_es_js = through_es.replace("'", "\\'").encode("ascii", "backslashreplace").decode()
+
     _MONTHS = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -3339,7 +3401,8 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
   <p id="sr-desc" style="font-size:0.82rem;color:#93a1ad;margin-bottom:8px;line-height:1.6;">
     One LLC taking the deed on {MIN_BUILDINGS} or more buildings in the same ZIP within {RADAR_WINDOW_DAYS} days. Concentrated buying like that is a position being assembled, not a one-off purchase, and it usually shows up months before anything changes on the block. Public records only.
   </p>
-  <p id="sr-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-bottom:28px;">{n} buying runs detected across NYC in the past {RADAR_WINDOW_DAYS} days.</p>
+  <p id="sr-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-bottom:4px;">{n} buying runs detected across NYC in the past {RADAR_WINDOW_DAYS} days.</p>
+  <p id="sr-through" style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-bottom:28px;">{through_en}</p>
   <ul class="radar-list">
 {rows_html}  </ul>
   <p id="sr-note" style="font-size:0.75rem;color:var(--faint);margin-top:24px;line-height:1.6;">
@@ -3355,6 +3418,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
       heading: 'Speculation Radar',
       desc: 'One LLC taking the deed on {MIN_BUILDINGS} or more buildings in the same ZIP within {RADAR_WINDOW_DAYS} days. Concentrated buying like that is a position being assembled, not a one-off purchase, and it usually shows up months before anything changes on the block. Public records only.',
       sub: '{n} buying runs detected across NYC in the past {RADAR_WINDOW_DAYS} days.',
+      through: '{through_en_js}',
       note: 'Buying several buildings is not wrongdoing. This page reports the public-record pattern, not a conclusion about any buyer.',
       deeds: 'Deeds',
       buildings: 'buildings',
@@ -3364,6 +3428,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
       heading: 'Radar de especulaci\\u00f3n',
       desc: 'Una LLC que toma la escritura de {MIN_BUILDINGS} o m\\u00e1s edificios en el mismo c\\u00f3digo postal en un plazo de {RADAR_WINDOW_DAYS} d\\u00edas. Una compra tan concentrada es una posici\\u00f3n en formaci\\u00f3n, no una compra aislada, y suele aparecer meses antes de que algo cambie en la cuadra. Solo registros p\\u00fablicos.',
       sub: '{n} rachas de compra detectadas en NYC en los \\u00faltimos {RADAR_WINDOW_DAYS} d\\u00edas.',
+      through: '{through_es_js}',
       note: 'Comprar varios edificios no es una infracci\\u00f3n. Esta p\\u00e1gina informa el patr\\u00f3n de registro p\\u00fablico, no una conclusi\\u00f3n sobre ning\\u00fan comprador.',
       deeds: 'Escrituras',
       buildings: 'edificios',
@@ -3375,6 +3440,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     var set = function(id, val) {{ var el = document.getElementById(id); if (el) el.textContent = val; }};
     set('sr-heading', s.heading);
     set('sr-sub', s.sub);
+    set('sr-through', s.through);
     var d = document.getElementById('sr-desc'); if (d) d.textContent = s.desc;
     var note = document.getElementById('sr-note');
     if (note) note.innerHTML = s.note + ' <a href="/methodology" style="color:var(--accent);">' + (l === 'es' ? 'C\\u00f3mo se mide \\u2192' : 'How this is measured \\u2192') + '</a>';
