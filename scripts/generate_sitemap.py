@@ -151,6 +151,23 @@ def build() -> dict[str, str]:
 
         week_slugs = _completed_week_slugs(db)
 
+        # Per-neighbourhood eviction pages, gated at the same floor the route
+        # uses for index,follow so the sitemap never lists a noindex page.
+        from api.routes.frontend import _EV_AREA_MIN, _ev_area_slug
+
+        eviction_areas = [
+            (_ev_area_slug(r.name), r.last.isoformat() if r.last else today)
+            for r in db.execute(text("""
+                SELECT n.name, max(e.executed_date) AS last
+                FROM evictions_raw e
+                JOIN neighborhoods n ON n.zip_code = e.zip_code
+                WHERE e.eviction_type = 'Residential' AND n.name IS NOT NULL
+                GROUP BY 1 HAVING count(*) >= :floor
+                ORDER BY 1
+            """), {"floor": _EV_AREA_MIN}).fetchall()
+            if _ev_area_slug(r.name)
+        ]
+
         # LLC entity pages, gated exactly as the route's robots policy is, by
         # importing the rule rather than restating it so the two cannot drift.
         # _BUILDING_KEY_SQL collapses a condominium's unit lots to the one
@@ -216,6 +233,10 @@ def build() -> dict[str, str]:
     # An entity ledger moves only when a deed lands, so say when that was.
     for slug, last_deed in llcs:
         core.append((f"/llc/{slug}", "monthly", "0.5", last_deed))
+    # The eviction record refreshes nightly, and these answer the largest block
+    # of unserved demand in the search exports.
+    for slug, last_evict in eviction_areas:
+        core.append((f"/evictions/{slug}", "weekly", "0.7", last_evict))
 
     # changefreq is "monthly" because a property page changes when a record
     # lands, which for most lots is never. The old blanket "weekly" was a claim

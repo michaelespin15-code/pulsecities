@@ -650,6 +650,7 @@ def _build_neighborhood_page(
     flips: list | None = None,
     operators_here: list | None = None,
     nearby: list | None = None,
+    ev_count: int = 0,
     lang: str = "en",
 ) -> str:
     e = _html.escape
@@ -917,6 +918,35 @@ def _build_neighborhood_page(
   </section>
 """
 
+    # The eviction page for this place. The score summarises five signals; a
+    # reader who came for the eviction number wants the addresses, and this is
+    # the only path to them from here. Bilingual, and rendered only when that
+    # page clears its own index floor so the link never points at a noindex.
+    ev_area_section = ""
+    if name:
+        ev_slug = _ev_area_slug(name)
+        ev_n = ev_count
+        if ev_slug and ev_n >= _EV_AREA_MIN:
+            ev_h = ("Evictions in " + name if lang != "es"
+                    else "Desalojos en " + name)
+            ev_body = (
+                f"City marshals have executed {ev_n:,} residential evictions in "
+                f"{e(name)}. The eviction page lists them by address, with who "
+                f"holds the deed on the buildings where they repeat."
+                if lang != "es" else
+                f"Los alguaciles han ejecutado {ev_n:,} desalojos residenciales en "
+                f"{e(name)}. La p&aacute;gina de desalojos los enumera por "
+                f"direcci&oacute;n."
+            )
+            ev_cta = ("See the address-level record &rarr;" if lang != "es"
+                      else "Ver el registro por direcci&oacute;n &rarr;")
+            ev_area_section = f"""  <section style="margin-bottom:32px;">
+    <h2>{e(ev_h)}</h2>
+    <p class="section-sub">{ev_body}</p>
+    <p class="disp-cta"><a href="/evictions/{e(ev_slug)}">{ev_cta}</a></p>
+  </section>
+"""
+
     # Always-valid link to the flagship citywide page, from every neighborhood.
     disp_cta_html = (
         f'  <p class="disp-cta"><a href="/displacement">{L["disp_cta"]}</a></p>\n'
@@ -1099,7 +1129,7 @@ footer{{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-
     </div>
     <p class="data-note">{L['signals_note']}</p>
   </section>
-{petitions_section}{vacates_section}{flips_section}{operators_section}{nearby_section}  <section style="margin-bottom:32px;">
+{petitions_section}{vacates_section}{flips_section}{ev_area_section}{operators_section}{nearby_section}  <section style="margin-bottom:32px;">
     <h2>{L['faq_h']}</h2>
     <div class="faq-list">
       {faq_html}
@@ -1383,6 +1413,7 @@ def neighborhood_page(zip_code: str, lang: str = "en", db: Session = Depends(get
         zip_code, name, borough, score, breakdown, raw_counts, raw_hpd, summary, last_updated, history,
         petitions=petitions, vacates=vacates, flips=flips,
         operators_here=operators_here, nearby=nearby, lang=lang,
+        ev_count=_ev_area_counts(name, db) if name else 0,
     )
     _page_cache[cache_key] = (page_html, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page_html)
@@ -5352,11 +5383,42 @@ def evictions_page(lang: str = "en", db: Session = Depends(get_db)):
 
     zip_rows = ""
     for z in top_zips:
+        area = _ev_area_slug(z.name)
+        label = (f'<a href="/evictions/{esc(area)}">{esc(z.name)}</a>'
+                 if area and z.name != z.zip_code else esc(z.name))
         zip_rows += (
-            f'<tr><td><a href="/neighborhood/{esc(z.zip_code)}">{esc(z.name)}</a></td>'
-            f'<td class="num">{esc(z.zip_code)}</td>'
+            f'<tr><td>{label}</td>'
+            f'<td class="num"><a href="/neighborhood/{esc(z.zip_code)}">{esc(z.zip_code)}</a></td>'
             f'<td class="num">{int(z.d30)}</td><td class="num">{int(z.d365):,}</td></tr>\n'
         )
+
+    # Full index of the per-neighbourhood pages. The table above shows fifteen;
+    # without this block the other ~112 pages are reachable only from the
+    # sitemap, and a sitemap is a hint rather than a path.
+    area_rows = db.execute(text("""
+        SELECT n.name, count(*) AS n
+        FROM evictions_raw e
+        JOIN neighborhoods n ON n.zip_code = e.zip_code
+        WHERE e.eviction_type = 'Residential' AND n.name IS NOT NULL
+        GROUP BY 1 HAVING count(*) >= :floor
+        ORDER BY 1
+    """), {"floor": _EV_AREA_MIN}).fetchall()
+    area_links = " &middot; ".join(
+        f'<a href="/evictions/{esc(_ev_area_slug(a.name))}">{esc(a.name)}</a>'
+        for a in area_rows if _ev_area_slug(a.name)
+    )
+    area_h = ("Evictions by neighborhood" if lang != "es"
+              else "Desalojos por vecindario")
+    area_sub = (f"Every NYC neighborhood with {_EV_AREA_MIN} or more executed "
+                f"evictions on record, each with its own address-level page"
+                if lang != "es" else
+                f"Cada vecindario de NYC con {_EV_AREA_MIN} o m\u00e1s desalojos "
+                f"ejecutados, cada uno con su propia p\u00e1gina")
+    area_section = (
+        f'  <h2 id="ev-area-h">{esc(area_h)}</h2>\n'
+        f'  <p class="section-sub">{esc(area_sub)}</p>\n'
+        f'  <p class="cross" style="line-height:2;">{area_links}</p>\n'
+    ) if area_links else ""
 
     borough_line = ", ".join(f"{esc(b.b)} {int(b.c)}" for b in boroughs)
     latest_disp = _short_date(counts.latest) if latest else ""
@@ -5572,6 +5634,7 @@ th.num,td.num{{text-align:right;font-family:'JetBrains Mono',monospace}}
   </div>
   <p class="mono-note">{esc(L["borough_prefix"])}: {borough_line}</p>
 
+{area_section}
   <h2 id="ev-after-h">{esc(L["after_h"])}</h2>
   <p class="cross">{n_arcs} buildings on the record had a residential eviction executed, were bought by an LLC, and resold at a markup within a year. <a href="/displacement">See the documented arcs &rarr;</a></p>
   <p class="cross" style="margin-top:6px;">Checking a specific building? <a href="/who-owns-my-building">Who owns my building &rarr;</a></p>
@@ -5586,6 +5649,484 @@ th.num,td.num{{text-align:right;font-family:'JetBrains Mono',monospace}}
 </html>"""
 
     _evictions_cache[lang] = (page, time.monotonic() + _PAGE_TTL)
+    return HTMLResponse(page)
+
+
+# --- Evictions by neighbourhood ----------------------------------------------
+#
+# The largest block of unserved demand in the search exports: roughly 200
+# impressions and zero clicks across ~35 phrasings of "eviction marshal
+# {place}" (wakefield 15, mott haven 11, williamsbridge 10, bushwick 8,
+# washington heights 7, ozone park 7, and on down), with nothing on the site
+# targeting any of them. /evictions is citywide and /neighborhood/{zip} is
+# about the displacement score.
+#
+# Keyed on the neighbourhood NAME rather than the ZIP, because that is how the
+# queries arrive and because three separate ZIPs are called Bushwick. Three
+# pages titled "Bushwick evictions" would compete with each other for the one
+# query they all want.
+
+_ev_area_cache: dict[str, tuple[str, float]] = {}
+_EV_AREA_TTL = 21600
+
+# Below this the page has too little record to be worth an index slot, and the
+# plan's own warning applies: do not ship these at property-page depth or they
+# become the next thin-content problem.
+_EV_AREA_MIN = 20
+
+
+def _ev_area_slug(name: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", (name or "").lower()).strip("-")
+
+
+_ev_area_index: dict[str, str] | None = None   # slug -> canonical name
+_ev_counts: dict[str, tuple[int, float]] = {}
+
+
+def _ev_area_counts(name: str, db) -> int:
+    """Executed residential evictions for a neighbourhood name. Memoised: this
+    is asked once per neighbourhood page render and the answer moves nightly."""
+    hit = _ev_counts.get(name)
+    if hit and time.monotonic() < hit[1]:
+        return hit[0]
+    n = db.execute(text("""
+        SELECT count(*) FROM evictions_raw e
+        JOIN neighborhoods n ON n.zip_code = e.zip_code
+        WHERE n.name = :name AND e.eviction_type = 'Residential'
+    """), {"name": name}).scalar() or 0
+    _ev_counts[name] = (int(n), time.monotonic() + _EV_AREA_TTL)
+    return int(n)
+
+
+def _ev_areas(db) -> dict[str, str]:
+    global _ev_area_index
+    if _ev_area_index is None:
+        rows = db.execute(text("""
+            SELECT DISTINCT n.name FROM neighborhoods n
+            WHERE n.name IS NOT NULL
+        """)).fetchall()
+        _ev_area_index = {_ev_area_slug(r.name): r.name for r in rows if _ev_area_slug(r.name)}
+    return _ev_area_index
+
+
+@router.get("/evictions/{slug}", include_in_schema=False)
+def eviction_area_page(slug: str, db: Session = Depends(get_db)):
+    """Executed marshal evictions for one named neighbourhood."""
+    slug = (slug or "").lower()
+    if not re.match(r"^[a-z0-9][a-z0-9-]{1,60}$", slug):
+        return _not_found()
+
+    hit = _ev_area_cache.get(slug)
+    if hit and time.monotonic() < hit[1]:
+        return HTMLResponse(hit[0])
+
+    name = _ev_areas(db).get(slug)
+    if not name:
+        return _not_found()
+
+    e = _html.escape
+
+    # Every window ends at the latest published record, never at CURRENT_DATE.
+    # The city publishes on a lag, so anchoring on today counts unpublished
+    # days as zero and reports a fall that did not happen.
+    head = db.execute(text("""
+        WITH bound AS (
+            SELECT max(executed_date) AS latest FROM evictions_raw
+            WHERE eviction_type = 'Residential'
+        ),
+        area AS (
+            SELECT e.* FROM evictions_raw e
+            JOIN neighborhoods n ON n.zip_code = e.zip_code
+            WHERE n.name = :name AND e.eviction_type = 'Residential'
+        )
+        SELECT b.latest,
+               count(*) AS total,
+               count(DISTINCT a.bbl) AS buildings,
+               min(a.executed_date) AS first,
+               max(a.executed_date) AS last,
+               count(*) FILTER (WHERE a.executed_date > b.latest - 365) AS y1,
+               count(*) FILTER (WHERE a.executed_date > b.latest - 730
+                            AND a.executed_date <= b.latest - 365) AS y2,
+               count(*) FILTER (WHERE a.executed_date > b.latest - 30) AS d30
+        FROM area a CROSS JOIN bound b
+        GROUP BY b.latest
+    """), {"name": name}).first()
+
+    if not head or not head.total:
+        return _not_found()
+
+    zips = db.execute(text("""
+        SELECT n.zip_code, n.borough, count(e.*) AS n
+        FROM neighborhoods n
+        LEFT JOIN evictions_raw e ON e.zip_code = n.zip_code
+             AND e.eviction_type = 'Residential'
+        WHERE n.name = :name
+        GROUP BY 1, 2 ORDER BY n DESC, 1
+    """), {"name": name}).fetchall()
+
+    borough = next((z.borough for z in zips if z.borough), None)
+
+    # The investigative payload: which buildings the evictions concentrate in.
+    top = db.execute(text("""
+        SELECT e.bbl, count(*) AS n, max(e.executed_date) AS last,
+               max(p.address) AS address, max(e.zip_code) AS zip_code
+        FROM evictions_raw e
+        JOIN neighborhoods n ON n.zip_code = e.zip_code
+        LEFT JOIN parcels p ON p.bbl = e.bbl
+        WHERE n.name = :name AND e.eviction_type = 'Residential' AND e.bbl IS NOT NULL
+        GROUP BY e.bbl HAVING count(*) > 1
+        ORDER BY count(*) DESC, max(e.executed_date) DESC
+        LIMIT 10
+    """), {"name": name}).fetchall()
+
+    # The site's thesis, localised: an eviction, then the building changes hands.
+    after = db.execute(text("""
+        SELECT count(DISTINCT e.bbl) AS n
+        FROM evictions_raw e
+        JOIN neighborhoods n ON n.zip_code = e.zip_code
+        JOIN ownership_raw o ON o.bbl = e.bbl AND o.doc_type = 'DEED'
+             AND o.doc_date > e.executed_date
+             AND o.doc_date <= e.executed_date + 365
+        WHERE n.name = :name AND e.eviction_type = 'Residential'
+    """), {"name": name}).scalar() or 0
+
+    # The concrete record, newest first. On a large neighbourhood this sits
+    # alongside the repeat-building list; on a small one it is the page, since
+    # a place with 25 executions spread over 25 addresses has no repeats to
+    # show and would otherwise carry no addresses at all.
+    recent = db.execute(text("""
+        SELECT e.bbl, e.executed_date, e.zip_code, p.address
+        FROM evictions_raw e
+        JOIN neighborhoods n ON n.zip_code = e.zip_code
+        LEFT JOIN parcels p ON p.bbl = e.bbl
+        WHERE n.name = :name AND e.eviction_type = 'Residential'
+        ORDER BY e.executed_date DESC, e.bbl
+        LIMIT 8
+    """), {"name": name}).fetchall()
+
+    # Who took title on the buildings doing the evicting. This is the join the
+    # site exists to make, and it is also the only thing on the page that links
+    # sideways into the entity ledger.
+    owners = db.execute(text("""
+        WITH repeat_bldgs AS (
+            SELECT e.bbl, count(*) AS evictions
+            FROM evictions_raw e
+            JOIN neighborhoods n ON n.zip_code = e.zip_code
+            WHERE n.name = :name AND e.eviction_type = 'Residential' AND e.bbl IS NOT NULL
+            GROUP BY 1 HAVING count(*) > 1
+        )
+        SELECT o.party_name_normalized AS buyer,
+               count(DISTINCT r.bbl) AS bldgs,
+               sum(r.evictions) AS evictions
+        FROM repeat_bldgs r
+        JOIN LATERAL (
+            SELECT party_name_normalized FROM ownership_raw o2
+            WHERE o2.bbl = r.bbl AND o2.doc_type = 'DEED' AND o2.party_type = '2'
+            ORDER BY o2.doc_date DESC LIMIT 1
+        ) o ON true
+        GROUP BY 1 ORDER BY evictions DESC, bldgs DESC LIMIT 5
+    """), {"name": name}).fetchall()
+
+    rank = db.execute(text("""
+        WITH per_area AS (
+            SELECT n.name, count(*) AS n
+            FROM evictions_raw e
+            JOIN neighborhoods n ON n.zip_code = e.zip_code
+            WHERE e.eviction_type = 'Residential' AND n.name IS NOT NULL
+            GROUP BY 1
+        )
+        SELECT count(*) FILTER (WHERE n >= (SELECT n FROM per_area WHERE name = :name)) AS rank,
+               count(*) AS total
+        FROM per_area
+    """), {"name": name}).first()
+
+    total, buildings = int(head.total), int(head.buildings or 0)
+    y1, y2 = int(head.y1 or 0), int(head.y2 or 0)
+    indexable = total >= _EV_AREA_MIN
+
+    def _para(*parts) -> str:
+        body = " ".join(x for x in parts if x)
+        return f'<p class="prose">{body}</p>' if body else ""
+
+    zip_links = ", ".join(
+        f'<a href="/neighborhood/{e(z.zip_code)}">{e(z.zip_code)}</a>' for z in zips
+    )
+    where = f"{e(name)}, {e(borough)}" if borough else e(name)
+
+    lede = _para(
+        f"City marshals executed {_count(total, 'residential eviction')} in "
+        f"{where} between {_en_date(head.first)} and {_en_date(head.last)}, "
+        f"across {_count(buildings, 'building')}.",
+        f"{e(name)} covers {_plural(len(zips), 'ZIP code')} {zip_links}."
+        if zips else "",
+        f"That ranks {rank.rank} of {rank.total} named NYC neighbourhoods by "
+        f"executed-eviction count, where 1 is the highest."
+        if rank and rank.rank else "",
+    )
+
+    # Direction, stated only when there is a full prior year to compare against.
+    trend = ""
+    if y2:
+        delta = (y1 - y2) / y2 * 100
+        if abs(delta) < 1:
+            movement = "essentially flat year over year."
+        else:
+            movement = f"{'up' if delta > 0 else 'down'} {abs(delta):.0f}%."
+        trend = _para(
+            f"In the twelve months to {_en_date(head.last)}, marshals executed "
+            f"{_count(y1, 'eviction')} here, against {y2:,} in the twelve months "
+            f"before that. That is {movement}",
+            f"{_count(int(head.d30 or 0), 'eviction')} fell in the most recent "
+            f"thirty days of the published record."
+        )
+    elif y1:
+        trend = _para(
+            f"{_count_open(y1, 'eviction')} fell in the twelve months to "
+            f"{_en_date(head.last)}. The citywide record starts in April 2024, "
+            f"so there is no full prior year here to compare against yet."
+        )
+
+    repeat_sec = ""
+    if top:
+        rows_html = "".join(
+            f'<li class="rec-row"><a href="/property/{e(str(t.bbl))}">'
+            f'<div><div class="rec-addr">'
+            f'{e(_addr_title(t.address)) if t.address else "BBL " + e(str(t.bbl))}</div>'
+            f'<div class="rec-geo">{e(t.zip_code or "")}</div></div>'
+            f'<div class="rec-side"><div class="rec-amt">'
+            f'{_count(int(t.n), "eviction")}</div>'
+            f'<div class="rec-date">latest {_en_date(t.last)}</div></div></a></li>'
+            for t in top
+        )
+        repeat_sec = (
+            f"<h2>Where the evictions concentrate</h2>"
+            + _para(
+                f"{_count_open(len(top), 'building')} in {e(name)} "
+                f"{'has' if len(top) == 1 else 'have'} more than one executed "
+                f"eviction on record. Repeat executions at one address are what "
+                f"separates a building under pressure from a neighbourhood with a "
+                f"high count spread thinly."
+            )
+            + f'<ul class="sib-list">{rows_html}</ul>'
+        )
+
+    recent_sec = ""
+    if recent:
+        def _recent_row(r) -> str:
+            label = (e(_addr_title(r.address)) if r.address
+                     else ("BBL " + e(str(r.bbl)) if r.bbl else e(name)))
+            inner = (f'<div><div class="rec-addr">{label}</div>'
+                     f'<div class="rec-geo">{e(r.zip_code or "")}</div></div>'
+                     f'<div class="rec-side"><div class="rec-date">'
+                     f'{_en_date(r.executed_date)}</div></div>')
+            if r.bbl:
+                return (f'<li class="rec-row"><a href="/property/{e(str(r.bbl))}">'
+                        f'{inner}</a></li>')
+            return f'<li class="rec-row"><div class="rec-static">{inner}</div></li>'
+
+        recent_sec = "<h2>The most recent executions</h2>" + _para(
+            f"The last {_count(len(recent), 'residential warrant')} a marshal "
+            f"executed in {e(name)}, newest first. Each address links to that "
+            f"building's own record: who holds the deed, what it sold for, and "
+            f"what else the city has logged there."
+        ) + f'<ul class="sib-list">{"".join(_recent_row(r) for r in recent)}</ul>'
+
+    owner_sec = ""
+    if owners:
+        def _owner_link(nm: str) -> str:
+            slug_o = re.sub(r"[^a-z0-9]+", "-", (nm or "").lower()).strip("-")
+            label = e(_entity_title(nm))
+            if _is_buyer_entity(nm) and _LLC_SLUG_RE.match(slug_o):
+                return f'<a href="/llc/{e(slug_o)}">{label}</a>'
+            return label
+        listed = "; ".join(
+            f"{_owner_link(o.buyer)} ({_count(int(o.bldgs), 'building')}, "
+            f"{int(o.evictions):,} evictions)"
+            for o in owners
+        )
+        owner_sec = "<h2>Who holds the deeds</h2>" + _para(
+            f"The most recent deed on each of those repeat-eviction buildings names "
+            f"these buyers: {listed}.",
+            "A deed names the party that took title, which is often a holding "
+            "company rather than whoever manages the building day to day. The "
+            "entity pages carry the rest of each buyer's NYC purchases."
+        )
+
+    after_sec = ""
+    if after:
+        after_sec = "<h2>What happened next</h2>" + _para(
+            f"{_count_open(after, 'building')} in {e(name)} with an executed "
+            f"eviction had a deed recorded within the following year. That "
+            f"sequence, an eviction and then a transfer, is the pattern "
+            f"PulseCities tracks citywide.",
+            f'It is a sequence in the public record and not a finding about any '
+            f'owner\'s conduct. <a href="/flips">How the flip scan reads it '
+            f'&rarr;</a>'
+        )
+
+    # The eviction count answers "how many"; the score answers "and is this
+    # area under pressure", which is the next question and the reason the rest
+    # of the site exists.
+    scores = db.execute(text("""
+        SELECT ds.zip_code, ds.score FROM displacement_scores ds
+        JOIN neighborhoods n ON n.zip_code = ds.zip_code
+        WHERE n.name = :name AND ds.score IS NOT NULL
+        ORDER BY ds.score DESC
+    """), {"name": name}).fetchall()
+    score_sec = ""
+    if scores:
+        top_z = scores[0]
+        tier_label, _ = _tier_info(float(top_z.score))
+        score_sec = f"<h2>{e(name)} beyond the eviction count</h2>" + _para(
+            f"Evictions are one of five signals in the PulseCities displacement "
+            f"index. {e(top_z.zip_code)} scores {float(top_z.score):.1f} out of 100, "
+            f"which is {tier_label.lower()} pressure, read alongside LLC "
+            f"acquisition rate, renovation permits, assessment spikes and 311 "
+            f"complaint volume.",
+            " ".join(
+                f'<a href="/neighborhood/{e(z.zip_code)}">Full signal breakdown for '
+                f'{e(z.zip_code)} &rarr;</a>' for z in scores[:2]
+            )
+        )
+
+    limits_sec = "<h2>What this record does and does not cover</h2>" + _para(
+        "These are evictions a city marshal actually executed, published by the "
+        "city from April 2024 forward. They are the end of the process, so the "
+        "count understates housing court activity in "
+        f"{e(name)}: a case that settles, or a tenant who leaves before the "
+        "marshal arrives, never appears here.",
+        "Nothing on this page names a tenant. The city publishes the address, "
+        "the date and the docket, and that is what is shown."
+    )
+
+    faq = [
+        (f"How many evictions have there been in {name}?",
+         f"City marshals executed {total:,} residential evictions in {name} "
+         f"between {_en_date(head.first)} and {_en_date(head.last)}, across "
+         f"{buildings:,} buildings. The most recent twelve months account for "
+         f"{y1:,} of them."),
+        (f"Which buildings in {name} have the most evictions?",
+         (f"{len(top)} buildings have more than one executed eviction on record, "
+          f"and each is listed above with its address and count. Repeat "
+          f"executions at a single address are the signal worth following."
+          if top else
+          f"No building in {name} has more than one executed eviction in the "
+          f"published record, so the count is spread across {buildings:,} "
+          f"separate addresses rather than concentrated.")),
+        ("What is a marshal eviction?",
+         "A city marshal is the officer who carries out a warrant of eviction "
+         "after a housing court case ends in the landlord's favour. The city "
+         "publishes each execution with the address, the date and the docket "
+         "number. An eviction that is filed, settled or abandoned before that "
+         "point never reaches a marshal and is not in this dataset."),
+        (f"How do I look up evictions for a specific address in {name}?",
+         f"Search the address on PulseCities. Every building page carries its "
+         f"own eviction record alongside the deed history, open violations and "
+         f"rent-stabilization registrations, so you can see the eviction in the "
+         f"context of who owned the building at the time."),
+    ]
+    if after:
+        faq.append((
+            f"Are landlords in {name} selling after they evict?",
+            f"{after} buildings with an executed eviction had a deed recorded "
+            f"within the next year. PulseCities reports the sequence in the "
+            f"public record and makes no claim about why either event happened.",
+        ))
+
+    faq_html = "".join(
+        f'<div class="faq-item"><h3>{e(q)}</h3><p>{e(a)}</p></div>' for q, a in faq
+    )
+
+    title = f"Evictions in {name}, NYC: the marshal record by address | PulseCities"
+    desc = (f"{total:,} residential evictions executed by city marshals in {name} "
+            f"across {buildings:,} buildings, from NYC public records. Search any "
+            f"address for its own eviction and ownership history.")
+    if len(desc) > 165:
+        desc = desc[:162].rsplit(" ", 1)[0] + "."
+    url = f"https://pulsecities.com/evictions/{slug}"
+
+    jsonld = _jsonld({"@context": "https://schema.org", "@graph": [
+        {"@type": "Dataset", "name": f"Executed marshal evictions in {name}, NYC",
+         "description": desc, "url": url,
+         "temporalCoverage": f"{head.first.isoformat()}/{head.last.isoformat()}",
+         "creator": {"@type": "Organization", "name": "PulseCities"},
+         "isBasedOn": "https://data.cityofnewyork.us/City-Government/Evictions/6z8x-wfk4"},
+        {"@type": "FAQPage", "mainEntity": [
+            {"@type": "Question", "name": q,
+             "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]},
+        _crumbs(("Home", "/"), ("Evictions", "/evictions"), (name, f"/evictions/{slug}")),
+    ]})
+
+    stat_cells = (
+        f'<div class="stat"><div class="stat-num">{total:,}</div>'
+        f'<div class="stat-label">evictions executed</div></div>'
+        f'<div class="stat"><div class="stat-num">{buildings:,}</div>'
+        f'<div class="stat-label">buildings</div></div>'
+        f'<div class="stat"><div class="stat-num">{y1:,}</div>'
+        f'<div class="stat-label">in the last 12 months</div></div>'
+    )
+
+    nearby = ""
+    if borough:
+        peers = db.execute(text("""
+            SELECT n.name, count(*) AS c
+            FROM evictions_raw e
+            JOIN neighborhoods n ON n.zip_code = e.zip_code
+            WHERE e.eviction_type = 'Residential' AND n.name IS NOT NULL
+              AND n.name <> :name AND n.borough = :borough
+            GROUP BY 1 HAVING count(*) >= :floor
+            ORDER BY count(*) DESC LIMIT 8
+        """), {"name": name, "borough": borough, "floor": _EV_AREA_MIN}).fetchall()
+        if peers:
+            links = ", ".join(
+                f'<a href="/evictions/{_ev_area_slug(pr.name)}">{e(pr.name)}</a>'
+                for pr in peers
+            )
+            nearby = f"<h2>Elsewhere in {e(borough)}</h2>" + _para(
+                f"{links}.",
+                f'<a href="/evictions">The citywide eviction tracker &rarr;</a>'
+            )
+
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+{_llc_head(title, desc, url, "index, follow" if indexable else "noindex, follow", jsonld)}
+</head>
+<body>
+{_ssr_nav("", toggle_html="")}
+<div class="container" style="max-width:760px;">
+  <p style="margin-bottom:8px;font-size:0.75rem;color:var(--faint);">
+    <a href="/">Home</a> &middot; <a href="/evictions">Evictions</a>
+  </p>
+  <div class="eyebrow">NYC marshal evictions</div>
+  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.6rem;letter-spacing:0;font-weight:600;">Evictions in {e(name)}</h1>
+  <div class="stats">{stat_cells}</div>
+  {lede}
+  {trend}
+  {recent_sec}
+  {repeat_sec}
+  {owner_sec}
+  {after_sec}
+  {score_sec}
+  {nearby}
+  {limits_sec}
+  <h2>Common questions</h2>
+  {faq_html}
+  <p class="note">Executed residential evictions published by the City of New York.
+  This page describes public records, not conduct, and makes no claim of wrongdoing.
+  <a href="/methodology">How PulseCities reads the record &rarr;</a></p>
+</div>
+{_FOOTER_HTML}
+</body>
+</html>"""
+
+    if len(_ev_area_cache) >= 256:
+        now = time.monotonic()
+        for k in [k for k, v in _ev_area_cache.items() if now >= v[1]]:
+            _ev_area_cache.pop(k, None)
+        if len(_ev_area_cache) >= 256:
+            _ev_area_cache.clear()
+    _ev_area_cache[slug] = (page, time.monotonic() + _EV_AREA_TTL)
     return HTMLResponse(page)
 
 
