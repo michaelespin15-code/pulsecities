@@ -944,3 +944,15 @@ anyway. Low priority; do not spend the deepening effort here.
 **Non-issue 2: og:title mismatches** on /map (`PulseCities | NYC Displacement Risk Map`
 vs the title's reverse order) and /neighborhood (a pipe separator). Cosmetic. og:title
 drives social cards, not ranking, and brand-first is defensible there.
+
+## >>> SEO work: read docs/seo/PLAN.md, not the four sections above <<<
+
+The Google / Bing / crawl / schema analysis appended above was written in four passes
+as the data arrived, and the later passes **reverse** the earlier ones. Do not act on
+them in sequence. `docs/seo/PLAN.md` is the consolidated, ordered version and
+`docs/seo/baseline_2026-08-18.md` is the fixed baseline to measure against
+(commit 3040269). The sections above are kept only as the reasoning trail.
+
+Headline: shown for the right queries, ranks 5–10, **zero backlinks on every URL**, and
+the two highest-volume templates (`/property` 165 words x1,792, `/llc` 178 words x122)
+are the thinnest content on the site. **Depth before expansion.**
