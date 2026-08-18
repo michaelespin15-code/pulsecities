@@ -820,3 +820,82 @@ and P3 (sitemap gates, entity pages) target query shapes where we can realistica
 rank, because entity and address names have little competition. The category term
 ("nyc displacement map") is the one we are targeting correctly and still losing, and
 no amount of on-page work will win it.
+
+## Bing URL/crawl data (2026-08-18) — this REVERSES the "expand the sitemap" advice
+
+Two facts from the crawl export change the plan.
+
+### 1. Zero backlinks. Every URL, every folder.
+
+`Backlinks 0` on all 76 rows exported, and `-` at folder level. That is the ceiling,
+and it explains position 5–10 on terms we target correctly. **No amount of page work
+overcomes it.** The MTEK/PHANTOM press pitch (verified, unsent) is the only lever on
+this list that touches authority.
+
+### 2. The site's indexable mass is its thinnest content
+
+Visible word counts, measured 2026-08-18:
+
+    evictions hub    1,897     x1
+    neighborhood       643     x177
+    who-owns           562     x1
+    displacement       476     x1
+    rent-stabilized    469     x1
+    radar              362     x1
+    flips              348     x1
+    borough            223     x5
+    LLC entity         178     x122      <- 
+    property           165     x1,792    <- 
+    operators          130     x1        <- thinnest page on the site
+
+**property + LLC are 1,914 of the 2,159 sitemap URLs and the two thinnest types.**
+Worse, they are near-duplicates: two different LLC pages share **94 of 115 unique
+words (82%)**, so unique content is roughly 20–40 words per page. Bing's own counters
+agree — of ~314 URLs known: **133 indexed, 107 warning, 74 excluded**.
+
+**So do not loosen the sitemap gates yet.** The previous section recommended adding
+~1,400 LLC pages and thousands of property pages. Doing that now would multiply
+near-duplicate 170-word pages on a zero-authority domain that is already excluding 74
+URLs. **Deepen the templates first, then expand.** The gates were over-tight for the
+wrong reason, but loosening them before the pages carry substance makes it worse.
+
+### What to add — we already hold the data
+
+**Property pages (165 -> target ~600, the /neighborhood depth):** ownership chain as
+prose ("bought 2019 for $X, resold 2024 for $Y, N% in M months"), rent-stabilized
+status from `rs_buildings`, this building vs its ZIP, eviction history in sentences,
+other buildings by the same owner. The tables are already there; the page has almost
+no prose.
+
+**LLC pages (178 -> target ~500):** portfolio summary (buildings, ZIPs, first/last
+acquisition, total consideration), acquisition timeline, neighbourhoods with links,
+and whether any building carried an eviction *before* purchase — the site's own thesis,
+currently invisible on the entity page.
+
+### New page type worth creating: entity families
+
+The crawl list shows `phantom-capital-14/16/25/30/33` as five isolated thin pages.
+They are one operation. Measured:
+
+    PHANTOM CAPITAL       28 sibling entities,  59 buildings
+    BREDIF                 4 sibling entities, 134 buildings
+    numbered-sibling families with 3+ entities sitewide:  49
+
+**49 family hubs**, each genuinely substantial (28 entities and 59 buildings is an
+investigation, not a doorway page), each giving the 122 orphaned LLC pages real
+internal links, and each matching live demand — Bing recorded `bredif ms seller llc`
+and `bredif wb high point llc` as separate queries. This is the one "create new pages"
+idea in the export that adds substance rather than surface area.
+
+### Revised order
+
+1. Deepen the property and LLC templates (they are the mass, and they are thin).
+2. Build the 49 entity-family hubs; link the thin LLC pages into them.
+3. Eviction-by-ZIP pages (still the best new demand) — built at ~600 words from the
+   start, not at property-page depth.
+4. Only then loosen the sitemap gates.
+5. `/operators` is 130 words and ranks for "biggest landlords in nyc". Cheapest fix.
+6. Backlinks are the actual ceiling. That is the press pitch, not a code task.
+
+Ignore two things in the export: `/status` shows `Document size 0` but serves 13,560
+bytes (stale Bing record), and the single "Title too long >70 chars" warning.
