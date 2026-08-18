@@ -40,3 +40,6 @@ dash.json
 # Playwright writes screenshots into the cwd when no output dir is set
 /*.png
 scripts/freshness_alert_state.json
+scripts/indexnow_state.json
+scripts/family_stories.json
+scripts/family_stories.txt

@@ -1465,7 +1465,13 @@ _ENTITY_ACRONYMS = {
 # A short token with no vowel is an initialism, not a word: GS, MGMT, BK. This
 # catches the long tail the list above cannot enumerate, and `bronx gs
 # properties llc` is a query the site already ranks for.
-_VOWELLESS = re.compile(r"^[BCDFGHJKLMNPQRSTVWXZ]{2,4}$")
+_VOWELLESS = re.compile(r"^[BCDFGHJKLMNPQRSTVWXZ]{2,6}$")
+
+# Street types come through the vowel-less rule as initialisms and print
+# shouting: "FLGSP 1023 CARROLL ST LLC" reads better as "Carroll St" than
+# "Carroll ST". These are the abbreviations that appear in address-named LLCs.
+_ADDRESS_WORDS = {"ST", "RD", "DR", "PL", "CT", "LN", "SQ", "TR", "BLVD",
+                  "PKWY", "HWY", "TPKE", "PLZ", "CRES"}
 
 
 def _entity_title(name: str) -> str:
@@ -1479,7 +1485,8 @@ def _entity_title(name: str) -> str:
             # 27,900 parcels. A detached period is not part of the name, and
             # left in it becomes a second full stop mid-sentence.
             continue
-        keep_caps = bare in _ENTITY_ACRONYMS or _VOWELLESS.match(bare)
+        keep_caps = (bare in _ENTITY_ACRONYMS
+                     or (bare not in _ADDRESS_WORDS and _VOWELLESS.match(bare)))
         out.append(token.upper() if keep_caps else token.title())
     joined = " ".join(out).strip(" ,&-")
     return re.sub(r"(\d)(St|Nd|Rd|Th)\b", lambda m: m.group(1) + m.group(2).lower(),
@@ -5970,7 +5977,7 @@ def eviction_area_page(slug: str, db: Session = Depends(get_db)):
         f"across {_count(buildings, 'building')}.",
         f"{e(name)} covers {_plural(len(zips), 'ZIP code')} {zip_links}."
         if zips else "",
-        f"That ranks {rank.rank} of {rank.total} named NYC neighbourhoods by "
+        f"That ranks {rank.rank} of {rank.total} named NYC neighborhoods by "
         f"executed-eviction count, where 1 is the highest."
         if rank and rank.rank else "",
     )
@@ -6015,7 +6022,7 @@ def eviction_area_page(slug: str, db: Session = Depends(get_db)):
                 f"{_count_open(len(top), 'building')} in {e(name)} "
                 f"{'has' if len(top) == 1 else 'have'} more than one executed "
                 f"eviction on record. Repeat executions at one address are what "
-                f"separates a building under pressure from a neighbourhood with a "
+                f"separates a building under pressure from a neighborhood with a "
                 f"high count spread thinly."
             )
             + f'<ul class="sib-list">{rows_html}</ul>'
@@ -7088,7 +7095,7 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
                     f"{'sits' if above == 1 else 'sit'} above that median."
                 )
         geo_lines.append(
-            f'Each of those neighbourhoods carries its own displacement signals. '
+            f'Each of those neighborhoods carries its own displacement signals. '
             f'<a href="/neighborhood/{esc(top[0])}">Signals for {esc(top[0])} &rarr;</a>'
         )
         geo_sec = _prose_section(f"Where {esc(name)} buys", _para(*geo_lines))
@@ -7182,7 +7189,7 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
             f"concentrated in {top[0]}"
             + (f", {top[1]['hood']}" if top[1]["hood"] else "")
             + f", where {_count(top[1]['n'], 'deed')} "
-              f"{'is' if top[1]['n'] == 1 else 'are'} on record. Each neighbourhood "
+              f"{'is' if top[1]['n'] == 1 else 'are'} on record. Each neighborhood "
               f"page carries the displacement signals for that ZIP.",
         ))
     if all_nominal:
@@ -7363,10 +7370,20 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
     label = fam["label"]
     names = fam["entities"]
 
+    # Units, rent-stabilized registration, price and open violations come down
+    # with the address. A family page that lists only addresses reads like every
+    # other family page; what separates them is what each building carries.
     holdings = db.execute(text("""
         SELECT o.bbl, max(p.address) AS address, max(p.zip_code) AS zip_code,
                max(n.name) AS hood, max(o.doc_date) AS last_deed,
                max(o.doc_amount) AS amount,
+               max(p.units_res) AS units_res,
+               max(p.year_built) AS year_built,
+               (SELECT rs.rs_unit_count FROM rs_buildings rs
+                 WHERE rs.bbl = o.bbl AND rs.source = 'dhcr' AND rs.rs_unit_count > 0
+                 ORDER BY rs.year DESC LIMIT 1) AS rs_units,
+               (SELECT count(*) FROM violations_raw v
+                 WHERE v.bbl = o.bbl AND v.current_status NOT IN :resolved) AS open_viol,
                bool_or(o.party_type = '2') AS bought,
                bool_or(o.party_type = '1') AS sold
         FROM ownership_raw o
@@ -7376,6 +7393,41 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
           AND o.party_name_normalized = ANY(:names)
         GROUP BY o.bbl
         ORDER BY max(o.doc_date) DESC NULLS LAST
+    """), {"names": names, "resolved": _VIOLATION_RESOLVED}).fetchall()
+
+    # Deeds with a family member on both sides. REDROCK's nine same-day deeds
+    # all moved buildings from one REDROCK company to another for no stated
+    # consideration, and a page that reads that as a nine-building purchase is
+    # wrong about the only thing it is there to say.
+    internal = db.execute(text("""
+        SELECT count(*) FROM (
+            SELECT document_id
+            FROM ownership_raw
+            WHERE doc_type = 'DEED' AND party_type IN ('1', '2')
+              AND document_id IN (
+                  SELECT document_id FROM ownership_raw
+                  WHERE doc_type = 'DEED' AND party_name_normalized = ANY(:names)
+              )
+            GROUP BY document_id
+            HAVING bool_or(party_type = '2' AND party_name_normalized = ANY(:names))
+               AND bool_or(party_type = '1' AND party_name_normalized = ANY(:names))
+        ) d
+    """), {"names": names}).scalar() or 0
+
+    # The other side of the same deeds. Naming the counterparty is a plain fact
+    # of the record and it is what tells a reader whether this was one trade or
+    # thirty separate ones.
+    counterparties = db.execute(text("""
+        SELECT o.party_name_normalized AS name, count(DISTINCT o.bbl) AS n
+        FROM ownership_raw o
+        WHERE o.doc_type = 'DEED'
+          AND o.party_name_normalized IS NOT NULL
+          AND o.party_name_normalized <> ALL(:names)
+          AND o.document_id IN (
+              SELECT document_id FROM ownership_raw
+              WHERE doc_type = 'DEED' AND party_name_normalized = ANY(:names)
+          )
+        GROUP BY 1 ORDER BY n DESC, 1 LIMIT 3
     """), {"names": names}).fetchall()
 
     record = db.execute(text("""
@@ -7434,13 +7486,17 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
          f"{_en_date(dates[0])}." if dates and min(dates) == max(dates)
          else f"The deeds run from {_en_date(min(dates))} to {_en_date(max(dates))}."
          if len(dates) > 1 else ""),
-        (f"They sit in {_count(len(ranked), 'ZIP code')}." if ranked else ""),
+        (f"All of them sit in {e(ranked[0][0])}"
+         + (f", {e(ranked[0][1]['hood'])}." if ranked[0][1]["hood"] else ".")
+         if len(ranked) == 1 else
+         f"They sit in {_count(len(ranked), 'ZIP code')}." if ranked else ""),
         (f"Stated consideration across the priced deeds totals "
          f"{_fmt_amount(fam['volume'])}." if fam.get("volume") else ""),
         (f"That is close to one building per company, which is what holding "
          f"property one LLC at a time looks like from the outside."
          if held and held <= len(names) * 1.3 else
-         f"Nothing in the deed record puts these companies on the same page."),
+         f"That averages {held / len(names):.1f} buildings per company, so the "
+         f"shells here are not strictly one per building." if held else ""),
     )
 
     ent_rows = "".join(
@@ -7455,18 +7511,44 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
                        f"under the {e(label)} name. Each has its own deed ledger.")
                + f'<ul class="sib-list">{ent_rows}</ul>')
 
+    def _bld_meta(h) -> str:
+        bits = []
+        if h.units_res:
+            bits.append(f"{int(h.units_res):,} unit" + ("s" if h.units_res != 1 else ""))
+        if h.rs_units:
+            bits.append(f"{int(h.rs_units):,} rent stabilized")
+        if h.year_built:
+            bits.append(f"built {int(h.year_built)}")
+        if h.open_viol:
+            bits.append(f"{int(h.open_viol):,} open violation"
+                        + ("s" if h.open_viol != 1 else ""))
+        return ", ".join(bits)
+
     bld_rows = "".join(
         f'<li class="rec-row"><a href="/property/{e(str(h.bbl))}">'
         f'<div><div class="rec-addr">'
         f'{e(_addr_title(h.address)) if h.address else "BBL " + e(str(h.bbl))}</div>'
-        f'<div class="rec-geo">{e((h.hood + ", ") if h.hood else "")}{e(h.zip_code or "")}</div></div>'
-        f'<div class="rec-side"><div class="rec-date">{_en_date(h.last_deed)}</div></div>'
+        f'<div class="rec-geo">{e((h.hood + ", ") if h.hood else "")}{e(h.zip_code or "")}'
+        + (f' &middot; {e(_bld_meta(h))}' if _bld_meta(h) else "")
+        + f'</div></div>'
+        f'<div class="rec-side">'
+        + (f'<div class="rec-amt">{_fmt_amount(float(h.amount))}</div>'
+           if h.amount and float(h.amount) > 0 else "")
+        + f'<div class="rec-date">{_en_date(h.last_deed)}</div></div>'
         f'</a></li>'
         for h in holdings[:40]
     )
+    priced = sorted(float(h.amount) for h in holdings if h.amount and float(h.amount) > 0)
+    price_line = ""
+    if len(priced) > 1:
+        price_line = (f" Prices on the priced deeds run from "
+                      f"{_fmt_amount(priced[0])} to {_fmt_amount(priced[-1])}.")
+    elif priced:
+        price_line = f" The one priced deed states {_fmt_amount(priced[0])}."
     bld_sec = (f"<h2>{'What ' + e(label) + ' holds' if held else 'What ' + e(label) + ' sold'}</h2>"
                + _para(f"The buildings behind those companies, newest deed first."
-                       + (f" Showing 40 of {len(holdings):,}." if len(holdings) > 40 else ""))
+                       + (f" Showing 40 of {len(holdings):,}." if len(holdings) > 40 else "")
+                       + price_line)
                + f'<ul class="sib-list">{bld_rows}</ul>') if holdings else ""
 
     geo_sec = ""
@@ -7476,10 +7558,15 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
             f'<a href="/neighborhood/{e(z)}">{e(v["hood"] or z)} {e(z)}</a> ({v["n"]})'
             for z, v in ranked[:8]
         )
-        geo_sec = f"<h2>Where {e(label)} buys</h2>" + _para(
-            f"The heaviest concentration is {e(top[0])}"
-            + (f" ({e(top[1]['hood'])})" if top[1]["hood"] else "")
-            + f", with {_count(top[1]['n'], 'building')}.",
+        spread = top[1]["n"] == 1
+        geo_sec = (f"<h2>Where {e(label)} {'buys' if held else 'sold'}</h2>"
+                   ) + _para(
+            (f"No ZIP holds more than one of them, so the portfolio is spread "
+             f"across {_count(len(ranked), 'ZIP code')} rather than "
+             f"concentrated in a neighborhood." if spread else
+             f"The heaviest concentration is {e(top[0])}"
+             + (f" ({e(top[1]['hood'])})" if top[1]["hood"] else "")
+             + f", with {_count(top[1]['n'], 'building')}."),
             f"Across the portfolio: {links}."
         )
 
@@ -7507,7 +7594,48 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
                 f"{'appears' if record.with_rs == 1 else 'appear'} in DHCR "
                 f"rent-stabilization registrations."
             )
+        units_n = sum(int(h.units_res or 0) for h in holdings)
+        rs_n = sum(int(h.rs_units or 0) for h in holdings)
+        viol_n = sum(int(h.open_viol or 0) for h in holdings)
+        totals = []
+        if units_n:
+            totals.append(f"{units_n:,} residential units are recorded across "
+                          f"the portfolio in the city's tax lot file")
+        if rs_n:
+            totals.append(f"{rs_n:,} of them carry a DHCR rent-stabilization "
+                          f"registration in the most recent year on file")
+        if viol_n:
+            totals.append(f"{viol_n:,} HPD and DOB violations are unresolved")
+        if totals:
+            rp.append((totals[0] if len(totals) == 1
+                       else ", ".join(totals[:-1]) + ", and " + totals[-1]) + ".")
         rec_sec = f"<h2>What the buildings carry</h2>" + _para(*rp)
+
+    party_sec = ""
+    if internal:
+        party_sec = f"<h2>Who was on the other side</h2>" + _para(
+            f"{_count_open(int(internal), 'of these deeds moves a building', 'of these deeds move a building')} "
+            f"from one {e(label)} company to another rather than to an outside "
+            f"buyer. Those are restructurings, not sales, and most of them state "
+            f"no price.",
+            (f"On the rest, the record names "
+             + ", ".join(f"{e(_entity_title(c.name))}" for c in counterparties)
+             + "." if counterparties else ""))
+    elif counterparties:
+        repeats = max(int(c.n) for c in counterparties) > 1
+        named = ", ".join(
+            f"{e(_entity_title(c.name))}"
+            + (f" ({c.n} buildings)" if c.n > 1 else "")
+            for c in counterparties)
+        party_sec = f"<h2>Who was on the other side</h2>" + _para(
+            f"The same deeds name {named} as the counterparty"
+            + (", with the building count each appears on." if repeats else "."),
+            ("One counterparty repeating across a portfolio is the sign of a "
+             "single transaction split across many documents rather than a run "
+             "of separate sales."
+             if repeats else
+             "Each building came from its own selling company, which is the "
+             "same one-building-one-LLC structure read from the other side."))
 
     how_sec = "<h2>How the record links these companies</h2>" + _para(
         f"PulseCities groups entities only where two independent things in the "
@@ -7584,11 +7712,17 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
         f'<div class="stat"><div class="stat-num">{len(names)}</div>'
         f'<div class="stat-label">companies</div></div>'
         + (f'<div class="stat"><div class="stat-num">{held}</div>'
-           f'<div class="stat-label">buildings held</div></div>' if held else "")
+           f'<div class="stat-label">'
+           f'{"building held" if held == 1 else "buildings held"}</div></div>'
+           if held else "")
         + (f'<div class="stat"><div class="stat-num">{sold_n}</div>'
-           f'<div class="stat-label">buildings sold</div></div>' if sold_n else "")
+           f'<div class="stat-label">'
+           f'{"building sold" if sold_n == 1 else "buildings sold"}</div></div>'
+           if sold_n else "")
         + (f'<div class="stat"><div class="stat-num">{len(ranked)}</div>'
-           f'<div class="stat-label">ZIP codes</div></div>' if ranked else "")
+           f'<div class="stat-label">'
+           f'{"ZIP code" if len(ranked) == 1 else "ZIP codes"}</div></div>'
+           if ranked else "")
     )
 
     page = f"""<!DOCTYPE html>
@@ -7610,6 +7744,7 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
   {bld_sec}
   {geo_sec}
   {rec_sec}
+  {party_sec}
   {how_sec}
   <h2>Common questions</h2>
   {faq_html}

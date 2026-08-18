@@ -20,7 +20,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 
-from api.entity_families import _stem, _tokens, compute_families
+from api.entity_families import _addr_key, _stem, _tokens, compute_families
 from api.main import app
 from api.routes.frontend import _is_buyer_entity
 from models.database import SessionLocal
@@ -112,6 +112,73 @@ class TestClusteringIsConservative:
         assert not bad, (
             "entities grouped on a shared address with nothing corroborating "
             "it:\n  " + "\n  ".join(bad)
+        )
+
+    def test_filing_address_variants_collapse_to_one_key(self):
+        """Four spellings of the Summit management address split a group of 46
+        into 42, 3 and two singletons, and the two singletons fell out of the
+        family entirely."""
+        variants = [
+            "C/O: SUMMIT MALLS MANAGEMENT, LLC",
+            "C/O: SUMMIT MALLS MANAGEMENT LLC",
+            "C/O: SUMMIT MALLS MANAGEMENT , LLC",
+            "C/O SUMMIT MALLS MANAGEMENT LLC",
+            "c/o summit malls management, llc.",
+        ]
+        keys = {_addr_key(v) for v in variants}
+        assert len(keys) == 1, f"filing address variants did not collapse: {keys}"
+        assert _addr_key("525 6TH AVENUE") != _addr_key("520 FIFTH AVENUE")
+
+    def test_no_entity_is_stranded_from_its_own_family(self):
+        """FLGSP 2400 NOSTRAND AVE LLC filed from "SUMMIT MALL MANAGEMENT" where
+        its 81 siblings filed from "SUMMIT MALLS MANAGEMENT", so it sat outside
+        the family and /network/flgsp rendered two buildings and $15.4M short.
+
+        An entity carrying a family's own coined label, filing from a ZIP that
+        family already files from, belongs to it."""
+        db = SessionLocal()
+        try:
+            rows = db.execute(text("""
+                SELECT party_name_normalized AS name, max(party_zip) AS pzip
+                FROM ownership_raw
+                WHERE doc_type = 'DEED' AND party_type IN ('1', '2')
+                  AND party_name_normalized IS NOT NULL
+                GROUP BY 1
+            """)).fetchall()
+        finally:
+            db.close()
+        member_of = {n: f["slug"] for f in FAMS.values() for n in f["entities"]}
+        stranded = []
+        for f in FAMS.values():
+            label = f["label"]
+            if " " in label or len(label) < 4:
+                continue
+            zips = {z for _, z in f["addresses"]}
+            for r in rows:
+                if r.name in member_of or not r.pzip or r.pzip not in zips:
+                    continue
+                if "LLC" not in (r.name or "") or not _is_buyer_entity(r.name):
+                    continue
+                if label in _tokens(r.name):
+                    stranded.append(f"{f['slug']}: {r.name}")
+        assert not stranded, (
+            "entities carrying a family's coined label, filing from its ZIP, "
+            "left outside it:\n  " + "\n  ".join(stranded)
+        )
+
+    def test_adopted_entities_still_share_the_family_name(self):
+        """Adoption must not become a third way in for an unrelated company:
+        every member has to share a token or a stem with the family label."""
+        loose = []
+        for f in FAMS.values():
+            label_tokens = set(f["label"].split())
+            for n in f["entities"]:
+                if label_tokens & _tokens(n) or f["label"] in _stem(n):
+                    continue
+                loose.append(f"{f['slug']}: {n}")
+        assert not loose, (
+            "family members sharing nothing with the family name:\n  "
+            + "\n  ".join(loose)
         )
 
     def test_every_family_clears_the_building_floor(self):

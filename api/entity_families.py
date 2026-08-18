@@ -58,6 +58,7 @@ BANK NATIONAL ASSOCIATION FEDERAL SAVINGS MORTGAGE
 """.split())
 
 _FORM_RE = re.compile(r"\b(LLC|PLLC|LLP|LP|INC|CORP|CO|LTD)\b")
+_CARE_OF_RE = re.compile(r"^\s*C\s*[/.]?\s*O\b[\s:.,-]*")
 _TRAILING_SERIAL_RE = re.compile(r"\b(?:[IVX]+|\d+[A-Z]?)\b\s*$")
 _MIN_ENTITIES = 3
 # Five, not three. A three-entity family renders about 430 words, most of them
@@ -73,6 +74,26 @@ _BUILDING_KEY_SQL = (
     "substring(bbl, 1, 6) || CASE WHEN substring(bbl, 7, 4) >= '1001' "
     "THEN '0000' ELSE substring(bbl, 7, 4) END"
 )
+
+
+def _zip5(z: str | None) -> str:
+    """ZIP+4 and the bare ZIP are the same address. 10,638 party rows carry the
+    nine-digit form, and keying on it split "THE CARLYLE GROUP, 20004" from
+    "THE CARLYLE GROUP, 200042505"."""
+    digits = re.sub(r"[^0-9]", "", z or "")
+    return digits[:5] if len(digits) >= 5 else digits
+
+
+def _addr_key(addr: str) -> str:
+    """One filing address, one key. The same management company reaches ACRIS
+    as "C/O: SUMMIT MALLS MANAGEMENT, LLC", "C/O: SUMMIT MALLS MANAGEMENT LLC"
+    and "C/O: SUMMIT MALLS MANAGEMENT , LLC"; keyed on the raw string those are
+    three addresses, and a group of 42 sheds the four entities that filed with
+    a comma in a different place."""
+    a = _CARE_OF_RE.sub("", addr.upper())
+    a = re.sub(r"[^A-Z0-9 ]", " ", a)
+    a = _FORM_RE.sub(" ", a)
+    return re.sub(r"\s+", " ", a).strip()
 
 
 def _tokens(name: str) -> set[str]:
@@ -164,10 +185,18 @@ def compute_families(db, is_buyer_entity) -> dict[str, dict]:
     # that at least half the entities at that address carry.
     by_addr: dict[tuple, list] = collections.defaultdict(list)
     for r in members:
-        if r.addr and r.pzip:
-            by_addr[(r.addr.strip().upper(), r.pzip)].append(r)
+        if r.addr and _zip5(r.pzip):
+            by_addr[(_addr_key(r.addr), _zip5(r.pzip))].append(r)
+
+    # How common each token is across every buyer entity. Used twice: to decide
+    # whether a token is coined enough to merge two addresses, and by the
+    # single-word-label test below.
+    token_frequency: collections.Counter = collections.Counter()
+    for r in members:
+        token_frequency.update(_tokens(r.name))
 
     token_groups: dict[str, list[str]] = collections.defaultdict(list)
+    token_members: dict[str, set[str]] = collections.defaultdict(set)
     for group in by_addr.values():
         if len(group) < _MIN_ENTITIES:
             continue
@@ -184,22 +213,60 @@ def compute_families(db, is_buyer_entity) -> dict[str, dict]:
             for n in names[1:]:
                 uf.union(names[0], n)
             token_groups[tok].append(names[0])
+            token_members[tok].update(names)
 
     # One operation can file through more than one management address. Where
     # two corroborated groups share a dominant token, they are the same family.
-    for anchors in token_groups.values():
+    #
+    # The token has to be coined for that to hold. "PARK" corroborates fine
+    # inside one address, where MARINE PARK 3001 and MARINE PARK 3004 file
+    # together, but merging on it across addresses put MARINE PARK in Rockaway,
+    # DSA on West 72nd and 1 PARK ROW in Grand Rapids under one landlord who
+    # does not exist. So the cross-address step applies the same exclusivity
+    # test the single-word label rule uses: most entities citywide carrying the
+    # token have to be these ones.
+    for tok, anchors in token_groups.items():
+        if len(anchors) < 2:
+            continue
+        if token_frequency.get(tok, 0) > len(token_members[tok]) * 2:
+            continue
         for a in anchors[1:]:
             uf.union(anchors[0], a)
-
-    # How common each token is across every buyer entity, for the
-    # single-word-label test below.
-    token_frequency: collections.Counter = collections.Counter()
-    for r in members:
-        token_frequency.update(_tokens(r.name))
 
     comps: dict[str, list[str]] = collections.defaultdict(list)
     for name in info:
         comps[uf.find(name)].append(name)
+
+    # Signal C: a coined token that belongs to one group and to nothing else.
+    #
+    # FLGSP 2400 NOSTRAND AVE LLC filed from "C/O: SUMMIT MALL MANAGEMENT" and
+    # its 81 siblings from "SUMMIT MALLS MANAGEMENT", so neither the stem nor
+    # the address reached it and the largest portfolio trade in the record
+    # rendered two buildings and $15.4M short. Adoption still needs two signals
+    # to agree: the token has to be effectively exclusive to the group citywide,
+    # which is the test the single-word label rule already applies, and the
+    # orphan has to file from a ZIP the group already files from.
+    grouped = {n for names in comps.values() if len(names) >= _MIN_ENTITIES for n in names}
+    orphans = [r for r in members if r.name not in grouped]
+    if orphans:
+        adopted = False
+        for names in list(comps.values()):
+            if len(names) < _MIN_ENTITIES:
+                continue
+            shared = set.intersection(*(_tokens(n) for n in names)) if names else set()
+            coined = {t for t in shared
+                      if len(t) >= 4 and token_frequency.get(t, 0) <= len(names) * 2}
+            if not coined:
+                continue
+            zips = {_zip5(info[n].pzip) for n in names if _zip5(info[n].pzip)}
+            for r in orphans:
+                if _zip5(r.pzip) in zips and coined & _tokens(r.name):
+                    uf.union(names[0], r.name)
+                    adopted = True
+        if adopted:
+            comps = collections.defaultdict(list)
+            for name in info:
+                comps[uf.find(name)].append(name)
 
     families: dict[str, dict] = {}
     for names in comps.values():
@@ -218,25 +285,24 @@ def compute_families(db, is_buyer_entity) -> dict[str, dict]:
         # not "PARK", which is what picking the shared token alone produced.
         stems = collections.Counter(_stem(n) for n in names)
         top_stem, top_count = stems.most_common(1)[0]
-        label = ""
-        if top_count == len(names) and len(top_stem) >= 4:
-            label = top_stem
-        else:
-            counts: collections.Counter = collections.Counter()
-            for n in names:
-                counts.update(_tokens(n))
-            shared = [t for t, c in counts.items() if c == len(names)]
-            if shared:
-                label = max(shared, key=len)
-            elif len(top_stem) >= 4:
-                label = top_stem
-        label = label.strip()
-        if not label:
-            continue
+        counts: collections.Counter = collections.Counter()
+        for n in names:
+            counts.update(_tokens(n))
+        shared = [t for t, c in counts.items() if c == len(names)]
 
-        slug = family_slug(label)
-        if not slug or len(slug) < 2:
-            continue
+        candidates = []
+        if top_count == len(names) and len(top_stem) >= 4:
+            candidates.append(top_stem)
+        if shared:
+            candidates.append(max(shared, key=len))
+        # A stem most of the family shares, for when the only token every
+        # member carries is a common word. TOWNHOUSE RENTAL II/V/VI/VII picked
+        # up three siblings named BROOKLYN TOWNHOUSE PROPERTY OWNER, leaving
+        # "TOWNHOUSE" as the one shared token; 25 companies citywide are called
+        # something TOWNHOUSE, so labelling on it is wrong and dropping the
+        # family loses a real one. The name seven of the eight share is right.
+        if len(top_stem) >= 4 and top_count >= max(_MIN_ENTITIES, len(names) * 0.5):
+            candidates.append(top_stem)
 
         # A one-word label has to be a name, not a word. "FIRST", "BEACH" and
         # "ARM" each merged three unrelated owners who happened to share a
@@ -244,17 +310,29 @@ def compute_families(db, is_buyer_entity) -> dict[str, dict]:
         # operation. The test is data-driven rather than a word list: count how
         # many buyer entities citywide carry the token, and require that the
         # family accounts for most of them.
-        if " " not in label:
-            citywide = token_frequency.get(label, 0)
-            if citywide > len(names) * 2:
+        label = ""
+        for c in candidates:
+            c = c.strip()
+            if not c:
                 continue
+            if " " not in c and token_frequency.get(c, 0) > len(names) * 2:
+                continue
+            label = c
+            break
+        if not label:
+            continue
+
+        slug = family_slug(label)
+        if not slug or len(slug) < 2:
+            continue
+
         # Two unrelated families cannot share a slug; keep the larger.
         if slug in families and families[slug]["buildings"] >= buildings:
             continue
 
         addrs = sorted({
-            (info[n].addr.strip(), info[n].pzip)
-            for n in names if info[n].addr and info[n].pzip
+            (info[n].addr.strip(), _zip5(info[n].pzip))
+            for n in names if info[n].addr and _zip5(info[n].pzip)
         })
         dates = [info[n].last_deed for n in names if info[n].last_deed]
         families[slug] = {
@@ -263,9 +341,61 @@ def compute_families(db, is_buyer_entity) -> dict[str, dict]:
             "entities": sorted(names),
             "buildings": buildings,
             "sold": len(sold),
+            "sold_keys": sold,
             "lots": sum(int(info[n].lots or 0) for n in names),
             "volume": float(sum(info[n].volume or 0 for n in names)),
             "addresses": addrs,
             "last_deed": max(dates) if dates else None,
         }
+
+    _drop_internal_transfers(db, families)
     return families
+
+
+def _drop_internal_transfers(db, families: dict[str, dict]) -> None:
+    """A deed from TOWNHOUSE RENTAL II to TOWNHOUSE RENTAL V is a company moving
+    a building between its own pockets, and counting it as a sale had the page
+    say the family "sold 9 more" when it had sold nothing. Buildings whose only
+    disposal is to another member of the same family come back out of the sold
+    count."""
+    all_names = sorted({n for f in families.values() for n in f["entities"]})
+    if not all_names:
+        return
+    rows = db.execute(text("""
+        SELECT document_id, party_type, party_name_normalized AS name, bbl
+        FROM ownership_raw
+        WHERE doc_type = 'DEED' AND party_type IN ('1', '2')
+          AND party_name_normalized = ANY(:names)
+    """), {"names": all_names}).fetchall()
+
+    doc_sellers: dict[str, set[str]] = collections.defaultdict(set)
+    doc_buyers: dict[str, set[str]] = collections.defaultdict(set)
+    doc_bbls: dict[str, set[str]] = collections.defaultdict(set)
+    for r in rows:
+        (doc_buyers if r.party_type == "2" else doc_sellers)[r.document_id].add(r.name)
+        doc_bbls[r.document_id].add(r.bbl)
+
+    for f in families.values():
+        member = set(f["entities"])
+        internal: set[str] = set()
+        external: set[str] = set()
+        for doc, sellers in doc_sellers.items():
+            if not sellers & member:
+                continue
+            keys = {_building_key(b) for b in doc_bbls[doc]}
+            (internal if doc_buyers[doc] & member else external).update(keys)
+        # A building sold internally and later sold on for real still counts.
+        f["sold"] = len(f.pop("sold_keys") - (internal - external))
+
+    # The floor has to be re-applied: a family that only qualified on its sold
+    # side, where every one of those sales was a transfer to itself, has not
+    # actually put five buildings through the record.
+    for slug in [s for s, f in families.items()
+                 if max(f["buildings"], f["sold"]) < _MIN_BUILDINGS]:
+        del families[slug]
+
+
+def _building_key(bbl: str) -> str:
+    """Condo unit lots collapse to the building they sit in, matching
+    _BUILDING_KEY_SQL."""
+    return bbl[:6] + ("0000" if bbl[6:10] >= "1001" else bbl[6:10])
