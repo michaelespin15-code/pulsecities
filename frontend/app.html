@@ -500,7 +500,7 @@
 
             <!-- Address search — primary entry point, always visible above panels -->
             <div class="bg-base-300 rounded-xl p-4 mb-4">
-                <h3 id="address-lookup-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Look Up a Building</h3>
+                <h2 id="address-lookup-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Look Up a Building</h2>
                 <div class="flex gap-2 w-full">
                     <input
                         id="address-input"
@@ -592,14 +592,14 @@
 
                 <!-- Active buyers — top operator clusters acquiring in this ZIP -->
                 <div id="active-buyers-section" class="hidden bg-base-300 rounded-xl p-4">
-                    <h3 id="active-buyers-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Active Buyers</h3>
+                    <h2 id="active-buyers-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Active Buyers</h2>
                     <div id="active-buyers-list" class="flex flex-col gap-2"></div>
                 </div>
 
                 <!-- Score History Timeline -->
                 <div id="history-section" class="hidden bg-base-300 rounded-xl p-4">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 id="history-section-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Score History</h3>
+                        <h2 id="history-section-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Score History</h2>
                         <div class="flex gap-1">
                             <button class="history-pill" data-days="30" aria-pressed="false">30d</button>
                             <button class="history-pill active" data-days="90" aria-pressed="true">90d</button>
@@ -616,7 +616,7 @@
 
                 <!-- Recent activity — 3 most recent events from pulse data, no extra fetch needed -->
                 <div id="recent-activity-section" class="hidden bg-base-300 rounded-xl p-4">
-                    <h3 id="recent-activity-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Recent Activity</h3>
+                    <h2 id="recent-activity-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Recent Activity</h2>
                     <div id="recent-activity-list" class="flex flex-col gap-2"></div>
                 </div>
 
@@ -646,21 +646,21 @@
 
                         <!-- LLC Acquisitions subsection -->
                         <div id="pulse-llc-section" class="hidden mb-4 mt-3">
-                            <h4 id="pulse-llc-header" class="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-2">LLC Acquisitions</h4>
+                            <h3 id="pulse-llc-header" class="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-2">LLC Acquisitions</h3>
                             <div id="pulse-llc-list" class="flex flex-col gap-1 text-sm"></div>
                             <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:#78838d;">Source: NYC ACRIS (bnx9-e6tj)</div>
                         </div>
 
                         <!-- Recent Permits subsection -->
                         <div id="pulse-permits-section" class="hidden mb-4">
-                            <h4 id="pulse-permits-header" class="text-xs font-semibold text-sky-400 uppercase tracking-wider mb-2">Recent Permits</h4>
+                            <h3 id="pulse-permits-header" class="text-xs font-semibold text-sky-400 uppercase tracking-wider mb-2">Recent Permits</h3>
                             <div id="pulse-permits-list" class="flex flex-col gap-1 text-sm"></div>
                             <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:#78838d;">Source: NYC DOB (ipu4-2q9a)</div>
                         </div>
 
                         <!-- Recent Evictions subsection -->
                         <div id="pulse-evictions-section" class="hidden">
-                            <h4 id="pulse-evictions-header" class="text-xs font-semibold text-red-400 uppercase tracking-wider mb-1">Recent Evictions</h4>
+                            <h3 id="pulse-evictions-header" class="text-xs font-semibold text-red-400 uppercase tracking-wider mb-1">Recent Evictions</h3>
                             <p id="eviction-lag-note" class="text-xs text-slate-400 italic mb-2">Eviction filings typically appear 2&ndash;4 weeks after they occur.</p>
                             <div id="pulse-evictions-list" class="flex flex-col gap-1 text-sm" role="list"></div>
                         </div>
@@ -716,7 +716,7 @@
 
                 <!-- Building watch — one email when new records land on this BBL -->
                 <div class="bg-base-300 rounded-xl p-4">
-                    <h3 id="watch-building-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Watch this building</h3>
+                    <h2 id="watch-building-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Watch this building</h2>
                     <p id="watch-building-helper" class="text-xs text-slate-400 mb-3">One email when a new deed, permit, eviction, or violation lands here. Quiet stretches send nothing.</p>
                     <div id="watch-building-form" class="flex gap-2">
                         <input
@@ -740,13 +740,13 @@
 
                 <!-- Action prompts — shown conditionally based on event data -->
                 <div id="block-actions" class="hidden bg-base-300 rounded-xl p-4">
-                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Take Action</h3>
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Take Action</h2>
                     <div id="block-action-list" class="flex flex-col"></div>
                 </div>
 
                 <!-- Block event list — civic events, newest first (D-09, D-16) -->
                 <div class="bg-base-300 rounded-xl p-4">
-                    <h3 id="civic-events-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Civic Events</h3>
+                    <h2 id="civic-events-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Civic Events</h2>
                     <div id="block-events" class="flex flex-col gap-2 text-sm break-words"></div>
                     <!-- Empty state (scope addition B) -->
                     <div id="block-empty-state" class="hidden text-sm text-slate-400 text-center py-4">
@@ -779,7 +779,7 @@
 
                 <!-- Signal breakdown — dual bar rows -->
                 <div class="bg-base-300 rounded-xl p-4">
-                    <h3 id="cmp-signal-breakdown-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Signal Breakdown</h3>
+                    <h2 id="cmp-signal-breakdown-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Signal Breakdown</h2>
                     <p id="cmp-signal-note" class="text-xs text-slate-400 mb-3">0–100 relative to all NYC neighborhoods.</p>
                     <div id="cmp-signal-rows" class="flex flex-col gap-3"></div>
                 </div>
@@ -791,7 +791,7 @@
 
             <!-- Landlord portfolio search — power-user feature, below primary address search -->
             <div class="bg-base-300 rounded-xl p-3 mt-4 mb-4">
-                <h3 id="landlord-section-title" class="text-xs text-slate-400 mb-2">Search landlord or LLC name</h3>
+                <h2 id="landlord-section-title" class="text-xs text-slate-400 mb-2">Search landlord or LLC name</h2>
                 <div class="flex gap-2">
                     <input
                         id="landlord-input"

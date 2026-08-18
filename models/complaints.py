@@ -45,8 +45,11 @@ class ComplaintRaw(TimestampMixin, Base):
         Geometry("POINT", srid=4326), nullable=True
     )
 
-    raw_data: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
-
+    # raw_data is being retired: it was 87% of every row and nothing read it.
+    # The payloads are archived (scripts/retire_raw_data.sh) and remain
+    # fetchable from Socrata by unique_key. The column still exists in the
+    # database until the drop migration runs in a maintenance window; it is
+    # nullable now, so leaving it unmapped writes NULL rather than failing.
     __table_args__ = (
         UniqueConstraint("unique_key", name="uq_complaints_raw_unique_key"),
         Index("idx_complaints_raw_bbl", "bbl"),

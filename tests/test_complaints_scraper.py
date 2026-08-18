@@ -126,10 +126,17 @@ class TestParseValid:
         row = scraper._parse(db, self.VALID_RAW)
         assert row["location"] is not None  # GeoAlchemy2 WKBElement
 
-    def test_raw_data_stored(self, scraper):
+    def test_raw_data_not_stored(self, scraper):
+        """The payload column is retired; _parse must stop emitting it.
+
+        raw_data was 87% of every complaints row and nothing read it. It is
+        archived and still fetchable from Socrata by unique_key. This asserts
+        the inverse of the test it replaces, so a reintroduced write fails here
+        rather than silently re-growing the largest table on the box.
+        """
         db = MagicMock()
         row = scraper._parse(db, self.VALID_RAW)
-        assert row["raw_data"] == self.VALID_RAW
+        assert "raw_data" not in row
 
     def test_bbl_normalized(self, scraper):
         db = MagicMock()

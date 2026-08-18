@@ -106,7 +106,7 @@ class TestViolationsUpsertBatch:
             "violation_id": "99", "bbl": None, "address": None, "zip_code": None,
             "borough": None, "violation_class": "B", "description": None,
             "inspection_date": date(2026, 1, 1), "nov_issued_date": None,
-            "current_status": "Open", "raw_data": {},
+            "current_status": "Open",
         }
         row_b = {**row_a, "current_status": "Closed"}  # same id, later status
 

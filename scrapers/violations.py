@@ -174,7 +174,6 @@ class ViolationsScraper(BaseScraper):
             "inspection_date": inspection_date,
             "nov_issued_date": nov_issued_date,
             "current_status": current_status,
-            "raw_data": raw,
         }
 
     def _upsert_batch(self, db, batch: list[dict]) -> int:

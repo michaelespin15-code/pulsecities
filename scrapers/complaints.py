@@ -164,7 +164,6 @@ class ComplaintsScraper(BaseScraper):
             "created_date": created_date,
             "closed_date": closed_date,
             "location": location,
-            "raw_data": raw,
         }
 
     def _upsert_batch(self, db, batch: list[dict]) -> int:

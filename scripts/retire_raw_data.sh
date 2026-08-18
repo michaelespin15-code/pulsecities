@@ -111,8 +111,11 @@ cmd_drop() {
         ls "$ARCHIVE_DIR"/${t}_raw_data_*.ndjson.zst >/dev/null 2>&1 || {
             echo "no archive found for $t; run '$0 archive' first" >&2; exit 1; }
     done
-    # Gate: refuse while the code still references the column.
-    if grep -rq "raw_data" /root/pulsecities/models/complaints.py /root/pulsecities/models/violations.py; then
+    # Gate: refuse while a model still maps the column. Matches the declaration
+    # rather than the string, because both models carry a comment explaining
+    # where the payloads went and a bare grep for "raw_data" fails on the prose.
+    if grep -Eq '^[[:space:]]*raw_data[[:space:]]*:[[:space:]]*Mapped' \
+        "$APP_DIR/models/complaints.py" "$APP_DIR/models/violations.py"; then
         echo "models still declare raw_data; deploy the code commit and reload first" >&2
         exit 1
     fi
@@ -120,9 +123,16 @@ cmd_drop() {
     echo "sizes before:"
     $PSQL -c "SELECT relname, pg_size_pretty(pg_total_relation_size(oid)) FROM pg_class WHERE relname IN ('complaints_raw','violations_raw')"
 
+    # The DROP COLUMN itself is a migration, not ad-hoc DDL: this project keeps
+    # its schema in alembic, and dropping a column underneath it would leave the
+    # history describing a table that no longer exists. VACUUM FULL stays here
+    # because it cannot run inside a transaction.
+    echo "applying the drop migration..."
+    (cd "$APP_DIR" && ./venv/bin/python -m alembic upgrade head) || {
+        echo "alembic upgrade failed; nothing dropped" >&2; exit 1; }
+
     for t in complaints_raw violations_raw; do
-        echo "[$t] dropping column and rewriting (table locked for the rewrite)..."
-        $PSQL -c "ALTER TABLE $t DROP COLUMN raw_data;"
+        echo "[$t] rewriting to reclaim the space (ACCESS EXCLUSIVE for the duration)..."
         time $PSQL -c "VACUUM FULL ANALYZE $t;"
     done
 
