@@ -124,15 +124,23 @@ footer{border-top:1px solid var(--border);padding:24px 20px;text-align:center}
 }
 """
 
-# Async font swap, same preload/onload pattern as the static pages; a
-# render-blocking stylesheet held first paint hostage on cold brief links.
-_FONT_HREF = "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&family=JetBrains+Mono:wght@400&display=swap"
+# Self-hosted, latin subset, same faces as before. What changes is that the
+# browser no longer spends two DNS+TLS handshakes and a stylesheet round trip
+# with Google before it can start a font file. The @font-face block is inline
+# so it costs no request of its own, and only the body face is preloaded.
+_FONT_FACE = (
+    "<style>"
+    "@font-face{font-family:'DM Sans';font-style:normal;font-weight:400 600;"
+    "font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2')}"
+    "@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;"
+    "font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2')}"
+    "</style>"
+)
 
 _FONTS = (
-    '<link rel="preconnect" href="https://fonts.googleapis.com">'
-    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-    f'<link rel="preload" href="{_FONT_HREF}" as="style" onload="this.onload=null;this.rel=\'stylesheet\'">'
-    f'<noscript><link rel="stylesheet" href="{_FONT_HREF}"></noscript>'
+    '<link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" '
+    'type="font/woff2" crossorigin>'
+    + _FONT_FACE
 )
 
 # Same Plausible snippet the other SSR pages carry (see frontend.py); brief
