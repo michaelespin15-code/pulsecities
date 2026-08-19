@@ -870,25 +870,56 @@
         }
     }).catch(() => {});
 
-    fetch('/api/operators/top?limit=3').then(r => r.ok ? r.json() : null).then(ops => {
-        if (!Array.isArray(ops)) return;
-        _ops = ops;
-        renderOperators();
-    }).catch(() => {});
+    // Everything below the hero waits. Six requests fired at once off the initial
+    // navigation put /api/flips 2.26s deep in Lighthouse's critical chain, and
+    // only /api/stats feeds anything a visitor can see before they scroll.
+    function afterLoad(fn) {
+        const go = () => ('requestIdleCallback' in window
+            ? requestIdleCallback(fn, { timeout: 2000 }) : setTimeout(fn, 200));
+        if (document.readyState === 'complete') go();
+        else addEventListener('load', go, { once: true });
+    }
 
-    fetch('/api/flips/editions/latest').then(r => r.ok ? r.json() : null).then(data => {
-        if (!data || !data.arc || !data.arc.buy_date || !data.arc.sell_date) return;
-        _arc = data.arc;
-        renderDocket();
-    }).catch(() => {});
+    function whenVisible(id, fn) {
+        const el = document.getElementById(id);
+        if (!el || !('IntersectionObserver' in window)) { afterLoad(fn); return; }
+        const io = new IntersectionObserver((entries) => {
+            if (!entries.some(e => e.isIntersecting)) return;
+            io.disconnect();
+            fn();
+        }, { rootMargin: '300px' });
+        io.observe(el);
+    }
 
-    Promise.all([
-        fetch('/api/flips').then(r => r.ok ? r.json() : null).catch(() => null),
-        fetch('/api/radar').then(r => r.ok ? r.json() : null).catch(() => null),
-    ]).then(([flips, radar]) => {
-        if (flips && flips.count != null) _flipCount = flips.count;
-        if (radar && radar.count != null) _radarCount = radar.count;
-        renderSignals();
+    // The docket already renders a fallback arc from the HTML, so this only
+    // swaps in the current edition. Early, but off the critical path.
+    afterLoad(() => {
+        fetch('/api/flips/editions/latest').then(r => r.ok ? r.json() : null).then(data => {
+            if (!data || !data.arc || !data.arc.buy_date || !data.arc.sell_date) return;
+            _arc = data.arc;
+            renderDocket();
+        }).catch(() => {});
+    });
+
+    // These two modules are empty until their fetch lands, and both sit below
+    // the fold, so a visitor who never scrolls never pays for them.
+    whenVisible('mod-operators', () => {
+        fetch('/api/operators/top?limit=3').then(r => r.ok ? r.json() : null).then(ops => {
+            if (!Array.isArray(ops)) return;
+            _ops = ops;
+            renderOperators();
+        }).catch(() => {});
+    });
+
+    whenVisible('mod-signals', () => {
+        Promise.all([
+            fetch('/api/flips').then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch('/api/radar').then(r => r.ok ? r.json() : null).catch(() => null),
+        ]).then(([flips, radar]) => {
+            if (flips && flips.count != null) _flipCount = flips.count;
+            if (radar && radar.count != null) _radarCount = radar.count;
+            renderSignals();
+        });
     });
 
     // Docket arc reveal
