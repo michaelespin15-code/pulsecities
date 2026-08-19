@@ -20,7 +20,7 @@ from sqlalchemy import text
 from config.logging_config import configure_logging
 from config.schedule import DIGEST_SEND_DAY
 from models.database import SessionLocal  # imports load_dotenv() as a side effect
-from scoring.tiers import floor_for, tier
+from scoring.tiers import ORDER, floor_for, tier
 from scripts.digest_narrative import generate_narrative, generate_citywide_narrative
 
 # The API process sets this in api/routes/subscribe.py; this script runs
@@ -44,7 +44,9 @@ PERMIT_ABS   = 3
 LLC_ABS      = 1
 COMPLAINT_ABS = 8
 
-_TIER_ORDER = ["Low", "Watch", "Elevated", "High"]
+# Tier words and thresholds come from scoring.tiers, the same scale every
+# page uses. This file used to carry its own 25/50/75 scale, which put
+# "Watch to Elevated" in a bullet directly under a MODERATE badge.
 
 SIGNAL_LABELS = {
     "permit_intensity":     "Permit Filings",
@@ -82,15 +84,16 @@ _TIER_COLORS = {
 }
 
 
+def _monday(d: date) -> date:
+    """The Monday of d's ISO week, so week-bucketed baselines only ever see
+    complete buckets."""
+    return d - timedelta(days=d.weekday())
+
+
 def _score_color(score: float) -> str:
     return _TIER_COLORS[tier(score)]
 
 
-def _send_tier(score: float) -> str:
-    if score < 25: return "Low"
-    if score < 50: return "Watch"
-    if score < 75: return "Elevated"
-    return "High"
 
 
 # ---------------------------------------------------------------------------
@@ -131,8 +134,11 @@ def build_weekly_zip_summaries(db, zip_codes: set[str]) -> dict[str, dict]:
     zips = list(zip_codes)
     today         = date.today()
     week_ago      = today - timedelta(days=7)
-    baseline_start = today - timedelta(days=64)   # 9 weeks back
-    baseline_end   = week_ago                      # exclude current window
+    # Complete ISO weeks only. date_trunc('week', ...) buckets start on
+    # Monday, and a window that opens or closes mid-week hands AVG() two stub
+    # buckets, understating the baseline ~10%. Excluded, never averaged in.
+    baseline_start = _monday(today - timedelta(days=63))  # 8 complete weeks
+    baseline_end   = _monday(week_ago)                    # exclusive, a Monday
 
     # -- Score history: need current + one prior-week snapshot ---------------
     score_rows = db.execute(text("""
@@ -297,9 +303,9 @@ def build_weekly_zip_summaries(db, zip_codes: set[str]) -> dict[str, dict]:
         score_prev = float(prior[2])   if prior and prior[2] is not None else score_now
         delta      = round(score_now - score_prev, 1)
 
-        tier_now      = _send_tier(score_now)
-        tier_prev     = _send_tier(score_prev)
-        tier_increased = _TIER_ORDER.index(tier_now) > _TIER_ORDER.index(tier_prev)
+        tier_now      = tier(score_now)
+        tier_prev     = tier(score_prev)
+        tier_increased = ORDER.index(tier_now) > ORDER.index(tier_prev)
 
         signal_map = {
             "permit_intensity":     float(current[3] or 0),
@@ -433,21 +439,21 @@ def is_meaningful_zip_update(summary: dict) -> tuple[bool, list[str]]:
     if hpd >= HPD_ABS:
         reasons.append(f"{hpd} class B/C HPD violations recorded")
     elif hpd_avg and hpd > hpd_avg * (1 + BASELINE_RATIO):
-        reasons.append(f"{hpd} HPD violations ({int(hpd / hpd_avg * 100)}% of 8-week average)")
+        reasons.append(f"{hpd} HPD violation{'s' if hpd > 1 else ''} ({int(hpd / hpd_avg * 100)}% of 8-week average)")
 
     evictions     = summary["eviction_count"]
     eviction_avg  = summary.get("eviction_avg")
     if evictions >= EVICTION_ABS:
-        reasons.append(f"{evictions} residential eviction filing{'s' if evictions > 1 else ''}")
+        reasons.append(f"{evictions} executed residential eviction{'s' if evictions > 1 else ''}")
     elif eviction_avg and evictions > eviction_avg * (1 + BASELINE_RATIO):
-        reasons.append(f"{evictions} eviction filings ({int(evictions / eviction_avg * 100)}% of 8-week average)")
+        reasons.append(f"{evictions} executed eviction{'s' if evictions > 1 else ''} ({int(evictions / eviction_avg * 100)}% of 8-week average)")
 
     permits    = summary["permit_count"]
     permit_avg = summary.get("permit_avg")
     if permits >= PERMIT_ABS:
         reasons.append(f"{permits} alteration permit{'s' if permits > 1 else ''} filed")
     elif permit_avg and permits > permit_avg * (1 + BASELINE_RATIO):
-        reasons.append(f"{permits} permits ({int(permits / permit_avg * 100)}% of 8-week average)")
+        reasons.append(f"{permits} permit{'s' if permits > 1 else ''} ({int(permits / permit_avg * 100)}% of 8-week average)")
 
     llc = summary["llc_count"]
     if llc >= LLC_ABS:
@@ -458,7 +464,7 @@ def is_meaningful_zip_update(summary: dict) -> tuple[bool, list[str]]:
     if complaints >= COMPLAINT_ABS:
         reasons.append(f"{complaints} housing complaints filed")
     elif complaint_avg and complaints > complaint_avg * (1 + BASELINE_RATIO):
-        reasons.append(f"{complaints} housing complaints ({int(complaints / complaint_avg * 100)}% of 8-week average)")
+        reasons.append(f"{complaints} housing complaint{'s' if complaints > 1 else ''} ({int(complaints / complaint_avg * 100)}% of 8-week average)")
 
     return bool(reasons), reasons
 
@@ -916,7 +922,8 @@ def build_citywide_summary(db) -> dict:
     and the standings, for the citywide digest."""
     today          = date.today()
     week_ago       = today - timedelta(days=7)
-    baseline_start = today - timedelta(days=64)
+    baseline_start = _monday(today - timedelta(days=63))  # 8 complete weeks
+    baseline_end   = _monday(week_ago)                    # exclusive, a Monday
 
     # 7-day score deltas per ZIP — the movement layer under both the movers
     # section and the standings.
@@ -982,7 +989,7 @@ def build_citywide_summary(db) -> dict:
              WHERE created_at >= :week_ago AND eviction_type ILIKE 'R%')                          AS ev,
             (SELECT COALESCE(AVG(c), 0) FROM (
                 SELECT COUNT(*) AS c FROM evictions_raw
-                WHERE created_at >= :baseline_start AND created_at < :week_ago
+                WHERE created_at >= :baseline_start AND created_at < :baseline_end
                   AND eviction_type ILIKE 'R%'
                 GROUP BY date_trunc('week', created_at)) s)                                       AS ev_avg,
             (SELECT COUNT(DISTINCT o.bbl) FROM ownership_raw o
@@ -994,7 +1001,7 @@ def build_citywide_summary(db) -> dict:
                AND o.party_name_normalized NOT ILIKE '%FINANCIAL %')                              AS llc,
             (SELECT COALESCE(AVG(c), 0) FROM (
                 SELECT COUNT(DISTINCT o.bbl) AS c FROM ownership_raw o
-                WHERE o.created_at >= :baseline_start AND o.created_at < :week_ago
+                WHERE o.created_at >= :baseline_start AND o.created_at < :baseline_end
                   AND o.party_type = '2' AND o.doc_type IN ('DEED','DEEDP','ASST')
                   AND o.party_name_normalized LIKE '%LLC%'
                   AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
@@ -1005,17 +1012,18 @@ def build_citywide_summary(db) -> dict:
              WHERE pr.created_at >= :week_ago AND pr.permit_type = 'AL' AND p.units_res >= 3)     AS pm,
             (SELECT COALESCE(AVG(c), 0) FROM (
                 SELECT COUNT(*) AS c FROM permits_raw pr JOIN parcels p ON pr.bbl = p.bbl
-                WHERE pr.created_at >= :baseline_start AND pr.created_at < :week_ago
+                WHERE pr.created_at >= :baseline_start AND pr.created_at < :baseline_end
                   AND pr.permit_type = 'AL' AND p.units_res >= 3
                 GROUP BY date_trunc('week', pr.created_at)) s)                                    AS pm_avg,
             (SELECT COUNT(*) FROM violations_raw
              WHERE created_at >= :week_ago AND violation_class IN ('B','C'))                      AS hpd,
             (SELECT COALESCE(AVG(c), 0) FROM (
                 SELECT COUNT(*) AS c FROM violations_raw
-                WHERE created_at >= :baseline_start AND created_at < :week_ago
+                WHERE created_at >= :baseline_start AND created_at < :baseline_end
                   AND violation_class IN ('B','C')
                 GROUP BY date_trunc('week', created_at)) s)                                       AS hpd_avg
-    """), {"week_ago": week_ago, "baseline_start": baseline_start}).fetchone()
+    """), {"week_ago": week_ago, "baseline_start": baseline_start,
+           "baseline_end": baseline_end}).fetchone()
 
     week = {
         "evictions":      int(week_row.ev or 0),
@@ -1447,6 +1455,10 @@ def build_family_updates(db, slugs: set[str]) -> dict[str, dict]:
         if not fam:
             logger.warning("family %s no longer clusters; skipping its followers", slug)
             continue
+        # A deed from one family company to another is a restructuring, not a
+        # purchase -- the same rule the clustering and the hub page apply. An
+        # email claiming nine purchases that never left the group would be
+        # wrong about the only thing it says.
         rows = db.execute(text("""
             SELECT o.bbl, max(o.doc_date) AS doc_date, max(o.doc_amount) AS amount,
                    max(p.address) AS address, max(p.zip_code) AS zip_code
@@ -1455,6 +1467,11 @@ def build_family_updates(db, slugs: set[str]) -> dict[str, dict]:
             WHERE o.doc_type = 'DEED' AND o.party_type = '2'
               AND o.party_name_normalized = ANY(:names)
               AND o.created_at >= NOW() - INTERVAL '7 days'
+              AND NOT EXISTS (
+                  SELECT 1 FROM ownership_raw s
+                  WHERE s.document_id = o.document_id AND s.party_type = '1'
+                    AND s.party_name_normalized = ANY(:names)
+              )
             GROUP BY o.bbl
             ORDER BY max(o.doc_date) DESC NULLS LAST
         """), {"names": fam["entities"]}).fetchall()
@@ -1704,7 +1721,8 @@ def run(dry_run: bool = False, limit: int | None = None, email_filter: str | Non
         if email_filter:
             fam_follows = [s for s in fam_follows if s["email"] == email_filter]
         if limit is not None:
-            fam_follows = fam_follows[:limit]
+            remaining = max(0, limit - len(subscriptions) - len(citywide_subs) - len(follows))
+            fam_follows = fam_follows[:remaining]
         if fam_follows:
             fam_updates = build_family_updates(db, {s["family_slug"] for s in fam_follows})
             f_sent = f_skipped = f_failed = 0

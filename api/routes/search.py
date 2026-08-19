@@ -85,6 +85,10 @@ def search_grouped(
     q = q.strip()
     if len(q) < 3:
         raise HTTPException(status_code=400, detail="Query too short")
+    if len(q) > 64:
+        # Wildcard ILIKE scans; a ceiling keeps a pasted novel from becoming
+        # a table scan per request.
+        raise HTTPException(status_code=400, detail="Query too long")
 
     pattern = _like_pattern(q)
     is_zip = q.isdigit() and len(q) == 5
@@ -215,6 +219,10 @@ def search_landlord(
     q = q.strip()
     if len(q) < 3:
         raise HTTPException(status_code=400, detail="Query too short")
+    if len(q) > 64:
+        # Wildcard ILIKE scans; a ceiling keeps a pasted novel from becoming
+        # a table scan per request.
+        raise HTTPException(status_code=400, detail="Query too long")
 
     pattern = _like_pattern(q)
 

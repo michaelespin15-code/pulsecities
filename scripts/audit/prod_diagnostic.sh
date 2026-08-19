@@ -5,7 +5,9 @@
 set -uo pipefail
 
 SOCK=/tmp/gunicorn.sock
-PGURL="postgresql://pulsecities_user:REDACTED@localhost/pulsecities"
+# Never hardcode the credential: read it from the same .env the app uses.
+PGURL="$(grep -m1 '^DATABASE_URL=' /root/pulsecities/.env | cut -d= -f2-)"
+[ -n "$PGURL" ] || { echo "DATABASE_URL not found in .env" >&2; exit 1; }
 ERR=/var/log/pulsecities/gunicorn-error.log
 
 echo "########## SECTION 1: box ##########"

@@ -16,7 +16,10 @@ URL="https://pulsecities.com/api/health"
 MARKER="/tmp/pulsecities_health_probe.down"
 REALERT_SECONDS=21600  # 6h — remind while the outage persists
 
-code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "$URL" || echo "000")
+# curl -w prints 000 itself on connect failure; the old || echo appended a
+# second 000 and every failure email read "returned 000000".
+code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "$URL" || true)
+code=${code:-000}
 
 if [ "$code" = "200" ]; then
     if [ -f "$MARKER" ]; then

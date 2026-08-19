@@ -691,7 +691,10 @@
         if (!_stats) return;
         const fresh = _stats.data_freshness || {};
         const latest = Object.values(fresh).map(f => f.through).filter(Boolean).sort().pop();
-        const acrisStale = fresh.acris && fresh.acris.stale && fresh.acris.through;
+        // Windowed whenever we know where the record ends. The stale gate
+        // trips at 21 days, which let "last 90 days" sit over a window whose
+        // final 19 days held no deeds at all.
+        const acrisStale = fresh.acris && fresh.acris.through;
         const yr = { month: 'short', day: 'numeric', year: 'numeric' };
         const md = { month: 'short', day: 'numeric' };
         const lines = [];

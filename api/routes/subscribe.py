@@ -407,7 +407,7 @@ def _family_size_phrase(fam: dict) -> str:
     if held:
         return f"{ents} across {_count(held, 'building', 'buildings')}"
     if sold:
-        return f"{ents} that has sold {_count(sold, 'building', 'buildings')} and holds none"
+        return f"{ents} that have sold {_count(sold, 'building', 'buildings')} and hold none"
     return ents
 
 

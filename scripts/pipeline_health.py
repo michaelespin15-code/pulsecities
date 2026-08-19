@@ -313,6 +313,17 @@ def run_health_report(db) -> int:
         for f in flags:
             print(f"  ✗ {f}")
         print()
+        # Cron has no MAILTO and the box has no MTA, so a nonzero exit alone
+        # reaches nobody. The sibling daily_health_check already emails; this
+        # one printed CRITICAL into a log file and stopped.
+        try:
+            from scheduler.alerts import notify_ops
+            notify_ops(
+                "pipeline_health CRITICAL",
+                "pipeline_health flagged:\n" + "\n".join(f"- {f}" for f in flags),
+            )
+        except Exception:
+            pass
         return 1
     else:
         print("VERDICT: HEALTHY")

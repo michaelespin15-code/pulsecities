@@ -266,17 +266,25 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
     if cached and _time.monotonic() < cached[1]:
         return cached[0]
 
+    # Anchored on the latest published deed, not today: ACRIS lags, and a
+    # CURRENT_DATE window counts unpublished days as zero. The future-date
+    # guard mirrors api.freshness (filer-typed doc_dates run months ahead).
     llc_count = db.execute(text("""
-        SELECT COUNT(DISTINCT bbl) FROM ownership_raw
-        WHERE party_type = '2'
-          AND doc_type IN ('DEED', 'DEEDP', 'ASST')
-          AND party_name_normalized LIKE '%LLC%'
-          AND doc_date >= CURRENT_DATE - INTERVAL '90 days'
-          AND party_name_normalized NOT ILIKE '%MORTGAGE%'
-          AND party_name_normalized NOT ILIKE '%LOAN SERVICING%'
-          AND party_name_normalized NOT ILIKE '%LOAN SERVICE%'
-          AND party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
-          AND party_name_normalized NOT ILIKE '%CREDIT UNION%'
+        WITH bound AS (
+            SELECT max(doc_date) AS latest FROM ownership_raw
+            WHERE doc_date <= CURRENT_DATE
+        )
+        SELECT COUNT(DISTINCT o.bbl) FROM ownership_raw o, bound b
+        WHERE o.party_type = '2'
+          AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
+          AND o.party_name_normalized LIKE '%LLC%'
+          AND o.doc_date > b.latest - INTERVAL '90 days'
+          AND o.doc_date <= b.latest
+          AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
+          AND o.party_name_normalized NOT ILIKE '%LOAN SERVICING%'
+          AND o.party_name_normalized NOT ILIKE '%LOAN SERVICE%'
+          AND o.party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
+          AND o.party_name_normalized NOT ILIKE '%CREDIT UNION%'
     """)).scalar() or 0
 
     eviction_count = db.execute(text("""

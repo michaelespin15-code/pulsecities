@@ -131,7 +131,19 @@ def build() -> dict[str, str]:
         # newest of the two as lastmod and a priority that reflects whether the
         # page tells the full arc or half of it. ORDER BY keeps nightly output
         # stable so the file does not churn in git.
+        # Aggregate once per table, then hash-join. The LATERAL form of this
+        # query ran max() per parcel: ~1.75M index probes, planner cost 3.3M
+        # against 116k for this shape, in the middle of the 03:15 cron pile-up
+        # on two vCPUs.
         property_rows = db.execute(text("""
+            WITH d AS (
+                SELECT bbl, max(doc_date) AS last_deed
+                FROM ownership_raw WHERE doc_type = 'DEED' GROUP BY bbl
+            ),
+            e AS (
+                SELECT bbl, max(executed_date) AS last_evict
+                FROM evictions_raw GROUP BY bbl
+            )
             SELECT p.bbl,
                    GREATEST(COALESCE(d.last_deed, DATE '1900-01-01'),
                             COALESCE(e.last_evict, DATE '1900-01-01')) AS lastmod,
@@ -139,14 +151,8 @@ def build() -> dict[str, str]:
             FROM parcels p
             JOIN neighborhoods n ON n.zip_code = p.zip_code
             JOIN displacement_scores ds ON ds.zip_code = p.zip_code
-            LEFT JOIN LATERAL (
-                SELECT max(o.doc_date) AS last_deed FROM ownership_raw o
-                WHERE o.bbl = p.bbl AND o.doc_type = 'DEED'
-            ) d ON true
-            LEFT JOIN LATERAL (
-                SELECT max(ev.executed_date) AS last_evict FROM evictions_raw ev
-                WHERE ev.bbl = p.bbl
-            ) e ON true
+            LEFT JOIN d ON d.bbl = p.bbl
+            LEFT JOIN e ON e.bbl = p.bbl
             WHERE p.address IS NOT NULL AND n.name IS NOT NULL AND ds.score IS NOT NULL
               AND (d.last_deed IS NOT NULL OR e.last_evict IS NOT NULL)
             ORDER BY p.bbl

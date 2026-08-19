@@ -23,6 +23,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from api.freshness import ACRIS_THROUGH_SQL
+from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
 from models.database import get_db
 from scoring.tiers import tier
 
@@ -113,7 +114,7 @@ _FAQ_A1 = (
 _FAQ_Q2 = "What public records are included?"
 _FAQ_A2 = (
     "PulseCities uses NYC public records: DOB building permits, HPD housing violations, "
-    "311 housing complaints, eviction filings, ACRIS property deed transfers, HPD "
+    "311 housing complaints, executed evictions, ACRIS property deed transfers, HPD "
     "building registrations, and MapPLUTO residential unit counts."
 )
 _FAQ_Q3 = "Is this a prediction of eviction?"
@@ -220,13 +221,12 @@ def _deeds_through_line(db, lang: str = "en") -> str:
     through = _acris_through(db)
     if not through:
         return ""
-    stamp = f"{_MONTHS_SHORT[through.month]} {through.day}"
     if lang == "es":
         return (f"Escrituras registradas hasta el {through.day} de "
-                f"{_ES_MONTHS_LONG[through.month]}, el último día "
-                f"publicado por la ciudad.")
-    return (f"Deeds recorded through {stamp}, the most recent day the city "
-            f"has published.")
+                f"{_ES_MONTHS_LONG[through.month]} de {through.year}, el "
+                f"último día publicado por la ciudad.")
+    return (f"Deeds recorded through {_en_date(through)}, the most recent "
+            f"day the city has published.")
 
 
 _ES_MONTHS_LONG = ["", "enero", "febrero", "marzo", "abril", "mayo", "junio",
@@ -384,10 +384,10 @@ _NB_L = {
         "social_scored": "{name} ({zip}) | Displacement Score {s}/100 | PulseCities",
         "title_unscored": "{name} ({zip}) NYC Displacement Signals | PulseCities",
         "desc_scored": ("{name} shows {tier} displacement-pressure signals based on NYC public records, "
-                        "including LLC acquisitions, eviction filings, 311 complaints, HPD violations, "
+                        "including LLC acquisitions, executed evictions, 311 complaints, HPD violations, "
                         "permits, and rent-stabilized housing data."),
         "desc_unscored": ("Track displacement-pressure signals in {name} ({zip}) from NYC public records: "
-                          "LLC acquisitions, eviction filings, 311 complaints, HPD violations, permits, "
+                          "LLC acquisitions, executed evictions, 311 complaints, HPD violations, permits, "
                           "and rent-stabilized housing data."),
         "nav": [("/map", "Map"), ("/methodology", "Methodology"), ("/about", "About"), ("/press", "Press")],
         "back_map": "&#8592; Back to map",
@@ -407,7 +407,7 @@ _NB_L = {
         "sig_labels": {
             "llc_acquisitions": "LLC property acquisitions",
             "permits": "Building permits (residential, 3+ units)",
-            "evictions": "Residential eviction filings",
+            "evictions": "Executed residential evictions",
             "hpd_violations": "HPD violations (Class B+C)",
             "complaint_rate": "311 housing complaints",
             "rs_unit_loss": "Rent-stabilized unit loss",
@@ -909,7 +909,9 @@ def _build_neighborhood_page(
             _tl, tier_color = _tier_info(nb["score"])
             nb_items += (
                 '<li class="lat-row">'
-                f'<a href="/neighborhood/{e(nb["zip"])}">{e(nb["name"])}</a>'
+                # Three ZIPs are called Bushwick; the name alone rendered the
+                # same neighborhood twice with two scores.
+                f'<a href="/neighborhood/{e(nb["zip"])}">{e(nb["name"])} {e(nb["zip"])}</a>'
                 f'<span class="lat-score" style="color:{tier_color};">{nb["score"]:.0f}</span></li>'
             )
         nearby_section = f"""  <section style="margin-bottom:32px;">
@@ -1300,10 +1302,20 @@ def neighborhood_page(zip_code: str, lang: str = "en", db: Session = Depends(get
         recent = sum(int(r.n) for r in pet_rows[:3])
         prior = sum(int(r.n) for r in pet_rows[3:6]) if len(pet_rows) > 3 else None
         newest, oldest_recent = pet_rows[0].month, pet_rows[min(2, len(pet_rows) - 1)].month
-        window = (
-            f"{oldest_recent.strftime('%b')} to {newest.strftime('%b %Y')}"
-            if oldest_recent != newest else newest.strftime("%b %Y")
-        )
+        # The window string lands inside translated copy, so it carries its
+        # own language rather than shipping "May to Jul" into a Spanish page.
+        if lang == "es":
+            window = (
+                f"de {_ES_MONTHS_LONG[oldest_recent.month]} a "
+                f"{_ES_MONTHS_LONG[newest.month]} de {newest.year}"
+                if oldest_recent != newest else
+                f"en {_ES_MONTHS_LONG[newest.month]} de {newest.year}"
+            )
+        else:
+            window = (
+                f"{oldest_recent.strftime('%b')} to {newest.strftime('%b %Y')}"
+                if oldest_recent != newest else newest.strftime("%b %Y")
+            )
         petitions = {"recent": recent, "prior": prior, "window": window}
 
     # Buildings vacated by HPD order in the past year. Class-I violations
@@ -1485,7 +1497,12 @@ def _entity_title(name: str) -> str:
             continue
         keep_caps = (bare in _ENTITY_ACRONYMS
                      or (bare not in _ADDRESS_WORDS and _VOWELLESS.match(bare)))
-        out.append(token.upper() if keep_caps else token.title())
+        if keep_caps:
+            out.append(token.upper())
+        elif bare in ("AND", "OF", "THE") and out:
+            out.append(token.lower())
+        else:
+            out.append(token.title())
     joined = " ".join(out).strip(" ,&-")
     return re.sub(r"(\d)(St|Nd|Rd|Th)\b", lambda m: m.group(1) + m.group(2).lower(),
                   joined)
@@ -3611,7 +3628,7 @@ def flip_watch_page(db: Session = Depends(get_db)):
 
     # "Flip Watch" is a name we invented; nobody types it. The H1 and nav
     # keep the brand, the title says what the page is.
-    title = "NYC buildings bought and renovated after an eviction | PulseCities"
+    title = "NYC renovation flips: LLC bought, permit within 60 days | PulseCities"
     desc = (
         f"{n} NYC buildings where an LLC bought and filed a renovation permit within "
         f"{FLIP_WINDOW_DAYS} days, sourced from ACRIS deeds and DOB permits. Updated nightly."
@@ -4315,11 +4332,14 @@ def _counts_between(db, start: date, end_exclusive: date):
     a past week reconstructs exactly from the retained raw tables."""
     return db.execute(text("""
         SELECT
-            (SELECT COUNT(*) FROM evictions_raw  WHERE executed_date   >= :s AND executed_date   < :e) AS evictions,
+            (SELECT COUNT(*) FROM evictions_raw  WHERE executed_date   >= :s AND executed_date   < :e
+                AND eviction_type = 'Residential') AS evictions,
             (SELECT COUNT(*) FROM permits_raw    WHERE filing_date     >= :s AND filing_date     < :e) AS permits,
-            (SELECT COUNT(*) FROM complaints_raw WHERE created_date    >= :s AND created_date    < :e) AS complaints,
+            (SELECT COUNT(*) FROM complaints_raw WHERE created_date    >= :s AND created_date    < :e
+                AND complaint_type = ANY(:ctypes)) AS complaints,
             (SELECT COUNT(*) FROM violations_raw WHERE inspection_date >= :s AND inspection_date < :e) AS violations
-    """), {"s": start, "e": end_exclusive}).fetchone()
+    """), {"s": start, "e": end_exclusive,
+           "ctypes": list(DISPLACEMENT_COMPLAINT_TYPES)}).fetchone()
 
 
 def _completed_weeks(db) -> list[tuple[date, date]]:
@@ -4381,7 +4401,7 @@ def _stat_cells_html(counts) -> str:
     return "".join(
         f'<div class="tw-stat"><div class="tw-stat-n">{v:,}</div><div class="tw-stat-l">{label}</div></div>'
         for v, label in [
-            (counts.evictions,  "eviction filings"),
+            (counts.evictions,  "executed evictions"),
             (counts.permits,    "construction permits"),
             (counts.violations, "HPD violations"),
             (counts.complaints, "311 housing complaints"),
@@ -4489,7 +4509,7 @@ def week_edition_page(slug: str, db: Session = Depends(get_db)):
     title = f"NYC displacement, week of {range_label} | PulseCities"
     desc = (
         f"NYC displacement week in review, {range_label}: {top_line}, "
-        f"{counts.evictions:,} eviction filings, {counts.permits:,} construction permits. Public records only."
+        f"{counts.evictions:,} executed evictions, {counts.permits:,} construction permits. Public records only."
     )
     jsonld = _jsonld({
         "@context": "https://schema.org",
@@ -4704,14 +4724,16 @@ def this_week_page(db: Session = Depends(get_db)):
     counts = db.execute(text("""
         SELECT
             (SELECT COUNT(*) FROM evictions_raw
-             WHERE executed_date >= CURRENT_DATE - INTERVAL '7 days')  AS evictions,
+             WHERE executed_date >= CURRENT_DATE - INTERVAL '7 days'
+               AND eviction_type = 'Residential')  AS evictions,
             (SELECT COUNT(*) FROM permits_raw
              WHERE filing_date >= CURRENT_DATE - INTERVAL '7 days')    AS permits,
             (SELECT COUNT(*) FROM complaints_raw
-             WHERE created_date >= CURRENT_DATE - INTERVAL '7 days')   AS complaints,
+             WHERE created_date >= CURRENT_DATE - INTERVAL '7 days'
+               AND complaint_type = ANY(:ctypes))   AS complaints,
             (SELECT COUNT(*) FROM violations_raw
              WHERE inspection_date >= CURRENT_DATE - INTERVAL '7 days') AS violations
-    """)).fetchone()
+    """), {"ctypes": list(DISPLACEMENT_COMPLAINT_TYPES)}).fetchone()
 
     from api.routes.flips import query_flips
     flips = sorted(
@@ -4755,7 +4777,7 @@ def this_week_page(db: Session = Depends(get_db)):
     stat_cells = "".join(
         f'<div class="tw-stat"><div class="tw-stat-n">{v:,}</div><div class="tw-stat-l" id="tw-stat-{key}">{label}</div></div>'
         for v, label, key in [
-            (counts.evictions,  "eviction filings",       "evictions"),
+            (counts.evictions,  "executed evictions",    "evictions"),
             (counts.permits,    "construction permits",   "permits"),
             (counts.violations, "HPD violations",         "violations"),
             (counts.complaints, "311 housing complaints", "complaints"),
@@ -4769,7 +4791,7 @@ def this_week_page(db: Session = Depends(get_db)):
     title = "This week in NYC displacement | PulseCities"
     desc = (
         f"NYC displacement week in review, {range_label}: {top_line}, "
-        f"{counts.evictions:,} eviction filings, {counts.permits:,} construction permits. Public records only."
+        f"{counts.evictions:,} executed evictions, {counts.permits:,} construction permits. Public records only."
     )
 
     # /this-week emitted no structured data (regression vs /week/{slug}). It is a
@@ -5104,13 +5126,18 @@ def displacement_page(db: Session = Depends(get_db)):
         zc = esc(str(c["zip_code"]))
         hood = esc(c["neighborhood"] or zc)
         span = c.get("span_days")
-        span_txt = f"{span} days" if span is not None else "recent"
+        if span is None:
+            span_txt = "recently"
+        elif span == 0:
+            span_txt = "on a single day"
+        else:
+            span_txt = f"over {span} day" + ("s" if span != 1 else "")
         amt = f", {_m(c['total_amount'])}" if c.get("total_amount") else ""
         cl_items += (
             f'<li class="row" onclick="location.href=\'/radar\'">'
             f'<a href="/radar">'
             f'<span class="row-name">{buyer}'
-            f'<span class="row-sub">{c["building_count"]} buildings in {hood} ({zc}) over {span_txt}{amt}</span>'
+            f'<span class="row-sub">{c["building_count"]} buildings in {hood} ({zc}) {span_txt}{amt}</span>'
             f'</span><span class="row-arrow">&rarr;</span>'
             f'</a></li>'
         )
@@ -5413,23 +5440,35 @@ def evictions_page(lang: str = "en", db: Session = Depends(get_db)):
         ) t
     """)).scalar() or 0)
 
+    # Same anchor as the headline: the latest published record, not today.
+    # These two were still on CURRENT_DATE, so the ZIP table silently lost a
+    # day of coverage for every day the DOI feed slipped.
     top_zips = db.execute(text("""
+        WITH bound AS (
+            SELECT max(executed_date) AS latest
+            FROM evictions_raw WHERE eviction_type = 'Residential'
+        )
         SELECT e.zip_code, coalesce(n.name, e.zip_code) AS name,
-               count(*) FILTER (WHERE e.executed_date >= CURRENT_DATE - 30) AS d30,
+               count(*) FILTER (WHERE e.executed_date > b.latest - 30) AS d30,
                count(*) AS d365
         FROM evictions_raw e
+        CROSS JOIN bound b
         LEFT JOIN neighborhoods n ON n.zip_code = e.zip_code
         WHERE e.eviction_type = 'Residential'
-          AND e.executed_date >= CURRENT_DATE - 365
+          AND e.executed_date > b.latest - 365
           AND e.zip_code IS NOT NULL
         GROUP BY 1, 2 ORDER BY d30 DESC, d365 DESC LIMIT 15
     """)).fetchall()
 
     boroughs = db.execute(text("""
-        SELECT initcap(borough) AS b, count(*) AS c
-        FROM evictions_raw
-        WHERE eviction_type = 'Residential'
-          AND executed_date >= CURRENT_DATE - 30 AND borough IS NOT NULL
+        WITH bound AS (
+            SELECT max(executed_date) AS latest
+            FROM evictions_raw WHERE eviction_type = 'Residential'
+        )
+        SELECT initcap(e.borough) AS b, count(*) AS c
+        FROM evictions_raw e CROSS JOIN bound bd
+        WHERE e.eviction_type = 'Residential'
+          AND e.executed_date > bd.latest - 30 AND e.borough IS NOT NULL
         GROUP BY 1 ORDER BY 2 DESC
     """)).fetchall()
 
@@ -5480,9 +5519,15 @@ def evictions_page(lang: str = "en", db: Session = Depends(get_db)):
     if len(recent) < recent_total:
         shown = f"{len(recent):,}"
         total = f"{recent_total:,}"
-        recent_sub += (f". Showing the {shown} newest of {total}"
+        # The list is deduplicated by address and day; the stat card above
+        # counts warrants. Say so, or the two numbers read as a contradiction.
+        warrants = f"{int(counts.d30):,}" if counts else total
+        recent_sub += (f". Showing the {shown} newest of {total} distinct "
+                       f"address-days ({warrants} warrants in all)"
                        if lang != "es" else
-                       f". Mostrando las {shown} más recientes de {total}")
+                       f". Mostrando las {shown} más recientes de {total} "
+                       f"combinaciones de dirección y día ({warrants} órdenes "
+                       f"en total)")
 
     zip_rows = ""
     for z in top_zips:
@@ -5599,7 +5644,7 @@ def evictions_page(lang: str = "en", db: Session = Depends(get_db)):
     # title said "tracker", which is the word we use rather than the word they
     # type.
     title = "NYC marshal eviction list: recent executions by address | PulseCities"
-    desc = (f"{d30} residential marshal evictions executed across NYC in the past 30 days, "
+    desc = (f"{d30:,} residential marshal evictions executed across NYC in the past 30 days, "
             f"tracked nightly from public records, with the neighborhoods where they concentrate.")
 
     faq = [
@@ -5905,6 +5950,19 @@ def eviction_area_page(slug: str, db: Session = Depends(get_db)):
         LIMIT 10
     """), {"name": name}).fetchall()
 
+    # The page shows ten; the claim must count them all. len(top) was printed
+    # as the population, which said "Ten buildings have more than one" in a
+    # neighborhood where 139 do.
+    repeat_total = int(db.execute(text("""
+        SELECT count(*) FROM (
+            SELECT 1 FROM evictions_raw e
+            JOIN neighborhoods n ON n.zip_code = e.zip_code
+            WHERE n.name = :name AND e.eviction_type = 'Residential'
+              AND e.bbl IS NOT NULL
+            GROUP BY e.bbl HAVING count(*) > 1
+        ) t
+    """), {"name": name}).scalar() or 0)
+
     # The site's thesis, localised: an eviction, then the building changes hands.
     after = db.execute(text("""
         SELECT count(DISTINCT e.bbl) AS n
@@ -5921,14 +5979,17 @@ def eviction_area_page(slug: str, db: Session = Depends(get_db)):
     # a place with 25 executions spread over 25 addresses has no repeats to
     # show and would otherwise carry no addresses at all.
     recent = db.execute(text("""
-        SELECT e.bbl, e.executed_date, e.zip_code, p.address
+        SELECT DISTINCT ON (coalesce(p.address, e.bbl), e.executed_date)
+               e.bbl, e.executed_date, e.zip_code, p.address
         FROM evictions_raw e
         JOIN neighborhoods n ON n.zip_code = e.zip_code
         LEFT JOIN parcels p ON p.bbl = e.bbl
         WHERE n.name = :name AND e.eviction_type = 'Residential'
-        ORDER BY e.executed_date DESC, e.bbl
-        LIMIT 8
+          AND (p.address IS NOT NULL OR e.bbl IS NOT NULL)
+        ORDER BY coalesce(p.address, e.bbl), e.executed_date DESC
     """), {"name": name}).fetchall()
+    recent = sorted(recent, key=lambda r: (r.executed_date, str(r.bbl or "")),
+                    reverse=True)[:8]
 
     # Who took title on the buildings doing the evicting. This is the join the
     # site exists to make, and it is also the only thing on the page that links
@@ -6027,9 +6088,12 @@ def eviction_area_page(slug: str, db: Session = Depends(get_db)):
         repeat_sec = (
             f"<h2>Where the evictions concentrate</h2>"
             + _para(
-                f"{_count_open(len(top), 'building')} in {e(name)} "
-                f"{'has' if len(top) == 1 else 'have'} more than one executed "
-                f"eviction on record. Repeat executions at one address are what "
+                f"{_count_open(repeat_total, 'building')} in {e(name)} "
+                f"{'has' if repeat_total == 1 else 'have'} more than one executed "
+                f"eviction on record"
+                + (f"; the {len(top)} with the most are listed here."
+                   if repeat_total > len(top) else ".")
+                + " Repeat executions at one address are what "
                 f"separates a building under pressure from a neighborhood with a "
                 f"high count spread thinly."
             )
@@ -6040,7 +6104,7 @@ def eviction_area_page(slug: str, db: Session = Depends(get_db)):
     if recent:
         def _recent_row(r) -> str:
             label = (e(_addr_title(r.address)) if r.address
-                     else ("BBL " + e(str(r.bbl)) if r.bbl else e(name)))
+                     else "BBL " + e(str(r.bbl)))
             inner = (f'<div><div class="rec-addr">{label}</div>'
                      f'<div class="rec-geo">{e(r.zip_code or "")}</div></div>'
                      f'<div class="rec-side"><div class="rec-date">'
@@ -6134,8 +6198,12 @@ def eviction_area_page(slug: str, db: Session = Depends(get_db)):
          f"{buildings:,} buildings. The most recent twelve months account for "
          f"{y1:,} of them."),
         (f"Which buildings in {name} have the most evictions?",
-         (f"{len(top)} buildings have more than one executed eviction on record, "
-          f"and each is listed above with its address and count. Repeat "
+         (f"{repeat_total} building{'s' if repeat_total != 1 else ''} "
+          f"{'have' if repeat_total != 1 else 'has'} more than one executed "
+          f"eviction on record"
+          + (f", and the {len(top)} with the most are listed above"
+             if repeat_total > len(top) else ", and each is listed above")
+          + " with the address and count. Repeat "
           f"executions at a single address are the signal worth following."
           if top else
           f"No building in {name} has more than one executed eviction in the "
@@ -6143,7 +6211,7 @@ def eviction_area_page(slug: str, db: Session = Depends(get_db)):
           f"separate addresses rather than concentrated.")),
         ("What is a marshal eviction?",
          "A city marshal is the officer who carries out a warrant of eviction "
-         "after a housing court case ends in the landlord's favour. The city "
+         "after a housing court case ends in the landlord's favor. The city "
          "publishes each execution with the address, the date and the docket "
          "number. An eviction that is filed, settled or abandoned before that "
          "point never reaches a marshal and is not in this dataset."),
@@ -6166,11 +6234,13 @@ def eviction_area_page(slug: str, db: Session = Depends(get_db)):
     )
 
     title = f"Evictions in {name}, NYC: the marshal record by address | PulseCities"
+    # Built to fit: the old tail clause pushed long names past 165 chars and
+    # the hard truncation shipped "eviction and." on every page.
     desc = (f"{total:,} residential evictions executed by city marshals in {name} "
-            f"across {buildings:,} buildings, from NYC public records. Search any "
-            f"address for its own eviction and ownership history.")
+            f"across {buildings:,} buildings, from NYC public records.")
     if len(desc) > 165:
-        desc = desc[:162].rsplit(" ", 1)[0] + "."
+        desc = (f"{total:,} marshal evictions in {name} across {buildings:,} "
+                f"buildings, from NYC public records.")
     url = f"https://pulsecities.com/evictions/{slug}"
 
     jsonld = _jsonld({"@context": "https://schema.org", "@graph": [
@@ -6631,10 +6701,17 @@ def llc_directory(db: Session = Depends(get_db)):
 
     # Families are the answer to "these forty names are one landlord", so the
     # directory that lists the names should say so.
-    fams = sorted(_families(db).values(), key=lambda f: -f["buildings"])
+    fams = sorted(_families(db).values(),
+                  key=lambda f: -max(f["buildings"], f.get("sold", 0)))
+    # A family that sold everything reads "(0 buildings)" as broken; say what
+    # actually happened to the portfolio instead.
+    def _fam_size(f) -> str:
+        if f["buildings"]:
+            return f'({f["buildings"]} buildings)'
+        return f'(all {f.get("sold", 0)} sold)'
     fam_links = " &middot; ".join(
         f'<a href="/network/{esc(f["slug"])}">{esc(f["label"])}</a> '
-        f'({f["buildings"]} buildings)'
+        f'{_fam_size(f)}'
         for f in fams
     )
     family_section = (
@@ -7147,7 +7224,7 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
             if span_start == span_end else
             f"The first deed PulseCities holds for {esc(name)} was recorded "
             f"{_en_date(span_start)}, the most recent {_en_date(span_end)}, "
-            f"across {_count(len(by_month), 'calendar month')}."
+            f"in {_count(len(by_month), 'different calendar month')}."
         ]
         if busiest[1] > 1:
             time_lines.append(
@@ -7437,13 +7514,16 @@ def _family_shapes(db, fams: dict) -> dict[str, dict]:
     names = sorted({n for f in fams.values() for n in f["entities"]})
     if not names:
         return {}
+    # Distinct building keys, aggregated per family in Python. Summing
+    # per-name counts double-counted co-buys: eight REDROCK siblings on the
+    # same nine lots read as "39 buildings on one day", and that number was
+    # the ranking key.
     rows = db.execute(text(f"""
-        SELECT party_name_normalized AS name, doc_date,
-               count(DISTINCT ({_BUILDING_KEY_SQL})) AS buildings
+        SELECT DISTINCT party_name_normalized AS name, doc_date,
+               ({_BUILDING_KEY_SQL}) AS bkey
         FROM ownership_raw
         WHERE doc_type = 'DEED' AND party_type = '2'
           AND party_name_normalized = ANY(:names) AND doc_date IS NOT NULL
-        GROUP BY 1, 2
     """), {"names": names}).fetchall()
 
     by_name: dict[str, list] = collections.defaultdict(list)
@@ -7452,11 +7532,13 @@ def _family_shapes(db, fams: dict) -> dict[str, dict]:
 
     out: dict[str, dict] = {}
     for slug, f in fams.items():
-        per_date: collections.Counter = collections.Counter()
+        per_date: dict = collections.defaultdict(set)
         for n in f["entities"]:
             for r in by_name.get(n, ()):
-                per_date[r.doc_date] += int(r.buildings)
-        top_date, top_n = (per_date.most_common(1) or [(None, 0)])[0]
+                per_date[r.doc_date].add(r.bkey)
+        top_date, top_n = max(
+            ((d, len(k)) for d, k in per_date.items()),
+            key=lambda t: t[1], default=(None, 0))
         held, sold = f["buildings"], f.get("sold", 0)
         if top_n >= 5:
             shape, why = "bulk trade", f"{top_n} buildings on {_en_date(top_date)}"
@@ -7682,7 +7764,8 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
                (SELECT count(*) FROM violations_raw v
                  WHERE v.bbl = o.bbl AND v.current_status NOT IN :resolved) AS open_viol,
                bool_or(o.party_type = '2') AS bought,
-               bool_or(o.party_type = '1') AS sold
+               bool_or(o.party_type = '1') AS sold,
+               bool_or(p.bbl IS NOT NULL) AS has_parcel
         FROM ownership_raw o
         LEFT JOIN parcels p ON p.bbl = o.bbl
         LEFT JOIN neighborhoods n ON n.zip_code = p.zip_code
@@ -7715,7 +7798,8 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
     # of the record and it is what tells a reader whether this was one trade or
     # thirty separate ones.
     counterparties = db.execute(text("""
-        SELECT o.party_name_normalized AS name, count(DISTINCT o.bbl) AS n
+        SELECT o.party_name_normalized AS name, count(DISTINCT o.bbl) AS n,
+               count(*) OVER () AS total
         FROM ownership_raw o
         WHERE o.doc_type = 'DEED'
           AND o.party_name_normalized IS NOT NULL
@@ -7726,6 +7810,7 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
           )
         GROUP BY 1 ORDER BY n DESC, 1 LIMIT 3
     """), {"names": names}).fetchall()
+    n_counterparties = int(counterparties[0].total) if counterparties else 0
 
     record = db.execute(text("""
         WITH held AS (
@@ -7791,7 +7876,10 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
          f"{_fmt_amount(fam['volume'])}." if fam.get("volume") else ""),
         (f"That is close to one building per company, which is what holding "
          f"property one LLC at a time looks like from the outside."
-         if held and held <= len(names) * 1.3 else
+         if held and len(names) * 0.7 <= held <= len(names) * 1.3 else
+         f"That is fewer buildings than companies: more shells than the "
+         f"current holdings need, which is what a portfolio being sold down "
+         f"looks like." if held and held < len(names) * 0.7 else
          f"That averages {held / len(names):.1f} buildings per company, so the "
          f"shells here are not strictly one per building." if held else ""),
     )
@@ -7821,20 +7909,25 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
                         + ("s" if h.open_viol != 1 else ""))
         return ", ".join(bits)
 
-    bld_rows = "".join(
-        f'<li class="rec-row"><a href="/property/{e(str(h.bbl))}">'
-        f'<div><div class="rec-addr">'
-        f'{e(_addr_title(h.address)) if h.address else "BBL " + e(str(h.bbl))}</div>'
-        f'<div class="rec-geo">{e((h.hood + ", ") if h.hood else "")}{e(h.zip_code or "")}'
-        + (f' &middot; {e(_bld_meta(h))}' if _bld_meta(h) else "")
-        + f'</div></div>'
-        f'<div class="rec-side">'
-        + (f'<div class="rec-amt">{_fmt_amount(float(h.amount))}</div>'
-           if h.amount and float(h.amount) > 0 else "")
-        + f'<div class="rec-date">{_en_date(h.last_deed)}</div></div>'
-        f'</a></li>'
-        for h in holdings[:40]
-    )
+    def _bld_row(h) -> str:
+        inner = (
+            f'<div><div class="rec-addr">'
+            f'{e(_addr_title(h.address)) if h.address else "BBL " + e(str(h.bbl))}</div>'
+            f'<div class="rec-geo">{e((h.hood + ", ") if h.hood else "")}{e(h.zip_code or "")}'
+            + (f' &middot; {e(_bld_meta(h))}' if _bld_meta(h) else "")
+            + f'</div></div>'
+            f'<div class="rec-side">'
+            + (f'<div class="rec-amt">{_fmt_amount(float(h.amount))}</div>'
+               if h.amount and float(h.amount) > 0 else "")
+            + f'<div class="rec-date">{_en_date(h.last_deed)}</div></div>'
+        )
+        # A unit lot with no building file has no /property page to link.
+        if h.has_parcel:
+            return (f'<li class="rec-row"><a href="/property/{e(str(h.bbl))}">'
+                    f'{inner}</a></li>')
+        return f'<li class="rec-row"><div class="rec-static">{inner}</div></li>'
+
+    bld_rows = "".join(_bld_row(h) for h in holdings[:40])
     priced = sorted(float(h.amount) for h in holdings if h.amount and float(h.amount) > 0)
     price_line = ""
     if len(priced) > 1:
@@ -7864,7 +7957,9 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
              f"The heaviest concentration is {e(top[0])}"
              + (f" ({e(top[1]['hood'])})" if top[1]["hood"] else "")
              + f", with {_count(top[1]['n'], 'building')}."),
-            f"Across the portfolio: {links}."
+            (f"The {_SPELLED[min(8, len(ranked))]} heaviest of {len(ranked)} "
+             f"ZIP codes: {links}." if len(ranked) > 8
+             else f"Across the portfolio: {links}.")
         )
 
     rec_sec = ""
@@ -7913,8 +8008,11 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
         party_sec = f"<h2>Who was on the other side</h2>" + _para(
             f"{_count_open(int(internal), 'of these deeds moves a building', 'of these deeds move a building')} "
             f"from one {e(label)} company to another rather than to an outside "
-            f"buyer. Those are restructurings, not sales, and most of them state "
-            f"no price.",
+            f"buyer. "
+            + ("That is a restructuring, not a sale, and it usually states no "
+               "price." if int(internal) == 1 else
+               "Those are restructurings, not sales, and most of them state "
+               "no price."),
             (f"On the rest, the record names "
              + ", ".join(f"{e(_entity_title(c.name))}" for c in counterparties)
              + "." if counterparties else ""))
@@ -7924,9 +8022,14 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
             f"{e(_entity_title(c.name))}"
             + (f" ({c.n} buildings)" if c.n > 1 else "")
             for c in counterparties)
+        others = n_counterparties - len(counterparties)
         party_sec = f"<h2>Who was on the other side</h2>" + _para(
-            f"The same deeds name {named} as the counterparty"
-            + (", with the building count each appears on." if repeats else "."),
+            f"The same deeds name {named}"
+            + (f", among {n_counterparties} counterparties in all,"
+               if others > 0 else
+               (" as the counterparties" if len(counterparties) > 1
+                else " as the counterparty"))
+            + (" with the building count each appears on." if repeats else "."),
             ("One counterparty repeating across a portfolio is the sign of a "
              "single transaction split across many documents rather than a run "
              "of separate sales."
@@ -7985,15 +8088,20 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
         f'<div class="faq-item"><h3>{e(q)}</h3><p>{e(a)}</p></div>' for q, a in faq
     )
 
-    # The slug is [a-z0-9-] by the route regex; the label is stripped of the
-    # two characters that could break out of the JS string it lands in.
+    # The slug is [a-z0-9-] by the route regex. The label lands inside a
+    # double-quoted JS string: json.dumps gives exact escaping (quotes,
+    # backslashes, control characters, non-ASCII); the one hazard it leaves
+    # alone in a <script> block is "</", which is folded.
+    js_label = json.dumps(label)[1:-1].replace("</", "<\\/")
     follow_sec = (_FOLLOW_CARD
                   .replace("__SLUG__", slug)
-                  .replace("__LABEL__", re.sub(r"[\\\\'\"<>&]", "", label)))
+                  .replace("__LABEL__", js_label))
 
     n_shown = held or sold_n
     verb = "holding" if held else "that sold"
-    title = f"{label}: {n_shown} NYC buildings across {len(names)} LLCs | PulseCities"
+    title = (f"{label}: {n_shown} NYC buildings across {len(names)} LLCs | PulseCities"
+             if held else
+             f"{label}: {len(names)} NYC LLCs that sold {sold_n} buildings | PulseCities")
     desc = (f"{label} appears in the NYC deed record as {len(names)} separate LLCs "
             f"{verb} {n_shown} buildings. Every company and every building, from "
             f"ACRIS public records.")
@@ -8085,7 +8193,12 @@ _RS_TTL = 21600
 # tenant cannot be expected to know which is which.
 _EVICTION_CASE_TTL = 3600
 _eviction_case_cache: tuple[str, float] | None = None
-_INDEX_RE = re.compile(r"^\d{1,8}\s*[/-]\s*\d{2,4}$")
+# Court index numbers are not digit/digit: a fifth of the source rows carry a
+# borough letter prefix (B309066/25), a part suffix (326184/24A), or stray
+# trailing punctuation (306624/25-). Both sides reduce to letters, digits and
+# the slash before comparing, so a tenant typing what the papers say matches
+# what the dataset stores.
+_INDEX_RE = re.compile(r"^[A-Z]{0,3}\d{1,8}/\d{2,4}[A-Z]?$")
 
 
 def _eviction_case_lookup(db, q: str) -> list:
@@ -8093,14 +8206,17 @@ def _eviction_case_lookup(db, q: str) -> list:
     with inconsistent leading zeros (065592 and 64865 in the same export), so
     they are compared with the zeros stripped from both sides."""
     term = q.strip().upper()
-    if _INDEX_RE.match(term):
-        term = re.sub(r"\s*-\s*", "/", re.sub(r"\s+", "", term))
-        where = "court_index_number = :term"
-    elif term.isdigit():
+    if term.isdigit():
         term = term.lstrip("0") or "0"
         where = "ltrim(docket_number, '0') = :term"
     else:
-        return []
+        norm = re.sub(r"\s+", "", term)
+        norm = re.sub(r"(?<=\d)-(?=\d)", "/", norm)
+        norm = re.sub(r"[^A-Z0-9/]", "", norm)
+        if not _INDEX_RE.match(norm):
+            return []
+        term = norm
+        where = "regexp_replace(upper(court_index_number), '[^A-Z0-9/]', '', 'g') = :term"
     return db.execute(text(f"""
         SELECT docket_number, court_index_number, address, zip_code, borough,
                eviction_type, executed_date, bbl
@@ -8216,7 +8332,7 @@ def eviction_case_page(q: str = "", db: Session = Depends(get_db)):
          "executions appear here. A blank result is more often a case that ended "
          "another way than a missing record. Records here run from "
          f"{_en_date(totals.first)} to {_en_date(totals.last)}."),
-        ("Does this show eviction filings or only completed evictions?",
+        ("Does this show executed evictions or only completed evictions?",
          f"Only completed ones. All {int(totals.n):,} records are warrants a marshal "
          f"or sheriff actually executed, {int(totals.res):,} of them residential. "
          "Filings are a much larger number and are not in this dataset."),

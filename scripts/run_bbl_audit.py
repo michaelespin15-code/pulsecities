@@ -12,10 +12,13 @@ from pathlib import Path
 
 from sqlalchemy import create_engine, text
 
-DATABASE_URL = os.environ.get(
-    "DATABASE_URL",
-    "postgresql://pulsecities_user:REDACTED@localhost/pulsecities",
-)
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    # Same .env the app loads; a hardcoded fallback here once put the live
+    # password in git.
+    from dotenv import load_dotenv
+    load_dotenv("/root/pulsecities/.env")
+    DATABASE_URL = os.environ["DATABASE_URL"]
 
 TABLES = [
     "parcels",

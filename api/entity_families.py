@@ -38,6 +38,7 @@ from __future__ import annotations
 
 import collections
 import re
+import threading
 import time
 
 from sqlalchemy import text
@@ -424,16 +425,33 @@ def _building_key(bbl: str) -> str:
 # validating a follow, and the weekly digest resolving one.
 _cache: tuple[dict, float] | None = None
 _TTL = 21600
+_cache_lock = threading.Lock()
 
 
 def families_cached(db, is_buyer_entity, ttl: float = _TTL) -> dict:
-    """`compute_families`, memoised for `ttl` seconds."""
+    """`compute_families`, memoised for `ttl` seconds.
+
+    Single-flight: the computation takes seconds, and without the lock every
+    request that arrives on a cold or just-expired cache computes its own
+    copy, each holding a pooled connection on a two-vCPU box. A stale entry
+    is served to whoever loses the race rather than making them wait."""
     global _cache
-    if _cache and time.monotonic() < _cache[1]:
-        return _cache[0]
-    fams = compute_families(db, is_buyer_entity)
-    _cache = (fams, time.monotonic() + ttl)
-    return fams
+    hit = _cache
+    if hit and time.monotonic() < hit[1]:
+        return hit[0]
+    if hit and not _cache_lock.acquire(blocking=False):
+        # Someone else is already rebuilding; stale beats a pile-up.
+        return hit[0]
+    elif not hit:
+        _cache_lock.acquire()
+    try:
+        if _cache and time.monotonic() < _cache[1]:
+            return _cache[0]
+        fams = compute_families(db, is_buyer_entity)
+        _cache = (fams, time.monotonic() + ttl)
+        return fams
+    finally:
+        _cache_lock.release()
 
 
 def reset_cache() -> None:

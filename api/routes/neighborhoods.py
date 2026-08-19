@@ -688,7 +688,7 @@ def _fetch_raw_counts(db: Session, zip_code: str) -> dict[str, int]:
             ) AS evictions,
             (SELECT COUNT(*) FROM permits_raw pr
              JOIN parcels p ON pr.bbl = p.bbl
-             WHERE p.zip_code = :zip AND pr.permit_type = 'AL'
+             WHERE pr.zip_code = :zip AND pr.permit_type = 'AL'
                AND pr.filing_date >= CURRENT_DATE - INTERVAL '365 days'
                AND p.units_res >= 3
             ) AS permits,
@@ -728,10 +728,10 @@ _SUMMARY_L = {
         "open_moderate": "This neighborhood shows moderate displacement pressure (score {s}).",
         "open_low": "This neighborhood shows low displacement pressure relative to the rest of NYC (score {s}).",
         "counts": {
-            "llc_acquisitions": lambda n: f"{n} LLC acquisition{'s' if n != 1 else ''}",
-            "evictions":        lambda n: f"{n} residential eviction{'s' if n != 1 else ''}",
-            "permits":          lambda n: f"{n} alteration permit{'s' if n != 1 else ''}",
-            "complaint_rate":   lambda n: f"{n} housing complaint{'s' if n != 1 else ''}",
+            "llc_acquisitions": lambda n: f"{n:,} LLC acquisition{'s' if n != 1 else ''}",
+            "evictions":        lambda n: f"{n:,} residential eviction{'s' if n != 1 else ''}",
+            "permits":          lambda n: f"{n:,} alteration permit{'s' if n != 1 else ''}",
+            "complaint_rate":   lambda n: f"{n:,} housing complaint{'s' if n != 1 else ''}",
         },
         "detail_low": "No individual signal stands out above citywide averages.",
         "detail_none": "Signals are present but no single factor dominates.",
@@ -747,10 +747,10 @@ _SUMMARY_L = {
         "open_moderate": "Este vecindario muestra presión de desplazamiento moderada (puntuación {s}).",
         "open_low": "Este vecindario muestra presión de desplazamiento baja en comparación con el resto de NYC (puntuación {s}).",
         "counts": {
-            "llc_acquisitions": lambda n: f"{n} adquisici{'ones' if n != 1 else 'ón'} LLC",
-            "evictions":        lambda n: f"{n} desalojo{'s' if n != 1 else ''} residencial{'es' if n != 1 else ''}",
-            "permits":          lambda n: f"{n} permiso{'s' if n != 1 else ''} de alteración",
-            "complaint_rate":   lambda n: f"{n} queja{'s' if n != 1 else ''} de vivienda",
+            "llc_acquisitions": lambda n: f"{n:,} adquisici{'ones' if n != 1 else 'ón'} LLC",
+            "evictions":        lambda n: f"{n:,} desalojo{'s' if n != 1 else ''} residencial{'es' if n != 1 else ''}",
+            "permits":          lambda n: f"{n:,} permiso{'s' if n != 1 else ''} de alteración",
+            "complaint_rate":   lambda n: f"{n:,} queja{'s' if n != 1 else ''} de vivienda",
         },
         "detail_low": "Ninguna señal individual sobresale por encima de los promedios de la ciudad.",
         "detail_none": "Hay señales presentes pero ningún factor domina.",
