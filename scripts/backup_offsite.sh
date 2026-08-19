@@ -143,11 +143,15 @@ done
 STATE_TAR="/tmp/pulsecities_state_$$.tar.gz.enc"
 trap 'rm -f "$STATE_TAR"' EXIT
 
+# The raw_data archive MANIFEST holds the only record of the archive hashes;
+# losing the box must not lose the means to verify the archives. --transform
+# keeps the tar layout flat under state/ regardless of source path.
 tar -czf - -C "$APP_DIR" \
         .env \
         scripts/eviction_flips_editions.json \
         scripts/eviction_flips_state.json \
         scripts/building_alerts_state.json \
+        -C /var/backups/pulsecities/raw_data_archive MANIFEST \
     2>/dev/null \
     | openssl enc -aes-256-cbc -pbkdf2 -salt -pass pass:"$S3_SECRET" -out "$STATE_TAR" \
     || fail "state archive build failed"

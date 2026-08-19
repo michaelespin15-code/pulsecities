@@ -20,7 +20,7 @@
 /var/log/pulsecities/health_check.log
 /var/log/pulsecities/health_probe.log {
     weekly
-    size 20M
+    maxsize 20M
     rotate 3
     compress
     delaycompress
@@ -32,13 +32,13 @@
 /var/log/pulsecities/gunicorn-access.log
 /var/log/pulsecities/gunicorn-error.log {
     weekly
-    size 50M
+    maxsize 50M
     rotate 2
     compress
     delaycompress
     missingok
     notifempty
-    create 0644 root root
+    create 0640 root adm
     postrotate
         systemctl kill -s USR1 pulsecities.service 2>/dev/null || true
     endscript

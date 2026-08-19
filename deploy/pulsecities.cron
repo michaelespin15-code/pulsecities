@@ -14,7 +14,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 25 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.building_alerts >> /var/log/pulsecities/building_alerts.log 2>&1
 # OCA housing-court petition aggregates — weekly; the upstream extract updates on its own cadence
 15 4 * * 1 root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.oca_ingest >> /var/log/pulsecities/oca_ingest.log 2>&1
-30 3 * * * root cd /root/pulsecities && /root/pulsecities/scripts/backup_db.sh >> /var/log/pulsecities/backup.log 2>&1
+# 03:50, not 03:30: the dump raced another tenant's 03:30 backup on two
+# vCPUs, and 03:50 also clears this box's own 03:40/03:45 health checks.
+50 3 * * * root cd /root/pulsecities && /root/pulsecities/scripts/backup_db.sh >> /var/log/pulsecities/backup.log 2>&1
 # Off-box copy of the newest dump — R2 weekday slots + monthly pin; loud on failure
 10 4 * * * root cd /root/pulsecities && /root/pulsecities/scripts/backup_offsite.sh >> /var/log/pulsecities/backup_offsite.log 2>&1
 # Weekly digest email — Sunday 6:00 PM ET, the evening catch-up window. DST-pinned:
@@ -32,4 +34,4 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 40 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.daily_health_check >> /var/log/pulsecities/health_check.log 2>&1
 45 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.pipeline_health >> /var/log/pulsecities/health_check.log 2>&1
 # IndexNow: submit what the sitemap says changed, after it is regenerated
-25 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.indexnow_submit >> /var/log/pulsecities/sitemap.log 2>&1
+28 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.indexnow_submit >> /var/log/pulsecities/sitemap.log 2>&1

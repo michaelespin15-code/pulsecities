@@ -10,12 +10,15 @@ User=root
 WorkingDirectory=/root/pulsecities
 Environment="PATH=/root/pulsecities/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 Environment="PYTHONUNBUFFERED=1"
+# One source of truth for the worker count: gunicorn reads WEB_CONCURRENCY
+# natively, and api/ratelimit.py divides its per-process budgets by it. The
+# two used to agree only because both defaults were 2.
+Environment="WEB_CONCURRENCY=2"
 
 ExecStart=/root/pulsecities/venv/bin/gunicorn \
-  --workers 2 \
   --worker-class uvicorn.workers.UvicornWorker \
   --bind unix:/tmp/gunicorn.sock \
-  --timeout 120 \
+  --timeout 60 \
   --graceful-timeout 30 \
   --access-logfile /var/log/pulsecities/gunicorn-access.log \
   --error-logfile /var/log/pulsecities/gunicorn-error.log \
