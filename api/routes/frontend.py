@@ -5288,6 +5288,8 @@ _EVICTIONS_STRINGS = {
         "trend_sub": "Residential warrants executed by month, complete months only",
         "recent_h": "Most recent executions",
         "recent_sub": "Residential warrants executed in the past 30 days, newest first",
+        "case_cta": "Holding a marshal docket number or a court index number?",
+        "case_cta_link": "Look up that case",
         "where_h": "Where evictions concentrate",
         "where_sub": "Ranked by executions in the past 30 days",
         "after_h": "After the eviction",
@@ -5307,6 +5309,8 @@ _EVICTIONS_STRINGS = {
         "trend_sub": "Ejecuciones residenciales por mes, solo meses completos",
         "recent_h": "Ejecuciones m\u00e1s recientes",
         "recent_sub": "\u00d3rdenes residenciales ejecutadas en los \u00faltimos 30 d\u00edas, primero las m\u00e1s nuevas",
+        "case_cta": "\u00bfTiene un n\u00famero de expediente del alguacil o de \u00edndice judicial?",
+        "case_cta_link": "Busque ese caso",
         "where_h": "D\u00f3nde se concentran los desalojos",
         "where_sub": "Ordenado por ejecuciones en los \u00faltimos 30 d\u00edas",
         "after_h": "Despu\u00e9s del desalojo",
@@ -5715,6 +5719,8 @@ th.num,td.num{{text-align:right;font-family:'JetBrains Mono',monospace}}
   <p class="section-sub" id="ev-recent-sub">{esc(recent_sub)}</p>
   <ul class="ev-list">
 {recent_html}  </ul>
+  <p class="section-sub" style="margin-top:10px;" id="ev-case-cta">{esc(L["case_cta"])}
+    <a href="/eviction-case">{esc(L["case_cta_link"])} &rarr;</a></p>
 
   <h2 id="ev-where-h">{esc(L["where_h"])}</h2>
   <p class="section-sub" id="ev-where-sub">{esc(L["where_sub"])}</p>
@@ -7776,6 +7782,249 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
 
 _rs_page_cache: tuple[str, float] | None = None
 _RS_TTL = 21600
+
+
+# --- Eviction case lookup: the query class nothing on the site took -------------
+#
+# "nyc marshal docket number search" is in the search export, and so is a run of
+# address queries ending in "eviction cases", one of them at position 6.88 on
+# Bing. Both are people holding a piece of paper with a number on it. The site
+# had every one of those numbers and no way to type one in.
+#
+# Two numbers reach this page and they are not the same thing. The docket number
+# is the marshal's own case number, five or six digits, and it is what the DOI
+# dataset is keyed on. The index number is Housing Court's, shaped 312756/24,
+# and it is the one printed on court papers. Both are matched here because a
+# tenant cannot be expected to know which is which.
+_EVICTION_CASE_TTL = 3600
+_eviction_case_cache: tuple[str, float] | None = None
+_INDEX_RE = re.compile(r"^\d{1,8}\s*[/-]\s*\d{2,4}$")
+
+
+def _eviction_case_lookup(db, q: str) -> list:
+    """Rows matching a docket or an index number. Docket numbers are stored
+    with inconsistent leading zeros (065592 and 64865 in the same export), so
+    they are compared with the zeros stripped from both sides."""
+    term = q.strip().upper()
+    if _INDEX_RE.match(term):
+        term = re.sub(r"\s*-\s*", "/", re.sub(r"\s+", "", term))
+        where = "court_index_number = :term"
+    elif term.isdigit():
+        term = term.lstrip("0") or "0"
+        where = "ltrim(docket_number, '0') = :term"
+    else:
+        return []
+    return db.execute(text(f"""
+        SELECT docket_number, court_index_number, address, zip_code, borough,
+               eviction_type, executed_date, bbl
+        FROM evictions_raw
+        WHERE {where}
+        ORDER BY executed_date DESC
+        LIMIT 25
+    """), {"term": term}).fetchall()
+
+
+# Rate limiting for the SSR routes lives in nginx (zone=ssr_heavy), not here:
+# slowapi counts per worker, so a two-worker box enforces double what it says.
+@router.get("/eviction-case", include_in_schema=False)
+def eviction_case_page(q: str = "", db: Session = Depends(get_db)):
+    """Look up one executed eviction by its marshal docket or court index number."""
+    global _eviction_case_cache
+    esc = _html.escape
+    q = (q or "").strip()[:32]
+
+    # Only the empty form is cached and indexed. A result page is one row of a
+    # public dataset, not a landing page, and letting a crawler walk 37,905
+    # docket numbers would be a doorway flood with a search box on it.
+    if not q and _eviction_case_cache and time.monotonic() < _eviction_case_cache[1]:
+        return HTMLResponse(_eviction_case_cache[0])
+
+    totals = db.execute(text("""
+        SELECT count(*) AS n,
+               count(*) FILTER (WHERE eviction_type = 'Residential') AS res,
+               min(executed_date) AS first, max(executed_date) AS last
+        FROM evictions_raw
+    """)).first()
+
+    # Ten real rows, so the page shows what both numbers look like rather than
+    # describing them, and so a crawler that lands here has somewhere to go.
+    recent = db.execute(text("""
+        SELECT docket_number, court_index_number, address, borough, zip_code,
+               executed_date, bbl
+        FROM evictions_raw
+        WHERE eviction_type = 'Residential' AND address IS NOT NULL
+        ORDER BY executed_date DESC, docket_number DESC
+        LIMIT 10
+    """)).fetchall()
+    recent_rows = "".join(
+        f'<li class="rec-row">'
+        + (f'<a href="/property/{esc(r.bbl)}">' if r.bbl else '<div class="rec-static">')
+        + f'<div><div class="rec-addr">{esc(_addr_title(r.address))}</div>'
+        f'<div class="rec-geo">{esc((r.borough or "").title())} {esc(r.zip_code or "")} '
+        f'&middot; docket {esc(r.docket_number or "n/a")} '
+        f'&middot; index {esc(r.court_index_number or "n/a")}</div></div>'
+        f'<div class="rec-side"><div class="rec-date">{_en_date(r.executed_date)}</div></div>'
+        + ('</a>' if r.bbl else '</div>')
+        + '</li>'
+        for r in recent
+    )
+
+    result_html = ""
+    if q:
+        rows = _eviction_case_lookup(db, q)
+        if rows:
+            cards = ""
+            for r in rows:
+                place = ", ".join(x for x in [_addr_title(r.address) if r.address else "",
+                                              (r.borough or "").title(), r.zip_code or ""] if x)
+                link = (f'<a href="/property/{esc(r.bbl)}">The full record for this building &rarr;</a>'
+                        if r.bbl else
+                        '<span class="dim-note">This record carries no tax lot number, so it '
+                        'has no building page here.</span>')
+                cards += (
+                    f'<div class="case-card">'
+                    f'<div class="case-addr">{esc(place)}</div>'
+                    f'<div class="case-meta">Executed {_en_date(r.executed_date)} &middot; '
+                    f'{esc((r.eviction_type or "").lower() or "unspecified")} &middot; '
+                    f'marshal docket {esc(r.docket_number or "n/a")} &middot; '
+                    f'court index {esc(r.court_index_number or "n/a")}</div>'
+                    f'<div class="case-link">{link}</div></div>')
+            result_html = (
+                f'<h2>{_count_open(len(rows), "executed eviction")} on this number</h2>'
+                f'{cards}'
+                f'<p class="sub" style="font-size:0.82rem;">A docket number is reused across '
+                f'years and marshals, so more than one record can share it. The court index '
+                f'number is the one that identifies a single case.</p>')
+        else:
+            result_html = (
+                f'<h2>Nothing on {esc(q)}</h2>'
+                f'<p class="sub" style="font-size:0.86rem;">That number matches no executed '
+                f'eviction in the records held here, which cover '
+                f'{_en_date(totals.first)} to {_en_date(totals.last)}. Three ordinary reasons: '
+                f'the case never reached an execution, which is the outcome in most Housing '
+                f'Court cases; the execution is older than this window; or the number is a '
+                f'court index number typed without its year, which looks like 312756/24. '
+                f'The court file itself is separate from this dataset and lives with the '
+                f'court.</p>')
+
+    title = ("NYC marshal eviction docket search: look up a docket or index number "
+             "| PulseCities")
+    desc = (f"Look up an NYC eviction by marshal docket number or Housing Court index "
+            f"number. {int(totals.n):,} executed evictions from city marshal records, "
+            f"{_en_date(totals.first)} to {_en_date(totals.last)}.")
+
+    faq = [
+        ("What is a marshal docket number?",
+         "The case number a city marshal assigns to a warrant of eviction. It is five "
+         "or six digits and it is what the city's eviction dataset is keyed on. It is "
+         "not the same as the Housing Court index number, and marshals reuse docket "
+         "numbers across years, so one number can match more than one record."),
+        ("What is the court index number?",
+         "Housing Court's own case number, shaped like 312756/24, where the digits "
+         "after the slash are the year the case was filed. It is printed on the court "
+         "papers a tenant receives and it identifies a single case. This page matches "
+         "either number."),
+        ("My docket number returns nothing. What does that mean?",
+         "Most Housing Court cases never reach an executed eviction, and only "
+         "executions appear here. A blank result is more often a case that ended "
+         "another way than a missing record. Records here run from "
+         f"{_en_date(totals.first)} to {_en_date(totals.last)}."),
+        ("Does this show eviction filings or only completed evictions?",
+         f"Only completed ones. All {int(totals.n):,} records are warrants a marshal "
+         f"or sheriff actually executed, {int(totals.res):,} of them residential. "
+         "Filings are a much larger number and are not in this dataset."),
+        ("Where does this data come from?",
+         "NYC Open Data's evictions dataset, published by the Department of "
+         "Investigation from marshal and sheriff filings, refreshed here nightly. It "
+         "carries addresses, dates and case numbers. It carries no tenant names, and "
+         "neither does this page."),
+    ]
+    faq_html = "".join(
+        f'<div class="faq-item"><h3>{esc(a)}</h3><p>{esc(b)}</p></div>' for a, b in faq)
+    jsonld = _jsonld({"@context": "https://schema.org", "@graph": [
+        {"@type": "FAQPage", "mainEntity": [
+            {"@type": "Question", "name": a,
+             "acceptedAnswer": {"@type": "Answer", "text": b}} for a, b in faq]},
+        _crumbs(("Home", "/"), ("Evictions", "/evictions"),
+                ("Eviction case lookup", "/eviction-case")),
+    ]})
+
+    robots = "index, follow" if not q else "noindex, follow"
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+{_llc_head(title, desc, "https://pulsecities.com/eviction-case", robots, jsonld)}
+<style>
+.case-card{{border:1px solid rgba(147,161,173,0.14);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:#16202d}}
+.case-addr{{font-family:'JetBrains Mono',monospace;font-size:0.9rem;color:#e4e8ec}}
+.case-meta{{font-size:0.78rem;color:var(--dim);margin-top:5px;line-height:1.6}}
+.case-link{{font-size:0.8rem;margin-top:8px}}
+.case-link a{{color:var(--accent)}}
+.dim-note{{font-size:0.8rem;color:var(--faint)}}
+</style>
+</head>
+<body>
+{_ssr_nav("", toggle_html="")}
+<div class="container" style="max-width:720px;">
+  <p style="margin-bottom:8px;font-size:0.75rem;color:var(--faint);">
+    <a href="/">Home</a> &middot; <a href="/evictions">Evictions</a>
+  </p>
+  <div class="eyebrow">NYC eviction records</div>
+  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.7rem;letter-spacing:0;font-weight:600;">Look up an eviction case</h1>
+  <p class="sub" style="font-size:0.86rem;">Type a marshal docket number or a Housing Court
+  index number. {int(totals.n):,} executed evictions, {_en_date(totals.first)} to
+  {_en_date(totals.last)}, from city marshal records.</p>
+  <form style="display:flex;gap:10px;margin:22px 0 6px;max-width:560px;" action="/eviction-case" method="get">
+    <input type="text" name="q" value="{esc(q)}" placeholder="Docket 65592, or index 312756/24"
+      aria-label="Marshal docket number or court index number" inputmode="text"
+      style="flex:1;font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:#e4e8ec;background:#16202d;border:1px solid rgba(147,161,173,0.2);border-radius:8px;padding:12px 14px;min-width:0;">
+    <button type="submit" style="font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;color:#111823;background:#ed6317;border:none;border-radius:8px;padding:12px 22px;cursor:pointer;">Look up</button>
+  </form>
+  <p style="font-size:0.75rem;color:var(--faint);margin-bottom:4px;">Public records only. No signup, no tenant names</p>
+
+  {result_html}
+
+  <h2>Which number do you have?</h2>
+  <p class="sub" style="font-size:0.86rem;">If it is five or six digits with nothing else,
+  it is a marshal docket number. If it has a slash and a two-digit year, like 312756/24, it
+  is the Housing Court index number from your court papers. This page takes either. The two
+  are not interchangeable: a docket number can repeat across years and marshals, while the
+  index number belongs to one case.</p>
+
+  <h2>What this record can and cannot tell you</h2>
+  <p class="sub" style="font-size:0.86rem;">It is the execution, not the case. Every row is a
+  warrant a marshal or sheriff carried out, with the address, the date and the case numbers.
+  It does not carry the reason, the outcome of any appeal, or anyone's name. For the case
+  file itself, including filings that never reached an execution, the source is the court,
+  not this dataset. Most Housing Court cases end without an execution, so a number that
+  returns nothing here is usually a case that ended another way.</p>
+
+  <h2>The ten most recent executions, with their numbers</h2>
+  <p class="sub" style="font-size:0.86rem;">Newest first, residential only. Each row carries
+  both numbers, so you can see which one you are holding.</p>
+  <ul class="sib-list">{recent_rows}</ul>
+
+  <h2>What you can do with an address</h2>
+  <p class="sub" style="font-size:0.86rem;">Once you have the address, the building's own page
+  carries every execution on record there, the deed history behind it, open violations and
+  renovation permits. That is usually the more useful question: not what happened in one
+  case, but what has been happening at that address.
+  <a href="/evictions">The citywide eviction list &rarr;</a></p>
+
+  <h2>Common questions</h2>
+  {faq_html}
+
+  <p class="note">Every record here comes from NYC Open Data. PulseCities describes documents,
+  not conduct, and makes no claim about any case.
+  <a href="/methodology">How PulseCities reads the record &rarr;</a></p>
+</div>
+{_FOOTER_HTML}
+</body>
+</html>"""
+
+    if not q:
+        _eviction_case_cache = (page, time.monotonic() + _EVICTION_CASE_TTL)
+    return HTMLResponse(page)
 
 
 @router.get("/is-my-building-rent-stabilized", include_in_schema=False)

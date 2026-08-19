@@ -57,6 +57,8 @@ _URLS_PER_FILE = 45_000
 _CORE = [
     ("/",            "daily",   "1.0",  None),
     ("/displacement", "daily",  "0.9",  None),
+    # The lookup form only; ?q= results are noindex and belong to no one.
+    ("/eviction-case", "weekly", "0.6",  None),
     ("/map",         "daily",   "0.6",  None),
     ("/methodology", "weekly",  "0.8",  "2026-07-09"),
     ("/about",       "weekly",  "0.8",  "2026-04-29"),
