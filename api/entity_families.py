@@ -59,6 +59,10 @@ BANK NATIONAL ASSOCIATION FEDERAL SAVINGS MORTGAGE
 
 _FORM_RE = re.compile(r"\b(LLC|PLLC|LLP|LP|INC|CORP|CO|LTD)\b")
 _CARE_OF_RE = re.compile(r"^\s*C\s*[/.]?\s*O\b[\s:.,-]*")
+# Compiled once: these run a few hundred thousand times per clustering pass.
+_NON_ALNUM_RE = re.compile(r"[^A-Z0-9 ]")
+_NON_DIGIT_RE = re.compile(r"[^0-9]")
+_WS_RE = re.compile(r"\s+")
 _TRAILING_SERIAL_RE = re.compile(r"\b(?:[IVX]+|\d+[A-Z]?)\b\s*$")
 _MIN_ENTITIES = 3
 # Five, not three. A three-entity family renders about 430 words, most of them
@@ -80,7 +84,7 @@ def _zip5(z: str | None) -> str:
     """ZIP+4 and the bare ZIP are the same address. 10,638 party rows carry the
     nine-digit form, and keying on it split "THE CARLYLE GROUP, 20004" from
     "THE CARLYLE GROUP, 200042505"."""
-    digits = re.sub(r"[^0-9]", "", z or "")
+    digits = _NON_DIGIT_RE.sub("", z or "")
     return digits[:5] if len(digits) >= 5 else digits
 
 
@@ -91,14 +95,14 @@ def _addr_key(addr: str) -> str:
     three addresses, and a group of 42 sheds the four entities that filed with
     a comma in a different place."""
     a = _CARE_OF_RE.sub("", addr.upper())
-    a = re.sub(r"[^A-Z0-9 ]", " ", a)
+    a = _NON_ALNUM_RE.sub(" ", a)
     a = _FORM_RE.sub(" ", a)
-    return re.sub(r"\s+", " ", a).strip()
+    return _WS_RE.sub(" ", a).strip()
 
 
 def _tokens(name: str) -> set[str]:
     return {
-        w for w in re.sub(r"[^A-Z0-9 ]", " ", name.upper()).split()
+        w for w in _NON_ALNUM_RE.sub(" ", name.upper()).split()
         if w not in _STOP and not w.isdigit() and len(w) > 2
     }
 
@@ -108,7 +112,7 @@ def _stem(name: str) -> str:
     PHANTOM CAPITAL 14 LLC and PHANTOM CAPITAL 25 LLC land on one key."""
     t = _FORM_RE.sub("", name).strip()
     t = _TRAILING_SERIAL_RE.sub("", t).strip()
-    return re.sub(r"\s+", " ", t).strip(" -,&")
+    return _WS_RE.sub(" ", t).strip(" -,&")
 
 
 def family_slug(label: str) -> str:
@@ -157,6 +161,11 @@ def compute_families(db, is_buyer_entity) -> dict[str, dict]:
         WHERE doc_type = 'DEED'
           AND party_type IN ('1', '2')
           AND party_name_normalized IS NOT NULL
+          -- The LLC-form gate below is the same substring test, and applying it
+          -- here instead cuts the group from 116,261 party names to 23,444.
+          -- Uncached, the FLGSP hub took 12s to render and six of those were
+          -- this query and the token work over the rows it did not need.
+          AND party_name_normalized LIKE '%LLC%'
         GROUP BY 1
     """)).fetchall()
 
@@ -249,19 +258,26 @@ def compute_families(db, is_buyer_entity) -> dict[str, dict]:
     grouped = {n for names in comps.values() if len(names) >= _MIN_ENTITIES for n in names}
     orphans = [r for r in members if r.name not in grouped]
     if orphans:
+        # Memoised, because this loop is the whole cost of the function. Calling
+        # _zip5 inside it ran the regex 1.2 million times and took 5.5 of the
+        # 6 seconds the FLGSP hub spent rendering cold.
+        zip_of = {r.name: _zip5(r.pzip) for r in members}
+        tokens_of = {r.name: _tokens(r.name) for r in members}
+        orphan_keys = [(r.name, zip_of[r.name], tokens_of[r.name])
+                       for r in orphans if zip_of[r.name]]
         adopted = False
         for names in list(comps.values()):
             if len(names) < _MIN_ENTITIES:
                 continue
-            shared = set.intersection(*(_tokens(n) for n in names)) if names else set()
+            shared = set.intersection(*(tokens_of[n] for n in names))
             coined = {t for t in shared
                       if len(t) >= 4 and token_frequency.get(t, 0) <= len(names) * 2}
             if not coined:
                 continue
-            zips = {_zip5(info[n].pzip) for n in names if _zip5(info[n].pzip)}
-            for r in orphans:
-                if _zip5(r.pzip) in zips and coined & _tokens(r.name):
-                    uf.union(names[0], r.name)
+            zips = {zip_of[n] for n in names if zip_of[n]}
+            for name, pzip, toks in orphan_keys:
+                if pzip in zips and coined & toks:
+                    uf.union(names[0], name)
                     adopted = True
         if adopted:
             comps = collections.defaultdict(list)

@@ -78,6 +78,16 @@ def _warm_caches() -> None:
         logger.info("cache warm: stats complete")
     except Exception:
         logger.warning("cache warm: stats failed", exc_info=True)
+
+    # Entity families: one pass over every LLC-form deed party, about 2s, and
+    # it is shared by all 26 /network/ hubs. Whoever asks for the first hub
+    # after a reload pays for it otherwise, and that is usually a crawler.
+    try:
+        from api.routes.frontend import _families
+        _families(db)
+        logger.info("cache warm: entity families complete")
+    except Exception:
+        logger.warning("cache warm: entity families failed", exc_info=True)
     finally:
         db.close()
 
