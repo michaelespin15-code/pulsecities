@@ -1,3 +1,96 @@
+# PulseCities checkpoint, 2026-08-18 (session 3, later) — a Lighthouse run, and what it led to
+
+Michael ran Lighthouse on the homepage: Performance 88, Accessibility 96, SEO
+100, Agentic Browsing 2/3. Everything below came out of chasing those four
+numbers, and the last item was found by measuring something the report never
+looked at.
+
+**SEO 100 -> 92 was my own regression, fixed within the hour.** The `IndexNow:`
+line added to robots.txt earlier the same evening is not a robots directive, and
+Lighthouse's validator scores an unknown directive as an error. The key file at
+the site root is the actual proof of ownership and still serves 200, so IndexNow
+is unaffected. `tests/test_indexnow.py` now asserts robots.txt carries no such
+line, and `crawl_audit.py` probes the key file instead of grepping robots.
+
+**Agentic Browsing 2/3 -> 3/3.** llms.txt listed bare URLs, which the audit reads
+as prose: "File does not appear to contain any links". The Key pages section is
+now 20 markdown links and picks up the surfaces added since it was written
+(/displacement, /network/{slug}, the eviction pages).
+
+**Accessibility: the grey ramp failed on the cards, not on the page.** Four
+failing elements, all in the homepage docket: the +232% stamp, the BBL/ZIP line,
+the ACRIS IDs. `tests/test_text_contrast.py` passed them because it measured ink
+against the page background (#111823) while they sit on a card (#16202d) and on
+a header tinted 5% orange (#21232c). The rule now measures against the LIGHTEST
+surface the dark theme paints on, since clearing that clears every darker one;
+listing several backgrounds would have proved nothing, because a colour passes
+if it clears any one of them.
+
+    --faint  #78838d -> #818c97    3.99 -> 4.51 on the worst surface
+    --dim    #85929d -> #8a97a2    keeps the four stops half a point apart
+    .gain    var(--stamp) -> var(--red)    3.94 -> 5.06, border keeps the stamp
+
+**Performance.** Three separate things:
+
+1. The LCP image srcset jumped 560w to 1120w, so a 412px phone at DPR 1.75 asks
+   for 651px and gets the 1120w file: 74KB into a 719x385 box. A 760w variant
+   closes the gap at 40KB. app.html's WebGL fallback was loading the same 1120w
+   file into a 560px box.
+2. Six API calls fired at once off the initial navigation, /api/flips 2,260ms
+   deep in the critical chain. Only /api/stats feeds anything visible before a
+   scroll. The docket edition swap now runs on requestIdleCallback after load
+   (the card already renders a fallback arc from the HTML), and the operators
+   and signals modules load on an IntersectionObserver, so a visitor who never
+   scrolls never pays for them.
+3. The hero's second hop was asking for data the first hop already knew.
+   /api/stats names the top-risk ZIP; the pulse trace then fetched that ZIP's
+   90-day history, 788ms of critical path for 1.3KB. /api/stats now carries
+   `top_risk_history` in the same hourly cache entry, and a test asserts it is
+   identical to /api/score-history so the hero cannot draw a different line
+   from the ZIP page.
+
+## The thing the report could not see: cold /network/flgsp took 12 seconds
+
+nginx caches SSR for a minute and the family page caches for six hours, so this
+never showed up in a browser. Measured against gunicorn directly it is real, and
+crawlers hit cold workers because every reload empties the cache.
+
+- The adoption pass called `_zip5` **1,225,926 times**, 5.5s of regex over data
+  that does not change inside the loop. ZIP and token sets are computed once.
+- The clustering query grouped all 116,261 deed party names when the LLC-form
+  gate two lines later throws away four fifths of them. `LIKE '%LLC%'` in SQL
+  leaves 23,444 and produces the same 26 families.
+- The hot regexes were module-level `re.sub` calls, recompiled a few hundred
+  thousand times a pass.
+
+compute_families 6.0s -> 2.3s, and the startup cache warmer that already
+pre-fills top-risk, GeoJSON and stats now fills this too, so nobody waits:
+**/network/flgsp 12.0s -> 0.38s**, every other hub 30-40ms.
+
+Lesson worth keeping: measure through the socket, not through nginx. Two layers
+of cache had been hiding a 12-second page.
+
+## Verified
+
+Suite green, 1,240 passed. crawl_audit: PASS 22, WARN 0, FAIL 0. Browser-checked
+that the deferred fetches fire on scroll, that drawPulseTrace makes no network
+call when the bundled history is present, and that the 760w image is the
+candidate the browser picks.
+
+## Still open, unchanged
+
+`retire_raw_data.sh drop` is the biggest infra win left and **everything is
+ready**: archives written and sha256-verified on 2026-08-17, both models already
+unmapped, migration b8e30d5c1746 written and pending, and the script refuses to
+run without both preconditions. What remains is only the window, because
+VACUUM FULL takes ACCESS EXCLUSIVE on the two biggest tables:
+
+    ./venv/bin/python -m alembic upgrade head && scripts/retire_raw_data.sh drop
+
+complaints_raw 9.5GB -> ~1.1GB, violations_raw 4.0GB -> ~1.1GB, out of a 16GB
+database. Everything reading /property, /network or /neighborhood blocks while
+it runs.
+
 # PulseCities checkpoint, 2026-08-18 (session 3) — reading the families for the next FLGSP
 
 The handoff asked for one thing: read the nine new entity families and find
