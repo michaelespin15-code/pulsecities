@@ -1,3 +1,156 @@
+# >>> START HERE after /clear (2026-08-19, family follow + five-audit sweep) <<<
+
+Everything below is done, committed and verified except the items under NEEDS
+MICHAEL. Working tree clean. Suite state: every touched suite re-run green this
+session (575 test passes across the runs); the halves command in the previous
+handoff still stands for a full run.
+
+## Shipped this session
+
+**Portfolio follow (f28ccf8).** "Email me when this portfolio buys again", the
+checkpoint item 3 build. subscribers.family_slug (migration c7f2b4a91e83,
+applied; the raw_data drop b8e30d5c1746 now revises it and stays pending),
+validated against the live clustering at write time since families are
+computed, not stored. Confirmation email, weekly-digest delivery (internal
+restructurings excluded from "new purchases"), follow card on every
+/network/{slug} hub, follow link on /llc member pages. The clustering memo
+moved to api.entity_families.families_cached (single-flight lock) so pages,
+subscribe and digest share one cache. NOTE: the operator-follow gate only
+covers 3 rows classed 'operator'; family follow is what covers the 26
+published portfolios.
+
+**Five-audit sweep, fixes applied same day (a4ded27, e245cba, 85950c8).**
+Parallel auditors: correctness, rendered-output editorial, security, perf/DB,
+ops/infra. Every CRITICAL and HIGH is fixed except the classifier-blocked
+items below. Highlights, because the next session should not re-derive them:
+
+- /network ranked co-buying families on a 4x-inflated number (REDROCK "39
+  buildings" = 9 real; per-name counts summed across co-buys). Fixed:
+  distinct building keys per family-date.
+- /evictions/{name} printed the LIMIT 10 as the population ("Ten buildings
+  have more than one eviction" where 136 do). Fixed: real count, list of ten.
+- /eviction-case rejected ~26% of real index numbers (B309066/25, 326184/24A,
+  306624/25-). Fixed: both sides reduce to [A-Z0-9/].
+- nginx cache keyed on raw $arg_lang: any ?lang=junk was a fresh entry, one
+  loop evicted the warm set (verified live). Fixed with a map; also 19 SSR
+  locations had no limit_req (server-scope ceiling now), /ops was cacheable
+  with ?t= outside the key (proxy_cache off), SSR TTL 1m->10m, gzip_static
+  serves .gz twins (sitemap XML was recompressed per crawler fetch; the
+  sitemap script and build:css now write twins — a stale .gz would serve
+  silently, so twins are made by the same step that makes the source).
+- /neighborhood permits subquery filtered on the wrong table's zip: cost
+  8206 -> 77 (one token). The sitemap LATERAL pair is two grouped CTEs:
+  cost 3.3M -> 116k; the whole script now runs in 14s.
+- The weekly digest averaged 9 week-buckets, two of them stubs (~10%
+  understated baselines; complete ISO weeks only now), carried a second
+  tier vocabulary (deleted; scoring.tiers everywhere), and labelled executed
+  warrants "eviction filings" (fixed here, /week, /this-week, /neighborhood;
+  /this-week also counted ALL 311 complaints under a housing label).
+- The live DB password was hardcoded in two tracked scripts and matches
+  .env's DATABASE_URL. Files fixed; ROTATION STILL PENDING (blocked, below).
+- pipeline_health's CRITICAL went nowhere (no MAILTO, no MTA); it now emails
+  via notify_ops. The 117-day dcwp snooze silencing a resumed feed: removed.
+- logrotate rotated on bytes only ('size' overrides 'weekly'); access log
+  (holds the ops token 197x) now 0640. backup_db moved off the 03:30
+  cross-tenant collision to 03:50; MANIFEST ships offsite in the state tar.
+
+**Full audit reports** live in this session only; the durable list of what
+was NOT fixed is below. crawl_audit: PASS 22 / WARN 0 / FAIL 0 after all of it.
+
+## NEEDS MICHAEL (classifier-blocked or external accounts), priority order
+
+1. **Restart gunicorn with the new unit** (deploy copy committed, /etc not
+   yet updated so runtime matches disk):
+       cp deploy/pulsecities.service /etc/systemd/system/pulsecities.service
+       systemctl daemon-reload && systemctl restart pulsecities
+   Changes: WEB_CONCURRENCY=2 as the one source of truth (api/ratelimit.py
+   divides budgets by it), --timeout 120 -> 60.
+2. **Rotate the DB password** (it sat in git history + two tracked files;
+   files fixed, history purge still pre-public):
+       sudo -u postgres psql -c "ALTER ROLE pulsecities_user PASSWORD '<new>'"
+       then update DATABASE_URL in .env, then restart pulsecities (item 1).
+   Every consumer reads .env at runtime; nothing else holds the password.
+3. **HEARTBEAT_BASE_URL** — one line in .env, healthchecks.io check
+   (period 24h, grace 2h). The Aug 15 reboot proved the box cannot detect
+   its own absence: the whole 02:00-04:00 batch skipped, nothing noticed.
+4. **ALERT_WEBHOOK_URL** — second alert channel; Resend already dropped
+   mail twice on 2026-08-05 (SSL EOF).
+5. **Dedicated R2 bucket + token**, set PULSECITIES_R2_* in .env (r2_creds.sh
+   already prefers them). Today violation-leads' token both gates our only
+   offsite backup AND decrypts our .env archive (passphrase derives from it).
+6. **The maintenance window** (Saturday after 04:15 UTC is the clean slot):
+       ./venv/bin/python -m alembic upgrade head   # drops raw_data columns
+       scripts/retire_raw_data.sh drop             # VACUUM FULL, 10-20 min
+   ~11GB reclaimed (DB 16 -> ~6.5GB), Sunday restore-test disk peak 83->69%.
+   Same restart: install pg_stat_statements (deploy/postgresql-pg-stat-
+   statements.conf -> /etc/postgresql/14/main/conf.d/). AFTER the drop and a
+   re-measure of free -m: shared_buffers 512MB -> 768MB (NOT before: 1.9GB
+   was already swapped at audit time) and work_mem 16 -> 8MB.
+7. **OPS_TOKEN**: rotate it and prefer the X-Ops-Token header; the ?t= form
+   is in the access log 197 times. (Keeping ?t= keeps your bookmark working;
+   the log is 0640 now, so this is lower heat than it was.)
+8. **Send a pitch.** Unchanged. Three verified drafts in docs/outreach/.
+
+## Audit backlog — real findings, deliberately not fixed tonight
+
+Editorial (rendered-output auditor; nothing here is false data, mostly polish):
+- /radar: co-lot rows read as duplicate buildings ("4 buildings", 3 distinct
+  addresses); use the /llc "N lots in M buildings" vocabulary. Same page: one
+  card carries no amounts at all where others do.
+- /llc/{slug}: a deed with the same entity on both sides counts as bought AND
+  sold (PHANTOM Z CAPITAL, 4 self-transfers); label or exclude.
+- /network PHANTOM card (46 companies / 104 buildings) 301s to
+  /operator/phantom-capital (43 LLCs / 83 properties) — two definitions, no
+  explanation, and the JSON-LD ItemList points at the redirect. Either build
+  the family hub or annotate the card.
+- Address repair pass ("STR EET", "AVE NUE", ",Apartment Basement", "Mcbride"):
+  fixes display AND shrinks the 1,443-vs-1,177 dedupe gap.
+- /property: owner-of-record (tax file, lags) vs newest deed buyer shown
+  without the lag explanation; RS units > total units needs its one-line
+  DHCR-vs-PLUTO clause.
+- Homepage title is brand-first ("PulseCities | NYC Displacement Signals");
+  the query data says "who owns my building" + evictions vocabulary. This is
+  Michael's call, it is the sitewide anchor.
+- Smaller: /this-week "Newest flips" carries April deeds undated; monthly
+  bars unlabeled year + rolling-vs-calendar mismatch; trailing periods on
+  /flips//radar captions; ES parity gaps (chart axis, badge alt, one literal
+  translation); /network header sums max(held,sold) while cards show both;
+  operator pages still Title Case; titles run past 65 chars sitewide.
+
+Perf/DB backlog:
+- Materialise families into a table in the nightly pipeline: removes the 12s
+  cold render class entirely, gives subscribe a real existence check, halves
+  the /network cold render (_family_shapes re-scans what compute_families
+  just scanned).
+- permits_raw.raw_data (1.6GB) is the next retirement: promote job_type to a
+  column first (frontend.py:1344 reads it per request).
+- Drop idx_complaints_raw_bbl (64MB) + idx_violations_raw_bbl (28MB): strict
+  prefix duplicates of the (bbl, date DESC) pair. Needs model edit +
+  migration; fold into the window.
+- DB pool (5+10/worker) vs threadpool (40/worker) mismatch: raise pool_size
+  ~10 or cap the threadpool; surfaces as checkout stalls under crawl bursts.
+- journald: a neighbor's node processes flood it to 12h retention
+  (SystemMaxUse 150M); raise it or quiet the neighbor (cross-tenant).
+
+## Condo address gap — scoped at last (the 2.5h query finished)
+
+Of 17,114 deed BBLs with no parcel row, 17,086 are condo unit lots. Only 406
+sit on single-address blocks, so the "unambiguous block" shortcut recovers
+2.4% — not worth building. parcels HAS 11,150 condo billing lots (7501+):
+the unit-lot -> billing-lot join (DOF PAD file is the authoritative mapping)
+is the route to the addresses. Method note: the scoping query burned 2.5
+hours because a LATERAL matched on substring(bbl,1,6) with no index — the
+same answer is a GROUP BY over parcels plus a hash join, seconds.
+
+## Watch
+
+- **2026-08-22 03:40 UTC** (not 08-21; threshold is strict >): the ACRIS
+  upstream-freeze alert fires. It is CORRECT — upstream frozen at 07-31,
+  ingest current — informational on a 7-day cadence. Do not snooze it.
+- First family-follow digest send: Sunday 18:00 ET (0 followers yet; the
+  card shipped tonight).
+- Bing/Google reaction to the 65,444-URL sitemap + new .gz delivery.
+
 # >>> START HERE after /clear (2026-08-19, end of the Lighthouse + content session) <<<
 
 Everything below is done, deployed, committed and verified. Nothing is
