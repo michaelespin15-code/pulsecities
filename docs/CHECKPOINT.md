@@ -1,3 +1,115 @@
+# >>> START HERE after /clear (2026-08-19, end of the Lighthouse + content session) <<<
+
+Everything below is done, deployed, committed and verified. Nothing is
+half-finished, no process is running, and the working tree is clean. 18 commits
+since ae5bfae.
+
+## What the site is right now
+
+    Lighthouse   desktop 100 / mobile 96-97 performance
+                 100 accessibility, 100 best practices, 100 SEO, 3-of-3 agentic
+                 FCP 1.8s  LCP 2.4s  TBT 0  CLS 0  (Moto G Power, Slow 4G)
+    crawl_audit  PASS 22, WARN 0, FAIL 0
+    sitemap      1,051 core + 65,409 property URLs
+    families     26, indexed at /network
+    subscribers  8 confirmed (5 ZIP, 2 citywide, 1 building, 0 operator)
+    backlinks    0. Still the ceiling. Nothing technical changes that.
+
+## New surfaces this session, and how they are wired
+
+**/network** — index of the 26 entity families, ranked by the largest number of
+buildings taken on one day. Nine of them moved as a block. It did not exist
+until tonight; the hubs had no parent and nothing linked them but the sitemap.
+Linked from the homepage operators module (EN and ES), /llc, and every hub.
+The full clustering method lives here now; the hubs keep two sentences and a
+link up, which is also what cut their shared-text overlap.
+
+**/eviction-case** — look up an executed eviction by marshal docket or Housing
+Court index number. Built for "nyc marshal docket number search" in the query
+export. Linked from /evictions (EN and ES), the 127 /evictions/{name} pages,
+every /property page that has an eviction, and both sibling tenant tools.
+Only the empty form indexes; results are noindex.
+
+**499 more /llc pages are indexable.** The floor went from three buildings to
+two after measuring duplication rather than guessing (2-building pages: 55%
+mean 5-gram overlap, 677 words; the 3-building pages already indexed: 55%, 702).
+They are not sitemap-only orphans: each is linked from the property page of a
+building it bought.
+
+## Traps this session hit, so the next one does not
+
+1. **Measure SSR pages through the gunicorn socket**, not nginx:
+   `curl --unix-socket /tmp/gunicorn.sock http://localhost/PATH`. Two layers of
+   cache hid a 12-second cold render on /network/flgsp.
+2. **Nothing during the 02:00 UTC nightly run.** Two vCPU: load goes above 4 and
+   every timing triples. A query that takes seconds at 21:00 hangs past two
+   minutes at 02:00.
+3. **The nginx SSR cache keys on path plus `?lang` only.** Any new route that
+   reads another query parameter must either be added to the key or opt out
+   with `proxy_cache off`, as /eviction-case does. Its own config comment says
+   so; I still walked into it.
+4. **Most SSR heads in frontend.py are f-strings.** Injected CSS needs `{{ }}`.
+   17 of 17 head blocks were f-strings when the fonts went in.
+5. **Copy that goes through `esc()` cannot carry markup**, and some strings are
+   also rewritten by the language toggle (`recent_sub` on /evictions is both).
+   Put links in a sibling element with their own copy key in both languages.
+6. **`_count()` pluralises the head noun**, so "of them moved as a block" came
+   out "blocks". Use `_count_open` with an explicit plural for phrases.
+7. **A new SSR route needs an nginx location block** and an entry in the
+   trailing-slash 301 regex. /eviction-case 404'd on its slash form until it
+   was added.
+
+## Next, in the order I would do it
+
+1. **Send a pitch.** Three are written and verified and none are sent:
+   `docs/outreach/pitch-flgsp-portfolio.md` ($451.3M, 82 buildings, 4,793
+   rent-stabilized units), `pitch-carlyle-townhouses.md` (42 Brooklyn buildings,
+   $197.5M, The Carlyle Group's address on five deed party rows),
+   `pitch-snf-nursing-homes.md` ($549.6M of nursing-home real estate in five
+   weeks). Backlinks are zero and press is the only lever on them. Michael's
+   action, no code.
+
+2. **The condo address gap.** 17,114 deed BBLs are unit lots absent from PLUTO,
+   so a quarter of the deed record resolves to no address and /property and
+   /llc say so out loud. Test mapping a unit lot to its block and taking the
+   address where the block is unambiguous, DOF's PAD file for the rest. The
+   scoping query never got a clean run because the nightly pipeline started.
+   Needs an idle box.
+
+3. **Surface the watch on /network and /llc.** The subscriber model already
+   supports following an operator and there are zero operator watchers, because
+   nothing offers it there. "Email me when this portfolio buys again" is what a
+   reporter wants after reading /network/flgsp, and the plumbing exists
+   (subscribers.operator_slug, the 03:25 alert cron, weekly_digest.py).
+
+4. **`retire_raw_data.sh drop`** — ~11GB of a 16GB database. Fully prepared:
+   archives written and sha256-verified 2026-08-17, both models unmapped,
+   migration b8e30d5c1746 pending, script gated on both. Needs a window because
+   VACUUM FULL takes ACCESS EXCLUSIVE on the two biggest tables for 10-20
+   minutes; /property, /network and /neighborhood block while it runs.
+
+       ./venv/bin/python -m alembic upgrade head && scripts/retire_raw_data.sh drop
+
+5. **Re-export Search Console in two weeks.** There is a fixed baseline at
+   `docs/seo/baseline_2026-08-18.md` and this session changed what is indexable
+   and what two titles say. That is a measurable before/after rather than a
+   guess about whether it worked.
+
+## Decisions left open for Michael
+
+- **/network in the top nav?** It is a hub now, arguably more than /radar. The
+  nav is ten links and documented as fragile around nine at 960px, so it was
+  left out rather than appended as an eleventh. If it goes in, swap rather than
+  append: /network in, /radar folded under it.
+- **Plausible.** The only remaining Lighthouse items are its script: a 52-178ms
+  forced reflow inside their code and a one-minute cache TTL on their CDN. The
+  only fix is proxying it through this origin, which buys ~50ms of connection
+  setup and also slips past blockers. Left alone deliberately.
+- **`font-display: optional` on Bricolage** would land mobile LCP at FCP, about
+  1.8s, by never repainting. The cost is that a first-time visitor on a slow
+  connection never sees the brand face that session. A design call, not a
+  performance one.
+
 # PulseCities checkpoint, 2026-08-19 — the scores passed, so we went at the content
 
 Lighthouse came back 92 / 100 / 100 / 100 / 3-of-3 after the previous pass.
