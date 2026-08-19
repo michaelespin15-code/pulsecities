@@ -1,3 +1,94 @@
+# PulseCities checkpoint, 2026-08-19 — the scores passed, so we went at the content
+
+Lighthouse came back 92 / 100 / 100 / 100 / 3-of-3 after the previous pass.
+Michael's read on it is the useful one and is worth keeping: **SEO 100 means the
+mechanics pass. It does not ask whether the content answers what searchers ask.**
+Everything below came from checking the pages against
+`docs/seo/baseline_2026-08-18.md`, the real query export, rather than against
+another audit.
+
+## The best-converting page type was telling Google not to index it
+
+/llc/{slug} was noindex below three buildings. TERRA DEVELOPERS LLC has two, took
+17 impressions in 28 days and earned **one of the site's five total clicks**,
+while carrying `noindex`.
+
+A floor like that should be set by measuring duplication, not by picking a round
+number, so it was measured with the method the rest of the repo uses, 5-gram
+containment over digit-bearing tokens, 14 pages sampled per group:
+
+    1 building     15,020 entities   584 words   67% mean overlap, 78% max
+    2 buildings       499 entities   677 words   55% mean overlap, 72% max
+    3+ buildings      156 entities   702 words   55% mean overlap, 72% max
+
+Two-building pages are indistinguishable from the three-building pages already
+indexed, and both sit under /neighborhood's 68-69%. One-building pages are
+visibly worse and stay out; there are 15,020 of them. Floor is now two buildings
+and two lots, in the page gate, the directory query and the sitemap. Core
+sitemap 553 -> 1,050 URLs, LLC entries 155 -> 651.
+
+## Two titles used our vocabulary instead of the searcher's
+
+"nyc marshal eviction list" is the largest single query the site takes
+impressions on, 52 in 28 days, and /evictions has answered it since the eviction
+build: 150 executions with address, neighborhood and date. The title said
+"tracker". And BBLs are a real query class (3009970039: 37 impressions, 1
+click), so the property description now carries the BBL.
+
+Checked and found already answered, so left alone: every top address query
+resolves to a live indexable 1,100-1,250 word page, and the eviction-by-place
+pages carry "marshal" plus the place name in title, H1 and description.
+
+## /eviction-case, the query class nothing served
+
+"nyc marshal docket number search" is in the export, and so is a run of address
+queries ending in "eviction cases", one at position 6.88 on Bing. Both are
+someone holding a piece of paper with a number on it, and the site had all
+42,567 of those numbers with nowhere to type one.
+
+The page takes either number, because a tenant cannot be expected to know which
+they hold. Marshal dockets are stored with inconsistent leading zeros (065592
+and 64865 in the same export) so both sides compare with zeros stripped; index
+numbers accept a slash, a hyphen or a stray space. A miss says what a miss
+usually means: most Housing Court cases never reach an execution.
+
+Only the empty form indexes. Two traps worth remembering: the shared SSR cache
+keys on path plus `?lang` alone, exactly as its own comment warns, so the
+location opts out with `proxy_cache off` rather than widening the key and
+handing anyone a way to fill the zone with docket numbers; and `recent_sub` on
+/evictions is both escaped and rewritten by the language toggle, so the CTA is a
+sibling element with its own copy key in both languages.
+
+## Fonts are self-hosted, which is what the LCP was waiting on
+
+The homepage LCP element is the H1, at 3.2s against an FCP of 1.7s. The gap was
+the font: paint in the fallback, then repaint when Bricolage arrives after a
+handshake to fonts.googleapis.com, a stylesheet, and a second handshake to
+fonts.gstatic.com. All three faces now come from /fonts, latin subset,
+display=swap, with Bricolage halved to 41KB by dropping an optical-size axis
+nothing here varies. Ten different Google Fonts URLs across the site are now one
+set. CSP dropped both Google origins; csp_check reports 0 violations across 18
+pages. plausible.io is the only third party left.
+
+## Notes for next time
+
+- **Do not measure or deploy during the 02:00 UTC nightly run.** Two vCPU: the
+  scraper puts load above 4 and every page timing triples. A scoping query that
+  runs in seconds at 21:00 hangs past two minutes at 02:00.
+- IndexNow is validated (HTTP 200 now, not 202) and 1,000 URLs went in core-first
+  after the sitemap regenerated, so the newly indexable LLC pages and
+  /eviction-case were in the first batch.
+
+## Next build, scoped but not started
+
+**The condo address gap.** 17,114 deed BBLs are unit lots absent from PLUTO, so
+a quarter of the deed record resolves to no address and /property and /llc say
+so out loud. The approach to test is the one the LLC page already uses for ZIP:
+map a unit lot to its block and take the address where the block is
+unambiguous, falling back to DOF's PAD file for the rest. The measurement query
+was written and never got a clean run because the nightly pipeline started;
+re-run it against an idle box.
+
 # PulseCities checkpoint, 2026-08-18 (session 3, later) — a Lighthouse run, and what it led to
 
 Michael ran Lighthouse on the homepage: Performance 88, Accessibility 96, SEO
