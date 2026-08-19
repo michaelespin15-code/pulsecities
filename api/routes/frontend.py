@@ -7464,9 +7464,8 @@ def network_directory(db: Session = Depends(get_db)):
 
     title = (f"NYC LLC networks: {n_fam} owner portfolios reassembled from the "
              f"deed record | PulseCities")
-    desc = (f"{n_fam} groups of NYC limited liability companies that the deed record "
-            f"links to each other, {n_ent} companies across {n_bld:,} buildings. "
-            f"Every company and every building, from ACRIS.")
+    desc = (f"{n_fam} groups of NYC limited liability companies the deed record links "
+            f"to each other: {n_ent} companies, {n_bld:,} buildings, from ACRIS.")
 
     faq = [
         ("What is an entity family?",
@@ -7529,7 +7528,7 @@ def network_directory(db: Session = Depends(get_db)):
     <a href="/">Home</a> &middot; <a href="/llc">LLC buyers</a>
   </p>
   <div class="eyebrow">NYC deed record</div>
-  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.6rem;letter-spacing:0;font-weight:600;">Owner networks</h1>
+  <h1 style="font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.6rem;letter-spacing:0;font-weight:600;">NYC owner networks</h1>
   <div class="stats">{stats}</div>
   <p class="prose">New York property is held one building at a time, each in its own
   limited liability company. That is ordinary practice, and the side effect is that a
@@ -8134,9 +8133,9 @@ def eviction_case_page(q: str = "", db: Session = Depends(get_db)):
 
     title = ("NYC marshal eviction docket search: look up a docket or index number "
              "| PulseCities")
-    desc = (f"Look up an NYC eviction by marshal docket number or Housing Court index "
-            f"number. {int(totals.n):,} executed evictions from city marshal records, "
-            f"{_en_date(totals.first)} to {_en_date(totals.last)}.")
+    desc = (f"Look up an NYC eviction by marshal docket or Housing Court index number. "
+            f"{int(totals.n):,} executed evictions, {_en_date(totals.first)} to "
+            f"{_en_date(totals.last)}.")
 
     faq = [
         ("What is a marshal docket number?",
