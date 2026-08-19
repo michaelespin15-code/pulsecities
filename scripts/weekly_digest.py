@@ -1412,6 +1412,171 @@ def render_operator_digest(subscription: dict, update: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Family follows
+# ---------------------------------------------------------------------------
+
+def load_family_follows(db) -> list[dict]:
+    """Return confirmed portfolio-follow subscribers."""
+    rows = db.execute(text("""
+        SELECT email, family_slug, unsubscribe_token
+        FROM subscribers
+        WHERE confirmed = true AND family_slug IS NOT NULL
+        ORDER BY family_slug, email
+    """)).fetchall()
+    return [{"email": r[0], "family_slug": r[1], "unsubscribe_token": r[2]} for r in rows]
+
+
+def build_family_updates(db, slugs: set[str]) -> dict[str, dict]:
+    """New purchases per followed family, keyed on ingest time like the
+    operator version: ACRIS publishes with a lag, so "new this week" means
+    "newly on the record".
+
+    Families are computed, not stored, so membership comes from the same
+    clustering the hub pages serve. A slug that no longer clusters resolves to
+    nothing and its followers are skipped, never errored.
+    """
+    if not slugs:
+        return {}
+    from api.entity_families import families_cached
+    from api.routes.frontend import _is_buyer_entity
+
+    fams = families_cached(db, _is_buyer_entity)
+    updates: dict[str, dict] = {}
+    for slug in slugs:
+        fam = fams.get(slug)
+        if not fam:
+            logger.warning("family %s no longer clusters; skipping its followers", slug)
+            continue
+        rows = db.execute(text("""
+            SELECT o.bbl, max(o.doc_date) AS doc_date, max(o.doc_amount) AS amount,
+                   max(p.address) AS address, max(p.zip_code) AS zip_code
+            FROM ownership_raw o
+            LEFT JOIN parcels p ON p.bbl = o.bbl
+            WHERE o.doc_type = 'DEED' AND o.party_type = '2'
+              AND o.party_name_normalized = ANY(:names)
+              AND o.created_at >= NOW() - INTERVAL '7 days'
+            GROUP BY o.bbl
+            ORDER BY max(o.doc_date) DESC NULLS LAST
+        """), {"names": fam["entities"]}).fetchall()
+        if not rows:
+            continue
+        updates[slug] = {
+            "slug":  slug,
+            "label": fam["label"],
+            "acquisitions": [{
+                "address": (r.address or f"BBL {r.bbl}").title(),
+                "zip":     r.zip_code or "",
+                "date":    r.doc_date.isoformat() if r.doc_date else "",
+                "price":   float(r.amount) if r.amount else None,
+            } for r in rows],
+        }
+    return updates
+
+
+def render_family_digest(subscription: dict, update: dict) -> dict:
+    """Subject and HTML for one portfolio-follow alert. Same shell as the
+    operator alert; the difference is the destination link and the framing,
+    which names the group rather than a single operator."""
+    token = subscription["unsubscribe_token"]
+    label = update["label"]
+    slug  = update["slug"]
+    acqs  = update["acquisitions"]
+    n     = len(acqs)
+
+    rows_html = ""
+    for a in acqs[:15]:
+        price = f"${a['price']:,.0f}" if a["price"] else ""
+        place = _html_escape(f"{a['address']}" + (f" ({a['zip']})" if a["zip"] else ""))
+        rows_html += (
+            f'<tr>'
+            f'<td style="padding:8px 0;font-size:13px;color:#cbd5e1;">{place}</td>'
+            f'<td style="padding:8px 0 8px 16px;font-family:\'JetBrains Mono\',monospace;'
+            f'font-size:12px;color:#94a3b8;text-align:right;white-space:nowrap;">{a["date"]}</td>'
+            f'<td style="padding:8px 0 8px 16px;font-family:\'JetBrains Mono\',monospace;'
+            f'font-size:12px;color:#ed6317;text-align:right;white-space:nowrap;">{price}</td>'
+            f'</tr>'
+        )
+    more_html = ""
+    if n > 15:
+        more_html = (
+            f'<p style="margin:12px 0 0;font-size:12px;color:rgba(148,163,184,0.6);">'
+            f'And {n - 15} more on the portfolio page.</p>'
+        )
+
+    plural = "purchases" if n != 1 else "purchase"
+    esc_label = _html_escape(label)
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulseCities: {esc_label} update</title>
+</head>
+<body style="margin:0;padding:0;background:#0f172a;font-family:'Inter',system-ui,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:48px 24px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;">
+
+        <tr><td style="padding-bottom:28px;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:#38bdf8;">PulseCities</span>
+          <span style="font-size:12px;color:rgba(148,163,184,0.4);margin-left:10px;">Portfolio Watch</span>
+        </td></tr>
+
+        <tr><td style="padding-bottom:20px;">
+          <p style="margin:0;font-size:14px;color:#94a3b8;line-height:1.6;">
+            A company in the <strong style="color:#f1f5f9;">{esc_label}</strong> network recorded {n} new {plural} in NYC public records this week.
+          </p>
+        </td></tr>
+
+        <tr><td>
+          <table width="100%" cellpadding="0" cellspacing="0"
+                 style="background:#1e293b;border-radius:12px;padding:28px;border:1px solid rgba(148,163,184,0.1);">
+
+            <tr><td style="padding-bottom:20px;border-bottom:1px solid rgba(148,163,184,0.08);">
+              <div style="font-size:10px;font-weight:600;color:rgba(148,163,184,0.5);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Newly Recorded Purchases</div>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                {rows_html}
+              </table>
+              {more_html}
+            </td></tr>
+
+            <tr><td style="padding-top:24px;">
+              <a href="https://pulsecities.com/network/{slug}"
+                 style="display:inline-block;background:#ed6317;color:#fff;font-size:13px;font-weight:600;padding:11px 22px;border-radius:6px;text-decoration:none;">
+                View the portfolio
+              </a>
+            </td></tr>
+
+          </table>
+        </td></tr>
+
+        <tr><td style="padding-top:24px;">
+          <p style="margin:0 0 10px;font-size:11px;color:rgba(148,163,184,0.5);line-height:1.7;border-top:1px solid rgba(148,163,184,0.08);padding-top:16px;">
+            <strong style="color:rgba(148,163,184,0.6);">Why you're getting this:</strong>
+            You follow the {esc_label} portfolio on PulseCities. Quiet weeks send nothing.
+          </p>
+          <p style="margin:0 0 8px;font-size:11px;color:rgba(148,163,184,0.35);line-height:1.7;">
+            PulseCities uses public records. Grouping reflects LLC naming and filing patterns, not claims of wrongdoing.
+          </p>
+          <p style="margin:0;font-size:11px;color:rgba(148,163,184,0.35);line-height:1.7;">
+            <a href="https://pulsecities.com/api/unsubscribe?token={token}"
+               style="color:rgba(148,163,184,0.5);">Unsubscribe</a>
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+    return {
+        "subject": f"{label} recorded {n} new {plural} this week",
+        "html":    html,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Orchestration
 # ---------------------------------------------------------------------------
 
@@ -1534,6 +1699,30 @@ def run(dry_run: bool = False, limit: int | None = None, email_filter: str | Non
                     o_failed += 1
             logger.info("Operator digest complete. sent=%d skipped=%d failed=%d",
                         o_sent, o_skipped, o_failed)
+
+        fam_follows = load_family_follows(db)
+        if email_filter:
+            fam_follows = [s for s in fam_follows if s["email"] == email_filter]
+        if limit is not None:
+            fam_follows = fam_follows[:limit]
+        if fam_follows:
+            fam_updates = build_family_updates(db, {s["family_slug"] for s in fam_follows})
+            f_sent = f_skipped = f_failed = 0
+            for sub in fam_follows:
+                update = fam_updates.get(sub["family_slug"])
+                if not update:
+                    logger.info("SKIP family %s (%s): nothing newly recorded",
+                                sub["family_slug"], sub["email"])
+                    f_skipped += 1
+                    continue
+                rendered = render_family_digest(sub, update)
+                if send_digest_email(sub, rendered, dry_run=dry_run):
+                    logger.info("SENT family %s -> %s", sub["family_slug"], sub["email"])
+                    f_sent += 1
+                else:
+                    f_failed += 1
+            logger.info("Family digest complete. sent=%d skipped=%d failed=%d",
+                        f_sent, f_skipped, f_failed)
     finally:
         db.close()
 

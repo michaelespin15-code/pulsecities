@@ -155,6 +155,27 @@ PulseCities
 You subscribed at pulsecities.com. Unsubscribe: https://pulsecities.com/api/unsubscribe?token={token}
 """.strip()
 
+_FAMILY_CONFIRMATION_HTML = _WELCOME_SHELL.replace("{title}", "You're following {family_label}").replace(
+    "{file_line}", "Follow opened {opened} &middot; {family_label} &middot; NYC public records"
+).replace("{note_body}", "".join([
+    _NOTE_P.format("You're following {family_label}, {family_size}."),
+    _NOTE_P.format("These companies file under different names but resolve to one operation in the deed record. When any of them records a new NYC purchase, it shows up in your {send_day} email. Quiet weeks send nothing."),
+    _NOTE_P.format('The portfolio is here:<br><a href="https://pulsecities.com/network/{family_slug}" style="color:#C2410C;">pulsecities.com/network/{family_slug}</a>'),
+]))
+
+_FAMILY_CONFIRMATION_TEXT = """
+You're following {family_label}, {family_size}.
+
+These companies file under different names but resolve to one operation in the deed record. When any of them records a new NYC purchase, it shows up in your {send_day} email. Quiet weeks send nothing.
+
+The portfolio: https://pulsecities.com/network/{family_slug}
+
+Michael
+PulseCities
+
+You subscribed at pulsecities.com. Unsubscribe: https://pulsecities.com/api/unsubscribe?token={token}
+""".strip()
+
 _BUILDING_CONFIRMATION_HTML = _WELCOME_SHELL.replace("{title}", "You're watching {address}").replace(
     "{file_line}", "Watch opened {opened} &middot; BBL {bbl} &middot; NYC public records"
 ).replace("{note_body}", "".join([
@@ -316,6 +337,7 @@ class SubscribeRequest(BaseModel):
     zip_code: str | None = None
     is_citywide: bool = False
     operator_slug: str | None = None
+    family_slug: str | None = None
     bbl: str | None = None
 
     @field_validator('email')
@@ -328,20 +350,28 @@ class SubscribeRequest(BaseModel):
 
     @model_validator(mode='after')
     def validate_single_target(self) -> 'SubscribeRequest':
-        """A subscription watches exactly one of: a ZIP, the city, an operator, a building."""
+        """A subscription watches exactly one of: a ZIP, the city, an operator,
+        a family, or a building."""
         if self.bbl is not None:
-            if self.is_citywide or self.zip_code or self.operator_slug:
+            if self.is_citywide or self.zip_code or self.operator_slug or self.family_slug:
                 raise ValueError('bbl cannot combine with other subscription targets')
             self.bbl = self.bbl.strip()
             if not _BBL_RE.match(self.bbl):
                 raise ValueError('invalid bbl')
             return self
         if self.operator_slug is not None:
-            if self.is_citywide or self.zip_code:
-                raise ValueError('operator_slug cannot combine with zip_code or is_citywide')
+            if self.is_citywide or self.zip_code or self.family_slug:
+                raise ValueError('operator_slug cannot combine with another target')
             self.operator_slug = self.operator_slug.strip().lower()
             if not _SLUG_RE.match(self.operator_slug) or len(self.operator_slug) > 120:
                 raise ValueError('invalid operator_slug')
+            return self
+        if self.family_slug is not None:
+            if self.is_citywide or self.zip_code:
+                raise ValueError('family_slug cannot combine with zip_code or is_citywide')
+            self.family_slug = self.family_slug.strip().lower()
+            if not _SLUG_RE.match(self.family_slug) or len(self.family_slug) > 120:
+                raise ValueError('invalid family_slug')
             return self
         if self.is_citywide:
             self.zip_code = None
@@ -365,12 +395,35 @@ def _fill(template: str, values: dict, escape: bool = False) -> str:
     return template
 
 
+def _family_size_phrase(fam: dict) -> str:
+    """How big the portfolio is, in the terms the hub page uses. A family that
+    has sold everything it bought still has a story, so held and sold are
+    counted separately rather than summed into one misleading number."""
+    ents = _count(len(fam.get("entities") or ()), "company", "companies")
+    held = fam.get("buildings") or 0
+    sold = fam.get("sold") or 0
+    if held and sold:
+        return f"{ents} holding {_count(held, 'building', 'buildings')}, with {sold:,} more sold"
+    if held:
+        return f"{ents} across {_count(held, 'building', 'buildings')}"
+    if sold:
+        return f"{ents} that has sold {_count(sold, 'building', 'buildings')} and holds none"
+    return ents
+
+
+def _count(n: int, singular: str, plural: str) -> str:
+    return f"{n:,} {singular if n == 1 else plural}"
+
+
 def _send_confirmation(
     email: str,
     zip_code: str | None,
     is_citywide: bool,
     operator_slug: str | None = None,
     operator_name: str | None = None,
+    family_slug: str | None = None,
+    family_label: str | None = None,
+    family_size: str | None = None,
     bbl: str | None = None,
     address: str | None = None,
     unsubscribe_token: str | None = None,
@@ -397,6 +450,13 @@ def _send_confirmation(
         subject = f"You're following {name}"
         html_body, text_body = _OPERATOR_CONFIRMATION_HTML, _OPERATOR_CONFIRMATION_TEXT
         log_line = ("Operator-follow confirmation sent to %s for %s", email, operator_slug)
+    elif family_slug:
+        label = family_label or family_slug
+        values.update({"family_slug": family_slug, "family_label": label,
+                       "family_size": family_size or "a group of related companies"})
+        subject = f"You're following {label}"
+        html_body, text_body = _FAMILY_CONFIRMATION_HTML, _FAMILY_CONFIRMATION_TEXT
+        log_line = ("Family-follow confirmation sent to %s for %s", email, family_slug)
     elif is_citywide:
         subject = "You're watching NYC"
         html_body, text_body = _CITYWIDE_CONFIRMATION_HTML, _CITYWIDE_CONFIRMATION_TEXT
@@ -445,6 +505,8 @@ def subscribe(
 
     operator_name = None
     building_address = None
+    family_label = None
+    family_size = None
     if body.bbl:
         # The watch must point at a real lot; an unknown BBL 404s rather
         # than silently accepting a watch that can never fire.
@@ -486,6 +548,30 @@ def subscribe(
             raise HTTPException(status_code=409, detail='Already following this operator.')
         sub = Subscriber(email=body.email, zip_code=None, is_citywide=False,
                          operator_slug=body.operator_slug)
+    elif body.family_slug:
+        # Families are computed from the deed record, not stored, so the slug
+        # is checked against the live clustering. The memo in
+        # api.entity_families is the same one the hub pages read, so this does
+        # not pay for the computation on a warm process.
+        from api.entity_families import families_cached
+        from api.routes.frontend import _is_buyer_entity
+
+        fam = families_cached(db, _is_buyer_entity).get(body.family_slug)
+        if fam is None:
+            raise HTTPException(status_code=404, detail='Portfolio not found')
+        family_label = fam["label"]
+        family_size = _family_size_phrase(fam)
+
+        existing = db.execute(
+            select(Subscriber).where(
+                Subscriber.email == body.email,
+                Subscriber.family_slug == body.family_slug,
+            )
+        ).scalar_one_or_none()
+        if existing:
+            raise HTTPException(status_code=409, detail='Already following this portfolio.')
+        sub = Subscriber(email=body.email, zip_code=None, is_citywide=False,
+                         family_slug=body.family_slug)
     elif body.is_citywide:
         existing = db.execute(
             select(Subscriber).where(
@@ -523,14 +609,19 @@ def subscribe(
             raise HTTPException(status_code=409, detail='Already watching this building.')
         if body.operator_slug:
             raise HTTPException(status_code=409, detail='Already following this operator.')
+        if body.family_slug:
+            raise HTTPException(status_code=409, detail='Already following this portfolio.')
         if body.is_citywide:
             raise HTTPException(status_code=409, detail='Already watching NYC-wide.')
         raise HTTPException(status_code=409, detail='Already watching this area.')
 
-    logger.info('New subscriber email=%s zip=%s citywide=%s operator=%s bbl=%s',
-                body.email, body.zip_code, body.is_citywide, body.operator_slug, body.bbl)
+    logger.info('New subscriber email=%s zip=%s citywide=%s operator=%s family=%s bbl=%s',
+                body.email, body.zip_code, body.is_citywide, body.operator_slug,
+                body.family_slug, body.bbl)
     _send_confirmation(body.email, body.zip_code, body.is_citywide,
                        operator_slug=body.operator_slug, operator_name=operator_name,
+                       family_slug=body.family_slug, family_label=family_label,
+                       family_size=family_size,
                        bbl=body.bbl, address=building_address,
                        unsubscribe_token=sub.unsubscribe_token)
     return {'status': 'ok'}

@@ -6871,7 +6871,9 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
                 f'entity to {_count(others, "other company")} filing under the '
                 f'{esc(fam["label"])} name, holding {fam["buildings"]} buildings between '
                 f'them. <a href="/network/{esc(fam["slug"])}">The {esc(fam["label"])} '
-                f'entities &rarr;</a></p>'
+                f'entities &rarr;</a> '
+                f'<a href="/network/{esc(fam["slug"])}#follow">Follow the '
+                f'portfolio &rarr;</a></p>'
             )
 
     # --- The reading of the ledger -------------------------------------------
@@ -7350,21 +7352,75 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
 # through three management addresses, which is invisible in the record as 80
 # separate companies.
 
-_family_cache: tuple[dict, float] | None = None
 _FAMILY_TTL = 21600
 _family_page_cache: dict[str, tuple[str, float]] = {}
+
+# The follow card on every hub. Plain string, not an f-string: the JS needs
+# its braces and the page assembly around it is already an f-string minefield.
+_FOLLOW_CARD = """
+<div id="follow" style="margin:26px 0;padding:20px 22px;background:#16202d;border:1px solid rgba(147,161,173,0.2);border-radius:10px;">
+  <h2 style="margin-top:0;">Follow this portfolio</h2>
+  <p class="prose">When a company in this network records a new NYC purchase, it
+  shows up in a weekly email. Quiet weeks send nothing.</p>
+  <form id="fol-form" style="display:flex;gap:10px;margin:14px 0 0;max-width:560px;">
+    <input type="email" id="fol-email" placeholder="you@example.com" aria-label="Email address"
+           style="flex:1;font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:#e4e8ec;background:#111823;border:1px solid rgba(147,161,173,0.2);border-radius:8px;padding:12px 14px;min-width:0;">
+    <button type="submit" id="fol-btn" style="font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;color:#111823;background:#ed6317;border:none;border-radius:8px;padding:12px 22px;cursor:pointer;">Follow</button>
+  </form>
+  <p id="fol-status" style="display:none;margin:10px 0 0;font-size:0.85rem;"></p>
+</div>
+<script>
+(function () {
+  var form = document.getElementById('fol-form');
+  var email = document.getElementById('fol-email');
+  var btn = document.getElementById('fol-btn');
+  var status = document.getElementById('fol-status');
+  function show(msg, ok) {
+    status.textContent = msg;
+    status.style.color = ok ? '#6fa287' : '#ec6a5e';
+    status.style.display = 'block';
+  }
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var v = (email.value || '').trim();
+    if (!v || v.indexOf('@') < 1) { show('Enter a valid email.', false); return; }
+    btn.disabled = true;
+    fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: v, family_slug: '__SLUG__' })
+    }).then(function (r) {
+      if (r.status === 201) {
+        window.plausible && plausible('Family Follow');
+        form.style.display = 'none';
+        show("You're following __LABEL__. A confirmation is on its way.", true);
+      } else if (r.status === 409) {
+        show('Already following this portfolio.', true);
+        btn.disabled = false;
+      } else if (r.status === 422) {
+        show('Enter a valid email.', false);
+        btn.disabled = false;
+      } else {
+        show('Could not subscribe. Try again.', false);
+        btn.disabled = false;
+      }
+    }).catch(function () {
+      show('Could not subscribe. Try again.', false);
+      btn.disabled = false;
+    });
+  });
+})();
+</script>
+"""
 
 
 def _families(db) -> dict:
     """All families, memoised. The computation reads every buyer entity, so it
-    runs once per TTL rather than once per request."""
-    global _family_cache
-    if _family_cache and time.monotonic() < _family_cache[1]:
-        return _family_cache[0]
-    from api.entity_families import compute_families
-    fams = compute_families(db, _is_buyer_entity)
-    _family_cache = (fams, time.monotonic() + _FAMILY_TTL)
-    return fams
+    runs once per TTL rather than once per request. The memo lives in
+    api.entity_families because the subscribe endpoint and the weekly digest
+    resolve the same slugs and should not each build their own."""
+    from api.entity_families import families_cached
+    return families_cached(db, _is_buyer_entity, _FAMILY_TTL)
 
 
 _network_dir_cache: tuple[str, float] | None = None
@@ -7929,6 +7985,12 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
         f'<div class="faq-item"><h3>{e(q)}</h3><p>{e(a)}</p></div>' for q, a in faq
     )
 
+    # The slug is [a-z0-9-] by the route regex; the label is stripped of the
+    # two characters that could break out of the JS string it lands in.
+    follow_sec = (_FOLLOW_CARD
+                  .replace("__SLUG__", slug)
+                  .replace("__LABEL__", re.sub(r"[\\\\'\"<>&]", "", label)))
+
     n_shown = held or sold_n
     verb = "holding" if held else "that sold"
     title = f"{label}: {n_shown} NYC buildings across {len(names)} LLCs | PulseCities"
@@ -7985,6 +8047,7 @@ def entity_family_page(slug: str, db: Session = Depends(get_db)):
   {geo_sec}
   {rec_sec}
   {party_sec}
+  {follow_sec}
   {how_sec}
   <h2>Common questions</h2>
   {faq_html}

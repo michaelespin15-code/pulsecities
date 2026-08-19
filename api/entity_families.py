@@ -38,6 +38,7 @@ from __future__ import annotations
 
 import collections
 import re
+import time
 
 from sqlalchemy import text
 
@@ -415,3 +416,28 @@ def _building_key(bbl: str) -> str:
     """Condo unit lots collapse to the building they sit in, matching
     _BUILDING_KEY_SQL."""
     return bbl[:6] + ("0000" if bbl[6:10] >= "1001" else bbl[6:10])
+
+
+# The clustering reads every buyer entity, so it is memoised rather than run
+# per request. The cache lives here rather than in the page module because
+# three callers need the same answer: the hub pages, the subscribe endpoint
+# validating a follow, and the weekly digest resolving one.
+_cache: tuple[dict, float] | None = None
+_TTL = 21600
+
+
+def families_cached(db, is_buyer_entity, ttl: float = _TTL) -> dict:
+    """`compute_families`, memoised for `ttl` seconds."""
+    global _cache
+    if _cache and time.monotonic() < _cache[1]:
+        return _cache[0]
+    fams = compute_families(db, is_buyer_entity)
+    _cache = (fams, time.monotonic() + ttl)
+    return fams
+
+
+def reset_cache() -> None:
+    """Drop the memo. Tests that build families over a fixture DB need this;
+    so does anything that re-runs the clustering in-process."""
+    global _cache
+    _cache = None
