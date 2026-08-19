@@ -1991,6 +1991,13 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
             f"No executed eviction is on record at {e(address)} in the citywide "
             f"marshal file, which runs from April 2024."
         )
+    # A visitor reading an eviction count here often has the paperwork for one
+    # of them. Only offered where there is an eviction to look up.
+    if n_ev:
+        ev_paras.append(
+            'Holding the marshal docket number or the court index number from '
+            'one of these? <a href="/eviction-case">Look up that case &rarr;</a>'
+        )
     ev_prose = _prose_section("What the eviction record shows", _para(*ev_paras))
 
     # Rent stabilization. The registration series is the signal, and a building
@@ -6044,7 +6051,9 @@ def eviction_area_page(slug: str, db: Session = Depends(get_db)):
             f"The last {_count(len(recent), 'residential warrant')} a marshal "
             f"executed in {e(name)}, newest first. Each address links to that "
             f"building's own record: who holds the deed, what it sold for, and "
-            f"what else the city has logged there."
+            f"what else the city has logged there.",
+            f'Holding a marshal docket number or a court index number? '
+            f'<a href="/eviction-case">Look up that case &rarr;</a>'
         ) + f'<ul class="sib-list">{"".join(_recent_row(r) for r in recent)}</ul>'
 
     owner_sec = ""
@@ -6410,7 +6419,7 @@ p a:hover{{text-decoration:underline}}
   <p style="margin-top:10px;font-size:0.8rem;"><a href="/llc" class="body-link">The full ledger of LLC buyers &rarr;</a></p>
 
   <h2>What to check after the owner</h2>
-  <p>The name on the deed matters less than what the record shows around it. On any property or neighborhood page, look at executed evictions, renovation permits filed soon after a purchase, open HPD violations, and rent-stabilized unit counts over time. Every neighborhood page has a watch card that emails you when the record moves. <a href="/evictions">Citywide eviction tracker &rarr;</a> <a href="/is-my-building-rent-stabilized" style="margin-left:10px;">Is my building rent stabilized &rarr;</a></p>
+  <p>The name on the deed matters less than what the record shows around it. On any property or neighborhood page, look at executed evictions, renovation permits filed soon after a purchase, open HPD violations, and rent-stabilized unit counts over time. Every neighborhood page has a watch card that emails you when the record moves. <a href="/evictions">Citywide eviction tracker &rarr;</a> <a href="/is-my-building-rent-stabilized" style="margin-left:10px;">Is my building rent stabilized &rarr;</a> <a href="/eviction-case" style="margin-left:10px;">Look up an eviction case &rarr;</a></p>
 
   <h2>Other official registries</h2>
   <p>For the deed itself, <a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBL" target="_blank" rel="noopener noreferrer">search ACRIS directly</a>. Multiple-dwelling landlords must also register a managing agent with HPD, searchable on <a href="https://hpdonline.nyc.gov/hpdonline/" target="_blank" rel="noopener noreferrer">HPD Online</a>. PulseCities indexes the deed record and the enforcement record; HPD registration can name a person where the deed names a shell.</p>
@@ -8121,7 +8130,7 @@ def rent_stabilized_page(db: Session = Depends(get_db)):
   <p class="sub" style="font-size:0.86rem;">Buildings built before 1974 with six or more units are commonly stabilized. Buildings that took certain tax benefits must register units for the benefit period. And the registration record itself is a signal: {esc(reg_line) if reg_line else "DHCR publishes building-level registration counts each year."} A building that stops registering units year over year is a building worth watching, which is exactly how PulseCities uses the data on every <a href="/neighborhoods" style="color:#6fb1d8;">neighborhood page</a>.</p>
 
   <h2>While you are checking</h2>
-  <p class="sub" style="font-size:0.86rem;">The same address search shows who took the deed on your building, the eviction record, and open violations. <a href="/who-owns-my-building" style="color:#6fb1d8;">Who owns my building &rarr;</a></p>
+  <p class="sub" style="font-size:0.86rem;">The same address search shows who took the deed on your building, the eviction record, and open violations. <a href="/who-owns-my-building" style="color:#6fb1d8;">Who owns my building &rarr;</a> <a href="/eviction-case" style="color:#6fb1d8;margin-left:10px;">Look up an eviction case &rarr;</a></p>
 
   <h2>Common questions</h2>
   {faq_html}

@@ -140,6 +140,41 @@ class TestWiring:
                 f"the evictions page does not link the lookup ({params})"
             )
 
+    def test_every_surface_that_shows_an_eviction_offers_the_lookup(self):
+        """Someone holding case paperwork lands on one of these, not on the
+        lookup itself. /evictions/{name} is 127 pages and /property is where an
+        address search ends, so both carry it; the two sibling tenant tools
+        cross-link it the way they already cross-link each other."""
+        surfaces = {
+            "/evictions": {},
+            "/evictions/bushwick": {},
+            "/who-owns-my-building": {},
+            "/is-my-building-rent-stabilized": {},
+        }
+        for path, params in surfaces.items():
+            html = client.get(path, params=params).text
+            assert 'href="/eviction-case"' in html, f"{path} does not offer the lookup"
+
+    def test_a_property_with_evictions_offers_the_lookup(self):
+        db = SessionLocal()
+        try:
+            bbl = db.execute(text("""
+                SELECT bbl FROM evictions_raw WHERE bbl IS NOT NULL
+                GROUP BY bbl ORDER BY count(*) DESC LIMIT 1
+            """)).scalar()
+        finally:
+            db.close()
+        if not bbl:
+            pytest.skip("no eviction has a BBL in this database")
+        assert 'href="/eviction-case"' in client.get(f"/property/{bbl}").text
+
+    def test_nginx_301s_the_trailing_slash(self):
+        """Every other content route 301s its slash form. This one 404'd."""
+        conf = (ROOT / "deploy" / "nginx-pulsecities.conf").read_text()
+        rule = [l for l in conf.splitlines() if 'who-owns-my-building|' in l]
+        assert rule, "trailing-slash redirect rule not found"
+        assert "eviction-case|" in rule[0], "/eviction-case/ is not in the 301 list"
+
     def test_it_is_in_the_sitemap_source(self):
         src = (ROOT / "scripts" / "generate_sitemap.py").read_text()
         assert '"/eviction-case"' in src
