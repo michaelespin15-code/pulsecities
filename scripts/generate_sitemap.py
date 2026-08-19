@@ -193,7 +193,7 @@ def build() -> dict[str, str]:
         # NORWORTH HOLDINGS LLC, three buildings on one block, which had earned
         # 3 of the site's 5 total clicks while marked noindex.
         from api.routes.frontend import (
-            _BUILDING_KEY_SQL, _LLC_MIN_BUILDINGS, _LLC_SLUG_RE,
+            _BUILDING_KEY_SQL, _LLC_MIN_BUILDINGS, _LLC_MIN_LOTS, _LLC_SLUG_RE,
         )
 
         llc_rows = db.execute(text(f"""
@@ -205,7 +205,7 @@ def build() -> dict[str, str]:
             WHERE doc_type = 'DEED' AND party_type = '2'
               AND party_name_normalized LIKE '%LLC%'
             GROUP BY 1, 2
-            HAVING count(DISTINCT bbl) >= 3
+            HAVING count(DISTINCT bbl) >= {_LLC_MIN_LOTS}
                AND count(DISTINCT ({_BUILDING_KEY_SQL})) >= {_LLC_MIN_BUILDINGS}
         """)).fetchall()
         llcs = sorted(
