@@ -214,7 +214,7 @@
                 align-items: center;
                 justify-content: center;
                 font-size: 12px;
-                color:#85929d;
+                color:#8a97a2;
                 text-decoration: none;
                 height: 56px;
                 white-space: nowrap;
@@ -446,7 +446,7 @@
                     </div>
                 </div>
                 <div style="margin-top:8px;padding-top:7px;border-top:1px solid rgba(147,161,173,0.1);">
-                    <button id="operator-layer-btn" type="button" onclick="toggleOperatorLayer()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:3px 0;min-height:28px;color:#78838d;font-size:12px;" aria-pressed="false">
+                    <button id="operator-layer-btn" type="button" onclick="toggleOperatorLayer()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:3px 0;min-height:28px;color:#818c97;font-size:12px;" aria-pressed="false">
                         <span id="operator-layer-dot" style="width:9px;height:9px;border-radius:50%;background:rgba(237,99,23,0.3);border:1px solid rgba(237,99,23,0.4);flex-shrink:0;display:inline-block;transition:background 0.15s;"></span>
                         <span id="operator-layer-label">Operator portfolios</span>
                     </button>
@@ -648,14 +648,14 @@
                         <div id="pulse-llc-section" class="hidden mb-4 mt-3">
                             <h3 id="pulse-llc-header" class="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-2">LLC Acquisitions</h3>
                             <div id="pulse-llc-list" class="flex flex-col gap-1 text-sm"></div>
-                            <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:#78838d;">Source: NYC ACRIS (bnx9-e6tj)</div>
+                            <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:#818c97;">Source: NYC ACRIS (bnx9-e6tj)</div>
                         </div>
 
                         <!-- Recent Permits subsection -->
                         <div id="pulse-permits-section" class="hidden mb-4">
                             <h3 id="pulse-permits-header" class="text-xs font-semibold text-sky-400 uppercase tracking-wider mb-2">Recent Permits</h3>
                             <div id="pulse-permits-list" class="flex flex-col gap-1 text-sm"></div>
-                            <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:#78838d;">Source: NYC DOB (ipu4-2q9a)</div>
+                            <div class="text-xs mt-1.5" style="font-family:'JetBrains Mono',monospace;color:#818c97;">Source: NYC DOB (ipu4-2q9a)</div>
                         </div>
 
                         <!-- Recent Evictions subsection -->
@@ -2151,7 +2151,7 @@
                     '<div style="position:absolute;inset:0;display:flex;flex-direction:column;' +
                     'align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;' +
                     'background:#111823;">' +
-                    '<img src="/map-preview.webp" alt="" width="560" height="300" ' +
+                    '<img src="/map-preview-560.webp" alt="" width="560" height="300" ' +
                     'style="max-width:100%;height:auto;border-radius:8px;opacity:.5;">' +
                     '<p style="font-family:\'DM Sans\',sans-serif;font-size:0.9rem;color:#e4e8ec;max-width:420px;">' +
                     'The interactive map cannot run in this browser.</p>' +
@@ -3545,7 +3545,7 @@
             const _seeLegendBtn = document.createElement('button');
             _seeLegendBtn.id = 'see-legend-btn';
             _seeLegendBtn.textContent = t('ui', 'see_legend');
-            _seeLegendBtn.style.cssText = 'display:none;position:absolute;top:8px;right:8px;z-index:31;font-size:12px;color:#85929d;background:rgba(17,24,35,0.8);border:1px solid rgba(147,161,173,0.15);border-radius:4px;padding:4px 8px;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);';
+            _seeLegendBtn.style.cssText = 'display:none;position:absolute;top:8px;right:8px;z-index:31;font-size:12px;color:#8a97a2;background:rgba(17,24,35,0.8);border:1px solid rgba(147,161,173,0.15);border-radius:4px;padding:4px 8px;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);';
             const _mapEl    = document.getElementById('map');
             const _drawerHandle = document.getElementById('mobile-drawer-handle');
             let _hideTimer  = null;

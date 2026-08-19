@@ -29,7 +29,7 @@
         .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; color: #ed6317; font-weight: 400; }
         .stat-label { font-size:0.75rem; color:#93a1ad; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
         .tag-strong { background: rgba(237,99,23,0.15); border: 1px solid rgba(237,99,23,0.35); color: #ed6317; font-size:0.75rem; padding: 2px 8px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; }
-        .tag-possible { background: rgba(147,161,173,0.08); border: 1px solid rgba(147,161,173,0.2); color:#85929d; font-size:0.75rem; padding: 2px 8px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; }
+        .tag-possible { background: rgba(147,161,173,0.08); border: 1px solid rgba(147,161,173,0.2); color:#8a97a2; font-size:0.75rem; padding: 2px 8px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; }
         .signal-chip { display: inline-flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size:0.75rem; background: rgba(17,24,35,0.6); border: 1px solid rgba(147,161,173,0.18); border-radius: 4px; padding: 2px 7px; color:#93a1ad; }
         .llc-pill { font-family: 'JetBrains Mono', monospace; font-size:0.75rem; background: rgba(17,24,35,0.5); border: 1px solid rgba(147,161,173,0.1); border-radius: 4px; padding: 3px 8px; color:#93a1ad; }
         details > summary { list-style: none; cursor: pointer; }
@@ -86,7 +86,7 @@
     </nav>
 
     <main id="main-content" class="page-wrap">
-        <a href="/" style="font-size:0.75rem; color:#85929d; display: inline-block; margin-bottom: 20px;" data-i18n="back_map">← Home</a>
+        <a href="/" style="font-size:0.75rem; color:#8a97a2; display: inline-block; margin-bottom: 20px;" data-i18n="back_map">← Home</a>
 
 
         <!-- Content -->
@@ -104,9 +104,9 @@
                             <span class="signal-chip" data-i18n="chip_public_records">public records</span>
                         </div>
                         <div style="margin-top: 10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                            <button id="copy-link-btn" data-i18n="copy_link" style="font-size:0.75rem;color:#78838d;background:rgba(147,161,173,0.06);border:1px solid rgba(147,161,173,0.15);border-radius:5px;padding:4px 10px;cursor:pointer;min-height:28px;font-family:'DM Sans',sans-serif;">Copy link</button>
+                            <button id="copy-link-btn" data-i18n="copy_link" style="font-size:0.75rem;color:#818c97;background:rgba(147,161,173,0.06);border:1px solid rgba(147,161,173,0.15);border-radius:5px;padding:4px 10px;cursor:pointer;min-height:28px;font-family:'DM Sans',sans-serif;">Copy link</button>
                             <span id="copy-link-announce" aria-live="polite" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;"></span>
-                            <a id="brief-link-btn" href="#" style="display:none;font-size:0.75rem;color:#78838d;background:rgba(147,161,173,0.06);border:1px solid rgba(147,161,173,0.15);border-radius:5px;padding:4px 10px;min-height:28px;line-height:20px;text-decoration:none;">View evidence brief</a>
+                            <a id="brief-link-btn" href="#" style="display:none;font-size:0.75rem;color:#818c97;background:rgba(147,161,173,0.06);border:1px solid rgba(147,161,173,0.15);border-radius:5px;padding:4px 10px;min-height:28px;line-height:20px;text-decoration:none;">View evidence brief</a>
                             <button id="follow-btn" data-i18n="follow_operator" aria-expanded="false" aria-controls="follow-form" style="font-size:0.75rem;color:#ed6317;background:rgba(237,99,23,0.06);border:1px solid rgba(237,99,23,0.25);border-radius:5px;padding:4px 10px;cursor:pointer;min-height:28px;font-family:'DM Sans',sans-serif;">Follow</button>
                         </div>
                         <div id="follow-form" style="display:none;margin-top:10px;max-width:420px;">
@@ -118,7 +118,7 @@
                             <p id="follow-status" aria-live="polite" style="display:none;font-size:0.75rem;margin-top:8px;"></p>
                         </div>
                     </div>
-                    <div style="font-size:0.75rem; color:#78838d; font-family: 'JetBrains Mono', monospace; padding-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline;">
+                    <div style="font-size:0.75rem; color:#818c97; font-family: 'JetBrains Mono', monospace; padding-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline;">
                         <span data-i18n="source_acris">Source: NYC ACRIS</span>
                         <a id="paper-trail-link" href="#" style="display:none; color:#6fb1d8; text-decoration:none;" data-i18n="download_csv" onclick="plausible('Paper Trail Download')">Download the paper trail (CSV)</a>
                     </div>
@@ -165,7 +165,7 @@
 
             <!-- LLC network graph -->
             <div id="network-section" style="display:none; margin-bottom: 24px;">
-                <div style="font-size:0.78rem; font-weight: 600; color:#85929d; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;" data-i18n="network_header">
+                <div style="font-size:0.78rem; font-weight: 600; color:#8a97a2; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;" data-i18n="network_header">
                     LLC Network
                 </div>
                 <div style="font-size:0.75rem; color: #93a1ad; margin-bottom: 12px; line-height: 1.5;" data-i18n="network_caveat">
@@ -175,14 +175,14 @@
                     <svg id="network-svg" style="display:block; width:100%; height:auto;" role="img" aria-label="Network graph of LLC entities and ZIP codes for this operator"></svg>
                     <div id="network-tip" style="display:none; position:absolute; pointer-events:none; background:#1b2534; border:1px solid rgba(147,161,173,0.25); border-radius:6px; padding:7px 10px; font-size:0.75rem; color:#e4e8ec; line-height:1.45; max-width:230px; z-index:5; box-shadow:0 4px 16px rgba(0,0,0,0.4);"></div>
                 </div>
-                <div style="font-size:0.75rem; color:#78838d; margin-top: 8px;" data-i18n="network_hint">
+                <div style="font-size:0.75rem; color:#818c97; margin-top: 8px;" data-i18n="network_hint">
                     Select a ZIP to open it on the map. Select an LLC to search its records.
                 </div>
             </div>
 
             <!-- Related Operators -->
             <div id="related-section" style="display: none; margin-bottom: 16px;">
-                <div style="font-size:0.78rem; font-weight: 600; color:#85929d; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;" data-i18n="related_operators">
+                <div style="font-size:0.78rem; font-weight: 600; color:#8a97a2; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;" data-i18n="related_operators">
                     Related Operators
                 </div>
                 <div style="font-size:0.75rem; color: #93a1ad; margin-bottom: 14px; line-height: 1.5;" data-i18n="related_caveat">
@@ -195,7 +195,7 @@
             <div id="eviction-wrap" style="display:none; margin-bottom: 16px;">
                 <div style="padding: 12px 16px; background: rgba(228,72,59,0.05); border: 1px solid rgba(228,72,59,0.2); border-radius: 8px;">
                     <div style="font-size:0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color:#e4483b; margin-bottom: 4px; font-family: 'JetBrains Mono', monospace;" data-i18n="eviction_flagged">Eviction filings before acquisition</div>
-                    <div style="font-size:0.75rem; color:#78838d; margin-bottom: 10px; line-height: 1.5;" data-i18n="eviction_flagged_note">Properties below had eviction filings recorded before a later acquisition in public records. Sourced from ACRIS and NYC housing court data.</div>
+                    <div style="font-size:0.75rem; color:#818c97; margin-bottom: 10px; line-height: 1.5;" data-i18n="eviction_flagged_note">Properties below had eviction filings recorded before a later acquisition in public records. Sourced from ACRIS and NYC housing court data.</div>
                     <div id="eviction-rows" style="display: flex; flex-direction: column; gap: 6px;"></div>
                 </div>
             </div>
@@ -204,12 +204,12 @@
             <div class="panel" style="margin-bottom: 16px;">
                 <div style="padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(147,161,173,0.07);">
                     <span style="font-size:0.82rem; font-weight: 600; color:#93a1ad;" data-i18n="portfolio_header">High-risk properties in this portfolio</span>
-                    <span id="portfolio-count" style="font-size:0.75rem; color:#85929d; font-family: 'JetBrains Mono', monospace;"></span>
+                    <span id="portfolio-count" style="font-size:0.75rem; color:#8a97a2; font-family: 'JetBrains Mono', monospace;"></span>
                 </div>
                 <div class="desktop-table-wrap" id="portfolio-table-wrap">
                     <table style="width: 100%; min-width: 620px; border-collapse: collapse; font-size:0.78rem;">
                         <thead>
-                            <tr style="color:#78838d; font-size:0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">
+                            <tr style="color:#818c97; font-size:0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">
                                 <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_address">Address</th>
                                 <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_zip">ZIP</th>
                                 <th scope="col" style="padding: 8px 16px; text-align: center; font-weight: 400;" data-i18n="portfolio_score">Score</th>
@@ -225,7 +225,7 @@
                 <div id="portfolio-empty" style="display:none; padding:24px 16px; font-size:0.8rem; color:#93a1ad; text-align:center;" data-i18n="portfolio_empty">No high-risk properties found.</div>
                 <div id="portfolio-toggle-wrap" style="display:none; padding:10px 16px; border-top:1px solid rgba(147,161,173,0.06);">
                     <button id="portfolio-toggle-btn" type="button" onclick="togglePortfolio()"
-                        style="font-size:0.75rem;color:#78838d;background:none;border:none;cursor:pointer;padding:4px 0;min-height:32px;">
+                        style="font-size:0.75rem;color:#818c97;background:none;border:none;cursor:pointer;padding:4px 0;min-height:32px;">
                         Show all properties
                     </button>
                 </div>
@@ -234,12 +234,12 @@
             <!-- Recent acquisitions -->
             <div class="panel">
                 <div style="padding: 14px 16px 10px; font-size:0.82rem; font-weight: 600; color:#93a1ad; border-bottom: 1px solid rgba(147,161,173,0.07);">
-                    <span data-i18n="recent_acq_header">Recent Acquisitions</span> <span style="font-size:0.75rem; font-weight: 400; color:#78838d;" data-i18n="recent_acq_window">(last 18 months, up to 50)</span>
+                    <span data-i18n="recent_acq_header">Recent Acquisitions</span> <span style="font-size:0.75rem; font-weight: 400; color:#818c97;" data-i18n="recent_acq_window">(last 18 months, up to 50)</span>
                 </div>
                 <div id="acq-table" class="desktop-table-wrap">
                     <table style="width: 100%; border-collapse: collapse; font-size:0.78rem;">
                         <thead>
-                            <tr style="color:#78838d; font-size:0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">
+                            <tr style="color:#818c97; font-size:0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">
                                 <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_address">Address</th>
                                 <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_zip">Zip</th>
                                 <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 400;" data-i18n="th_buyer">Buyer LLC</th>
@@ -253,21 +253,21 @@
                 <div id="acq-empty" style="display: none; padding: 24px 16px; font-size:0.8rem; color: #93a1ad; text-align: center;" data-i18n="acq_empty">
                     No acquisitions found in the 18-month window.
                 </div>
-                <div id="acq-amount-note" style="display:none; padding:10px 16px 0; font-size:0.75rem; color:#78838d; line-height:1.5;"></div>
+                <div id="acq-amount-note" style="display:none; padding:10px 16px 0; font-size:0.75rem; color:#818c97; line-height:1.5;"></div>
                 <div id="acq-mobile-list" class="mobile-card-list"></div>
                 <div id="acq-toggle-wrap" style="display:none; padding:10px 16px; border-top:1px solid rgba(147,161,173,0.06);">
                     <button id="acq-toggle-btn" type="button" onclick="toggleAcquisitions()"
-                        style="font-size:0.75rem;color:#78838d;background:none;border:none;cursor:pointer;padding:4px 0;min-height:32px;">
+                        style="font-size:0.75rem;color:#818c97;background:none;border:none;cursor:pointer;padding:4px 0;min-height:32px;">
                     </button>
                 </div>
-                <div style="padding:10px 16px 12px; font-size:0.75rem; color:#78838d; line-height:1.5;">
+                <div style="padding:10px 16px 12px; font-size:0.75rem; color:#818c97; line-height:1.5;">
                     <span data-i18n="acq_verify_note">Each row shows its ACRIS document ID under the date. Verify any record at</span> <a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBL" target="_blank" rel="noopener noreferrer" style="color:#ed6317;">a836-acris.nyc.gov</a>.
                 </div>
             </div>
 
             <!-- Acquisition pace chart (below deal log) -->
             <div class="panel" id="timeline-wrap" style="display:none; margin-top: 16px; padding: 14px 16px;">
-                <div style="font-size:0.75rem; font-weight: 600; color:#78838d; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;" data-i18n="acq_pace">Acquisition Pace</div>
+                <div style="font-size:0.75rem; font-weight: 600; color:#818c97; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;" data-i18n="acq_pace">Acquisition Pace</div>
                 <div style="position: relative; height: 72px;">
                     <canvas id="timeline-chart"></canvas>
                 </div>
@@ -279,7 +279,7 @@
                     <summary style="padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;">
                         <span style="font-size:0.82rem; font-weight: 600; color:#93a1ad;" data-i18n="llc_entities_header">LLC Entities</span>
                         <span style="display: flex; align-items: center; gap: 8px;">
-                            <span id="llc-count-badge" class="mono" style="font-size:0.75rem; color:#78838d;"></span>
+                            <span id="llc-count-badge" class="mono" style="font-size:0.75rem; color:#818c97;"></span>
                             <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(147,161,173,0.4)" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
                         </span>
                     </summary>
@@ -288,8 +288,8 @@
             </div>
 
             <div style="margin-top: 28px; padding-top: 14px; border-top: 1px solid rgba(147,161,173,0.07);">
-                <p id="last-updated" style="font-size:0.75rem; color:#78838d; font-family: 'JetBrains Mono', monospace;"></p>
-                <p style="font-size:0.75rem; color:#78838d; margin-top: 6px;"><a id="explore-ops-link" href="/operators" style="color:#78838d;" data-i18n="explore_ops">Explore other NYC operator networks</a></p>
+                <p id="last-updated" style="font-size:0.75rem; color:#818c97; font-family: 'JetBrains Mono', monospace;"></p>
+                <p style="font-size:0.75rem; color:#818c97; margin-top: 6px;"><a id="explore-ops-link" href="/operators" style="color:#818c97;" data-i18n="explore_ops">Explore other NYC operator networks</a></p>
             </div>
 
         </div><!-- /content -->
@@ -993,7 +993,7 @@
                     '<span class="mono" style="color:#e4483b;">' + esc(addr) + '</span>' +
                     ': ' + t('evicted_filed') + ' <span class="mono">' + esc(e.eviction_date || '') + '</span>' +
                     ', then acquired <span class="mono">' + esc(e.acquisition_date || '') + '</span>' +
-                    ' by <span class="mono" style="color:#85929d;">' + esc(e.acquiring_entity || '') + '</span>';
+                    ' by <span class="mono" style="color:#8a97a2;">' + esc(e.acquiring_entity || '') + '</span>';
                 evContainer.appendChild(row);
             });
         }
@@ -1030,16 +1030,16 @@
             if (i % 2 === 0) tr.style.background = 'rgba(17,24,35,0.18)';
             tr.innerHTML =
                 '<td style="padding:7px 16px;color:#eef2f5;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><a href="/property/' + encodeURIComponent(p.bbl) + '" style="color:inherit;text-decoration:none;">' + esc(addrOrLot(acq.address, p.bbl)) + '</a></td>' +
-                '<td class="mono" style="padding:7px 16px;color:#85929d;font-size:0.75rem;white-space:nowrap;">' +
+                '<td class="mono" style="padding:7px 16px;color:#8a97a2;font-size:0.75rem;white-space:nowrap;">' +
                     esc(p.zip_code || '') +
-                    (p.zip_code && zipNames[p.zip_code] ? '<br><span style="font-size:0.75rem;color:#78838d;font-family:inherit;">' + esc(zipNames[p.zip_code]) + '</span>' : '') +
+                    (p.zip_code && zipNames[p.zip_code] ? '<br><span style="font-size:0.75rem;color:#818c97;font-family:inherit;">' + esc(zipNames[p.zip_code]) + '</span>' : '') +
                 '</td>' +
                 '<td style="padding:7px 16px;text-align:center;">' +
                     '<span class="mono" style="font-size:0.75rem;background:' + sc.bg + ';color:' + sc.text + ';padding:2px 7px;border-radius:4px;">' + fmtScore(p.displacement_score) + '</span>' +
                 '</td>' +
                 '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (bcCount > 0 ? '#ed6317' : 'rgba(147,161,173,0.35)') + ';">' + (bcCount > 0 ? bcCount : t('na')) + '</td>' +
                 '<td class="mono" style="padding:7px 16px;text-align:center;font-size:0.75rem;color:' + (rs ? '#93a1ad' : 'rgba(147,161,173,0.35)') + ';">' + (rs ? rs.rs_unit_count : t('na')) + '</td>' +
-                '<td class="mono" style="padding:7px 16px;font-size:0.75rem;color:#85929d;white-space:nowrap;">' + (acq.doc_date ? new Intl.DateTimeFormat('en-US', {year:'numeric',month:'short',timeZone:'UTC'}).format(new Date(acq.doc_date)) : t('na')) + '</td>';
+                '<td class="mono" style="padding:7px 16px;font-size:0.75rem;color:#8a97a2;white-space:nowrap;">' + (acq.doc_date ? new Intl.DateTimeFormat('en-US', {year:'numeric',month:'short',timeZone:'UTC'}).format(new Date(acq.doc_date)) : t('na')) + '</td>';
             portfolioTbody.appendChild(tr);
 
             const mRow = formatMobilePropertyRow(p, acq, rs, viol, zipNames);
@@ -1105,10 +1105,10 @@
                 if (i >= ACQ_CAP) { tr.classList.add('acq-extra'); tr.style.display = 'none'; }
                 tr.innerHTML =
                     '<td style="padding:8px 16px;color:#eef2f5;">' + esc(addrOrLot(r.address, r.bbl) || t('na')) + '</td>' +
-                    '<td class="mono" style="padding:8px 16px;color:#85929d;font-size:0.75rem;line-height:1.3;">' + esc(r.zip_code || '') + (r.zip_code && zipNames[r.zip_code] ? '<br><span style="font-size:0.75rem;color:#78838d;font-family:inherit;">' + esc(zipNames[r.zip_code]) + '</span>' : '') + '</td>' +
+                    '<td class="mono" style="padding:8px 16px;color:#8a97a2;font-size:0.75rem;line-height:1.3;">' + esc(r.zip_code || '') + (r.zip_code && zipNames[r.zip_code] ? '<br><span style="font-size:0.75rem;color:#818c97;font-family:inherit;">' + esc(zipNames[r.zip_code]) + '</span>' : '') + '</td>' +
                     '<td class="mono" style="padding:8px 16px;color:#93a1ad;font-size:0.75rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(r.buyer_name || '') + '</td>' +
-                    '<td class="mono" style="padding:8px 16px;color:#85929d;font-size:0.75rem;white-space:nowrap;">' + esc(r.doc_date || '') +
-                        (r.document_id ? '<br><span style="font-size:0.75rem;color:#78838d;">' + esc(r.document_id) + '</span>' : '') + '</td>' +
+                    '<td class="mono" style="padding:8px 16px;color:#8a97a2;font-size:0.75rem;white-space:nowrap;">' + esc(r.doc_date || '') +
+                        (r.document_id ? '<br><span style="font-size:0.75rem;color:#818c97;">' + esc(r.document_id) + '</span>' : '') + '</td>' +
                     '<td class="mono" style="padding:8px 8px 8px 16px;text-align:right;color:#93a1ad;font-size:0.75rem;white-space:nowrap;">' + fmtCurrency(r.doc_amount) + '</td>';
                 tbody.appendChild(tr);
 
@@ -1215,7 +1215,7 @@
                 '<a href="/operator/' + esc(rel.operator_root) + '" class="mono accent" style="font-size:1rem;letter-spacing:0.04em;">' + esc(rel.operator_root) + '</a>' +
                 '<span class="' + (isStrong ? 'tag-strong' : 'tag-possible') + '">' + esc(relTag) + '</span>' +
             '</div>' +
-            '<div class="mono" style="font-size:0.75rem;color:#78838d;">' +
+            '<div class="mono" style="font-size:0.75rem;color:#818c97;">' +
                 t('confidence').replace('{pct}', pct) +
             '</div>';
         card.appendChild(header);
@@ -1234,13 +1234,13 @@
                 const count = (sig.shared_bbls || []).length;
                 if (count > 0) {
                     const detail = document.createElement('div');
-                    detail.style.cssText = 'width:100%;font-size:0.75rem;color:#85929d;padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
+                    detail.style.cssText = 'width:100%;font-size:0.75rem;color:#8a97a2;padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
                     detail.textContent = count + ' shared BBL' + (count !== 1 ? 's' : '') + '. See shared properties below.';
                     sigRow.appendChild(detail);
                 }
             } else if (sig.detail) {
                 const detail = document.createElement('div');
-                detail.style.cssText = 'width:100%;font-size:0.75rem;color:#85929d;padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
+                detail.style.cssText = 'width:100%;font-size:0.75rem;color:#8a97a2;padding:2px 2px 6px;line-height:1.4;font-family:"JetBrains Mono",monospace;';
                 detail.textContent = sig.detail;
                 sigRow.appendChild(detail);
             }
@@ -1251,7 +1251,7 @@
             const sharedDiv = document.createElement('div');
             sharedDiv.style.cssText = 'border-top:1px solid rgba(147,161,173,0.07);padding:10px 16px;';
             const label = document.createElement('div');
-            label.style.cssText  = 'font-size:0.75rem;color:#85929d;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;';
+            label.style.cssText  = 'font-size:0.75rem;color:#8a97a2;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;';
             label.textContent    = t('shared_properties');
             sharedDiv.appendChild(label);
             rel.shared_properties.forEach(prop => {
@@ -1274,7 +1274,7 @@
             const summ = document.createElement('summary');
             summ.style.cssText = 'padding:10px 16px;display:flex;align-items:center;justify-content:space-between;';
             summ.innerHTML =
-                '<span style="font-size:0.75rem;color:#85929d;">' +
+                '<span style="font-size:0.75rem;color:#8a97a2;">' +
                     t('llc_in_cluster').replace('{name}', esc(rel.operator_root)) +
                 '</span>' +
                 '<svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(147,161,173,0.3)" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>';

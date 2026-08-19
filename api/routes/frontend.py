@@ -701,10 +701,10 @@ def _build_neighborhood_page(
         i_col = _idx_color(float(idx) if idx is not None else 0.0)
         if key == "rs_unit_loss":
             cnt_s = L["rs_none"]
-            c_col = "#78838d"
+            c_col = "#818c97"
         elif count == 0:
             cnt_s = "0"
-            c_col = "#78838d"
+            c_col = "#818c97"
         else:
             cnt_s = f"{count:,}"
             c_col = "#eef2f5"
@@ -1040,7 +1040,7 @@ def _build_neighborhood_page(
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 h1,h2,h3{{text-wrap:balance}}
-:root{{--bg:#111823;--border:rgba(147,161,173,.1);--text:#eef2f5;--muted:#93a1ad;--dim:#85929d;--faint:#78838d;--accent:#ed6317}}
+:root{{--bg:#111823;--border:rgba(147,161,173,.1);--text:#eef2f5;--muted:#93a1ad;--dim:#8a97a2;--faint:#818c97;--accent:#ed6317}}
 body{{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}}
 a{{color:inherit;text-decoration:none}}
 nav{{border-bottom:1px solid var(--border);padding:12px 0}}
@@ -2286,7 +2286,7 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     css = """<style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 h1,h2,h3{text-wrap:balance}
-:root{--bg:#111823;--border:rgba(147,161,173,.1);--text:#eef2f5;--muted:#93a1ad;--dim:#85929d;--faint:#78838d;--accent:#ed6317}
+:root{--bg:#111823;--border:rgba(147,161,173,.1);--text:#eef2f5;--muted:#93a1ad;--dim:#8a97a2;--faint:#818c97;--accent:#ed6317}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 nav{border-bottom:1px solid var(--border);padding:12px 0}

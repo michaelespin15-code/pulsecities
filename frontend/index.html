@@ -130,11 +130,14 @@
             --border:  rgba(147, 161, 173, 0.12);
             --text:    #e4e8ec;
             --muted:   #93a1ad;
-            --dim:      #85929d;
-            --faint:    #78838d;
+            --dim:      #8a97a2;
+            --faint:    #818c97;
             --pulse:   #ed6317;
             --sky:     #6fb1d8;
             --stamp:   #e4483b;
+            /* Stamp red is for rules and borders. As text it measures 3.94:1
+               on the tinted docket header, so text uses this lighter red. */
+            --red:     #ec6a5e;
             --mono:    'JetBrains Mono', monospace;
             --display: 'Bricolage Grotesque', 'DM Sans', sans-serif;
         }
@@ -290,7 +293,10 @@
             flex-wrap: wrap;
         }
         .docket-head .gain {
-            color: var(--stamp); font-weight: 600; font-size: 13px;
+            /* The stamp red is 3.94:1 as text on this tinted header, which
+               Lighthouse fails. The border keeps the stamp colour; the text
+               steps up to --red at 5.06:1. */
+            color: var(--red); font-weight: 600; font-size: 13px;
             border: 1.5px solid rgba(228, 72, 59, 0.55); border-radius: 4px;
             padding: 2px 10px; letter-spacing: 0.04em;
             transform: rotate(-1.2deg);
@@ -472,8 +478,8 @@
         <div>
             <a class="hero-map" href="/map" id="cta-explore" aria-label="Explore the displacement risk map">
                 <picture>
-                    <source srcset="/map-preview-560.webp?v=4 560w, /map-preview.webp?v=4 1120w" sizes="(max-width: 860px) calc(100vw - 40px), 340px" type="image/webp">
-                    <img src="/map-preview.jpg?v=4" srcset="/map-preview-560.jpg?v=4 560w, /map-preview.jpg?v=4 1120w" sizes="(max-width: 860px) calc(100vw - 40px), 340px" width="1120" height="600" alt="NYC displacement risk map" loading="eager" fetchpriority="high" decoding="async">
+                    <source srcset="/map-preview-560.webp?v=4 560w, /map-preview-760.webp?v=4 760w, /map-preview.webp?v=4 1120w" sizes="(max-width: 860px) calc(100vw - 40px), 340px" type="image/webp">
+                    <img src="/map-preview.jpg?v=4" srcset="/map-preview-560.jpg?v=4 560w, /map-preview-760.jpg?v=4 760w, /map-preview.jpg?v=4 1120w" sizes="(max-width: 860px) calc(100vw - 40px), 340px" width="1120" height="600" alt="NYC displacement risk map" loading="eager" fetchpriority="high" decoding="async">
                 </picture>
                 <span class="map-explore" data-i18n="explore_map">Explore the map &rarr;</span>
             </a>

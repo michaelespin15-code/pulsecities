@@ -31,8 +31,8 @@ AA_BODY = 4.5
 RAMP = {
     "--text": "#e4e8ec",
     "--muted": "#93a1ad",
-    "--dim": "#85929d",
-    "--faint": "#78838d",
+    "--dim": "#8a97a2",
+    "--faint": "#818c97",
 }
 
 # Tokens that are not part of the grey ramp but are used for text.
@@ -55,7 +55,18 @@ CHIP_TEXT = {"#111823", "#1a1a2e", "#92400e", "var(--bg)"}
 BACKGROUNDS = {
     "briefs.py": (PAGE_BG, "#ffffff", "#f2f5f7", "#fff7ed"),
 }
-DEFAULT_BACKGROUNDS = (PAGE_BG, "#1b2534")
+# The card surfaces text actually sits on, not just the page. Lighthouse caught
+# --faint at 4.25:1 on the homepage docket (#16202d) and 4.05:1 on its
+# orange-tinted header (#21232c = rgba(237,99,23,.05) over that surface) while
+# this test passed it at 4.61:1 against the page background. The lightest
+# surface is the one that decides, so it is measured here.
+# A colour passes if it clears AA against ANY listed background, so listing the
+# page background alongside the cards would prove nothing: everything clears on
+# the darkest one. The dark theme therefore gets a single value, the LIGHTEST
+# surface it paints text on, and clearing that clears every darker one.
+#   #111823 page  <  #16202d card  <  #21232c tinted head  <  #1b2534 panel
+LIGHTEST_DARK_SURFACE = "#1b2534"
+DEFAULT_BACKGROUNDS = (LIGHTEST_DARK_SURFACE,)
 
 # Accepted below 4.5:1, each for a stated reason. Keep this list short and never
 # add to it to make a test pass.
