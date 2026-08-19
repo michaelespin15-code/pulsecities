@@ -47,6 +47,24 @@ class TestStatsAPI:
         for key in ("zip_code", "name", "borough", "score", "last_updated"):
             assert key in tr, f"top_risk missing key '{key}': {list(tr.keys())}"
 
+    def test_top_risk_history_matches_the_standalone_endpoint(self):
+        """The homepage draws its pulse trace from this key rather than chaining
+        a second request behind the response that names the ZIP. If the two ever
+        disagree, the hero draws a different series from the one the ZIP page
+        shows."""
+        body = client.get("/api/stats").json()
+        assert "top_risk_history" in body, list(body.keys())
+        hist = body["top_risk_history"]
+        assert isinstance(hist, list)
+        if body["top_risk"] is None:
+            assert hist == []
+            pytest.skip("No displacement scores in test DB")
+        zip_code = body["top_risk"]["zip_code"]
+        standalone = client.get(f"/api/score-history/{zip_code}?days=90").json()
+        assert hist == standalone, "bundled history drifted from /api/score-history"
+        for point in hist[:5]:
+            assert set(point) == {"date", "score"}
+
     def test_rate_limit_header_present(self):
         resp = client.get("/api/stats")
         assert "x-ratelimit-limit" in resp.headers, (

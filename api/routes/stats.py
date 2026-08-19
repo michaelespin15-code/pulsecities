@@ -230,6 +230,30 @@ def compute_top_risk(db) -> tuple[dict | None, list[dict]]:
     return top_risk, top_risk_list
 
 
+def _top_risk_history(db, top_risk, days: int = 90) -> list[dict]:
+    """The 90-day series for the top-risk ZIP, shipped with the stats it belongs to.
+
+    The homepage draws a pulse trace for whichever ZIP this endpoint names as
+    top risk, so it could not know which series to ask for until this response
+    landed: navigation, then /api/stats, then /api/score-history. On a throttled
+    connection that second hop measured 788ms of critical path for 1.3KB. This
+    file's docstring already said "a single fetch, no client-side waterfall";
+    this makes that true again. /api/score-history stays, for every other ZIP.
+    """
+    zip_code = (top_risk or {}).get("zip_code")
+    if not zip_code:
+        return []
+    rows = db.execute(text("""
+        SELECT scored_at, composite_score
+        FROM score_history
+        WHERE zip_code = :zip
+          AND scored_at >= CURRENT_DATE - :days * INTERVAL '1 day'
+        ORDER BY scored_at ASC
+    """), {"zip": zip_code, "days": days}).fetchall()
+    return [{"date": r.scored_at.isoformat(), "score": round(r.composite_score, 1)}
+            for r in rows]
+
+
 @router.get("")
 @limiter.limit("60/minute")
 def get_citywide_stats(request: Request, response: Response, db: Session = Depends(get_db)):
@@ -267,6 +291,7 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
         "evictions_30d":        int(eviction_count),
         "top_risk":             top_risk,
         "top_risk_list":        top_risk_list,
+        "top_risk_history":     _top_risk_history(db, top_risk),
         "data_freshness":       _compute_freshness(db),
     }
     _STATS_CACHE["data"] = (result, _time.monotonic() + _STATS_TTL)

@@ -825,9 +825,15 @@
     // The hero trace is the brand mark drawn from live data: the current
     // top-risk neighborhood's daily score, last 90 days. The static polyline
     // stays as the no-JS fallback.
-    function drawPulseTrace(zip, name) {
-        fetch('/api/score-history/' + encodeURIComponent(zip) + '?days=90')
-            .then(r => r.ok ? r.json() : null)
+    // /api/stats now ships the series for the ZIP it names as top risk, so the
+    // trace draws from the response that identified it instead of chaining a
+    // second request behind it. The fetch stays for older cached responses.
+    function drawPulseTrace(zip, name, history) {
+        const series = Array.isArray(history) && history.length
+            ? Promise.resolve(history)
+            : fetch('/api/score-history/' + encodeURIComponent(zip) + '?days=90')
+                .then(r => r.ok ? r.json() : null);
+        series
             .then(hist => {
                 if (!Array.isArray(hist) || hist.length < 14) return;
                 var svg = document.querySelector('.pulse-trace');
@@ -866,7 +872,9 @@
         renderMeta();
         renderRankings();
         if (data.top_risk && data.top_risk.zip_code) {
-            drawPulseTrace(data.top_risk.zip_code, data.top_risk.name || data.top_risk.zip_code);
+            drawPulseTrace(data.top_risk.zip_code,
+                           data.top_risk.name || data.top_risk.zip_code,
+                           data.top_risk_history);
         }
     }).catch(() => {});
 
