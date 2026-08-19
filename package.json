@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "NYC displacement risk intelligence",
   "scripts": {
-    "build:css": "tailwindcss -i frontend/tailwind.input.css -o frontend/tailwind.min.css --minify && ./venv/bin/python scripts/stamp_asset_hash.py",
+    "build:css": "tailwindcss -i frontend/tailwind.input.css -o frontend/tailwind.min.css --minify && gzip -k9 -f frontend/tailwind.min.css && ./venv/bin/python scripts/stamp_asset_hash.py",
     "watch:css": "tailwindcss -i frontend/tailwind.input.css -o frontend/tailwind.min.css --watch"
   },
   "devDependencies": {

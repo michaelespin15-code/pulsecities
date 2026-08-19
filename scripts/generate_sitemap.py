@@ -36,6 +36,7 @@ Run manually or from cron after the nightly scoring pass:
     python -m scripts.generate_sitemap
 """
 
+import gzip
 import os
 import tempfile
 from datetime import date
@@ -297,13 +298,20 @@ def build() -> dict[str, str]:
 
 def _write_atomic(path: Path, body: str) -> None:
     """nginx serves these straight from disk, so a crawler must never catch one
-    half-written."""
+    half-written. A .gz twin is written alongside for gzip_static: 11.5 MB of
+    sitemap XML was otherwise recompressed on every crawler fetch."""
     fd, tmp_path = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
     with os.fdopen(fd, "w", encoding="utf-8") as fh:
         fh.write(body)
     # mkstemp creates 0600; nginx workers need world-read or they serve 403.
     os.chmod(tmp_path, 0o644)
     os.replace(tmp_path, path)
+
+    gz_fd, gz_tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".gz.tmp")
+    with os.fdopen(gz_fd, "wb") as fh:
+        fh.write(gzip.compress(body.encode("utf-8"), compresslevel=9))
+    os.chmod(gz_tmp, 0o644)
+    os.replace(gz_tmp, str(path) + ".gz")
 
 
 if __name__ == "__main__":
