@@ -15,6 +15,17 @@ since ae5bfae.
     subscribers  8 confirmed (5 ZIP, 2 citywide, 1 building, 0 operator)
     backlinks    0. Still the ceiling. Nothing technical changes that.
 
+**Test state, precisely.** The last complete run was in halves and green: 595
+passed + 2 skipped, then 645 passed. Since then every touched suite has been
+re-run individually and passes: entity_families, network_index, eviction_case,
+fonts, frontend_routes, content_depth, sitemap, text_contrast, ui_copy_guards,
+crawler_access, stats_api, eviction_areas, footer_consistency, infra_guards,
+indexnow. Run it in halves, not in one process; a single `pytest tests/` on two
+vCPU is still at 16% after several minutes.
+
+    python -m pytest $(ls tests/test_*.py | head -44) -q
+    python -m pytest $(ls tests/test_*.py | tail -n +45) -q
+
 ## New surfaces this session, and how they are wired
 
 **/network** — index of the 26 entity families, ranked by the largest number of
