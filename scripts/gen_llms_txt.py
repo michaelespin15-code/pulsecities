@@ -157,7 +157,7 @@ reads as prose to the parsers that check it.
 - [Neighborhood detail](https://pulsecities.com/neighborhood/11216): signal breakdown and six-month score trend, one page per ZIP at /neighborhood/{{zip}}
 - [Displacement arcs](https://pulsecities.com/displacement): documented eviction-to-resale sequences with ACRIS document IDs
 - [Operator directory](https://pulsecities.com/operators): tracked LLC operator networks, with profiles at /operator/{{name}}
-- [Entity families](https://pulsecities.com/network/flgsp): portfolios held one LLC at a time, reassembled from shared names and filing addresses, at /network/{{slug}}
+- [Owner networks](https://pulsecities.com/network): every group of companies the deed record links together, ranked\n- [Entity families](https://pulsecities.com/network/flgsp): portfolios held one LLC at a time, reassembled from shared names and filing addresses, at /network/{{slug}}
 - [Flip Watch](https://pulsecities.com/flips): buildings bought by an LLC and filed for renovation within 60 days
 - [Flip Watch editions](https://pulsecities.com/flips/editions): human-reviewed weekly eviction-to-resale arcs
 - [Speculation Radar](https://pulsecities.com/radar): one LLC taking 3+ buildings in one ZIP within 90 days
