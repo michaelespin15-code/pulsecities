@@ -8,6 +8,8 @@ SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 0 2 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scheduler.main >> /var/log/pulsecities/scraper.log 2>&1
+# Condo unit-lot address recovery — after the scrape, before the sitemap reads it
+5 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.refresh_condo_addresses >> /var/log/pulsecities/condo_addresses.log 2>&1
 15 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.generate_sitemap >> /var/log/pulsecities/sitemap.log 2>&1
 20 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.gen_llms_txt >> /var/log/pulsecities/sitemap.log 2>&1
 # Building-watch alerts — daily after the scrape; quiet nights send nothing

@@ -1731,7 +1731,8 @@ def _sibling_buildings(bbl: str, op, db) -> list[dict]:
 
 
 def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
-                         parcel=None, facts=None, siblings=None) -> str:
+                         parcel=None, facts=None, siblings=None,
+                         unit_lot=None) -> str:
     """Server-rendered content body for a single building: its public-record
     history (deeds, evictions, permits, complaints) plus links up to the ZIP,
     borough, and owning operator. Replaces the old map-shell body so the page is
@@ -2233,7 +2234,11 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     # records, not our score jargon. Title matches the query and promises the
     # record; the score stays in the description and on the page.
     zip_part = f" {zip_code}" if zip_code else ""
-    title = f"{address}, {borough} NY{zip_part}: deeds, evictions, permits | PulseCities"
+    # Unit lots on one block all inherit the building's address, so without
+    # the lot in the title, dozens of pages would share one title with each
+    # other and with the building's own page.
+    title_name = f"{address} unit lot {bbl[6:]}" if unit_lot else address
+    title = f"{title_name}, {borough} NY{zip_part}: deeds, evictions, permits | PulseCities"
     zloc = f" ({zip_code})" if zip_code else ""
     # The BBL belongs in the description because people search it: 3009970039
     # took 37 impressions and one of the site's five clicks, and two more BBLs
@@ -2278,6 +2283,17 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
         '<p class="section-sub" style="margin-top:8px;">No deed transfers, evictions, or permits are on '
         'record for this building in the current window. It is shown for reference.</p>'
     )
+    # PLUTO doesn't carry unit lots; the address is inherited from the condo's
+    # billing lot, and the page says so rather than passing the building's
+    # identity off as the lot's.
+    unit_note = ""
+    if unit_lot:
+        unit_note = (
+            '<p class="section-sub" style="margin-top:2px;margin-bottom:14px;">'
+            "This BBL is a condominium unit lot. Records below are the ones filed against "
+            f'this lot; the building&#39;s own page is <a href="/property/{e(unit_lot["billing_bbl"])}">'
+            f'BBL {e(unit_lot["billing_bbl"])}</a>.</p>'
+        )
 
     head = f"""<!DOCTYPE html>
 <html lang="en">
@@ -2367,6 +2383,7 @@ footer{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-i
 <p class="breadcrumb">{crumb_html}</p>
 <h1>{e(address)}</h1>
 <p class="subline">{e(borough)}{(" &middot; " + e(zip_code)) if zip_code else ""} &middot; BBL {e(bbl)}</p>
+{unit_note}
 {score_block}
 {lede}
 {empty}{chain_sec}{own_sec}{ev_prose}{ev_sec}{rs_sec}{viol_sec}{pm_sec}{comp_sec}{cmp_sec}{sib_sec}{faq_sec}
@@ -2410,13 +2427,30 @@ def property_page(bbl: str, db: Session = Depends(get_db)):
         LIMIT 1
     """), {"bbl": clean}).fetchone()
 
+    unit_lot = None
     if not row:
-        return _not_found()
-
-    address  = row.address.title() if row.address else clean
-    zip_code = row.zip_code or ""
-    borough  = row.borough or "NYC"
-    score    = float(row.score) if row.score is not None else None
+        # Condo unit lots (17k deed BBLs) have no parcels row; the nightly
+        # refresh recovers the building address from the block's single
+        # billing lot. Everything else is a genuine 404.
+        condo = db.execute(text("""
+            SELECT c.address, c.zip_code, c.billing_bbl, ds.score
+            FROM condo_unit_addresses c
+            LEFT JOIN displacement_scores ds ON ds.zip_code = c.zip_code
+            WHERE c.bbl = :bbl
+        """), {"bbl": clean}).fetchone()
+        if not condo:
+            return _not_found()
+        unit_lot = {"billing_bbl": condo.billing_bbl}
+        address  = _addr_title(condo.address)
+        zip_code = condo.zip_code or ""
+        borough  = {"1": "Manhattan", "2": "Bronx", "3": "Brooklyn",
+                    "4": "Queens", "5": "Staten Island"}.get(clean[0], "NYC")
+        score    = float(condo.score) if condo.score is not None else None
+    else:
+        address  = row.address.title() if row.address else clean
+        zip_code = row.zip_code or ""
+        borough  = row.borough or "NYC"
+        score    = float(row.score) if row.score is not None else None
 
     from api.routes.properties import _get_property_data
     sig = _get_property_data(clean, db).get("signals", {})
@@ -2429,11 +2463,12 @@ def property_page(bbl: str, db: Session = Depends(get_db)):
         "year_built": row.year_built, "units_res": row.units_res,
         "units_total": row.units_total, "land_use": row.land_use,
         "owner_name": row.owner_name, "assessed_total": row.assessed_total,
-    }
+    } if row else None
     facts = _property_facts(clean, zip_code, db)
     siblings = _sibling_buildings(clean, op, db)
     html = _build_property_page(clean, address, zip_code, borough, score, sig, op,
-                                parcel=parcel, facts=facts, siblings=siblings)
+                                parcel=parcel, facts=facts, siblings=siblings,
+                                unit_lot=unit_lot)
 
     # Parcels number in the hundreds of thousands; without a cap a crawler
     # walking /property/ URLs grows this dict until the box runs out of memory.
@@ -6789,22 +6824,27 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
     def _side(party_type: str):
         # 17,114 of 64,849 deed BBLs are condo unit lots (1001 and up) that
         # PLUTO does not carry, so a quarter of this table joined to nothing:
-        # no address, no ZIP, no neighbourhood link. The tax block is shared
-        # with the parcels PLUTO does carry, and 92% of blocks sit in exactly
-        # one ZIP. Where the block is unambiguous, take the ZIP from it; where
-        # it is not, take nothing. No address is ever guessed this way.
+        # no address, no ZIP, no neighbourhood link. condo_unit_addresses
+        # covers the unambiguous subset with a full address (single billing
+        # lot on the block, refreshed nightly). For the rest, the tax block is
+        # shared with the parcels PLUTO does carry, and 92% of blocks sit in
+        # exactly one ZIP. Where the block is unambiguous, take the ZIP from
+        # it; where it is not, take nothing. No address is ever guessed.
         return db.execute(text("""
             SELECT DISTINCT ON (o.document_id)
-                   o.bbl, o.doc_date, o.doc_amount, p.address,
-                   coalesce(p.zip_code, blk.zip_code) AS zip_code,
-                   coalesce(n.name, bn.name) AS hood
+                   o.bbl, o.doc_date, o.doc_amount,
+                   coalesce(p.address, c.address) AS address,
+                   coalesce(p.zip_code, c.zip_code, blk.zip_code) AS zip_code,
+                   coalesce(n.name, cn.name, bn.name) AS hood
             FROM ownership_raw o
             LEFT JOIN parcels p ON p.bbl = o.bbl
             LEFT JOIN neighborhoods n ON n.zip_code = p.zip_code
+            LEFT JOIN condo_unit_addresses c ON c.bbl = o.bbl AND p.bbl IS NULL
+            LEFT JOIN neighborhoods cn ON cn.zip_code = c.zip_code
             LEFT JOIN LATERAL (
                 SELECT max(q.zip_code) AS zip_code
                 FROM parcels q
-                WHERE p.bbl IS NULL
+                WHERE p.bbl IS NULL AND c.bbl IS NULL
                   AND q.bbl >= substring(o.bbl, 1, 6) || '0000'
                   AND q.bbl <= substring(o.bbl, 1, 6) || '9999'
                   AND q.zip_code IS NOT NULL

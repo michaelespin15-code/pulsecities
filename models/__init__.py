@@ -9,6 +9,7 @@ from models.properties import Parcel
 from models.permits import PermitRaw
 from models.complaints import ComplaintRaw
 from models.violations import ViolationRaw
+from models.condo_addresses import CondoUnitAddress
 from models.evictions import EvictionRaw
 from models.ownership import OwnershipRaw
 from models.sales import SaleRaw

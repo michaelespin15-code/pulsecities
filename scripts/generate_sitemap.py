@@ -156,7 +156,22 @@ def build() -> dict[str, str]:
             LEFT JOIN e ON e.bbl = p.bbl
             WHERE p.address IS NOT NULL AND n.name IS NOT NULL AND ds.score IS NOT NULL
               AND (d.last_deed IS NOT NULL OR e.last_evict IS NOT NULL)
-            ORDER BY p.bbl
+            UNION ALL
+            -- Condo unit lots recovered by refresh_condo_addresses: no parcels
+            -- row by construction, so no overlap with the branch above. Same
+            -- gates, and the route renders them through the same fallback.
+            SELECT c.bbl,
+                   GREATEST(COALESCE(d.last_deed, DATE '1900-01-01'),
+                            COALESCE(e.last_evict, DATE '1900-01-01')) AS lastmod,
+                   (d.last_deed IS NOT NULL AND e.last_evict IS NOT NULL) AS full_arc
+            FROM condo_unit_addresses c
+            JOIN neighborhoods n ON n.zip_code = c.zip_code
+            JOIN displacement_scores ds ON ds.zip_code = c.zip_code
+            LEFT JOIN d ON d.bbl = c.bbl
+            LEFT JOIN e ON e.bbl = c.bbl
+            WHERE n.name IS NOT NULL AND ds.score IS NOT NULL
+              AND (d.last_deed IS NOT NULL OR e.last_evict IS NOT NULL)
+            ORDER BY bbl
         """)).fetchall()
 
         week_slugs = _completed_week_slugs(db)
