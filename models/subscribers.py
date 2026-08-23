@@ -37,6 +37,12 @@ class Subscriber(TimestampMixin, Base):
     # Building watch: alert when new records land on this BBL.
     bbl: Mapped[str | None] = mapped_column(String(10), nullable=True)
 
+    # Entity follow: weekly alert when this one buyer entity records a new
+    # deed. Entities are distinct party_name_normalized values in the deed
+    # record rather than a table, so the slug is validated against that at
+    # write time, the way family_slug is validated against the clustering.
+    entity_slug: Mapped[str | None] = mapped_column(String(200), nullable=True)
+
     # Single opt-in: set True at creation. The digest sends only to
     # confirmed rows, so an unconfirmed row never receives anything.
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
@@ -54,14 +60,15 @@ class Subscriber(TimestampMixin, Base):
         UniqueConstraint("email", "zip_code", name="uq_subscribers_email_zip"),
         # Partial unique indexes for citywide (migration 6aa0c3e6ef29), operator
         # follows (a9c4d2e7b8f1), building watches (e6b1c8d3f2a4), and family
-        # follows (c7f2b4a91e83). Not declared here because SQLAlchemy can't
-        # express partial indexes inline.
+        # follows (c7f2b4a91e83) and entity follows (f3a91b6c8d27). Not
+        # declared here because SQLAlchemy can't express partial indexes inline.
         Index("idx_subscribers_email", "email"),
         Index("idx_subscribers_zip_code", "zip_code"),
         Index("idx_subscribers_confirmed", "confirmed"),
         Index("idx_subscribers_operator_slug", "operator_slug"),
         Index("idx_subscribers_family_slug", "family_slug"),
         Index("idx_subscribers_bbl", "bbl"),
+        Index("idx_subscribers_entity_slug", "entity_slug"),
     )
 
     def __repr__(self) -> str:

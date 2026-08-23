@@ -25,7 +25,7 @@ violation_id. Recreating an empty column would satisfy alembic and quietly
 lose 7.2 million payloads, so this refuses instead.
 
 Revision ID: b8e30d5c1746
-Revises: d4b8a2c7e9f1
+Revises: f3a91b6c8d27
 Create Date: 2026-08-18
 
 """
@@ -35,7 +35,7 @@ from alembic import op
 
 
 revision: str = 'b8e30d5c1746'
-down_revision: Union[str, None] = 'd4b8a2c7e9f1'
+down_revision: Union[str, None] = 'f3a91b6c8d27'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

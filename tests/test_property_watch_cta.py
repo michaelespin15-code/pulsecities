@@ -94,3 +94,29 @@ def test_watch_card_copy_rules(scored_bbl):
     sub = re.search(r'<p class="section-sub">(.*?)</p>', card, re.S)
     assert sub and not sub.group(1).strip().endswith("."), \
         "subtitle lines take no trailing period"
+
+
+@pytest.mark.integration
+def test_llc_page_carries_entity_follow():
+    """/llc is the second organic landing surface. The portfolio card lives in
+    entity_family_page and never reached it, so this guards the entity card
+    specifically, not just the presence of some email input."""
+    db = SessionLocal()
+    try:
+        row = db.execute(text("""
+            SELECT btrim(regexp_replace(lower(party_name_normalized),
+                                        '[^a-z0-9]+', '-', 'g'), '-') AS slug
+            FROM ownership_raw
+            WHERE doc_type = 'DEED' AND party_type = '2'
+              AND party_name_normalized IS NOT NULL
+            LIMIT 1
+        """)).fetchone()
+    finally:
+        db.close()
+    if not row:
+        pytest.skip("no deed rows in the database")
+    body = client.get(f"/llc/{row.slug}").text
+    assert 'id="ent-form"' in body and 'id="ent-email"' in body
+    assert "entity_slug" in body
+    assert f"entity_slug: '{row.slug}'" in body, "the page slug must be baked into the payload"
+    assert "Entity Follow" in body, "conversion event missing"

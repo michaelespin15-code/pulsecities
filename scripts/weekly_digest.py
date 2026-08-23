@@ -1490,6 +1490,184 @@ def build_family_updates(db, slugs: set[str]) -> dict[str, dict]:
     return updates
 
 
+# Same shell as the portfolio alert, kept as a .format template because this
+# one is assembled in a helper rather than inline. Braces in the CSS are
+# doubled accordingly.
+_ENTITY_DIGEST_SHELL = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulseCities: {esc_label} update</title>
+</head>
+<body style="margin:0;padding:0;background:#0f172a;font-family:'Inter',system-ui,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:48px 24px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;">
+
+        <tr><td style="padding-bottom:28px;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:#38bdf8;">PulseCities</span>
+          <span style="font-size:12px;color:rgba(148,163,184,0.4);margin-left:10px;">Company Watch</span>
+        </td></tr>
+
+        <tr><td style="padding-bottom:20px;">
+          <p style="margin:0;font-size:14px;color:#94a3b8;line-height:1.6;">
+            <strong style="color:#f1f5f9;">{esc_label}</strong> appears on {n} new {plural} in NYC public records this week.
+          </p>
+        </td></tr>
+
+        <tr><td>
+          <table width="100%" cellpadding="0" cellspacing="0"
+                 style="background:#1e293b;border-radius:12px;padding:28px;border:1px solid rgba(148,163,184,0.1);">
+
+            <tr><td style="padding-bottom:20px;border-bottom:1px solid rgba(148,163,184,0.08);">
+              <div style="font-size:10px;font-weight:600;color:rgba(148,163,184,0.5);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Newly Recorded Deeds</div>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                {rows_html}
+              </table>
+              {more_html}
+            </td></tr>
+
+            <tr><td style="padding-top:24px;">
+              <a href="https://pulsecities.com/llc/{slug}"
+                 style="display:inline-block;background:#ed6317;color:#fff;font-size:13px;font-weight:600;padding:11px 22px;border-radius:6px;text-decoration:none;">
+                View the deed record
+              </a>
+            </td></tr>
+
+          </table>
+        </td></tr>
+
+        <tr><td style="padding-top:24px;">
+          <p style="margin:0 0 10px;font-size:11px;color:rgba(148,163,184,0.5);line-height:1.7;border-top:1px solid rgba(148,163,184,0.08);padding-top:16px;">
+            <strong style="color:rgba(148,163,184,0.6);">Why you're getting this:</strong>
+            You follow {esc_label} on PulseCities. Quiet weeks send nothing.
+          </p>
+          <p style="margin:0 0 8px;font-size:11px;color:rgba(148,163,184,0.35);line-height:1.7;">
+            PulseCities uses public records. A deed names a buyer or seller of record and implies no wrongdoing.
+          </p>
+          <p style="margin:0;font-size:11px;color:rgba(148,163,184,0.35);line-height:1.7;">
+            <a href="https://pulsecities.com/api/unsubscribe?token={token}"
+               style="color:rgba(148,163,184,0.5);">Unsubscribe</a>
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+
+def load_entity_follows(db) -> list[dict]:
+    """Return confirmed single-entity follow subscribers."""
+    rows = db.execute(text("""
+        SELECT email, entity_slug, unsubscribe_token
+        FROM subscribers
+        WHERE confirmed = true AND entity_slug IS NOT NULL
+        ORDER BY entity_slug, email
+    """)).fetchall()
+    return [{"email": r[0], "entity_slug": r[1], "unsubscribe_token": r[2]} for r in rows]
+
+
+def build_entity_updates(db, slugs: set[str]) -> dict[str, dict]:
+    """New deeds per followed entity, keyed on ingest time like the operator
+    and family versions: ACRIS publishes with a lag, so "new this week" means
+    "newly on the record".
+
+    A single company has no inside to restructure within, so unlike the family
+    query there is nothing to exclude: every deed it appears on is news. Both
+    sides are reported, because a company selling its last building is the
+    more interesting half of the story and the page shows both.
+    """
+    if not slugs:
+        return {}
+    updates: dict[str, dict] = {}
+    for slug in slugs:
+        rows = db.execute(text("""
+            SELECT o.bbl, o.party_type,
+                   max(o.doc_date) AS doc_date, max(o.doc_amount) AS amount,
+                   max(coalesce(p.address, c.address)) AS address,
+                   max(coalesce(p.zip_code, c.zip_code)) AS zip_code,
+                   max(o.party_name_normalized) AS name
+            FROM ownership_raw o
+            LEFT JOIN parcels p ON p.bbl = o.bbl
+            LEFT JOIN condo_unit_addresses c ON c.bbl = o.bbl AND p.bbl IS NULL
+            WHERE o.doc_type = 'DEED'
+              AND btrim(regexp_replace(lower(o.party_name_normalized),
+                                       '[^a-z0-9]+', '-', 'g'), '-') = :slug
+              AND o.created_at >= NOW() - INTERVAL '7 days'
+            GROUP BY o.bbl, o.party_type
+            ORDER BY max(o.doc_date) DESC NULLS LAST
+        """), {"slug": slug}).fetchall()
+        if not rows:
+            continue
+        updates[slug] = {
+            "slug":  slug,
+            "label": rows[0].name,
+            "deeds": [{
+                "address": (r.address or f"BBL {r.bbl}").title(),
+                "zip":     r.zip_code or "",
+                "date":    r.doc_date.isoformat() if r.doc_date else "",
+                "price":   float(r.amount) if r.amount else None,
+                "side":    "Bought" if r.party_type == '2' else "Sold",
+            } for r in rows],
+        }
+    return updates
+
+
+def render_entity_digest(subscription: dict, update: dict) -> dict:
+    """Subject and HTML for one entity-follow alert. Same shell as the
+    portfolio alert; the difference is that a row says which side of the deed
+    the company was on, because for a single company that is the story."""
+    token = subscription["unsubscribe_token"]
+    label = update["label"]
+    slug  = update["slug"]
+    deeds = update["deeds"]
+    n     = len(deeds)
+
+    rows_html = ""
+    for d in deeds[:15]:
+        price = f"${d['price']:,.0f}" if d["price"] else ""
+        place = _html_escape(f"{d['address']}" + (f" ({d['zip']})" if d["zip"] else ""))
+        rows_html += (
+            f'<tr>'
+            f'<td style="padding:8px 0;font-size:13px;color:#cbd5e1;">{place}</td>'
+            f'<td style="padding:8px 0 8px 16px;font-size:12px;color:#94a3b8;'
+            f'text-align:right;white-space:nowrap;">{d["side"]}</td>'
+            f'<td style="padding:8px 0 8px 16px;font-family:\'JetBrains Mono\',monospace;'
+            f'font-size:12px;color:#94a3b8;text-align:right;white-space:nowrap;">{d["date"]}</td>'
+            f'<td style="padding:8px 0 8px 16px;font-family:\'JetBrains Mono\',monospace;'
+            f'font-size:12px;color:#ed6317;text-align:right;white-space:nowrap;">{price}</td>'
+            f'</tr>'
+        )
+    more_html = ""
+    if n > 15:
+        more_html = (
+            f'<p style="margin:12px 0 0;font-size:12px;color:rgba(148,163,184,0.6);">'
+            f'And {n - 15} more on the company page.</p>'
+        )
+
+    plural = "deeds" if n != 1 else "deed"
+    esc_label = _html_escape(label)
+    html = _ENTITY_DIGEST_SHELL.format(
+        esc_label=esc_label, n=n, plural=plural, rows_html=rows_html,
+        more_html=more_html, slug=slug, token=token,
+    )
+    text_lines = [f"{label} recorded {n} new {plural} in the NYC deed record:", ""]
+    for d in deeds[:15]:
+        price = f" {d['price']:,.0f} USD" if d["price"] else ""
+        text_lines.append(f"- {d['side']}: {d['address']} {d['date']}{price}")
+    text_lines += ["", f"Full record: https://pulsecities.com/llc/{slug}", "",
+                   "Michael", "PulseCities", "",
+                   f"Unsubscribe: https://pulsecities.com/api/unsubscribe?token={token}"]
+    return {
+        "subject": f"{label}: {n} new {plural} on the record",
+        "html": html,
+        "text": "\n".join(text_lines),
+    }
+
+
 def render_family_digest(subscription: dict, update: dict) -> dict:
     """Subject and HTML for one portfolio-follow alert. Same shell as the
     operator alert; the difference is the destination link and the framing,
@@ -1741,6 +1919,32 @@ def run(dry_run: bool = False, limit: int | None = None, email_filter: str | Non
                     f_failed += 1
             logger.info("Family digest complete. sent=%d skipped=%d failed=%d",
                         f_sent, f_skipped, f_failed)
+
+        ent_follows = load_entity_follows(db)
+        if email_filter:
+            ent_follows = [s for s in ent_follows if s["email"] == email_filter]
+        if limit is not None:
+            remaining = max(0, limit - len(subscriptions) - len(citywide_subs)
+                            - len(follows) - len(fam_follows))
+            ent_follows = ent_follows[:remaining]
+        if ent_follows:
+            ent_updates = build_entity_updates(db, {s["entity_slug"] for s in ent_follows})
+            e_sent = e_skipped = e_failed = 0
+            for sub in ent_follows:
+                update = ent_updates.get(sub["entity_slug"])
+                if not update:
+                    logger.info("SKIP entity %s (%s): nothing newly recorded",
+                                sub["entity_slug"], sub["email"])
+                    e_skipped += 1
+                    continue
+                rendered = render_entity_digest(sub, update)
+                if send_digest_email(sub, rendered, dry_run=dry_run):
+                    logger.info("SENT entity %s -> %s", sub["entity_slug"], sub["email"])
+                    e_sent += 1
+                else:
+                    e_failed += 1
+            logger.info("Entity digest complete. sent=%d skipped=%d failed=%d",
+                        e_sent, e_skipped, e_failed)
     finally:
         db.close()
 

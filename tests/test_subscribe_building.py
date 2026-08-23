@@ -21,14 +21,26 @@ TEST_EMAIL = "watch-test@example.com"
 
 @pytest.fixture(scope="module")
 def client():
-    # Blank the key so no real confirmation email leaves the box
+    # Blank the key so no real confirmation email leaves the box.
+    #
+    # Also disable the route limiter, the way test_operator_class_gate does.
+    # /api/subscribe allows 10/minute per address and every subscribe module
+    # posts from the same TestClient address, so once there were enough of
+    # these files the shared window ran out mid-run and the last module to
+    # execute collected the 429s. The per-email daily cap inside the endpoint
+    # is a database check, not slowapi, so it stays live and still guarded.
     import api.routes.subscribe as sub_mod
     saved = sub_mod.resend.api_key
     sub_mod.resend.api_key = ""
+    limiter_was = sub_mod.limiter.enabled
+    sub_mod.limiter.enabled = False
     from api.main import app
-    with TestClient(app, raise_server_exceptions=False) as c:
-        yield c
-    sub_mod.resend.api_key = saved
+    try:
+        with TestClient(app, raise_server_exceptions=False) as c:
+            yield c
+    finally:
+        sub_mod.resend.api_key = saved
+        sub_mod.limiter.enabled = limiter_was
 
 
 @pytest.fixture(scope="module")

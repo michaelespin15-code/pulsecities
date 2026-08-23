@@ -7432,6 +7432,17 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
     )
     faq_sec = f"<h2>Questions about {esc(name)}</h2>{faq_html}"
 
+    # Follow this one entity. /llc is the second-biggest organic landing
+    # surface on the site and carried no capture at all: the portfolio card
+    # lives in entity_family_page, so it covers the published families and
+    # none of the individual companies. Same JS-string escaping rule as the
+    # portfolio card, plus an HTML-escaped copy for the heading.
+    ent_js_label = json.dumps(name)[1:-1].replace("</", "<\\/")
+    entity_follow_sec = (_ENTITY_FOLLOW_CARD
+                         .replace("__SLUG__", slug)
+                         .replace("__LABEL_HTML__", esc(name))
+                         .replace("__LABEL__", ent_js_label))
+
     # Thin-page guard: a whole-condo purchase is one building however
     # many unit deeds it records, and servicers are not buyers.
     n_buildings = _building_count(r.bbl for r in buys)
@@ -7497,6 +7508,7 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
 {geo_sec}
 {time_sec}
 {post_ev_line}
+{entity_follow_sec}
 {faq_sec}
 
   <p class="cross" style="margin-top:26px;">Looking up your own building? <a href="/who-owns-my-building">Who owns my building &rarr;</a></p>
@@ -7574,6 +7586,63 @@ _FOLLOW_CARD = """
         show("You're following __LABEL__. A confirmation is on its way.", true);
       } else if (r.status === 409) {
         show('Already following this portfolio.', true);
+        btn.disabled = false;
+      } else if (r.status === 422) {
+        show('Enter a valid email.', false);
+        btn.disabled = false;
+      } else {
+        show('Could not subscribe. Try again.', false);
+        btn.disabled = false;
+      }
+    }).catch(function () {
+      show('Could not subscribe. Try again.', false);
+      btn.disabled = false;
+    });
+  });
+})();
+</script>
+"""
+
+
+_ENTITY_FOLLOW_CARD = """
+<div id="follow" style="margin:26px 0;padding:20px 22px;background:#16202d;border:1px solid rgba(147,161,173,0.2);border-radius:10px;">
+  <h2 style="margin-top:0;">Follow __LABEL_HTML__</h2>
+  <p class="prose">When this company records another NYC deed, buying or
+  selling, it shows up in a weekly email. Quiet weeks send nothing.</p>
+  <form id="ent-form" style="display:flex;gap:10px;margin:14px 0 0;max-width:560px;">
+    <input type="email" id="ent-email" placeholder="you@example.com" aria-label="Email address"
+           style="flex:1;font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:#e4e8ec;background:#111823;border:1px solid rgba(147,161,173,0.2);border-radius:8px;padding:12px 14px;min-width:0;">
+    <button type="submit" id="ent-btn" style="font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;color:#111823;background:#ed6317;border:none;border-radius:8px;padding:12px 22px;cursor:pointer;">Follow</button>
+  </form>
+  <p id="ent-status" style="display:none;margin:10px 0 0;font-size:0.85rem;"></p>
+</div>
+<script>
+(function () {
+  var form = document.getElementById('ent-form');
+  var email = document.getElementById('ent-email');
+  var btn = document.getElementById('ent-btn');
+  var status = document.getElementById('ent-status');
+  function show(msg, ok) {
+    status.textContent = msg;
+    status.style.color = ok ? '#6fa287' : '#ec6a5e';
+    status.style.display = 'block';
+  }
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var v = (email.value || '').trim();
+    if (!v || v.indexOf('@') < 1) { show('Enter a valid email.', false); return; }
+    btn.disabled = true;
+    fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: v, entity_slug: '__SLUG__' })
+    }).then(function (r) {
+      if (r.status === 201) {
+        window.plausible && plausible('Entity Follow');
+        form.style.display = 'none';
+        show("You're following __LABEL__. A confirmation is on its way.", true);
+      } else if (r.status === 409) {
+        show('Already following this company.', true);
         btn.disabled = false;
       } else if (r.status === 422) {
         show('Enter a valid email.', false);

@@ -176,6 +176,27 @@ PulseCities
 You subscribed at pulsecities.com. Unsubscribe: https://pulsecities.com/api/unsubscribe?token={token}
 """.strip()
 
+_ENTITY_CONFIRMATION_HTML = _WELCOME_SHELL.replace("{title}", "You're following {entity_label}").replace(
+    "{file_line}", "Follow opened {opened} &middot; {entity_label} &middot; NYC public records"
+).replace("{note_body}", "".join([
+    _NOTE_P.format("You're following {entity_label}, {entity_size}."),
+    _NOTE_P.format("When this company records another NYC deed, buying or selling, it shows up in your {send_day} email. Quiet weeks send nothing."),
+    _NOTE_P.format('Its deed record is here:<br><a href="https://pulsecities.com/llc/{entity_slug}" style="color:#C2410C;">pulsecities.com/llc/{entity_slug}</a>'),
+]))
+
+_ENTITY_CONFIRMATION_TEXT = """
+You're following {entity_label}, {entity_size}.
+
+When this company records another NYC deed, buying or selling, it shows up in your {send_day} email. Quiet weeks send nothing.
+
+Its deed record: https://pulsecities.com/llc/{entity_slug}
+
+Michael
+PulseCities
+
+You subscribed at pulsecities.com. Unsubscribe: https://pulsecities.com/api/unsubscribe?token={token}
+""".strip()
+
 _BUILDING_CONFIRMATION_HTML = _WELCOME_SHELL.replace("{title}", "You're watching {address}").replace(
     "{file_line}", "Watch opened {opened} &middot; BBL {bbl} &middot; NYC public records"
 ).replace("{note_body}", "".join([
@@ -338,6 +359,7 @@ class SubscribeRequest(BaseModel):
     is_citywide: bool = False
     operator_slug: str | None = None
     family_slug: str | None = None
+    entity_slug: str | None = None
     bbl: str | None = None
 
     @field_validator('email')
@@ -367,11 +389,20 @@ class SubscribeRequest(BaseModel):
                 raise ValueError('invalid operator_slug')
             return self
         if self.family_slug is not None:
-            if self.is_citywide or self.zip_code:
-                raise ValueError('family_slug cannot combine with zip_code or is_citywide')
+            if self.is_citywide or self.zip_code or self.entity_slug:
+                raise ValueError('family_slug cannot combine with another target')
             self.family_slug = self.family_slug.strip().lower()
             if not _SLUG_RE.match(self.family_slug) or len(self.family_slug) > 120:
                 raise ValueError('invalid family_slug')
+            return self
+        if self.entity_slug is not None:
+            if self.is_citywide or self.zip_code:
+                raise ValueError('entity_slug cannot combine with zip_code or is_citywide')
+            self.entity_slug = self.entity_slug.strip().lower()
+            # 200, not 120: entity slugs come from the deed record's own
+            # party names, which run longer than a hand-made family slug.
+            if not _SLUG_RE.match(self.entity_slug) or len(self.entity_slug) > 200:
+                raise ValueError('invalid entity_slug')
             return self
         if self.is_citywide:
             self.zip_code = None
@@ -411,6 +442,19 @@ def _family_size_phrase(fam: dict) -> str:
     return ents
 
 
+def _entity_size_phrase(buys: int, sells: int) -> str:
+    """What this one company is, in the deed record. Held and sold are counted
+    separately for the same reason the family phrase separates them: a company
+    that has sold everything it bought still has a story."""
+    if buys and sells:
+        return f"{_count(buys, 'building', 'buildings')} bought, {sells:,} sold"
+    if buys:
+        return f"{_count(buys, 'building', 'buildings')} in the deed record"
+    if sells:
+        return f"{_count(sells, 'building', 'buildings')} sold and none held"
+    return "one company in the deed record"
+
+
 def _count(n: int, singular: str, plural: str) -> str:
     return f"{n:,} {singular if n == 1 else plural}"
 
@@ -424,6 +468,9 @@ def _send_confirmation(
     family_slug: str | None = None,
     family_label: str | None = None,
     family_size: str | None = None,
+    entity_slug: str | None = None,
+    entity_label: str | None = None,
+    entity_size: str | None = None,
     bbl: str | None = None,
     address: str | None = None,
     unsubscribe_token: str | None = None,
@@ -457,6 +504,13 @@ def _send_confirmation(
         subject = f"You're following {label}"
         html_body, text_body = _FAMILY_CONFIRMATION_HTML, _FAMILY_CONFIRMATION_TEXT
         log_line = ("Family-follow confirmation sent to %s for %s", email, family_slug)
+    elif entity_slug:
+        label = entity_label or entity_slug
+        values.update({"entity_slug": entity_slug, "entity_label": label,
+                       "entity_size": entity_size or "one company in the deed record"})
+        subject = f"You're following {label}"
+        html_body, text_body = _ENTITY_CONFIRMATION_HTML, _ENTITY_CONFIRMATION_TEXT
+        log_line = ("Entity-follow confirmation sent to %s for %s", email, entity_slug)
     elif is_citywide:
         subject = "You're watching NYC"
         html_body, text_body = _CITYWIDE_CONFIRMATION_HTML, _CITYWIDE_CONFIRMATION_TEXT
@@ -507,6 +561,8 @@ def subscribe(
     building_address = None
     family_label = None
     family_size = None
+    entity_label = None
+    entity_size = None
     if body.bbl:
         # The watch must point at a real lot; an unknown BBL 404s rather
         # than silently accepting a watch that can never fire. Condo unit
@@ -579,6 +635,38 @@ def subscribe(
             raise HTTPException(status_code=409, detail='Already following this portfolio.')
         sub = Subscriber(email=body.email, zip_code=None, is_citywide=False,
                          family_slug=body.family_slug)
+    elif body.entity_slug:
+        # Entities are not a table: they are distinct party_name_normalized
+        # values in the deed record, and /llc/{slug} resolves one by applying
+        # the same normalisation in SQL. Validate the same way, against the
+        # functional index idx_ownership_raw_entity_slug so this stays a
+        # lookup rather than a scan. An entity with no deed 404s, which is
+        # also what its page does.
+        ent_row = db.execute(text("""
+            SELECT party_name_normalized AS name,
+                   count(DISTINCT bbl) FILTER (WHERE party_type = '2') AS buys,
+                   count(DISTINCT bbl) FILTER (WHERE party_type = '1') AS sells
+            FROM ownership_raw
+            WHERE doc_type = 'DEED'
+              AND btrim(regexp_replace(lower(party_name_normalized),
+                                       '[^a-z0-9]+', '-', 'g'), '-') = :slug
+            GROUP BY 1 ORDER BY 2 DESC LIMIT 1
+        """), {"slug": body.entity_slug}).fetchone()
+        if ent_row is None:
+            raise HTTPException(status_code=404, detail='Entity not found')
+        entity_label = ent_row.name
+        entity_size = _entity_size_phrase(ent_row.buys or 0, ent_row.sells or 0)
+
+        existing = db.execute(
+            select(Subscriber).where(
+                Subscriber.email == body.email,
+                Subscriber.entity_slug == body.entity_slug,
+            )
+        ).scalar_one_or_none()
+        if existing:
+            raise HTTPException(status_code=409, detail='Already following this company.')
+        sub = Subscriber(email=body.email, zip_code=None, is_citywide=False,
+                         entity_slug=body.entity_slug)
     elif body.is_citywide:
         existing = db.execute(
             select(Subscriber).where(
@@ -618,17 +706,21 @@ def subscribe(
             raise HTTPException(status_code=409, detail='Already following this operator.')
         if body.family_slug:
             raise HTTPException(status_code=409, detail='Already following this portfolio.')
+        if body.entity_slug:
+            raise HTTPException(status_code=409, detail='Already following this company.')
         if body.is_citywide:
             raise HTTPException(status_code=409, detail='Already watching NYC-wide.')
         raise HTTPException(status_code=409, detail='Already watching this area.')
 
-    logger.info('New subscriber email=%s zip=%s citywide=%s operator=%s family=%s bbl=%s',
+    logger.info('New subscriber email=%s zip=%s citywide=%s operator=%s family=%s entity=%s bbl=%s',
                 body.email, body.zip_code, body.is_citywide, body.operator_slug,
-                body.family_slug, body.bbl)
+                body.family_slug, body.entity_slug, body.bbl)
     _send_confirmation(body.email, body.zip_code, body.is_citywide,
                        operator_slug=body.operator_slug, operator_name=operator_name,
                        family_slug=body.family_slug, family_label=family_label,
                        family_size=family_size,
+                       entity_slug=body.entity_slug, entity_label=entity_label,
+                       entity_size=entity_size,
                        bbl=body.bbl, address=building_address,
                        unsubscribe_token=sub.unsubscribe_token)
     return {'status': 'ok'}
