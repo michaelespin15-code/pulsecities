@@ -2214,6 +2214,56 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     links.append('<a href="/map" class="btn-copy">Open the map &rarr;</a>')
     links_html = "".join(links)
 
+    # Watch-this-building card. This page takes ~88% of organic landings and
+    # until now offered no way to come back: a reader searched their own
+    # address, read the record, and left no trace. The alert side has existed
+    # since July (scripts/building_alerts.py, 03:25 daily, deeds + evictions +
+    # permits + violations on one BBL) and /api/subscribe already accepted a
+    # bbl target; only the form was missing. Single opt-in, so the row is live
+    # the moment it is written.
+    watch_card = (
+        '<section class="watch-card">'
+        f'<h2 class="watch-h">Watch {e(address)}</h2>'
+        '<p class="section-sub">Get an email when a deed, eviction, permit or '
+        'violation is filed on this building. Only when something lands, and '
+        'never more than once a day</p>'
+        '<div class="watch-row" id="pw-row">'
+        '<input id="pw-email" type="email" inputmode="email" autocomplete="email" '
+        f'placeholder="you@example.com" aria-label="Email address to watch {e(address)}">'
+        '<button id="pw-btn" class="btn-map" type="button">Start watching</button>'
+        '</div>'
+        '<p id="pw-msg" class="watch-msg" aria-live="polite" style="display:none;"></p>'
+        '</section>'
+    )
+    _j = json.dumps
+    watch_js = (
+        "<script>(function(){"
+        "var b=document.getElementById('pw-btn'),m=document.getElementById('pw-msg'),"
+        "el=document.getElementById('pw-email'),row=document.getElementById('pw-row');"
+        "if(!b)return;"
+        "function show(t,ok){m.textContent=t;m.style.color=ok?'#6fa287':'#e4483b';"
+        "m.style.display='block';}"
+        "async function go(){var v=(el.value||'').trim();"
+        "if(!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(v)){"
+        "show('That does not look like an email address.',false);return;}"
+        "b.disabled=true;b.textContent='\\u2026';"
+        "try{var r=await fetch('/api/subscribe',{method:'POST',"
+        "headers:{'Content-Type':'application/json'},"
+        "body:JSON.stringify({email:v,bbl:" + _j(bbl) + "})});"
+        "if(r.ok){if(window.plausible){plausible('Building Watch Submit',"
+        "{props:{bbl:" + _j(bbl) + "}});}"
+        "row.style.display='none';"
+        "show('Watching. New filings here will come to your inbox.',true);}"
+        "else if(r.status===409){show('You are already watching this building.',true);"
+        "b.disabled=false;b.textContent='Start watching';}"
+        "else{throw new Error();}}"
+        "catch(err){show('Something went wrong. Try again in a moment.',false);"
+        "b.disabled=false;b.textContent='Start watching';}}"
+        "b.addEventListener('click',go);"
+        "el.addEventListener('keydown',function(ev){if(ev.key==='Enter')go();});"
+        "})();</script>"
+    )
+
     # Breadcrumb (visible + schema): Home > Borough > ZIP > Address.
     crumb_items = [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://pulsecities.com/"}]
     crumb_html = '<a href="/">Home</a>'
@@ -2371,6 +2421,14 @@ td{padding:11px 0;border-bottom:1px solid rgba(147,161,173,.06);vertical-align:t
 .btn-copy{display:inline-flex;align-items:center;padding:10px 18px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:6px;font-size:.84rem}
 .btn-copy:hover{color:var(--text);border-color:rgba(147,161,173,.3)}
 .foot-note{font-size:0.75rem;color:var(--faint);margin-top:20px;line-height:1.5}
+.watch-card{background:rgba(237,99,23,.05);border:1px solid rgba(237,99,23,.22);border-radius:10px;padding:20px 22px;margin-bottom:30px}
+.watch-h{color:var(--accent);font-size:.95rem;font-weight:600;margin-bottom:6px}
+.watch-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.watch-row input{flex:1;min-width:180px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:inherit;font-size:.85rem}
+.watch-row input::placeholder{color:var(--faint)}
+.watch-row input:focus{outline:none;border-color:var(--accent)}
+.watch-row .btn-map{border:none;cursor:pointer;font-family:inherit}
+.watch-msg{font-size:.8rem;margin-top:10px;line-height:1.5}
 footer{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-inset-bottom,0px) + 24px);text-align:center;margin-top:20px;font-size:12px;color:var(--muted)}
 .footer-links{display:flex;justify-content:center;gap:20px;flex-wrap:wrap}
 </style>
@@ -2386,11 +2444,14 @@ footer{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-i
 {unit_note}
 {score_block}
 {lede}
-{empty}{chain_sec}{own_sec}{ev_prose}{ev_sec}{rs_sec}{viol_sec}{pm_sec}{comp_sec}{cmp_sec}{sib_sec}{faq_sec}
+{empty}{chain_sec}{own_sec}{ev_prose}{ev_sec}{rs_sec}{viol_sec}{pm_sec}{comp_sec}{cmp_sec}{sib_sec}
+{watch_card}
+{faq_sec}
 <div class="cta-row">{links_html}</div>
 <p class="foot-note">{body_note}</p>
 </div></main>
 {_FOOTER_HTML}
+{watch_js}
 </body>
 </html>"""
 

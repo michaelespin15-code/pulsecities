@@ -44,6 +44,23 @@ def real_bbl():
 
 
 @pytest.fixture(scope="module")
+def condo_bbl():
+    """A condo unit lot: carries deeds, has no parcels row, still renders a
+    /property page. Before the union in subscribe() these 404'd, so the 4,399
+    recovered unit-lot pages could be read and never watched."""
+    db = SessionLocal()
+    try:
+        row = db.execute(text(
+            "SELECT bbl FROM condo_unit_addresses WHERE address IS NOT NULL LIMIT 1"
+        )).fetchone()
+    finally:
+        db.close()
+    if not row:
+        pytest.skip("no condo unit lots in the database")
+    return row.bbl
+
+
+@pytest.fixture(scope="module")
 def deed_bbl():
     """A BBL that has at least one grantee-side deed row, for scan tests."""
     db = SessionLocal()
@@ -93,6 +110,17 @@ class TestBuildingWatch:
     def test_duplicate_watch_409(self, client, real_bbl):
         assert client.post("/api/subscribe", json={"email": TEST_EMAIL, "bbl": real_bbl}).status_code == 201
         assert client.post("/api/subscribe", json={"email": TEST_EMAIL, "bbl": real_bbl}).status_code == 409
+
+    def test_condo_unit_lot_accepted(self, client, condo_bbl):
+        resp = client.post("/api/subscribe", json={"email": TEST_EMAIL, "bbl": condo_bbl})
+        assert resp.status_code == 201, resp.text
+        db = SessionLocal()
+        try:
+            row = db.execute(text("SELECT bbl FROM subscribers WHERE email = :e"),
+                             {"e": TEST_EMAIL}).fetchone()
+        finally:
+            db.close()
+        assert row is not None and row.bbl == condo_bbl
 
     def test_unknown_bbl_404(self, client):
         resp = client.post("/api/subscribe", json={"email": TEST_EMAIL, "bbl": "1999999999"})

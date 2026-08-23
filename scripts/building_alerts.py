@@ -104,9 +104,12 @@ def _describe(kind: str, row) -> str:
 def scan(db, since: datetime) -> list[dict]:
     """One entry per watch with new records: subscriber, building, event lines."""
     watches = db.execute(text("""
-        SELECT s.email, s.bbl, s.unsubscribe_token, p.address, p.zip_code
+        SELECT s.email, s.bbl, s.unsubscribe_token,
+               COALESCE(p.address, c.address)   AS address,
+               COALESCE(p.zip_code, c.zip_code) AS zip_code
         FROM subscribers s
         LEFT JOIN parcels p ON p.bbl = s.bbl
+        LEFT JOIN condo_unit_addresses c ON c.bbl = s.bbl
         WHERE s.bbl IS NOT NULL AND s.confirmed = true
         ORDER BY s.email, s.bbl
     """)).fetchall()

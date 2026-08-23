@@ -509,11 +509,18 @@ def subscribe(
     family_size = None
     if body.bbl:
         # The watch must point at a real lot; an unknown BBL 404s rather
-        # than silently accepting a watch that can never fire.
-        parcel = db.execute(
-            text("SELECT address, zip_code FROM parcels WHERE bbl = :bbl"),
-            {"bbl": body.bbl},
-        ).fetchone()
+        # than silently accepting a watch that can never fire. Condo unit
+        # lots carry deeds but have no parcels row, and they do render a
+        # /property page, so they resolve through the recovered-address
+        # table too. Without the second arm those pages can be read and
+        # never watched, which is the whole point of the card on them.
+        parcel = db.execute(text("""
+            SELECT address FROM (
+                SELECT address, 0 AS pri FROM parcels WHERE bbl = :bbl
+                UNION ALL
+                SELECT address, 1 AS pri FROM condo_unit_addresses WHERE bbl = :bbl
+            ) t ORDER BY pri LIMIT 1
+        """), {"bbl": body.bbl}).fetchone()
         if parcel is None:
             raise HTTPException(status_code=404, detail='Building not found')
         building_address = (parcel.address or "").strip().title() or None
