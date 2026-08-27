@@ -19,6 +19,7 @@
 /var/log/pulsecities/operator_refresh.log
 /var/log/pulsecities/health_check.log
 /var/log/pulsecities/condo_addresses.log
+/var/log/pulsecities/dos_entities.log
 /var/log/pulsecities/health_probe.log {
     weekly
     maxsize 20M

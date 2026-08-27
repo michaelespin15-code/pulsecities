@@ -6753,6 +6753,15 @@ p a:hover{{text-decoration:underline}}
 # property-page noindex policy. Slugs resolve through _SLUG_SQL, which must
 # stay byte-identical to the expression in scripts/add_entity_slug_index.sql.
 
+def _dos_agent_kind(entity_name: str, agent_name: str | None) -> str:
+    """Whether a designated process agent names anyone. Imported from the
+    refresh script so the page and the ingest cannot disagree about what counts
+    as a real third party, which is the difference between naming a controlling
+    party and printing "The Limited Liability Company" as a finding."""
+    from scripts.refresh_dos_entities import agent_kind
+    return agent_kind(entity_name, agent_name)
+
+
 def _is_buyer_entity(name: str) -> bool:
     """A company that actually buys, as opposed to a servicer or trustee
     taking title in foreclosure, and not a name the source truncated
@@ -7110,6 +7119,29 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
     # rather than somebody's house. A single-entity filing gets its locality
     # and nothing narrower, because out-of-borough ownership is the signal
     # worth reporting and the street number adds nothing to it.
+    # The state's registration for this company, when we hold it. The deed says
+    # who took title; this says who filed the company and where the state sends
+    # process, which is the question the search data shows people actually ask.
+    dos = db.execute(text("""
+        SELECT d.dos_id, d.entity_type, d.jurisdiction, d.initial_filing_date,
+               d.agent_name, d.agent_address, d.agent_city, d.agent_state,
+               -- Normalized, not upper(). The same agent is spelled six ways in
+               -- DOS ("C/O SUMMIT MALLS MANAGEMENT LLC", "summit malls
+               -- management llc", with and without the suite line), and an
+               -- exact match undercounted this one at 63 against a real 76.
+               (SELECT count(*) FROM dos_entities x
+                WHERE x.agent_name IS NOT NULL
+                  AND regexp_replace(upper(regexp_replace(x.agent_name, '^C ?/?O ', '', 'i')),
+                                     '[^A-Z0-9]+', ' ', 'g')
+                    = regexp_replace(upper(regexp_replace(d.agent_name, '^C ?/?O ', '', 'i')),
+                                     '[^A-Z0-9]+', ' ', 'g')) AS agent_shared
+        FROM dos_entities d
+        WHERE d.entity_name_normalized =
+              regexp_replace(upper(:name), '[^A-Z0-9]+', ' ', 'g')
+        ORDER BY d.initial_filing_date DESC NULLS LAST
+        LIMIT 1
+    """), {"name": name}).first()
+
     filings = db.execute(text("""
         SELECT o.party_addr_1 AS addr, o.party_city AS city, o.party_state AS st,
                (SELECT count(DISTINCT x.party_name_normalized)
@@ -7431,6 +7463,63 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
             )
             filing_sec = _prose_section("Where the filings come from", _para(*fl))
 
+    # State registration. Kept as its own section because it answers a different
+    # question from the deed: not what was bought, but what the company is.
+    dos_sec = ""
+    if dos:
+        dp = []
+        formed = (f"{_en_date(dos.initial_filing_date)}"
+                  if dos.initial_filing_date else "an unrecorded date")
+        kind = (dos.entity_type or "company").lower()
+        where = (f"in {esc(dos.jurisdiction)}"
+                 if dos.jurisdiction and dos.jurisdiction != "New York"
+                 else "in New York")
+        dp.append(
+            f"New York registers {esc(name)} as a {esc(kind)}, DOS ID "
+            f"{esc(str(dos.dos_id))}, formed {where} and first filed on {formed}."
+            + (" A company formed in another state and registered to hold "
+               "property here is a routine structure and is worth noticing "
+               "anyway, because it is a choice."
+               if dos.jurisdiction and dos.jurisdiction != "New York" else "")
+        )
+        kindof = _dos_agent_kind(name, dos.agent_name)
+        if kindof == "third_party":
+            agent_where = ", ".join(x for x in (
+                _entity_title(dos.agent_address or ""),
+                _entity_title(dos.agent_city or ""), dos.agent_state or "") if x)
+            dp.append(
+                f"Service of process is designated to "
+                f"{esc(_entity_title(dos.agent_name))}"
+                + (f" at {esc(agent_where)}" if agent_where else "")
+                + ". That is the name the state sends legal papers to, which is "
+                  "the closest the public record comes to naming who stands "
+                  "behind the company. It is not the same as a member or an owner."
+            )
+            if dos.agent_shared and dos.agent_shared > 1:
+                dp.append(
+                    f"{_count(int(dos.agent_shared), 'buying entity')} in the deed "
+                    f"record {'designates' if dos.agent_shared == 1 else 'designate'} "
+                    f"that same name. Shared process agents cluster the way shared "
+                    f"filing addresses do, and with the same caveat: a managing "
+                    f"agent or an attorney serves clients who have nothing to do "
+                    f"with each other."
+                )
+        elif kindof == "commercial":
+            dp.append(
+                f"Service of process is designated to "
+                f"{esc(_entity_title(dos.agent_name))}, a commercial registered "
+                f"agent. That is a service the company pays for, so it names no "
+                f"one behind the entity and is itself only evidence that the "
+                f"filing was done through a professional."
+            )
+        else:
+            dp.append(
+                "The company designates itself for service of process, which is "
+                "the default and names nobody. Membership is not filed with the "
+                "state, so the public record stops here."
+            )
+        dos_sec = _prose_section("What the state register says", _para(*dp))
+
     # Where it buys. The links are the point as much as the prose: an LLC page
     # pointed at no neighbourhood, so the deed record led nowhere.
     zips: dict[str, dict] = {}
@@ -7600,15 +7689,21 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
     # now. Replace this once the DOS entity registry is ingested.
     faq.append((
         f"Who owns or controls {name}?",
-        f"ACRIS names {name} as the grantee and stops there. New York does not "
-        f"require an LLC to name its managing member on a deed, so its registered "
-        f"agent and beneficial owner sit with the Department of State rather than "
-        f"in the property record. "
-        + (f"What this page can show is the mailing address these "
-           f"{_count(len(buys), 'deed')} filed from, and which other buying "
-           f"entities file from it."
-           if buys else
-           "What this page can show is the filing address on the record."),
+        f"ACRIS names {name} as the grantee and stops there, because New York "
+        f"does not require an LLC to name its managing member on a deed. "
+        + (f"The state register adds what it can: DOS ID {dos.dos_id}"
+           + (f", formed in {dos.jurisdiction}" if dos and dos.jurisdiction
+              and dos.jurisdiction != "New York" else "")
+           + (f", and a registered agent for service of process: "
+              f"{_entity_title(dos.agent_name)}."
+              if _dos_agent_kind(name, dos.agent_name) == "third_party"
+              else ", and no registered agent beyond the company itself.")
+           + " Membership itself is not filed with New York, so neither record "
+             "names a beneficial owner."
+           if dos else
+           "Membership is not filed with New York either, so what this page can "
+           "show is the mailing address on the deeds and which other buying "
+           "entities file from it."),
     ))
     faq.append((
         f"Is {name} connected to other entities?",
@@ -7714,6 +7809,7 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
 {chain_sec}
 {holdings_sec}
 {filing_sec}
+{dos_sec}
 {geo_sec}
 {time_sec}
 {post_ev_line}

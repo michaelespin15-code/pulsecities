@@ -10,6 +10,7 @@ from models.permits import PermitRaw
 from models.complaints import ComplaintRaw
 from models.violations import ViolationRaw
 from models.condo_addresses import CondoUnitAddress
+from models.dos_entities import DosEntity
 from models.evictions import EvictionRaw
 from models.ownership import OwnershipRaw
 from models.sales import SaleRaw
@@ -49,4 +50,6 @@ __all__ = [
     "MtekAlert",
     "Operator",
     "OperatorParcel",
+    "CondoUnitAddress",
+    "DosEntity",
 ]
