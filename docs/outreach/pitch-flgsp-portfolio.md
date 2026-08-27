@@ -1,9 +1,13 @@
-# Pitch: 4,793 rent-stabilized units changed hands in one day
+# Pitch: 4,823 rent-stabilized units changed hands in one day
 
-Written 2026-08-18, and the numbers were re-verified the same evening after a
-clustering fix brought two more FLGSP companies into the set. The earlier draft
-said $436M and 94 evictions; both were low. **Re-check before sending if more
-than a week passes**, because the deed and violation counts move nightly.
+Written 2026-08-18. **Re-verified against the live database 2026-08-27 and
+send-ready as of that date.** The spine did not move: 82 buildings, 82 FLGSP
+entities, every deed dated 2026-03-31, and the prices still sum to exactly
+$451,300,000. Three counts did, all of them nightly-refreshed and all corrected
+above: rent-stabilized units 4,793 to 4,823 (DHCR published its 2026 file), open
+violations 10,350 to 9,838 as violations closed, and the worst single building
+778 to 841. **Re-check again if more than a week passes**, because these three
+move nightly and a reporter will check them.
 
 Recipient: a housing desk. City Limits, Hell Gate, The City, Gothamist, or the
 real-estate desk at Crain's / The Real Deal. Send as plain text from your own
@@ -11,7 +15,7 @@ address.
 
 ---
 
-**Subject:** 82 buildings, 4,793 rent-stabilized units, one day, $451M. The full deed trail.
+**Subject:** 82 buildings, 4,823 rent-stabilized units, one day, $451M. The full deed trail.
 
 Hi [name],
 
@@ -20,7 +24,7 @@ transaction for about $451 million. The deeds were recorded across April, and
 the 82 per-building prices sum to exactly $451,300,000, which is what an
 allocated portfolio price looks like.
 
-The portfolio holds **4,941 residential units, of which 4,793 are registered
+The portfolio holds **4,941 residential units, of which 4,823 are registered
 rent-stabilized** with DHCR across 81 of the 82 buildings. Eighty-one were built
 before 1974. They sit in Flatbush, Crown Heights, Midwood, Inwood, Washington
 Heights, Jackson Heights, Kingsbridge and Astoria.
@@ -32,9 +36,9 @@ companies of the same shape: 1023 REALTY LLC, 1038 REALTY LLC, 1042 REALTY LLC.
 In the public record this reads as 82 unrelated sales between 164 unrelated
 companies. It was one deal.
 
-The buildings carry **10,350 open HPD and DOB violations** between them, roughly
-126 per building. The worst single address, 681 West 193rd Street in Inwood
-(125 units, built 1927), has 778 open.
+The buildings carry **9,838 open HPD and DOB violations** between them, roughly
+120 per building. The worst single address, 681 West 193rd Street in Inwood
+(125 units, built 1927), has 841 open.
 
 I run PulseCities, which reassembles NYC deed records into the operations behind
 them. I found this by clustering entities on shared naming and shared filing
