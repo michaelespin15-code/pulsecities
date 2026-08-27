@@ -6713,6 +6713,7 @@ h2{font-family:'Bricolage Grotesque','DM Sans',sans-serif;font-size:1.05rem;font
 .rec-row a:hover .rec-addr{color:#ed6317}
 .rec-addr{font-family:'JetBrains Mono',monospace;font-size:0.86rem;font-weight:500;color:#e4e8ec;letter-spacing:0.02em;overflow-wrap:anywhere}
 .rec-geo{font-size:0.75rem;color:var(--dim);margin-top:2px}
+.rec-doc{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-top:3px;overflow-wrap:anywhere}
 .rec-side{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;text-align:right}
 .rec-amt{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:#c9d2da}
 .rec-date{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--faint);margin-top:2px}
@@ -6893,7 +6894,7 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
         # it; where it is not, take nothing. No address is ever guessed.
         return db.execute(text("""
             SELECT DISTINCT ON (o.document_id)
-                   o.bbl, o.doc_date, o.doc_amount,
+                   o.bbl, o.doc_date, o.doc_amount, o.document_id,
                    coalesce(p.address, c.address) AS address,
                    coalesce(p.zip_code, c.zip_code, blk.zip_code) AS zip_code,
                    coalesce(n.name, cn.name, bn.name) AS hood
@@ -7009,14 +7010,23 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
     last_seen = max(dates).isoformat() if dates else None
 
     def _rows(records):
+        # The ACRIS document ID and the BBL are printed on every row because the
+        # people arriving here search for them: "acris deed search <llc> 2018",
+        # "<address> deeds acris records block lot bbl". They are also what makes
+        # a row checkable against the city's own record, which is the pitch.
         out = ""
         for r in records[:60]:
             addr = esc(_addr_title(r.address)) if r.address else f"BBL {esc(str(r.bbl))}"
             geo = esc(f"{r.hood}, {r.zip_code}" if r.hood else (r.zip_code or ""))
             amt = _fmt_amount(r.doc_amount) or "no amount recorded"
             when = esc(r.doc_date.isoformat()) if r.doc_date else ""
-            inner = (f'<div><div class="rec-addr">{addr}</div><div class="rec-geo">{geo}</div></div>'
-                     f'<div class="rec-side"><div class="rec-amt">{esc(amt)}</div>'
+            ref = " / ".join(p for p in (
+                f"ACRIS {esc(str(r.document_id))}" if r.document_id else "",
+                f"BBL {esc(str(r.bbl))}" if r.bbl and r.address else "",
+            ) if p)
+            inner = (f'<div><div class="rec-addr">{addr}</div><div class="rec-geo">{geo}</div>'
+                     + (f'<div class="rec-doc">{ref}</div>' if ref else "")
+                     + f'</div><div class="rec-side"><div class="rec-amt">{esc(amt)}</div>'
                      f'<div class="rec-date">{when}</div></div>')
             if r.bbl:
                 out += f'<li class="rec-row"><a href="/property/{esc(str(r.bbl))}">{inner}</a></li>\n'
@@ -7028,8 +7038,8 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
     sells_section = ""
     if sells:
         sells_section = f"""
-  <h2>Sold</h2>
-  <p class="section-sub">Deeds where this entity is the seller of record</p>
+  <h2>Deeds sold</h2>
+  <p class="section-sub">Conveyances where this entity is the grantor of record</p>
   <ul class="rec-list">
 {_rows(sells)}  </ul>"""
 
@@ -7133,6 +7143,37 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
             "and cannot appear here."
         )
     lede = _para(*lede_parts)
+
+    # Chain of title. People arrive here searching the phrase itself, and the
+    # honest answer includes where our copy of the chain stops: ACRIS is the
+    # authority, we hold it from 2025, and a title search goes back further
+    # than we do. Saying so is cheaper than being caught not saying it.
+    newest_deed = next((r for r in buys if r.document_id), None)
+    chain_parts = [
+        f"A chain of title is the ordered list of conveyances that moved a "
+        f"property from one owner of record to the next. {esc(name)} is the "
+        f"grantee on {_count(len(buys), 'link')} in that chain"
+        + (f", recorded between {_en_date(span_start)} and {_en_date(span_end)}"
+           if span_start and span_end and span_start != span_end else "")
+        + (f", all on {_en_date(span_start)}" if span_start and span_start == span_end else "")
+        + "."
+    ]
+    if newest_deed:
+        chain_parts.append(
+            f"Its most recent conveyance is ACRIS document "
+            f"{esc(str(newest_deed.document_id))}"
+            + (f" on {esc(_addr_title(newest_deed.address))}" if newest_deed.address else "")
+            + (f", recorded {_en_date(newest_deed.doc_date)}"
+               if newest_deed.doc_date and span_start != span_end else "")
+            + ". Follow any address above for the whole chain on that building, "
+              "including the deeds either side of this one and the party opposite."
+        )
+    chain_parts.append(
+        "PulseCities holds ACRIS deeds recorded from 2025 onward, so these are "
+        "the recent end of a chain rather than the whole of it. For a full title "
+        "search the city's own ACRIS system is the record of authority."
+    )
+    chain_sec = _prose_section("The chain of title", _para(*chain_parts))
 
     # The buildings behind the deeds. A portfolio that carries none of these
     # records still gets the section: "no evictions, no open violations, no
@@ -7408,6 +7449,24 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
             f"$1,000, which is how a transfer between related parties is filed. "
             f"The buildings changed hands on paper; the deeds do not say for what.",
         ))
+    # Asked constantly and answered nowhere. The search console carries
+    # "registered agent", "beneficial owner", "managing member" and
+    # "controlling party" against these pages at position 5 to 9. The deed
+    # record cannot answer any of them, and saying exactly why, plus what the
+    # record does support, is a better answer than the silence that is there
+    # now. Replace this once the DOS entity registry is ingested.
+    faq.append((
+        f"Who owns or controls {name}?",
+        f"ACRIS names {name} as the grantee and stops there. New York does not "
+        f"require an LLC to name its managing member on a deed, so its registered "
+        f"agent and beneficial owner sit with the Department of State rather than "
+        f"in the property record. "
+        + (f"What this page can show is the mailing address these "
+           f"{_count(len(buys), 'deed')} filed from, and which other buying "
+           f"entities file from it."
+           if buys else
+           "What this page can show is the filing address on the record."),
+    ))
     faq.append((
         f"Is {name} connected to other entities?",
         (f"Yes. PulseCities groups it into the {network.display_name} operator "
@@ -7450,10 +7509,16 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
                     and n_bbls >= _LLC_MIN_LOTS
                     and n_buildings >= _LLC_MIN_BUILDINGS)
     robots = "index, follow" if is_indexable else "noindex, follow"
-    title = f"{name}: NYC property purchases, deed history | PulseCities"
-    desc = (f"{name} appears as the buyer on {n_bbls} NYC "
-            f"{'property' if n_bbls == 1 else 'properties'} in the deed record. "
-            f"Deeds recorded since 2025, from ACRIS public records.")
+    # The search console says this page ranks 5 to 9 for roughly 1,700 monthly
+    # impressions of deed-research queries and converts none of them. Those
+    # queries carry a vocabulary the page did not use anywhere: grantor,
+    # grantee, chain of title, conveyance, ACRIS. Ranking for words the snippet
+    # never says is how you get a page-one result nobody clicks.
+    title = f"{name}: ACRIS deeds, grantor and grantee | PulseCities"
+    desc = (f"{name} is named on {_count(n_bbls, 'NYC deed')} in ACRIS. "
+            f"Grantor and grantee, recording date, stated consideration and the "
+            f"ACRIS document ID for every conveyance, with the chain of title on "
+            f"each building.")
     url = f"https://pulsecities.com/llc/{slug}"
     jsonld = _jsonld({"@context": "https://schema.org", "@graph": [
         {"@type": "Organization", "name": name, "url": url},
@@ -7498,11 +7563,12 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
   {network_line}
   {lede}
 
-  <h2>Bought</h2>
-  <p class="section-sub">Purchase deeds, newest first</p>
+  <h2>Deeds bought</h2>
+  <p class="section-sub">Conveyances where this entity is the grantee, newest first</p>
   <ul class="rec-list">
 {buys_html}  </ul>
 {sells_section}
+{chain_sec}
 {holdings_sec}
 {filing_sec}
 {geo_sec}

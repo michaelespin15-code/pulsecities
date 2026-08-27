@@ -237,6 +237,53 @@ class TestLlcDepth:
             answer = (q.get("acceptedAnswer") or {}).get("text", "")
             assert len(answer.split()) >= 8, f"stub answer for {q.get('name')!r}"
 
+    def test_llc_page_speaks_the_deed_research_vocabulary(self):
+        """The words the people who find this page actually search for.
+
+        The 2026-08-27 console export put this template at position 5 to 9 on
+        roughly 1,700 impressions of queries carrying grantor, grantee, chain of
+        title, conveyance and ACRIS, and it converted none of them. The page
+        contained none of those words: the title said "NYC property purchases,
+        deed history". Ranking for a vocabulary the snippet never speaks is how
+        a page-one result earns nothing, so the vocabulary is a fixture now.
+        """
+        slugs = _sitemapped_llcs(1)
+        if not slugs:
+            pytest.skip("no sitemap-eligible LLC in current data")
+        html = _fetch(f"/llc/{slugs[0]}")
+        body = html.lower()
+        missing = [w for w in ("grantor", "grantee", "chain of title",
+                               "conveyance", "acris", "document id",
+                               "registered agent", "beneficial owner",
+                               "managing member") if w not in body]
+        assert not missing, (
+            f"/llc/{slugs[0]} no longer uses the deed-research vocabulary it "
+            f"ranks for: {missing}"
+        )
+
+    def test_llc_title_leads_with_the_deed_vocabulary(self):
+        """The title is the snippet. It carried none of the query terms."""
+        slugs = _sitemapped_llcs(1)
+        if not slugs:
+            pytest.skip("no sitemap-eligible LLC in current data")
+        m = re.search(r"<title>(.*?)</title>", _fetch(f"/llc/{slugs[0]}"), re.S)
+        assert m, "LLC page has no title"
+        title = m.group(1).lower()
+        assert "acris" in title and "grantee" in title, (
+            f"LLC title does not name the record it serves: {m.group(1)!r}"
+        )
+
+    def test_llc_rows_cite_the_acris_document_id(self):
+        """A deed row a reader cannot check against ACRIS is a claim, not a
+        citation, and the document ID is also what they search."""
+        slugs = _sitemapped_llcs(1)
+        if not slugs:
+            pytest.skip("no sitemap-eligible LLC in current data")
+        html = _fetch(f"/llc/{slugs[0]}")
+        assert re.search(r'class="rec-doc">ACRIS \d', html), (
+            "LLC deed rows no longer print their ACRIS document ID"
+        )
+
     def test_llc_directory_declares_its_list(self):
         # Every other directory page on the site declares ItemList; this one
         # lists 100 entities and declared only a breadcrumb.
