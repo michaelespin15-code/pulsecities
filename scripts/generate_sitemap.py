@@ -44,6 +44,7 @@ from pathlib import Path
 
 from sqlalchemy import text
 
+from api.freshness import real_date
 from models.database import SessionLocal
 
 _FRONTEND = Path(__file__).resolve().parent.parent / "frontend"
@@ -136,14 +137,17 @@ def build() -> dict[str, str]:
         # query ran max() per parcel: ~1.75M index probes, planner cost 3.3M
         # against 116k for this shape, in the middle of the 03:15 cron pile-up
         # on two vCPUs.
-        property_rows = db.execute(text("""
+        property_rows = db.execute(text(f"""
             WITH d AS (
                 SELECT bbl, max(doc_date) AS last_deed
-                FROM ownership_raw WHERE doc_type = 'DEED' GROUP BY bbl
+                FROM ownership_raw
+                WHERE doc_type = 'DEED' AND {real_date('doc_date')}
+                GROUP BY bbl
             ),
             e AS (
                 SELECT bbl, max(executed_date) AS last_evict
-                FROM evictions_raw GROUP BY bbl
+                FROM evictions_raw WHERE {real_date('executed_date')}
+                GROUP BY bbl
             )
             SELECT p.bbl,
                    GREATEST(COALESCE(d.last_deed, DATE '1900-01-01'),
@@ -200,11 +204,12 @@ def build() -> dict[str, str]:
 
         eviction_areas = [
             (_ev_area_slug(r.name), r.last.isoformat() if r.last else today)
-            for r in db.execute(text("""
+            for r in db.execute(text(f"""
                 SELECT n.name, max(e.executed_date) AS last
                 FROM evictions_raw e
                 JOIN neighborhoods n ON n.zip_code = e.zip_code
                 WHERE e.eviction_type = 'Residential' AND n.name IS NOT NULL
+                  AND {real_date('e.executed_date', 'e.created_at')}
                 GROUP BY 1 HAVING count(*) >= :floor
                 ORDER BY 1
             """), {"floor": _EV_AREA_MIN}).fetchall()
@@ -240,10 +245,17 @@ def build() -> dict[str, str]:
         )
 
         # Newest record anywhere, so the hub pages claim a date they can defend.
-        hub_lastmod = db.execute(text("""
+        # "Can defend" has to include "has happened": the unguarded form of this
+        # query put a future lastmod on all 200 hub URLs for sixteen nights,
+        # because two ACRIS rows carry a filer-typed date a month past the deed
+        # they belong to. A lastmod a crawler can see is wrong is worse than no
+        # lastmod, since it teaches the crawler to stop trusting the field.
+        hub_lastmod = db.execute(text(f"""
             SELECT max(d) FROM (
                 SELECT max(doc_date) AS d FROM ownership_raw
+                 WHERE {real_date('doc_date')}
                 UNION ALL SELECT max(executed_date) FROM evictions_raw
+                 WHERE {real_date('executed_date')}
             ) t
         """)).scalar()
         hub_lastmod = hub_lastmod.isoformat() if hub_lastmod else today

@@ -45,6 +45,25 @@ for _slug, _scraper, _table, _column, _days in FRESHNESS_SOURCES:
         _BY_NAME[_key] = (_table, _column, _days)
 
 
+def real_date(column: str, created: str = "created_at") -> str:
+    """Predicate: this row's date actually happened, and happened before we
+    wrote the row down.
+
+    Extracted because `through_sql` was not the only reader of these columns and
+    was the only guarded one. An audit on 2026-08-27 found seventeen other
+    `max(doc_date)` and `max(executed_date)` queries across the API, the entity
+    clustering and the sitemap generator, none of them carrying this rule. The
+    cost was not hypothetical: two rows typed 2026-08-27 onto a deed recorded
+    2026-07-29 put a future `<lastmod>` on 200 hub URLs and on the typo row's own
+    property page, every night for sixteen nights, in the file Google and Bing
+    read to decide what to recrawl.
+
+    Callers pass their own aliases: `real_date("o.doc_date", "o.created_at")`.
+    """
+    return (f"{column} < CURRENT_DATE + INTERVAL '1 day' "
+            f"AND {column} <= {created}")
+
+
 def through_sql(table: str, column: str) -> str:
     """Newest record in `table` that is not dated in the future and that we
     actually held on the day it claims.
@@ -65,11 +84,7 @@ def through_sql(table: str, column: str) -> str:
     happened after we wrote it down. It costs nothing: the future bound still
     drives the index scan and this filters the handful of rows it walks.
     """
-    return (
-        f"SELECT MAX({column}) FROM {table} "
-        f"WHERE {column} < CURRENT_DATE + INTERVAL '1 day' "
-        f"AND {column} <= created_at"
-    )
+    return f"SELECT MAX({column}) FROM {table} WHERE {real_date(column)}"
 
 
 def staleness_days(name: str) -> int:

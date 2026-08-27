@@ -15,7 +15,7 @@ from slowapi.util import get_remote_address
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from api.freshness import FRESHNESS_SOURCES, through_sql
+from api.freshness import FRESHNESS_SOURCES, real_date, through_sql
 from models.database import get_db
 
 router = APIRouter(prefix="/stats", tags=["stats"])
@@ -267,12 +267,15 @@ def get_citywide_stats(request: Request, response: Response, db: Session = Depen
         return cached[0]
 
     # Anchored on the latest published deed, not today: ACRIS lags, and a
-    # CURRENT_DATE window counts unpublished days as zero. The future-date
-    # guard mirrors api.freshness (filer-typed doc_dates run months ahead).
-    llc_count = db.execute(text("""
+    # CURRENT_DATE window counts unpublished days as zero. The bound is
+    # api.freshness's whole rule, not just its future half: `<= CURRENT_DATE`
+    # stopped excluding the two filer-typed rows the morning the calendar
+    # reached them, which is how this window would have moved a month without a
+    # deed being published.
+    llc_count = db.execute(text(f"""
         WITH bound AS (
             SELECT max(doc_date) AS latest FROM ownership_raw
-            WHERE doc_date <= CURRENT_DATE
+            WHERE {real_date('doc_date')}
         )
         SELECT COUNT(DISTINCT o.bbl) FROM ownership_raw o, bound b
         WHERE o.party_type = '2'

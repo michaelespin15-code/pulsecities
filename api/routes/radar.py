@@ -24,6 +24,7 @@ from slowapi.util import get_remote_address
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from api.freshness import real_date
 from models.database import get_db
 from api.routes.flips import _NOISE_TERMS
 
@@ -52,6 +53,7 @@ _RADAR_SQL = text(f"""
           AND o.doc_type IN ('DEED', 'DEEDP')
           AND o.party_type = '2'
           AND o.doc_date >= CURRENT_DATE - make_interval(days => :window)
+          AND {real_date('o.doc_date', 'o.created_at')}
           AND p.zip_code IS NOT NULL
 {_NOISE_SQL}
         ORDER BY o.bbl, o.party_name_normalized, o.doc_date DESC

@@ -43,6 +43,8 @@ import time
 
 from sqlalchemy import text
 
+from api.freshness import real_date
+
 # Tokens that carry no identity: entity forms, street types, the boroughs, and
 # the generic real-estate vocabulary every third LLC in the city uses. Without
 # this list "REALTY" alone would merge hundreds of unrelated companies.
@@ -163,6 +165,7 @@ def compute_families(db, is_buyer_entity) -> dict[str, dict]:
         WHERE doc_type = 'DEED'
           AND party_type IN ('1', '2')
           AND party_name_normalized IS NOT NULL
+          AND {real_date('doc_date')}
           -- The LLC-form gate below is the same substring test, and applying it
           -- here instead cuts the group from 116,261 party names to 23,444.
           -- Uncached, the FLGSP hub took 12s to render and six of those were

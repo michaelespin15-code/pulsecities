@@ -22,7 +22,8 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Resp
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from api.freshness import ACRIS_THROUGH_SQL, FRESHNESS_SOURCES, db_through_sql
+from api.freshness import (ACRIS_THROUGH_SQL, FRESHNESS_SOURCES, db_through_sql,
+                           real_date)
 from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
 from models.database import get_db
 from scoring.tiers import tier
@@ -6833,6 +6834,7 @@ def llc_directory(db: Session = Depends(get_db)):
         FROM ownership_raw
         WHERE doc_type = 'DEED' AND party_type = '2'
           AND party_name_normalized LIKE '%LLC%'
+          AND {real_date('doc_date')}
         GROUP BY 1, 2
         HAVING count(DISTINCT bbl) >= {_LLC_MIN_LOTS}
            AND count(DISTINCT ({_BUILDING_KEY_SQL})) >= {_LLC_MIN_BUILDINGS}

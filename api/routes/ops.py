@@ -21,6 +21,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from api.freshness import db_through_sql
 from models.database import get_db
 from scoring.tiers import sql_tier_counts
 
@@ -88,19 +89,19 @@ def ops_summary(t: str = Query(default=""), x_ops_token: str = Header(default=""
     """)).fetchall()
 
     # --- Data freshness ---
-    # Future-dated rows are excluded throughout; see api/freshness.py. The ops
-    # view has to agree with /api/stats and /api/status or it is no use for
-    # deciding whether a feed has actually stopped.
-    freshness = db.execute(text("""
+    # The ops view has to agree with /api/stats and /api/status or it is no use
+    # for deciding whether a feed has actually stopped.
+    # Built from api.freshness rather than restated here. This panel used to
+    # hand-roll the four subqueries with a bare `<= CURRENT_DATE`, which is the
+    # half of the rule that expires: on 2026-08-27 the calendar reached two
+    # filer-typed ACRIS rows and this view would have called a feed frozen since
+    # July current, while claiming in its own comment to agree with /api/status.
+    freshness = db.execute(text(f"""
         SELECT
-            (SELECT MAX(doc_date)           FROM ownership_raw
-                 WHERE doc_date       <= CURRENT_DATE)                AS acris,
-            (SELECT MAX(executed_date)      FROM evictions_raw
-                 WHERE executed_date  <= CURRENT_DATE)                AS evictions,
-            (SELECT MAX(filing_date)        FROM permits_raw
-                 WHERE filing_date    <= CURRENT_DATE)                AS permits,
-            (SELECT MAX(created_date)       FROM complaints_raw
-                 WHERE created_date   <= CURRENT_DATE)                AS complaints,
+            ({db_through_sql('acris')})      AS acris,
+            ({db_through_sql('evictions')})  AS evictions,
+            ({db_through_sql('permits')})    AS permits,
+            ({db_through_sql('complaints')}) AS complaints,
             (SELECT MAX(cache_generated_at) FROM displacement_scores) AS scores_computed,
             (SELECT MAX(scored_at)          FROM score_history)       AS score_history_latest
     """)).fetchone()
