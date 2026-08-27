@@ -44,3 +44,4 @@ scripts/indexnow_state.json
 scripts/family_stories.json
 scripts/family_stories.txt
 frontend/sitemap*.xml.gz
+reports/
