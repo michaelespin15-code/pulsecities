@@ -922,8 +922,14 @@ def _build_neighborhood_page(
             days = f.get("days_between")
             gap = L["flip_days"].format(n=days) if days is not None else ""
             flip_items += (
+                # The address is an anchor, not just an onclick target. This was
+                # the one row on the site navigating by JavaScript alone, and it
+                # sits on all 177 neighborhood hubs: a crawler following links
+                # from a hub to its buildings found none here, and neither did
+                # anyone using a keyboard.
                 f'<tr onclick="location.href=\'/property/{e(str(f["bbl"]))}\'" style="cursor:pointer;">'
-                f'<td class="sc">{e(f["address"])}<span class="sw">{e(f.get("buyer") or "")}</span></td>'
+                f'<td class="sc"><a href="/property/{e(str(f["bbl"]))}">{e(f["address"])}</a>'
+                f'<span class="sw">{e(f.get("buyer") or "")}</span></td>'
                 f'<td class="sr">{bought}</td>'
                 f'<td class="si">{gap}</td></tr>'
             )
