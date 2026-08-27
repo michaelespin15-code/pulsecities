@@ -46,7 +46,8 @@ for _slug, _scraper, _table, _column, _days in FRESHNESS_SOURCES:
 
 
 def through_sql(table: str, column: str) -> str:
-    """Newest record in `table` that is not dated in the future.
+    """Newest record in `table` that is not dated in the future and that we
+    actually held on the day it claims.
 
     The bound is `< CURRENT_DATE + 1 day` rather than `<= CURRENT_DATE`, which
     matters for the timestamp columns: CURRENT_DATE widens to midnight, so
@@ -54,10 +55,20 @@ def through_sql(table: str, column: str) -> str:
     reports the feed a day staler than it is. Keeping the column bare on the left
     also leaves it sargable, so this stays an index scan on the 5M-row tables
     rather than the seq scan a `column::date` cast would force.
+
+    The future bound alone expires. Two ACRIS rows typed 2026-08-27 onto a deed
+    recorded 2026-07-29 sat harmlessly ahead of the calendar for sixteen days,
+    and on 2026-08-27 the calendar reached them: every freshness reader in the
+    codebase went from "frozen 27d" to "current today" on a feed that had not
+    moved since July 31, and /api/status advertised it. `column <= created_at`
+    is the durable form of the same rule, since a record we hold cannot have
+    happened after we wrote it down. It costs nothing: the future bound still
+    drives the index scan and this filters the handful of rows it walks.
     """
     return (
         f"SELECT MAX({column}) FROM {table} "
-        f"WHERE {column} < CURRENT_DATE + INTERVAL '1 day'"
+        f"WHERE {column} < CURRENT_DATE + INTERVAL '1 day' "
+        f"AND {column} <= created_at"
     )
 
 

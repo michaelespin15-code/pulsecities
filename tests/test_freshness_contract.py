@@ -81,6 +81,19 @@ class TestFutureDatesNeverCountAsFresh:
             sql = freshness.db_through_sql(scraper_name)
             assert "CURRENT_DATE" in sql, f"{scraper_name} would trust a future date"
 
+    def test_a_mistyped_date_stays_excluded_once_the_calendar_reaches_it(self):
+        """The future bound expires. The same two ACRIS rows were typed sixteen
+        days ahead, and the morning the calendar caught up they became the
+        newest legal deed date in the table: pipeline_health went CRITICAL to
+        HEALTHY and /api/status advertised a feed frozen since July as current.
+        A record cannot have happened after we wrote it down, and that bound
+        does not expire."""
+        for scraper_name, _dataset, _date_col in dhc.FRESHNESS_CHECKS:
+            sql = freshness.db_through_sql(scraper_name)
+            assert "<= created_at" in sql, (
+                f"{scraper_name} trusts a typed date once it stops being in the future"
+            )
+
 
 class TestUpstreamProbes:
     """The DOB permits probe reported a healthy feed as 1,974 days stale for ten

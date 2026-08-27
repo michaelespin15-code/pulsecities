@@ -25,7 +25,11 @@ from fastapi.testclient import TestClient
 DEED_BACKED = [("/flips", "fw-through"), ("/radar", "sr-through")]
 
 WINDOW_CLAIM = re.compile(r"in the past \d+ (days|months)", re.I)
-THROUGH_LINE = re.compile(r"Deeds recorded through [A-Z][a-z]{2} \d{1,2}, "
+# The page writes the date through _long_date: full month, day, year. This
+# pattern asked for an abbreviated month and no year, so it matched nothing the
+# renderer has ever produced and every assertion built on it was red from the
+# commit that added it.
+THROUGH_LINE = re.compile(r"Deeds recorded through [A-Z][a-z]+ \d{1,2}, \d{4}, "
                           r"the most recent day the city has published\.?")
 
 
@@ -102,9 +106,12 @@ def test_through_line_reports_the_real_date(client):
     if actual is None:
         pytest.skip("no ACRIS data to compare against")
 
-    months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    expected = f"Deeds recorded through {months[actual.month]} {actual.day},"
+    # Format the date with the renderer's own helper rather than a second copy
+    # of the month table. The copy here spelled months in three letters while
+    # the page spelled them in full, so this never compared what it claimed to.
+    from api.routes.frontend import _en_date
+
+    expected = f"Deeds recorded through {_en_date(actual)},"
     html = client.get("/radar").text
     assert expected in html, (
         f"/radar should name {expected!r} (from api/freshness.py) but does not; "
