@@ -1766,22 +1766,72 @@ def _property_facts(bbl: str, zip_code: str, db) -> dict:
     return facts
 
 
-def _sibling_buildings(bbl: str, op, db) -> list[dict]:
-    """Other addresses in the same owner network. The property page linked up
-    to the operator profile but never sideways, so a crawler that landed on one
-    building found no path to the rest of the portfolio."""
-    if op is None:
-        return []
-    rows = db.execute(text("""
-        SELECT p.bbl, p.address, p.zip_code, n.name AS hood
-        FROM operator_parcels op
-        JOIN parcels p ON p.bbl = op.bbl
+def _sibling_buildings(bbl: str, op, db) -> dict:
+    """Other buildings the same owner holds, by the most precise route available.
+
+    Two things asked for this and neither could be answered. The 2026-08-27
+    console export carries assistant follow-up turns as queries: "do they own any
+    other properties?" at position 2.0 and "what else do they own" at 8.0, asked
+    against a page that carried one link to the owning company and no list. And
+    73% of organic visitors read one page and leave, while the ones who stay go
+    to another property page 720 times in fifteen days, which they were doing by
+    going back to Google.
+
+    Curated operator networks cover 566 parcels. Falling through to the deed
+    buyer covers 6,669, which is twelve times as many and the whole of what can
+    be done without a new index: `parcels.owner_name` reaches 167,637 and has no
+    index, so it would seq-scan 918k rows on the page taking 88% of our traffic.
+    That source and the entity families both belong to the maintenance window.
+
+    Returns the rows plus which route found them, because the two mean different
+    things to a reader and the page has to say which one it is showing.
+    """
+    if op is not None:
+        rows = db.execute(text("""
+            SELECT p.bbl, p.address, p.zip_code, n.name AS hood
+            FROM operator_parcels op
+            JOIN parcels p ON p.bbl = op.bbl
+            LEFT JOIN neighborhoods n ON n.zip_code = p.zip_code
+            WHERE op.operator_id = (SELECT id FROM operators WHERE slug = :slug)
+              AND op.bbl <> :bbl AND p.address IS NOT NULL
+            ORDER BY p.zip_code, p.address
+            LIMIT 8
+        """), {"slug": op.slug, "bbl": bbl}).fetchall()
+        if rows:
+            return {"rows": _sib_rows(rows), "source": "operator", "entity": None}
+
+    # The buyer on the newest deed, and only if it is a company. A natural
+    # person who bought two houses is not a portfolio, and a page listing "every
+    # building this named individual owns" is a people-search directory wearing
+    # a displacement-research mission statement. _is_buyer_entity is the same
+    # test /llc indexes on, so the two cannot disagree about who is a company.
+    rows = db.execute(text(f"""
+        WITH latest AS (
+            SELECT o.party_name_normalized AS name
+            FROM ownership_raw o
+            WHERE o.bbl = :bbl AND o.doc_type = 'DEED' AND o.party_type = '2'
+              AND {real_date('o.doc_date', 'o.created_at')}
+            ORDER BY o.doc_date DESC NULLS LAST
+            LIMIT 1
+        )
+        SELECT p.bbl, p.address, p.zip_code, n.name AS hood, l.name AS entity
+        FROM latest l
+        JOIN ownership_raw o ON o.party_name_normalized = l.name
+             AND o.doc_type = 'DEED' AND o.party_type = '2'
+        JOIN parcels p ON p.bbl = o.bbl
         LEFT JOIN neighborhoods n ON n.zip_code = p.zip_code
-        WHERE op.operator_id = (SELECT id FROM operators WHERE slug = :slug)
-          AND op.bbl <> :bbl AND p.address IS NOT NULL
+        WHERE o.bbl <> :bbl AND p.address IS NOT NULL
+        GROUP BY p.bbl, p.address, p.zip_code, n.name, l.name
         ORDER BY p.zip_code, p.address
         LIMIT 8
-    """), {"slug": op.slug, "bbl": bbl}).fetchall()
+    """), {"bbl": bbl}).fetchall()
+    if rows and _is_buyer_entity(rows[0].entity):
+        return {"rows": _sib_rows(rows), "source": "entity",
+                "entity": _entity_title(rows[0].entity)}
+    return {"rows": [], "source": None, "entity": None}
+
+
+def _sib_rows(rows) -> list[dict]:
     return [{"bbl": r.bbl, "address": _addr_title(r.address),
              "zip": r.zip_code or "", "hood": r.hood or ""} for r in rows]
 
@@ -2163,6 +2213,8 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     # Sideways links. Property to operator existed; operator to sibling
     # buildings did not, so a portfolio was 30 unconnected pages.
     sib_sec = ""
+    sib = siblings if isinstance(siblings, dict) else {"rows": siblings or [], "source": "operator", "entity": None}
+    siblings = sib["rows"]
     if siblings:
         owner_label = e(op.display_name or op.operator_root) if op is not None else "the same owner"
         rows_html = "".join(
@@ -2171,14 +2223,32 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
             f'<div class="rec-geo">{e(s["hood"] + ", " if s["hood"] else "")}{e(s["zip"])}</div></div>'
             f'</a></li>' for s in siblings
         )
-        sib_sec = _prose_section(
-            "Other buildings in this owner network",
-            _para(f"The {owner_label} network holds other NYC buildings PulseCities "
-                  f"tracks. {_count(len(siblings), 'address')} from that portfolio:"),
-            f'<ul class="sib-list">{rows_html}</ul>',
-            _para(f'<a href="/operator/{e(op.slug)}">The full {owner_label} portfolio '
-                  f'&rarr;</a>') if op is not None else "",
-        )
+        if sib["source"] == "entity":
+            # Say which record drew the line. A shared deed buyer is a stronger
+            # statement than a shared operator classification and a weaker one
+            # than common control, and the page should not let a reader round it
+            # up to the latter.
+            ent = e(sib["entity"] or "")
+            slug = re.sub(r"[^a-z0-9]+", "-", (sib["entity"] or "").lower()).strip("-")
+            more = (_para(f'<a href="/llc/{e(slug)}">Every deed recorded for {ent} '
+                          f'&rarr;</a>') if _LLC_SLUG_RE.match(slug) else "")
+            sib_sec = _prose_section(
+                "What else this owner holds",
+                _para(f"{ent} took title to {_count(len(siblings), 'other building')} "
+                      f"in the deed record. A shared buyer on a deed is a fact about "
+                      f"the filing, not proof that one operation runs them all:"),
+                f'<ul class="sib-list">{rows_html}</ul>',
+                more,
+            )
+        else:
+            sib_sec = _prose_section(
+                "Other buildings in this owner network",
+                _para(f"The {owner_label} network holds other NYC buildings PulseCities "
+                      f"tracks. {_count(len(siblings), 'address')} from that portfolio:"),
+                f'<ul class="sib-list">{rows_html}</ul>',
+                _para(f'<a href="/operator/{e(op.slug)}">The full {owner_label} portfolio '
+                      f'&rarr;</a>') if op is not None else "",
+            )
 
     # FAQ. The queries that reach these pages arrive phrased as questions, and
     # the answers are already in the record above.
