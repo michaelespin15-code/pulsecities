@@ -22,7 +22,7 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Resp
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from api.freshness import ACRIS_THROUGH_SQL
+from api.freshness import ACRIS_THROUGH_SQL, FRESHNESS_SOURCES, db_through_sql
 from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
 from models.database import get_db
 from scoring.tiers import tier
@@ -202,6 +202,61 @@ def _acris_through(db) -> date | None:
     except Exception:
         logger.warning("acris through-date query failed", exc_info=True)
         return None
+
+
+# Source and as-of date for every feed, cached because the answers move once a
+# night and the alternative is five extra queries on the page that takes 88% of
+# organic traffic.
+_FEEDS_TTL = 900
+_feeds_cache: tuple[dict, float] | None = None
+
+# The name to print for each feed. The slug is api.freshness's, so a feed added
+# there and not named here is caught by tests/test_source_attribution.py rather
+# than silently losing its citation.
+_FEED_SOURCE = {
+    "acris":      "NYC ACRIS",
+    "evictions":  "NYC marshal eviction records",
+    "permits":    "NYC DOB job filings",
+    "complaints": "NYC 311",
+    "violations": "NYC HPD violations",
+}
+
+
+def _feeds_through(db) -> dict:
+    """As-of date per feed, so any block of facts can say when it was current."""
+    global _feeds_cache
+    now = time.monotonic()
+    if _feeds_cache and now < _feeds_cache[1]:
+        return _feeds_cache[0]
+    out = {}
+    for slug, _scraper, _table, _col, _days in FRESHNESS_SOURCES:
+        try:
+            v = db.execute(text(db_through_sql(slug))).scalar()
+        except Exception:
+            logger.warning("through-date query failed for %s", slug, exc_info=True)
+            continue
+        if v is not None:
+            out[slug] = v.date() if hasattr(v, "date") else v
+    _feeds_cache = (out, now + _FEEDS_TTL)
+    return out
+
+
+def _cite(feeds: dict, slug: str) -> str:
+    """The clause that turns a number on this page into a quotable fact.
+
+    Every block already named its source. None of them said when the source was
+    last current, so a figure lifted off the page travelled as a bare claim.
+    That matters more than it used to: over the fifteen days to 2026-08-27 the
+    AI crawlers fetched 82,631 pages here against Googlebot's 68,881, and an
+    assistant repeating "42 violations" with no date attached is how a number
+    outlives the record it came from. Reads the same date /api/status publishes,
+    so the page and the status endpoint cannot disagree.
+    """
+    d = feeds.get(slug)
+    src = _FEED_SOURCE.get(slug)
+    if not d or not src:
+        return ""
+    return f' <span class="cite">Source: {src}, current through {_en_date(d)}.</span>'
 
 
 def _deeds_through_line(db, lang: str = "en") -> str:
@@ -1732,7 +1787,7 @@ def _sibling_buildings(bbl: str, op, db) -> list[dict]:
 
 def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
                          parcel=None, facts=None, siblings=None,
-                         unit_lot=None) -> str:
+                         unit_lot=None, feeds=None) -> str:
     """Server-rendered content body for a single building: its public-record
     history (deeds, evictions, permits, complaints) plus links up to the ZIP,
     borough, and owning operator. Replaces the old map-shell body so the page is
@@ -1826,11 +1881,15 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
         f'<td class="si">{_money(d["amount"])}</td></tr>'
         for d in documents
     )
+    # Passed in rather than queried here: this function renders, the route
+    # reads. A feed with no date prints no citation instead of a wrong one.
+    feeds = feeds or {}
+
     own_sec = _section(
         "Ownership transfers",
         "Deeds and assignments recorded in ACRIS, one row per document. Amount is the "
         "stated consideration; $0 often marks a non-arms-length transfer. An assignment "
-        "moves a lender's paper and is not a sale.",
+        "moves a lender's paper and is not a sale." + _cite(feeds, "acris"),
         ("Party taking title", "Recorded", "Amount"), doc_rows,
     )
 
@@ -1842,7 +1901,8 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     )
     ev_sec = _section(
         "Executed evictions",
-        "Marshal-executed residential evictions from the NYC evictions dataset, past 12 months.",
+        "Marshal-executed residential evictions from the NYC evictions dataset, past 12 months."
+        + _cite(feeds, "evictions"),
         ("Type", "Executed", ""), ev_rows,
     )
 
@@ -1854,7 +1914,7 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     )
     pm_sec = _section(
         "Building permits",
-        "DOB job filings on this lot, past 12 months.",
+        "DOB job filings on this lot, past 12 months." + _cite(feeds, "permits"),
         ("Work", "Filed", "Type"), pm_rows,
     )
 
@@ -1865,7 +1925,8 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
             f'<p style="font-size:.95rem;margin-bottom:8px;"><span style="font-family:\'JetBrains Mono\','
             f'monospace;font-size:1.3rem;font-weight:600;">{len(complaints)}</span> '
             '<span style="color:var(--muted);">complaints in the past 12 months</span></p>'
-            '<p class="data-note">NYC 311 housing and building complaints logged for this address.</p></section>'
+            '<p class="data-note">NYC 311 housing and building complaints logged for this address.'
+            + _cite(feeds, "complaints") + '</p></section>'
         )
 
     score_block = ""
@@ -2066,7 +2127,7 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
         viol_sec = _prose_section("Open violations", _para(*vp),
                                   '<p class="data-note">Classes run A (non-hazardous) '
                                   'to C (immediately hazardous); DOB class I carries a '
-                                  'vacate order.</p>')
+                                  'vacate order.' + _cite(feeds, "violations") + '</p>')
 
     # The building against its ZIP. Turns a lone score into a comparison, and
     # is the paragraph that earns the link up to the neighbourhood page.
@@ -2404,6 +2465,7 @@ td{padding:11px 0;border-bottom:1px solid rgba(147,161,173,.06);vertical-align:t
 .sw{display:block;font-size:0.75rem;color:var(--faint);margin-top:2px}
 .sr,.si{font-size:.85rem;font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap}
 .data-note{font-size:0.75rem;color:var(--faint);margin-top:8px;line-height:1.5}
+.cite{color:var(--dim);white-space:normal}
 .prose{font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:10px;max-width:64ch}
 .prose a{color:var(--accent)}
 .prose a:hover{text-decoration:underline}
@@ -2529,7 +2591,7 @@ def property_page(bbl: str, db: Session = Depends(get_db)):
     siblings = _sibling_buildings(clean, op, db)
     html = _build_property_page(clean, address, zip_code, borough, score, sig, op,
                                 parcel=parcel, facts=facts, siblings=siblings,
-                                unit_lot=unit_lot)
+                                unit_lot=unit_lot, feeds=_feeds_through(db))
 
     # Parcels number in the hundreds of thousands; without a cap a crawler
     # walking /property/ URLs grows this dict until the box runs out of memory.
@@ -7168,10 +7230,13 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
             + ". Follow any address above for the whole chain on that building, "
               "including the deeds either side of this one and the party opposite."
         )
+    acris_through = _acris_through(db)
     chain_parts.append(
         "PulseCities holds ACRIS deeds recorded from 2025 onward, so these are "
         "the recent end of a chain rather than the whole of it. For a full title "
         "search the city's own ACRIS system is the record of authority."
+        + (f" Source: NYC ACRIS, current through {_en_date(acris_through)}."
+           if acris_through else "")
     )
     chain_sec = _prose_section("The chain of title", _para(*chain_parts))
 
