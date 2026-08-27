@@ -251,3 +251,50 @@ fail, and it burns the same credibility.
   that exists the ping is a no-op and the box is still its own only witness.
 - Add the nightly reconciler to cron. It runs inside the pipeline today, so this
   is only about running it when the pipeline itself does not.
+
+---
+
+## Case, 2026-08-27: a date guard that expired, in seventeen places at once
+
+The clearest instance of patterns 2 and 4 so far, and worth keeping because it
+ran for sixteen nights in a crawler-facing file without anyone noticing.
+
+**What happened.** Two ACRIS rows carry a filer-typed `doc_date` of 2026-08-27
+on a deed recorded 2026-07-29. They were ingested 2026-08-11. `api/freshness.py`
+excluded them correctly the whole time, because its rule was "not dated in the
+future" and they sat sixteen days ahead of the calendar. On the morning of
+2026-08-27 the calendar reached them, they stopped being future rows, and they
+became the newest legal deed date in the table.
+
+**Pattern 2, exactly.** The guard was right when written and expired on a
+schedule nobody had written down. `pipeline_health` went CRITICAL to HEALTHY on
+a feed frozen since July 31, and `/api/status` published `data_through
+2026-08-27` with acris `state: ok`. The fix is the durable form of the same
+rule: a record cannot have happened after we wrote it down, so the bound is
+`column <= created_at`, which does not expire.
+
+**Pattern 4, also exactly.** Repairing the one reader raised the real question:
+who else takes a max over these columns? Seventeen other call sites, none
+guarded. The expensive one was `scripts/generate_sitemap.py`, which had been
+writing `<lastmod>2026-08-27</lastmod>` onto all 200 hub URLs and onto the typo
+row's own property page every night since 2026-08-11. A lastmod a crawler can
+prove wrong is worse than no lastmod: the lesson it teaches is to stop believing
+the field. `/ops` was the sharpest: it hand-rolled the four freshness subqueries
+with a bare `<= CURRENT_DATE` while its own comment claimed it agreed with
+`/api/status`.
+
+**Structural fix.** The predicate is `freshness.real_date(column, created_at)`,
+so there is one place to change it. `tests/test_date_guards.py` greps for the
+pattern rather than exercising today's call sites, because only a grep catches
+the eighteenth one. Its `KNOWN_UNGUARDED` list may shrink and must never grow,
+and a file cleared to zero has to leave the list, so the backlog fails rather
+than rots.
+
+**Trigger.** When a rule earns its own module, grep for everyone who reimplements
+it before assuming the module is the only reader. "This function is the canonical
+X" is a claim about the codebase, not about the function, and only a grep can
+check it.
+
+**The cheap tell.** Ask of any date filter: does this predicate stop being true
+as time passes? `< CURRENT_DATE` does. `<= created_at` does not. A guard whose
+correctness depends on today's date needs a second bound that does not.
