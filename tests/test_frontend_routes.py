@@ -249,8 +249,8 @@ class TestNeighborhoodOGInjection:
 class TestTierBands:
     """
     _tier_info must match the canonical bands used by the map legend,
-    the weekly digest, and _build_summary: Low 0-33, Moderate 34-66,
-    High 67-84, Critical 85+. A drifted copy here means the SSR meta
+    the weekly digest, and _build_summary: Low 0-33, Moderate 34-44,
+    High 45-54, Critical 55+. A drifted copy here means the SSR meta
     description names a different tier than the map colors show.
     """
 
@@ -259,10 +259,10 @@ class TestTierBands:
         assert _tier_info(0)[0] == "Low"
         assert _tier_info(33)[0] == "Low"
         assert _tier_info(34)[0] == "Moderate"
-        assert _tier_info(66)[0] == "Moderate"
-        assert _tier_info(67)[0] == "High"
-        assert _tier_info(84)[0] == "High"
-        assert _tier_info(85)[0] == "Critical"
+        assert _tier_info(44)[0] == "Moderate"
+        assert _tier_info(45)[0] == "High"
+        assert _tier_info(54)[0] == "High"
+        assert _tier_info(55)[0] == "Critical"
         assert _tier_info(100)[0] == "Critical"
 
 
@@ -320,7 +320,7 @@ class TestPropertyPage:
 class TestCanonicalTierBands:
     """
     Tripwire for tier-band drift in the client. Canonical bands are
-    Low 0-33, Moderate 34-66, High 67-84, Critical 85+ everywhere:
+    Low 0-33, Moderate 34-44, High 45-54, Critical 55+ everywhere:
     map fill, legend, panel label, summaries, digest. This has drifted
     three separate times; if a threshold changes, change it in every
     surface and update this test in the same commit.
@@ -338,7 +338,10 @@ class TestCanonicalTierBands:
 
     def test_no_legacy_score_thresholds(self):
         app = self._app()
-        for legacy in ("score >= 70", "score >= 76", "score >= 55", "score >= 56", "s >= 76", "s >= 56"):
+        # 55 left this list on 2026-08-28: it is the Critical floor now. The
+        # values below are floors this file has actually seen drift back in.
+        for legacy in ("score >= 70", "score >= 76", "score >= 85", "score >= 67",
+                       "score >= 56", "s >= 76", "s >= 56"):
             assert legacy not in app, f"legacy tier threshold '{legacy}' is back in app.html"
 
     def test_og_images_use_canonical_thresholds(self):
@@ -361,7 +364,7 @@ class TestCanonicalTierBands:
 
     def test_canonical_thresholds_present(self):
         app = self._app()
-        for canon in ("score >= 85", "score >= 67", "score >= 34"):
+        for canon in ("score >= 55", "score >= 45", "score >= 34"):
             assert canon in app, f"canonical threshold '{canon}' missing from app.html"
 
     def test_landing_page_uses_canonical_thresholds(self):

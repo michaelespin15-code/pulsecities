@@ -94,7 +94,7 @@ class TestPromptAndFacts:
             {"llc_acquisitions": 111, "evictions": 238},
         )
         assert "71.1 out of 100" in facts
-        assert "High pressure" in facts
+        assert "Critical pressure" in facts
         assert "renovation permit filings" in facts  # signal label, not raw key
         assert "111" in facts
 
@@ -129,10 +129,12 @@ class TestPromptAndFacts:
         assert "per 1,000" not in facts
 
     def test_tier_bands_match_map_legend(self):
-        # Canonical bands: Low 0-33, Moderate 34-66, High 67-84, Critical 85+.
-        assert ai._tier(90) == "Critical"
-        assert ai._tier(75) == "High"
-        assert ai._tier(50) == "Moderate"
+        # Canonical bands: Low 0-33, Moderate 34-44, High 45-54, Critical 55+.
+        # Recalibrated 2026-08-28; the old 67/85 floors were above every score
+        # New York has ever produced.
+        assert ai._tier(60) == "Critical"
+        assert ai._tier(48) == "High"
+        assert ai._tier(38) == "Moderate"
         assert ai._tier(10) == "Low"
 
     def test_score_key_pins_cache_to_scoring_run(self):

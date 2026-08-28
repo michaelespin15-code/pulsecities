@@ -426,9 +426,9 @@
             <div id="map-legend" class="absolute bottom-9 left-4 z-10 rounded-lg px-3 py-2 flex flex-col gap-1" style="background:rgba(17,24,35,0.88);backdrop-filter:blur(6px);border:1px solid rgba(147,161,173,0.15);font-size:12px;">
                 <div class="text-slate-400 font-mono uppercase tracking-wider mb-0.5" style="font-size:12px;letter-spacing:0.08em;"><span id="legend-header">displacement risk</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#3E6B54;display:inline-block;flex-shrink:0;"></span><span id="legend-low" class="text-slate-300">Low 0-33</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#C08B2D;display:inline-block;flex-shrink:0;"></span><span id="legend-moderate" class="text-slate-300">Moderate 34-66</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ed6317;display:inline-block;flex-shrink:0;"></span><span id="legend-high" class="text-slate-300">High 67-84</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#e4483b;display:inline-block;flex-shrink:0;"></span><span id="legend-critical" class="text-slate-300">Critical 85+</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#C08B2D;display:inline-block;flex-shrink:0;"></span><span id="legend-moderate" class="text-slate-300">Moderate 34-44</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ed6317;display:inline-block;flex-shrink:0;"></span><span id="legend-high" class="text-slate-300">High 45-54</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#e4483b;display:inline-block;flex-shrink:0;"></span><span id="legend-critical" class="text-slate-300">Critical 55+</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#303c4c;display:inline-block;flex-shrink:0;"></span><span id="legend-no-data" class="text-slate-300">No data</span></div>
                 <div id="map-data-updated" class="text-slate-400 mt-1" style="font-size:12px;"></div>
                 <div id="replay-row" class="mt-1 pt-1.5" style="border-top:1px solid rgba(147,161,173,0.12);">
@@ -1616,9 +1616,9 @@
                     built_by:            'Built by',
                     legend_header:       'displacement risk',
                     legend_low:          'Low 0-33',
-                    legend_moderate:     'Moderate 34-66',
-                    legend_high:         'High 67-84',
-                    legend_critical:     'Critical 85+',
+                    legend_moderate:     'Moderate 34-44',
+                    legend_high:         'High 45-54',
+                    legend_critical:     'Critical 55+',
                     legend_no_data:      'No data',
                     data_last_updated:   'Data last updated: {date}',
                     show_more:           'View full signal breakdown →',
@@ -1848,9 +1848,9 @@
                     built_by:            'Creado por',
                     legend_header:       'riesgo de desplazamiento',
                     legend_low:          'Bajo 0-33',
-                    legend_moderate:     'Moderado 34-66',
-                    legend_high:         'Alto 67-84',
-                    legend_critical:     'Crítico 85+',
+                    legend_moderate:     'Moderado 34-44',
+                    legend_high:         'Alto 45-54',
+                    legend_critical:     'Crítico 55+',
                     legend_no_data:      'Sin datos',
                     data_last_updated:   'Datos actualizados: {date}',
                     show_more:           'Ver desglose completo →',
@@ -2239,8 +2239,8 @@
                             'step', ['coalesce', ['feature-state', 'score'], ['get', 'score']],
                             '#3E6B54',
                             34, '#C08B2D',
-                            67, '#ed6317',
-                            85, '#e4483b'
+                            45, '#ed6317',
+                            55, '#e4483b'
                         ]
                     ],
                     'fill-opacity': [
@@ -2250,8 +2250,8 @@
                             'step', ['coalesce', ['feature-state', 'score'], ['get', 'score']],
                             0.55,
                             34, 0.55,
-                            67, 0.82,
-                            85, 0.9
+                            45, 0.82,
+                            55, 0.9
                         ]
                     ]
                 }
@@ -2327,8 +2327,8 @@
 
         function scoreColor(score) {
             if (score === null) return '#93a1ad';
-            if (score >= 85) return '#e4483b';
-            if (score >= 67) return '#ed6317';
+            if (score >= 55) return '#e4483b';
+            if (score >= 45) return '#ed6317';
             if (score >= 34) return '#C08B2D';
             return '#93a1ad';
         }
@@ -2366,8 +2366,8 @@
 
         function riskLabel(score) {
             if (score === null || score === undefined) return '';
-            if (score >= 85) return t('risk_level', 'critical');
-            if (score >= 67) return t('risk_level', 'high');
+            if (score >= 55) return t('risk_level', 'critical');
+            if (score >= 45) return t('risk_level', 'high');
             if (score >= 34) return t('risk_level', 'moderate');
             return t('risk_level', 'low');
         }
@@ -2391,8 +2391,8 @@
             if (score === null || score === undefined) return t('summary', 'no_data');
             const s = Math.round(score * 10) / 10;
             let opening;
-            if (s >= 85)      opening = t('summary', 'critical_opening').replace('{score}', s);
-            else if (s >= 67) opening = t('summary', 'high_opening').replace('{score}', s);
+            if (s >= 55)      opening = t('summary', 'critical_opening').replace('{score}', s);
+            else if (s >= 45) opening = t('summary', 'high_opening').replace('{score}', s);
             else if (s >= 34) opening = t('summary', 'moderate_opening').replace('{score}', s);
             else              opening = t('summary', 'low_opening').replace('{score}', s);
 
@@ -4107,7 +4107,7 @@
                     if (n.score !== null && n.score !== undefined) {
                         const score = document.createElement('span');
                         score.className = 'font-mono text-xs shrink-0';
-                        const c = n.score >= 85 ? '#e4483b' : n.score >= 67 ? '#ed6317' : n.score >= 34 ? '#C08B2D' : '#93a1ad';
+                        const c = n.score >= 55 ? '#e4483b' : n.score >= 45 ? '#ed6317' : n.score >= 34 ? '#C08B2D' : '#93a1ad';
                         score.style.color = c;
                         score.textContent = n.score.toFixed(1);
                         top.appendChild(score);

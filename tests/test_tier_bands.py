@@ -1,7 +1,7 @@
 """
 Guards the displacement score bands against being written down twice.
 
-Low 0-33, Moderate 34-66, High 67-84, Critical 85+ had been hand-written in six
+Low 0-33, Moderate 34-44, High 45-54, Critical 55+ had been hand-written in six
 places: frontend.py, briefs.py, og_images.py, neighborhoods.py, ops.py and
 weekly_digest.py. They agreed, with nothing keeping them that way. That is
 failure shape 1 from docs/ops/failure_patterns.md, and its consequence here is
@@ -29,7 +29,7 @@ from scoring.tiers import BANDS, ORDER, sql_tier_counts, tier
 ROOT = Path(__file__).parent.parent
 
 # Every value where a band could be got wrong, plus the ordinary middles.
-EDGES = [0, 1, 33, 33.9, 34, 34.1, 50, 66.9, 67, 67.1, 80, 84.9, 85, 85.1, 99, 100]
+EDGES = [0, 1, 33, 33.9, 34, 34.1, 40, 44.9, 45, 45.1, 50, 54.9, 55, 55.1, 63, 100]
 
 
 def test_bands_are_ordered_and_complete():
@@ -40,8 +40,8 @@ def test_bands_are_ordered_and_complete():
 
 
 @pytest.mark.parametrize("score,expected", [
-    (0, "Low"), (33.9, "Low"), (34, "Moderate"), (66.9, "Moderate"),
-    (67, "High"), (84.9, "High"), (85, "Critical"), (100, "Critical"),
+    (0, "Low"), (33.9, "Low"), (34, "Moderate"), (44.9, "Moderate"),
+    (45, "High"), (54.9, "High"), (55, "Critical"), (100, "Critical"),
 ])
 def test_canonical_boundaries(score, expected):
     assert tier(score) == expected
@@ -81,9 +81,9 @@ def test_digest_palettes_cover_every_band():
 def test_generated_sql_matches_the_bands():
     sql = sql_tier_counts("score")
     assert "score < 34" in sql
-    assert "score >= 34 AND score < 67" in sql
-    assert "score >= 67 AND score < 85" in sql
-    assert "score >= 85" in sql
+    assert "score >= 34 AND score < 45" in sql
+    assert "score >= 45 AND score < 55" in sql
+    assert "score >= 55" in sql
     for label in ORDER:
         assert f"AS {label.lower()}" in sql
 
@@ -103,4 +103,44 @@ def test_no_module_hardcodes_the_bands_again():
     assert not offenders, (
         "score bands written out again instead of imported from scoring.tiers:\n"
         + "\n".join(offenders)
+    )
+
+
+@pytest.mark.integration
+@pytest.mark.needs_data
+def test_every_band_is_reachable_by_a_real_zip():
+    """The check that was missing for as long as the bands were wrong.
+
+    They were 34 / 67 / 85 while the highest score New York has ever produced is
+    63.2, so the top two bands could not be occupied. The map rendered in two
+    colours, the og card printed "0 ZIPs at High risk", and the weekly digest
+    could not report a crossing into High because the floor sat above the
+    maximum. Every one of those surfaces was working exactly as written.
+
+    A band with nobody in it is either a band set against the wrong distribution
+    or a signal that has died. Both are worth a red test.
+    """
+    from sqlalchemy import text
+
+    from models.database import SessionLocal
+    db = SessionLocal()
+    try:
+        scores = [float(r[0]) for r in db.execute(text(
+            "SELECT score FROM displacement_scores WHERE score IS NOT NULL"))]
+    finally:
+        db.close()
+    if len(scores) < 50:
+        pytest.skip("not enough scored ZIPs to judge the distribution")
+
+    counts = {label: sum(1 for s in scores if tier(s) == label) for label in ORDER}
+    empty = [label for label, n in counts.items() if n == 0]
+    assert not empty, (
+        f"no ZIP falls in {empty}. Highest score is {max(scores):.1f} against a "
+        f"{[f for f, _ in BANDS][0]} floor for {BANDS[0][1]}. Distribution: {counts}"
+    )
+
+    # The top band is meant to be the sharp end, not a third of the city.
+    top = counts[ORDER[-1]] / len(scores)
+    assert top <= 0.15, (
+        f"{top:.0%} of ZIPs are {ORDER[-1]}, which makes the label meaningless"
     )
