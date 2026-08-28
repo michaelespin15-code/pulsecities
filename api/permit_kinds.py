@@ -144,3 +144,92 @@ def trade_label(code: str | None) -> str:
     if len(words) == 1:
         return words[0]
     return ", ".join(words[:-1]) + " and " + words[-1]
+
+
+# ---------------------------------------------------------------------------
+# Deconversion: a permit that removes homes
+# ---------------------------------------------------------------------------
+#
+# DOB NOW carries existing and proposed dwelling counts, and the difference
+# looks like the most direct displacement signal in the whole dataset. It is
+# not, on its own. Filers use `proposed_dwelling_units` inconsistently: some
+# enter the building total, some the units in scope, and many leave it blank so
+# it arrives as 0. Read raw, 2,164 jobs a year "remove" 44,406 homes, and the
+# largest is a $1,500 gas-valve permit on a 792-unit building.
+#
+# So the counts are never trusted alone. Two independent fields have to agree:
+# the numbers say homes went away, and the filer's own description says the work
+# was a conversion or combination of dwellings. Both are on the page when this
+# is rendered, so a reader checks it rather than taking our word.
+#
+# What each condition is for, since four filters invite hand-tuning:
+#
+#   units_proposed > 0        blank arrives as 0. Of the 596 such rows, 5%
+#                             mention a conversion, against ~30% of the rest.
+#   units_existing 2..1000    one filer typed 111111111, which alone accounted
+#                             for 111 million of a 111,115,979-unit "total".
+#   a conversion word         the numbers alone are noise.
+#   a dwelling word           "CONVERSION OF EXISTING WET STANDPIPE TO DRY
+#                             STANDPIPE" matched the conversion word on a
+#                             362-unit building.
+#   PLUTO says 2+ homes       the largest hits were a hotel converting 606 rooms
+#                             to 312 apartments and a dormitory reconfiguring
+#                             267 suites into 141. Both reduce a count and
+#                             neither removes a home. PLUTO records no
+#                             residential units for either, so the join settles
+#                             it. This is why the parcel alias is required
+#                             rather than optional.
+#
+# A condition that was tried and REJECTED: requiring the filing's `existing`
+# count to be at or below PLUTO's. It reads principled and it drops real cases,
+# because PLUTO is often already updated to the post-conversion number or is
+# simply stale on SROs. It threw away "CONVERT SRO TO SINGLE FAMILY", 13 homes
+# to 1, on a lot PLUTO calls a 2-family.
+#
+# **No cost floor**, and that was measured rather than assumed. The cheapest
+# rows are real: "$100, PROPOSED CONVERSION OF EXISTING 3-FAMILY BUILDING",
+# 3 homes to 1. Deconversions are often filed as nominal-cost sub-filings.
+#
+# A random sample of ten at this predicate reads clean; the earlier version
+# without the dwelling word did not. Sampling the biggest rows is what hid that.
+_CONVERSION_WORDS = r"(convert|conversion|combin|deconver|merg)"
+_DWELLING_WORDS = r"(dwelling|famil|apartment|\bunits?\b|residen|dorm|\bSRO\b|rooming)"
+
+# Bind these alongside the predicate; they are regexes, not interpolated SQL.
+DECONVERSION_PARAMS = {"conv_re": _CONVERSION_WORDS, "dwell_re": _DWELLING_WORDS}
+
+# Sane bounds for a residential building's unit count.
+MIN_UNITS, MAX_UNITS = 2, 1000
+
+
+def deconversion_sql(permit_alias: str, parcel_alias: str) -> str:
+    """Predicate: this permit proposes fewer homes than the building has, the
+    filer's own words say so, and the building is somewhere people live.
+
+    Both aliases are required, and the parcel one is why. Without a join to
+    PLUTO the largest hits are a hotel turning 606 rooms into 312 apartments and
+    a dormitory reconfiguring 267 suites into 141: counts that fall while the
+    housing stock does not. Making the caller pass the alias means the check
+    cannot be left off by writing one fewer argument.
+
+        sql = f'''
+            SELECT ... FROM permits_raw pr JOIN parcels p ON p.bbl = pr.bbl
+            WHERE {deconversion_sql("pr", "p")} AND pr.bbl = :bbl
+        '''
+        db.execute(text(sql), {"bbl": bbl, **DECONVERSION_PARAMS})
+
+    DOB NOW only: legacy BIS records no dwelling counts, so this is silent about
+    anything filed before roughly 2021. That is a real limit and it belongs next
+    to any number this produces.
+    """
+    a = f"{permit_alias}." if permit_alias else ""
+    b = f"{parcel_alias}." if parcel_alias else ""
+    return (
+        f"({a}source = 'dob_now'"
+        f" AND {a}units_proposed > 0"
+        f" AND {a}units_proposed < {a}units_existing"
+        f" AND {a}units_existing BETWEEN {MIN_UNITS} AND {MAX_UNITS}"
+        f" AND {b}units_res >= {MIN_UNITS}"
+        f" AND {a}job_description ~* :conv_re"
+        f" AND {a}job_description ~* :dwell_re)"
+    )

@@ -52,7 +52,7 @@ from config.logging_config import configure_logging
 from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
 from models.database import get_scraper_db
 from scripts.building_alerts import _wait_for_pipeline
-from api.permit_kinds import trade_label
+from api.permit_kinds import DECONVERSION_PARAMS, deconversion_sql, trade_label
 from scripts.lib import mailer
 from scripts.lib.backfill_windows import exclusion
 
@@ -508,6 +508,14 @@ def standing_state(db, block: dict) -> dict:
             "SELECT count(*) FROM evictions_raw WHERE bbl >= :lo AND bbl <= :hi "
             "AND executed_date > CURRENT_DATE - INTERVAL '365 days' AND "
             + real_date("executed_date")),
+        # Filings that propose removing homes. Rare enough that a block with one
+        # is worth a sentence, and specific enough that the reader can check it:
+        # 853 buildings citywide across the whole DOB NOW era.
+        "deconversions": db.execute(text(f"""
+            SELECT count(DISTINCT pr.bbl) FROM permits_raw pr
+            JOIN parcels pc ON pc.bbl = pr.bbl
+            WHERE pr.bbl >= :lo AND pr.bbl <= :hi AND {deconversion_sql("pr", "pc")}
+        """), {**p, **DECONVERSION_PARAMS}).scalar() or 0,
         "worst_address": _addr_title(worst.address) if worst and worst.address else None,
         "worst_bbl": worst.bbl if worst else None,
         "worst_open": int(worst.n) if worst else 0,
@@ -648,6 +656,14 @@ def _state_sentences(block: dict) -> list[str]:
     if s["evictions_12m"]:
         out.append(f"{_count(s['evictions_12m'], 'marshal eviction')} executed here in the "
                    f"last twelve months.")
+    if s.get("deconversions"):
+        # No date window: these are filings, not events, and one from 2022 that
+        # took a building from six homes to one still describes the block.
+        out.append(
+            f"{_count(s['deconversions'], 'building')} on this block "
+            f"{'has' if s['deconversions'] == 1 else 'have'} filed to reduce the "
+            f"number of homes {'it holds' if s['deconversions'] == 1 else 'they hold'}, "
+            f"on the applicant's own description.")
     if s["parcels"]:
         out.append(f"The block holds {_count(s['parcels'], 'parcel')}"
                    + (f" and {_count(s['units'], 'residential unit')}." if s["units"] else "."))

@@ -22,7 +22,8 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Resp
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from api.permit_kinds import renovation_sql
+from api.permit_kinds import (DECONVERSION_PARAMS, deconversion_sql,
+                              renovation_sql)
 from api.freshness import (ACRIS_THROUGH_SQL, FRESHNESS_SOURCES, db_through_sql,
                            feed_anchor, real_date, window_sql)
 from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
@@ -1701,6 +1702,35 @@ def _property_facts(bbl: str, zip_code: str, db) -> dict:
     """
     facts: dict = {}
 
+    # Filings that propose fewer homes than the building has, corroborated by
+    # the filer's own description. The counts alone are unusable: read raw,
+    # 2,164 jobs a year "remove" 44,406 homes and the biggest is a $1,500
+    # gas-valve permit on a 792-unit building. api.permit_kinds.deconversion_sql
+    # carries the reasoning for every condition.
+    #
+    # The parcels join is not incidental: without it the biggest hits are a
+    # hotel and a dormitory, both reducing a room count without removing a home.
+    #
+    # DOB NOW only, because legacy BIS records no dwelling counts, so this is
+    # silent about anything filed before roughly 2021. The rendered copy says so.
+    facts["deconversions"] = [
+        {"date": d.filing_date, "existing": d.units_existing,
+         "proposed": d.units_proposed,
+         "cost": float(d.job_cost) if d.job_cost else 0.0,
+         "description": (d.job_description or "").strip()}
+        for d in db.execute(text(f"""
+            SELECT pr.filing_date, pr.units_existing, pr.units_proposed,
+                   pr.job_cost, pr.job_description
+            FROM permits_raw pr
+            JOIN parcels p ON p.bbl = pr.bbl
+            WHERE pr.bbl = :bbl AND {deconversion_sql("pr", "p")}
+            ORDER BY (pr.units_existing - pr.units_proposed) DESC,
+                     pr.filing_date DESC
+            LIMIT 3
+        """), {"bbl": bbl, **DECONVERSION_PARAMS}).fetchall()
+        if d.filing_date
+    ]
+
     # Deed chain. ownership_raw carries assignments too, and an assignment is a
     # lender moving paper, not a sale, so the chain reads DEED rows only.
     deeds = db.execute(text("""
@@ -2024,6 +2054,35 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
         if not inner:
             return ""
         return f'<section style="margin-bottom:30px;"><h2>{h2}</h2>{inner}</section>'
+
+    # Homes proposed for removal. Placed above the permit table because it is
+    # the one permit fact that changes how many people can live here, and below
+    # everything about who owns it, because that is the question the page is
+    # usually opened with.
+    dec_sec = ""
+    decs = facts.get("deconversions") or []
+    if decs:
+        paras = []
+        for d in decs:
+            lost = int(d["existing"]) - int(d["proposed"])
+            cost = (f" The job is valued at ${d['cost']:,.0f}."
+                    if d["cost"] and d["cost"] >= 1000 else "")
+            desc = d["description"][:200].rstrip()
+            paras.append(_para(
+                f"A filing dated {e(_en_date(d['date']))} proposes taking this "
+                f"building from {_count(int(d['existing']), 'home')} to "
+                f"{_count(int(d['proposed']), 'home')}, "
+                f"{_count(lost, 'home')} fewer.{cost}",
+                f"The filed description reads: {e(desc)}." if desc else "",
+            ))
+        paras.append(_para(
+            "Dwelling counts come from the applicant, not from an inspection, "
+            "and they are only recorded in DOB NOW filings, so nothing here "
+            "covers work filed before 2021."
+            + _cite(feeds, "permits").replace('<span class="cite">', " ")
+              .replace("</span>", "")))
+        dec_sec = _prose_section("Homes proposed for removal", *paras)
+
 
     # Lede. Every clause is drawn from this lot's own record, which is also
     # what keeps 1,792 pages from reading as one page.
@@ -2590,7 +2649,7 @@ footer{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-i
 {unit_note}
 {score_block}
 {lede}
-{empty}{chain_sec}{own_sec}{ev_prose}{ev_sec}{rs_sec}{viol_sec}{pm_sec}{comp_sec}{cmp_sec}{sib_sec}
+{empty}{chain_sec}{own_sec}{ev_prose}{ev_sec}{rs_sec}{viol_sec}{dec_sec}{pm_sec}{comp_sec}{cmp_sec}{sib_sec}
 {watch_card}
 {faq_sec}
 <div class="cta-row">{links_html}</div>
