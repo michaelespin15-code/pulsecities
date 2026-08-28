@@ -1,3 +1,117 @@
+# >>> START HERE after /clear (2026-08-28, block digest + the permit signal) <<<
+
+Working tree clean. The block digest shipped (93859bd) and is installed in
+/etc/cron.d/pulsecities, so it sends for the first time on **2026-09-01 at
+10:00 ET** to ten subscribers, Michael among them. Everything else below is a
+finding, not a change.
+
+## The one thing to read first
+
+**The permit signal is 24.7% of the composite score and is computed from 414
+records.** `scrapers/permits.py` reads `ipu4-2q9a`, the legacy DOB Permit
+Issuance dataset. DOB NOW superseded it, and the remnant that still lands in
+the legacy feed is what the score is built on.
+
+    our permits, last 365 days       6,501
+    DOB NOW rbx6-tga4, same window   ~170,000       coverage 3.8%
+    after the AL / 3+ unit filter      414 across 106 of 177 scored ZIPs
+
+24.7% and not 21%: the dormant-weight redistribution in `compute.py` is working
+correctly, rs_unit_loss is dormant, and permits therefore carries 0.21/0.85 of
+the live mass. It is the second-heaviest effective weight in the product's
+central number.
+
+At roughly four permits per ZIP the percentile normalisation is amplifying
+noise. Counterfactual, recomputing every score with the permit term removed and
+the rest renormalised: **median rank shift 13 places, max 76, and half the top
+ten changes.** 11211 moves 26 to 102, 10002 moves 77 to 144, 10013 moves 76 to
+141. Without the term the top ten is almost entirely the South Bronx.
+
+That counterfactual does not prove the permit-free ranking is the right one.
+It proves the term is decisive, so its 3.8% coverage is not cosmetic.
+
+The fix is a DOB NOW scraper (`rbx6-tga4`, 990,856 rows, live, carries borough
+/ block / lot / bin / work_type / issued_date / job_description, so BBL builds
+the same way `ipu4-2q9a`'s does). **The one real design question is the filter.**
+Scoring counts `permit_type = 'AL'` today; DOB NOW has no `permit_type` in that
+vocabulary, it has `work_type` ("General Construction", "Full Demolition"), so
+the "alteration to an occupied building" test has to be re-expressed before the
+two feeds can be unioned. Note also that DOB NOW rows are approved work permits
+and several can belong to one job, so the 3.8% is a floor on the gap rather
+than an exact ratio.
+
+## Shipped
+
+**The block digest (93859bd).** Monthly report on the tax block around each
+watched building, which was checkpoint item 1. The radius was measured before
+it was built: building 3 of 12 blocks have monthly activity, block 9 of 12 by
+ingest date and 5 of 12 by event date, ZIP 12 of 12 but at 1,000 to 4,200
+records a month.
+
+**The measurement killed the obvious design and that is the part worth keeping.**
+A report of what happened this month is empty for seven of twelve blocks, which
+is the retention hole moved one radius out. So the digest carries a second
+section reading standing state (open violations, twelve months of deeds and
+evictions, the most cited address) which cannot come up empty: every watched
+block carries between 8 and 400 open violations today. All ten subscribers
+render 185 words or more and pass the mailer gate, three of them with zero new
+records.
+
+Four bugs found by reading its own output, each pinned to a test:
+
+- `bbl LIKE '304447%'` cannot use the btree on bbl outside the C collation.
+  The twelve-block scan runs in 1.9s as a range and had not finished in two
+  minutes as a prefix. **If another block-scoped query gets written, use
+  `block_span()`.**
+- HPD writes one violation per apartment, so an inspector's afternoon is four
+  rows sharing a date. Merged by building, kind and day.
+- "And 6 more records" counted lines against a total of records.
+- HPD descriptions open with the statute and close with the apartment number,
+  in capitals. `_plain()` strips both.
+
+One address is capped at four lines, because on a three-parcel condo block a
+single neighbour filled seven of nine. Grouped by subscriber and not by watch,
+because one reader follows three buildings across two blocks. The
+building-watch confirmation now says what else arrives and when: it promised
+"quiet stretches send nothing", and it was also still listing four feeds after
+311 was added.
+
+## NEXT, in order
+
+1. **The DOB NOW permit scraper.** Above. Highest-value correctness work
+   available: it repairs a quarter of the composite score.
+2. **Move 09, violation-gated sitemap expansion.** 27,862 buildings carry 5+
+   HPD violations with no deed and no eviction, so they are absent from the
+   sitemap. Gate at 5, not 1 (117,309 would qualify at 1).
+3. **Move 05, citywide marshal index.** 60+ place variants of "eviction marshal
+   {place}" rank 2 to 43 with zero clicks; the head term sits at position 43
+   with no citywide parent for the 127 leaves.
+4. **Move 06, plain-phrase headings on /property.** "sales history", "taxes",
+   "owner" are live queries ranking 12 to 24.
+5. **DOS follow-ons.** Registered agent as a second family-clustering signal;
+   Delaware jurisdiction surfaced (663 entities); a monthly
+   `refresh_dos_entities --all`.
+
+## State
+
+- **ACRIS is 28 days stale against a 21-day threshold**, unchanged and upstream.
+  Deeds through 2026-07-31. The other four feeds are inside threshold.
+- Disk 70%, Postgres 23GB. `retire_raw_data.sh` still never run.
+- `test_deploy_copy_matches_installed[pulsecities.service]` is the one guard
+  still red, and it is NEEDS MICHAEL item 1 below, not a bug. The cron and
+  logrotate copies were installed this session, so those two are green again.
+- Alembic unchanged: current f3a91b6c8d27, head c4e17b2a9d38, two pending and
+  that is correct. Do not stamp.
+
+## NEEDS MICHAEL, unchanged from the previous checkpoint
+
+Buy Anthropic credits (AI read dead since 2026-08-23). Send the FLGSP pitch.
+Decide on the push (97 commits unpushed, CI dead since 08-08). Restart with the
+committed service unit, then rotate the DB password, then the maintenance
+window. HEARTBEAT_BASE_URL, ALERT_WEBHOOK_URL, dedicated R2 creds, OPS_TOKEN.
+
+Full detail on every one of these is in the 2026-08-27/28 section below.
+
 # >>> START HERE after /clear (2026-08-27/28, the search-data session) <<<
 
 Working tree clean, 14 commits since 31ef117. Everything below is done and
