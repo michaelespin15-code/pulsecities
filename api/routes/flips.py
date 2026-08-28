@@ -25,6 +25,7 @@ from slowapi.util import get_remote_address
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from api.freshness import ACRIS_THROUGH_SQL
 from api.permit_kinds import renovation_sql
 from models.database import get_db
 
@@ -45,6 +46,22 @@ _NOISE_TERMS = (
     "FEDERAL SAVINGS", "CREDIT UNION", "BANK",
 )
 
+def _deed_anchor(db):
+    """The last day the city published a deed, or today if that is unknowable.
+
+    The deed side of the window ends here rather than at CURRENT_DATE. ACRIS
+    publishes on a lag and freezes for weeks; anchoring on today spends the tail
+    of the lookback on days that cannot contain a deed, which reads as a quiet
+    market rather than an unpublished one.
+
+    Only the deed side. The permit side stays on CURRENT_DATE, because the flip
+    is a deed followed by a permit and permits are current: moving that end back
+    would drop the most recent flips, which are the ones worth reading.
+    """
+    from datetime import date
+    return db.execute(text(ACRIS_THROUGH_SQL)).scalar() or date.today()
+
+
 _NOISE_SQL = "\n".join(
     f"      AND o.party_name_normalized NOT ILIKE '%{term}%'" for term in _NOISE_TERMS
 )
@@ -58,7 +75,8 @@ _FLIP_SQL = text(f"""
         WHERE o.party_name_normalized LIKE '%LLC%'
           AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
           AND o.party_type = '2'
-          AND o.doc_date >= CURRENT_DATE - make_interval(days => :lookback)
+          AND o.doc_date >  (:deed_anchor)::date - make_interval(days => :lookback)
+          AND o.doc_date <= (:deed_anchor)::date
           AND p.zip_code IS NOT NULL
 {_NOISE_SQL}
     ),
@@ -107,7 +125,8 @@ def query_flips(db: Session, limit: int = FEED_LIMIT) -> list[dict]:
 
     rows = db.execute(
         _FLIP_SQL,
-        {"lookback": LOOKBACK_DAYS, "flip_window": FLIP_WINDOW_DAYS, "limit": FEED_LIMIT},
+        {"lookback": LOOKBACK_DAYS, "flip_window": FLIP_WINDOW_DAYS,
+         "limit": FEED_LIMIT, "deed_anchor": _deed_anchor(db)},
     ).fetchall()
 
     def _days(v):

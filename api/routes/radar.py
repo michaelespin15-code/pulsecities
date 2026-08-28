@@ -13,10 +13,19 @@ Doc types are restricted to DEED and DEEDP because the page claims "took the dee
 assignments would widen recall but break that claim. The lender noise filter is
 shared with Flip Watch so a servicer taking title on scattered lots never reads
 as a speculation cluster.
+
+**The window ends at the last published deed, not today.** ACRIS publishes on a
+lag and has been frozen for weeks at a time; on 2026-08-28 its newest deed was
+28 days old, so a window running to CURRENT_DATE spent a third of its 90 days on
+days that could not contain a deed. That is not a disclosure problem, though it
+was treated as one: the page said so and still counted 10 clusters where 90 days
+of actual data holds 18. /evictions has anchored on its own last published
+record since 2026-08-07 for exactly this reason, and this now matches it.
 """
 
 import logging
 import time
+from datetime import date
 
 from fastapi import APIRouter, Depends, Request, Response
 from slowapi import Limiter
@@ -24,7 +33,7 @@ from slowapi.util import get_remote_address
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from api.freshness import real_date
+from api.freshness import ACRIS_THROUGH_SQL, real_date
 from models.database import get_db
 from api.routes.flips import _NOISE_TERMS
 
@@ -52,7 +61,8 @@ _RADAR_SQL = text(f"""
         WHERE o.party_name_normalized LIKE '%LLC%'
           AND o.doc_type IN ('DEED', 'DEEDP')
           AND o.party_type = '2'
-          AND o.doc_date >= CURRENT_DATE - make_interval(days => :window)
+          AND o.doc_date >  (:anchor)::date - make_interval(days => :window)
+          AND o.doc_date <= (:anchor)::date
           AND {real_date('o.doc_date', 'o.created_at')}
           AND p.zip_code IS NOT NULL
 {_NOISE_SQL}
@@ -99,9 +109,16 @@ def query_radar(db: Session, limit: int = FEED_LIMIT) -> list[dict]:
     if _cache and time.monotonic() < _cache[1]:
         return _cache[0][:limit]
 
+    # The window ends where the deed record ends. Same query /api/status reads,
+    # so the page and the status endpoint cannot disagree about where ACRIS
+    # stops. Falls back to today if the probe returns nothing, which is the old
+    # behaviour and only reachable on an empty table.
+    anchor = db.execute(text(ACRIS_THROUGH_SQL)).scalar()
+
     rows = db.execute(
         _RADAR_SQL,
-        {"window": RADAR_WINDOW_DAYS, "min_buildings": MIN_BUILDINGS, "limit": FEED_LIMIT},
+        {"window": RADAR_WINDOW_DAYS, "min_buildings": MIN_BUILDINGS,
+         "limit": FEED_LIMIT, "anchor": anchor or date.today()},
     ).fetchall()
 
     def _days(v):

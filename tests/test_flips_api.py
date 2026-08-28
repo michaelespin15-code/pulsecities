@@ -147,3 +147,53 @@ class TestFlipWatchPage:
         # When the feed has rows, each card deep-links to the building record.
         if "flip-row" in html:
             assert "/property/" in html
+
+
+class TestWindowsEndWhereTheDataEnds:
+    """ACRIS publishes on a lag and freezes for weeks at a time.
+
+    A window running to CURRENT_DATE spends its tail on days that cannot
+    contain a deed, which reads as a quiet market rather than an unpublished
+    one. On 2026-08-28 the gap was 28 days of a 90-day radar window, and radar
+    counted 4 clusters where 90 days of published data holds 11.
+
+    Disclosure was shipped for this on 2026-08-18 and was only half the fix:
+    the page said which days it covered while the number stayed wrong.
+    /evictions has anchored on its own last published record since 2026-08-07.
+    """
+
+    def test_radar_anchors_its_window_on_the_deed_record(self):
+        import inspect
+        from api.routes import radar
+        sql = str(radar._RADAR_SQL)
+        assert ":anchor" in sql, "radar window must end at the last published deed"
+        assert "o.doc_date >= CURRENT_DATE" not in sql, (
+            "radar is back on a CURRENT_DATE window; the tail of it holds no deeds")
+        assert "ACRIS_THROUGH_SQL" in inspect.getsource(radar.query_radar), (
+            "the anchor must come from the query /api/status reads, so the page "
+            "and the status endpoint cannot disagree about where ACRIS stops")
+
+    def test_flips_anchors_only_the_deed_side(self):
+        """The permit side stays on CURRENT_DATE. A flip is a deed followed by
+        a permit within 60 days, and permits are current: moving that end back
+        would drop the most recent flips, which are the ones worth reading."""
+        from api.routes import flips
+        sql = str(flips._FLIP_SQL)
+        assert ":deed_anchor" in sql
+        assert "filing_date >= CURRENT_DATE" in sql, (
+            "the permit side must stay anchored to today")
+
+    def test_the_anchor_falls_back_rather_than_failing(self):
+        """An empty ownership_raw must not take the feed down."""
+        from datetime import date
+
+        from api.routes.flips import _deed_anchor
+
+        class _Db:
+            def execute(self, *_a, **_k):
+                return self
+
+            def scalar(self):
+                return None
+
+        assert _deed_anchor(_Db()) == date.today()

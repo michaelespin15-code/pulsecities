@@ -264,12 +264,16 @@ def _cite(feeds: dict, slug: str) -> str:
 def _deeds_through_line(db, lang: str = "en") -> str:
     """One sentence naming where the deed record actually stops.
 
-    /flips and /radar are built entirely on ACRIS, whose windows are anchored
-    to CURRENT_DATE while its data ends whenever the city last published. On
-    2026-08-18 that gap was eighteen days: /radar said "detected across NYC in
-    the past 90 days" over a window whose final eighteen days held no deeds at
-    all, and nothing on the page said so. A reader checking our numbers against
-    a deed recorded last week would find us silently wrong.
+    /flips and /radar are built entirely on ACRIS, whose data ends whenever the
+    city last published. On 2026-08-18 that gap was eighteen days: /radar said
+    "detected across NYC in the past 90 days" over a window whose final eighteen
+    days held no deeds at all, and nothing on the page said so.
+
+    This line was the first half of the fix and disclosure was never the whole
+    of it. As of 2026-08-28 both windows also *end* at the last published deed
+    rather than at CURRENT_DATE, so the ninety days are ninety days of data.
+    Radar went from 4 clusters to 11 on that change alone. The line stays
+    because a reader still needs to know which ninety days.
 
     Same shape as the /evictions through-line, and the same rule as the
     homepage LLC chip: never let a page imply coverage the query does not have.
