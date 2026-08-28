@@ -4,11 +4,83 @@ Resume here. Three commits already landed this session and are safe:
 `36a84c4` (score_history upsert), `22feb50` (eviction label + title budget),
 `efc16be` (checkpoint). Working tree clean apart from this file.
 
-## Two subagents were in flight and their results were NOT received
+## UPDATE: the page-quality audit came back. The PII audit did not.
 
-If they never reported, re-run them. Both were READ ONLY.
+Its headline finding is verified structurally by me, and it is the most
+significant thing in this session. **Do not act on it without Michael**: the fix
+is one predicate but it drops the indexable corpus by 57%, and the crawl data
+says the exposure is latent rather than active, so there is no emergency.
 
-1. **PulseCities PII / legal exposure audit.** Brief: does the site publish
+### The sitemap is healthy. The robots tag is not.
+
+Every sitemapped tier measured fine, and **the project's earlier decision not to
+cut deed-only is verified**: /neighborhood, the template treated as known-good,
+measures *worse* on every duplication statistic (67.6% mean vs 66.7%, 41 vs 8
+pairs over 70%, 47.4% vs 66.3% unique content).
+
+    tier              pages    words  overlap mean  pairs >=70%  unique
+    deed+eviction     1,098      832       61.9%       4/190      71.2%
+    deed-only        46,193      689       66.7%       8/190      66.3%
+    eviction-only    18,357      794       57.5%       2/190      69.2%
+    violation-only   27,825      843       55.7%       1/190      71.0%
+    /neighborhood       177      550       67.6%      41/190      47.4%
+
+The 2026-08-28 violation tier is the *most* distinctive thing in the sitemap, so
+admitting it was right.
+
+### The finding: 131,496 pages are indexable but unsitemapped
+
+    routable (HTTP 200)        922,737
+    rendering "index, follow"  229,286
+    in sitemap                  97,790
+    the gap                    131,496
+
+`api/routes/frontend.py:2604` sets robots from `has_signals`, defined at :1961 as
+a broad OR over any document, any eviction, any violation, any rent-stab
+registration, or owners/evicts/permits. **The sitemap gate is stricter**: a deed,
+an eviction, or 5+ violations. The two predicates have never agreed.
+
+Largest shadow block: **90,001 pages whose only record is 1 to 4 violations**,
+all rendering `index, follow`, measuring 66.3% mean overlap with 30 of 190 pairs
+over the 70% line and a max of 80.7%. That is worse than every sitemapped tier
+and worse than the deed-only tier the project debated cutting. Also in the gap:
+20,494 permit-only, 10,995 non-deed-ACRIS-only, 3,531 rent-stab-registration-only
+(which carry **zero data rows**).
+
+**This is a partial fix, not an oversight, and the comment at :1948 says so.**
+The predicate used to also pass on `score is not None`, which is ZIP-level, so
+596,432 parcels were indexable; that was found and narrowed. The narrowing was
+directionally right and stopped short of the sitemap's own standard. Same shape
+as the eviction label and the score_history policy: one rule, two enforcers,
+fixed on one surface.
+
+**Why it is not urgent:** Googlebot crawled 63,487 distinct /property BBLs over
+~14 days of logs and only **348 (0.5%)** were outside the sitemap. Property pages
+emit no outbound /property links. The shadow corpus is real but essentially
+uncrawled, so the window to fix it quietly is open.
+
+**Proposed fix, for Michael to accept or reject:** make `has_signals` require the
+same record the sitemap demands (a deed, an eviction, or 5+ violations). Drops
+indexable from 229,286 to ~97,790.
+
+### Two cheap items found alongside, both safe to just do
+
+1. `tests/test_content_depth.py` `_TIERS` (line 114) omits eviction-only
+   (`d IS NULL AND e IS NOT NULL`), leaving 18,357 sitemapped pages, 18.8% of the
+   corpus, with no depth guard. Verified: the dict has three keys.
+2. `scripts/generate_sitemap.py`'s docstring records eviction-only at "68% mean",
+   the worst tier. Two independent draws measure **57.5% and 58.4%**, the
+   second-*best*. That stale number is the one that would justify cutting 18,357
+   pages, so it is wrong in the dangerous direction.
+
+**Not measured, still needs Michael:** actual Google index coverage. Sitemapped
+is not indexed, and that number decides whether the shadow corpus matters at all.
+
+## The PII audit was still in flight and its result was NOT received
+
+Re-run it if it never reported. It was READ ONLY.
+
+**PulseCities PII / legal exposure audit.** Brief: does the site publish
    personal data about identifiable private individuals? Six areas: natural
    persons vs entities in rendered party names (there is a comma-name heuristic
    in the repo); tenant identifiability from address + eviction date; 311
@@ -16,12 +88,6 @@ If they never reported, re-run them. Both were READ ONLY.
    reachable (`robots` meta in api/routes/frontend.py); stated policy in
    methodology.html/about.html vs actual behaviour; and defamation framing,
    specifically the project's own rule "never imply the buyer evicted".
-2. **PulseCities page-quality / doorway-risk audit.** Brief: word count, heading
-   counts, 5-gram near-duplicate overlap and unique-content ratio per sitemap
-   tier (deed+eviction, deed-only, 5+ violations), sampled randomly with
-   `ORDER BY md5(...)`, plus /neighborhood as the comparison template, plus
-   sitemapped-vs-indexable counts.
-
 ## What I measured before pausing, all of it real
 
 ### PulseCities traffic shape (current)
