@@ -230,3 +230,112 @@ class TestBoroughContext:
             "eviction pages that link to no siblings, so the set is 127 "
             "dead ends:\n  " + "\n  ".join(bare)
         )
+
+
+class TestBoroughTier:
+    """The tier between the citywide tracker and the 127 leaves.
+
+    The search exports carry 60+ place variants of "eviction marshal {place}"
+    ranking 2 to 43 with almost no clicks. Nothing on the site was *about* a
+    borough, so a query naming one landed on a page that did not answer it.
+    """
+
+    def _boroughs(self):
+        from api.routes.frontend import _EV_BOROUGHS
+        return _EV_BOROUGHS
+
+    def test_all_five_render_and_are_indexable(self):
+        for slug in self._boroughs():
+            resp = client.get(f"/evictions/{slug}")
+            assert resp.status_code == 200, f"/evictions/{slug} -> {resp.status_code}"
+            robots = _ROBOTS.search(resp.text)
+            assert robots and robots.group(1).startswith("index"), \
+                f"/evictions/{slug} is {robots.group(1) if robots else 'missing robots'}"
+
+    def test_they_clear_the_word_floor(self):
+        thin = []
+        for slug in self._boroughs():
+            n = len(_WORD.findall(_text(client.get(f"/evictions/{slug}").text)))
+            if n < MIN_WORDS:
+                thin.append(f"/evictions/{slug}: {n} words")
+        assert not thin, "borough pages under the floor:\n  " + "\n  ".join(thin)
+
+    def test_each_borough_lists_every_neighbourhood_page_it_parents(self):
+        """The whole point of the tier. A borough page that lists four of its
+        twenty-two neighbourhoods is a hub that leaks."""
+        from api.routes.frontend import _EV_BOROUGHS, _borough_zips
+        db = SessionLocal()
+        try:
+            for slug, name in _EV_BOROUGHS.items():
+                zips = _borough_zips(name, db)
+                expected = {
+                    _ev_area_slug(r.name) for r in db.execute(text("""
+                        SELECT n.name FROM evictions_raw e
+                        JOIN neighborhoods n ON n.zip_code = e.zip_code
+                        WHERE e.eviction_type = 'Residential' AND n.name IS NOT NULL
+                          AND n.zip_code = ANY(:zips)
+                        GROUP BY 1 HAVING count(*) >= :floor
+                    """), {"zips": zips, "floor": _EV_AREA_MIN}).fetchall()
+                    if _ev_area_slug(r.name)
+                }
+                found = set(re.findall(r'href="/evictions/([a-z0-9-]+)"',
+                                       client.get(f"/evictions/{slug}").text))
+                missing = expected - found
+                assert not missing, (
+                    f"/evictions/{slug} omits {len(missing)} of its own "
+                    f"neighbourhood pages, e.g. {sorted(missing)[:5]}"
+                )
+        finally:
+            db.close()
+
+    def test_the_citywide_hub_reaches_all_five(self):
+        html = client.get("/evictions").text
+        found = set(re.findall(r'href="/evictions/([a-z0-9-]+)"', html))
+        missing = set(self._boroughs()) - found
+        assert not missing, f"/evictions does not link {sorted(missing)}"
+
+    def test_leaves_link_up_to_their_borough(self):
+        from api.routes.frontend import _EV_BOROUGHS
+        orphans = []
+        for name, slug in _areas(6):
+            found = set(re.findall(r'href="/evictions/([a-z0-9-]+)"',
+                                   client.get(f"/evictions/{slug}").text))
+            if not found & set(_EV_BOROUGHS):
+                orphans.append(slug)
+        assert not orphans, (
+            "neighbourhood pages with no path up to their borough: "
+            + ", ".join(orphans)
+        )
+
+    def test_they_are_not_near_duplicates_of_each_other(self):
+        grams = {s: _shingles(client.get(f"/evictions/{s}").text)
+                 for s in self._boroughs()}
+        worst = []
+        keys = sorted(grams)
+        for i, a in enumerate(keys):
+            for b in keys[i + 1:]:
+                ov = _overlap(grams[a], grams[b])
+                if ov > MAX_OVERLAP:
+                    worst.append(f"{a} vs {b}: {ov:.0%}")
+        assert not worst, "borough pages too similar:\n  " + "\n  ".join(worst)
+
+    def test_totals_match_the_record(self):
+        from api.routes.frontend import _EV_BOROUGHS, _borough_zips
+        db = SessionLocal()
+        try:
+            for slug, name in _EV_BOROUGHS.items():
+                expected = int(db.execute(text("""
+                    SELECT count(*) FROM evictions_raw
+                    WHERE eviction_type = 'Residential' AND zip_code = ANY(:zips)
+                """), {"zips": _borough_zips(name, db)}).scalar() or 0)
+                body = _text(client.get(f"/evictions/{slug}").text)
+                assert f"{expected:,} residential eviction" in body, (
+                    f"/evictions/{slug} does not state its own total of {expected:,}"
+                )
+        finally:
+            db.close()
+
+    def test_the_bronx_takes_its_article(self):
+        body = _text(client.get("/evictions/bronx").text)
+        assert "in the Bronx" in body
+        assert "evictions in Bronx" not in body

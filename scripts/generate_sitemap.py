@@ -251,6 +251,16 @@ def build() -> dict[str, str]:
             if _ev_area_slug(r.name)
         ]
 
+        # The borough tier parents those leaves. Same lastmod as the feed: the
+        # five pages recompute nightly like every other eviction surface.
+        from api.routes.frontend import _EV_BOROUGHS
+        last_ev = db.execute(text(f"""
+            SELECT max(executed_date) FROM evictions_raw
+            WHERE eviction_type = 'Residential' AND {real_date('executed_date')}
+        """)).scalar()
+        eviction_areas += [(bslug, last_ev.isoformat() if last_ev else today)
+                           for bslug in _EV_BOROUGHS]
+
         # LLC entity pages, gated exactly as the route's robots policy is, by
         # importing the rule rather than restating it so the two cannot drift.
         # _BUILDING_KEY_SQL collapses a condominium's unit lots to the one

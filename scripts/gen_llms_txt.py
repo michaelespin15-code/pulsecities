@@ -163,7 +163,7 @@ reads as prose to the parsers that check it.
 - [Speculation Radar](https://pulsecities.com/radar): one LLC taking 3+ buildings in one ZIP within 90 days
 - [This week](https://pulsecities.com/this-week): score movers, new filings and newest flips
 - [Weekly archive](https://pulsecities.com/this-week/archive): every past edition at /week/{{YYYY-Www}}
-- [Eviction case lookup](https://pulsecities.com/eviction-case): resolve a marshal docket number or a Housing Court index number to the executed eviction it belongs to\n- [Evictions tracker](https://pulsecities.com/evictions): citywide marshal executions, updated nightly, with per-neighborhood pages at /evictions/{{name}}
+- [Eviction case lookup](https://pulsecities.com/eviction-case): resolve a marshal docket number or a Housing Court index number to the executed eviction it belongs to\n- [Evictions tracker](https://pulsecities.com/evictions): citywide marshal executions, updated nightly, with per-borough pages at /evictions/{{borough}} and per-neighborhood pages at /evictions/{{name}}
 - [LLC buyers](https://pulsecities.com/llc): every LLC on a recorded NYC deed, with per-entity ledgers at /llc/{{slug}}
 - [Who owns my building](https://pulsecities.com/who-owns-my-building): how to find the owner of any NYC address
 - [Is my building rent stabilized](https://pulsecities.com/is-my-building-rent-stabilized): how to check rent-stabilization status
