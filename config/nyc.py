@@ -88,7 +88,11 @@ DISPLACEMENT_COMPLAINT_TYPES = (
 # Scraper row count minimums — flag WARNING if actual < 50% of these
 SCRAPER_EXPECTED_MIN_RECORDS = {
     "311_complaints": 5000,
-    "dob_permits":    50,          # steady-state incremental: 3-year LIKE scan, ~2-36 new rows/day after bulk load
+    # Legacy BIS. Was 50 on the assumption this was the permits feed; it is now
+    # a remnant carrying 4% of current permits, and 19 of the last 60 nights
+    # returned zero rows. A floor it cannot meet trains the reader to skip its
+    # warnings, which is what happened. Real permit volume is dob_now_permits.
+    "dob_permits":    5,
     # Measured over 2026-08-20 to 08-28: 1,443 rows in eight days, ~180/day
     # across all job types. Half of that is the floor, and it is deliberately
     # not lower: the whole reason this scraper exists is that dob_permits

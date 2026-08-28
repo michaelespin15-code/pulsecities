@@ -266,9 +266,17 @@ def run_health_report(db) -> int:
             if acris_days > ACRIS_FROZEN_CRITICAL_DAYS:
                 label = "FROZEN"
 
-        # DOB: note that a post-bulk-recovery rolling-average warning is expected
-        if name == "dob_permits" and warn and "rolling average" in warn and recs <= 50:
-            extra = "  [post-bulk-recovery; rolling-avg warning expected]"
+        # The legacy BIS permit feed is a decaying remnant and its low counts
+        # are expected. This note used to read "post-bulk-recovery; rolling-avg
+        # warning expected", which was the wrong explanation for the right
+        # symptom and is most of how the coverage collapse stayed hidden: the
+        # anomaly check wrote "count 2 < 50% of static minimum 50" three times
+        # in fourteen nights, the escalation gate (expected_min > 100) sat above
+        # this feed's floor of 50 so no email ever fired, and the one report a
+        # human reads explained it away. DOB NOW carries 96% of current permits
+        # now, so watch dob_now_permits: this one going quiet is the plan.
+        if name == "dob_permits" and warn and recs <= 50:
+            extra = "  [legacy BIS remnant; DOB NOW carries this feed]"
 
         print(f"  {name:<22} {label:<10} {recs:>6} recs   {started}{extra}")
         if err:
