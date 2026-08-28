@@ -39,7 +39,12 @@ SOURCES = [
     ("evictions",       "Evictions"),
     ("hpd_violations",  "HPD violations"),
     ("311_complaints",  "311 complaints"),
-    ("dob_permits",     "Permits"),
+    # dob_now_permits, not dob_permits. Both write permits_raw so data_through
+    # reads the same either way, but the public card also shows records
+    # processed and last success, and legacy BIS returns zero rows on 19 nights
+    # out of 60. The card would say "Permits, 0 records" on a feed that took in
+    # 400 that night. This is the scraper that carries the data.
+    ("dob_now_permits", "Permits"),
     ("dcwp_licenses",   "Business licenses"),
     ("dhcr_rs",         "Rent stabilization"),
 ]

@@ -35,9 +35,20 @@ class TestThisWeekPage:
         assert "—" not in client.get("/this-week").text
 
     def test_counts_are_formatted(self, client):
+        """The eviction label names what the record actually holds.
+
+        This asserted "eviction filings" until 2026-08-28 and had been red since
+        2026-08-19, when the copy was deliberately corrected: the feed carries
+        warrants a marshal executed, not petitions filed, and the two are months
+        apart. The test went on asserting the bug the fix removed. Checking the
+        Spanish string too, because that one had not been corrected at all.
+        """
         body = client.get("/this-week").text
-        assert "eviction filings" in body
+        assert "executed evictions" in body
+        assert "eviction filings" not in body
         assert "311 housing complaints" in body
+        assert "desalojos ejecutados" in body
+        assert "desalojos presentados" not in body
 
 
 @pytest.mark.integration

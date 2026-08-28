@@ -25,25 +25,39 @@ def db():
     session.close()
 
 
-# (table, identity expression) — identity must be unique per real-world event,
-# NULLs coalesced so duplicate NULL-key rows still collide.
+# (table, identity expression, scope) — identity must be unique per real-world
+# event, NULLs coalesced so duplicate NULL-key rows still collide. `scope` is an
+# optional WHERE clause for a table whose rows do not all share one identity.
 IDENTITY_KEYS = [
-    ("evictions_raw", "COALESCE(bbl, ''), executed_date, docket_number"),
-    ("permits_raw", "COALESCE(bbl, ''), filing_date, permit_type, work_type"),
-    ("violations_raw", "violation_id"),
-    ("complaints_raw", "unique_key"),
-    ("sales_raw", "COALESCE(bbl, ''), sale_date, sale_price"),
-    ("ownership_raw", "document_id, party_type"),
+    ("evictions_raw", "COALESCE(bbl, ''), executed_date, docket_number", None),
+    # permits_raw is written by two scrapers with two identities, split on
+    # `source_id IS NULL` by migration a7d3f1e08b64. Checking the BIS key
+    # against the whole table reports 20,742 duplicates, and every one of them
+    # is a real distinct DOB NOW job: two jobs on the same lot, permitted the
+    # same day, with the same job type and trades. That number is the measured
+    # answer to "does the second source need its own key", and it is why it got
+    # one instead of being folded into the first.
+    ("permits_raw", "COALESCE(bbl, ''), filing_date, permit_type, work_type",
+     "source_id IS NULL"),
+    ("permits_raw", "source, source_id", "source_id IS NOT NULL"),
+    ("violations_raw", "violation_id", None),
+    ("complaints_raw", "unique_key", None),
+    ("sales_raw", "COALESCE(bbl, ''), sale_date, sale_price", None),
+    ("ownership_raw", "document_id, party_type", None),
 ]
 
 
-@pytest.mark.parametrize("table,key", IDENTITY_KEYS, ids=[t for t, _ in IDENTITY_KEYS])
-def test_no_duplicate_identity_rows(db, table, key):
+@pytest.mark.parametrize(
+    "table,key,scope", IDENTITY_KEYS,
+    ids=[t if s is None else f"{t}[{s}]" for t, _, s in IDENTITY_KEYS],
+)
+def test_no_duplicate_identity_rows(db, table, key, scope):
+    where = f" WHERE {scope}" if scope else ""
     total, distinct = db.execute(text(
-        f"SELECT COUNT(*), COUNT(DISTINCT ({key})) FROM {table}"
+        f"SELECT COUNT(*), COUNT(DISTINCT ({key})) FROM {table}{where}"
     )).fetchone()
     assert total == distinct, (
-        f"{table}: {total - distinct} duplicate rows for identity ({key}). "
+        f"{table}{where}: {total - distinct} duplicate rows for identity ({key}). "
         "A scraper is bypassing its unique key — check for NULLs in key columns."
     )
 

@@ -113,10 +113,23 @@ class TestOperatorWelcome:
 
 
 class TestDigestSendHygiene:
+    @pytest.fixture(autouse=True)
+    def _api_key(self, monkeypatch):
+        # See the same fixture in tests/test_weekly_digest.py: conftest blanks
+        # RESEND_API_KEY, so without a truthy value mailer.send refuses before
+        # the header this test is about is ever assembled.
+        import resend
+        monkeypatch.setattr(resend, "api_key", "re_test_not_a_real_key")
+
     def test_digest_carries_list_unsubscribe_header(self, digest_capture):
         ok = digest_mod.send_digest_email(
             {"email": "reader@example.com", "unsubscribe_token": "tok-d"},
-            {"subject": "PulseCities Weekly Watch: Harlem / 10026 update", "html": "<html></html>"},
+            {"subject": "PulseCities Weekly Watch: Harlem / 10026 update",
+             # Red since scripts/lib/mailer.py shipped: the old fixture was an
+             # empty <html></html>, which the content floor refuses by design,
+             # so `ok` was False and the header assertion below never ran.
+             "html": "<html><body><p>Harlem, ZIP 10026, rose 4.2 points this week. Two buildings recorded deeds to newly formed limited liability companies, nine housing violations were issued across the neighborhood, and the marshal executed one residential eviction on Lenox Avenue. The full record for every address named here is on the neighborhood page.</p></body></html>",
+             "content_items": 3},
         )
         assert ok
         p = _sent(digest_capture)

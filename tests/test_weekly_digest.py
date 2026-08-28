@@ -295,8 +295,32 @@ class TestRenderZipDigest:
 # ---------------------------------------------------------------------------
 
 class TestSendDigestEmail:
+    @pytest.fixture(autouse=True)
+    def _api_key(self, monkeypatch):
+        """A key that is not a real key.
+
+        conftest blanks RESEND_API_KEY on import so no test can send live mail,
+        which is right and is also why three of the four tests below could never
+        reach the code they claim to test: mailer.send raises EmailRefused on a
+        missing key before Resend is touched, send_digest_email catches it, and
+        the assertions about the outgoing payload never ran. Every send is
+        mocked, so the value here only has to be truthy.
+        """
+        import resend
+        monkeypatch.setattr(resend, "api_key", "re_test_not_a_real_key")
+
     def _rendered(self):
-        return {"subject": "PulseCities Weekly Watch: Harlem update", "html": "<html>test</html>"}
+        """A body that clears the mailer's content floor.
+
+        These tests were red from the day scripts/lib/mailer.py shipped: the old
+        fixture was "<html>test</html>", one visible word against a floor of 34,
+        so the gate refused every send and the assertions about what Resend was
+        called with could never run. The fixture was wrong, not the gate. A real
+        digest is not one word.
+        """
+        return {"subject": "PulseCities Weekly Watch: Harlem update",
+                "html": "<html><body><p>Harlem, ZIP 10026, rose 4.2 points this week. Two buildings recorded deeds to newly formed limited liability companies, nine housing violations were issued across the neighborhood, and the marshal executed one residential eviction on Lenox Avenue. The full record for every address named here is on the neighborhood page.</p></body></html>",
+                "content_items": 3}
 
     def test_dry_run_does_not_call_resend(self):
         with patch("scripts.weekly_digest.resend.Emails.send") as mock_send:
@@ -313,16 +337,26 @@ class TestSendDigestEmail:
         assert call_kwargs["subject"] == "PulseCities Weekly Watch: Harlem update"
 
     def test_resend_failure_returns_false(self):
-        with patch("scripts.weekly_digest.resend.Emails.send", side_effect=Exception("network error")):
+        """A provider failure is weather, not a content bug: False, never a raise.
+
+        This passed before the fixture above existed, and for the wrong reason.
+        It was returning False because the key was missing, so the side_effect
+        never fired and the test would have gone on passing with the retry
+        ladder deleted."""
+        with patch("scripts.weekly_digest.resend.Emails.send",
+                   side_effect=Exception("network error")) as mock_send:
             result = send_digest_email(_subscription(), self._rendered(), dry_run=False)
+        assert mock_send.called
         assert result is False
 
     def test_resend_failure_does_not_raise(self):
-        with patch("scripts.weekly_digest.resend.Emails.send", side_effect=Exception("boom")):
+        with patch("scripts.weekly_digest.resend.Emails.send",
+                   side_effect=Exception("boom")) as mock_send:
             try:
                 send_digest_email(_subscription(), self._rendered(), dry_run=False)
             except Exception:
                 pytest.fail("send_digest_email raised unexpectedly")
+        assert mock_send.called
 
 
 # ---------------------------------------------------------------------------

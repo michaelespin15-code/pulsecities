@@ -47,10 +47,12 @@ class TestPipelineFailureTracking:
              patch("scheduler.pipeline.get_scraper_db") as mock_db:
             mock_db.return_value.__enter__ = MagicMock(return_value=MagicMock())
             mock_db.return_value.__exit__ = MagicMock(return_value=False)
-            # Nightly loop is 6 scrapers; the HPD registry runs on its own
-            # monthly due-check and is patched above.
-            # complaints OK, permits FAIL, evictions OK, acris OK, dcwp OK, violations OK
-            mock_retry.side_effect = [True, False, True, True, True, True]
+            # Nightly loop is 7 scrapers; the HPD registry runs on its own
+            # monthly due-check and is patched above. Both permit feeds run:
+            # dob_permits reads legacy BIS, dob_now_permits reads DOB NOW.
+            # complaints OK, BIS permits FAIL, DOB NOW permits OK, evictions OK,
+            # acris OK, dcwp OK, violations OK
+            mock_retry.side_effect = [True, False, True, True, True, True, True]
 
             from scheduler.pipeline import run_nightly_pipeline
             result = run_nightly_pipeline()

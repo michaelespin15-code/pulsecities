@@ -5166,7 +5166,11 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     'tw-flips-h':     'Flips m\u00e1s recientes',
     'tw-note':        'Los conteos reflejan registros publicados por agencias de NYC, que pueden retrasarse respecto a los hechos. Las puntuaciones son indicadores de riesgo, no acusaciones.',
     'tw-meth-link':   'C\u00f3mo funcionan las puntuaciones \u2192',
-    'tw-stat-evictions':  'desalojos presentados',
+    # "presentados" means filed, and these are warrants a marshal executed.
+    # English fixed this label on 2026-08-19 and the Spanish string kept the
+    # wrong one, so the two languages have been describing different events
+    # from the same number since. Matches the English "executed evictions".
+    'tw-stat-evictions':  'desalojos ejecutados',
     'tw-stat-permits':    'permisos de construcci\u00f3n',
     'tw-stat-violations': 'violaciones HPD',
     'tw-stat-complaints': 'quejas de vivienda al 311'

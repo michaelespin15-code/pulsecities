@@ -93,11 +93,16 @@ SCRAPER_EXPECTED_MIN_RECORDS = {
     # returned zero rows. A floor it cannot meet trains the reader to skip its
     # warnings, which is what happened. Real permit volume is dob_now_permits.
     "dob_permits":    5,
-    # Measured over 2026-08-20 to 08-28: 1,443 rows in eight days, ~180/day
-    # across all job types. Half of that is the floor, and it is deliberately
-    # not lower: the whole reason this scraper exists is that dob_permits
-    # decayed to a trickle while still reporting success every night.
-    "dob_now_permits": 90,
+    # Above 100 on purpose. BaseScraper only escalates a zero-record run to an
+    # emailed alert when the feed's minimum clears 100, and sitting under that
+    # line is how dob_permits decayed from the permits feed to 4% of it while
+    # logging warnings nobody was sent. Measured weekday volume is 330 to 400
+    # permits a day, so 120 is a floor this feed clears whenever it is alive.
+    #
+    # Weekends do not false-alarm: DOB issues almost nothing on a Saturday, and
+    # a zero-record run only escalates when the source's own max date has moved
+    # past our watermark, which on a quiet weekend it has not.
+    "dob_now_permits": 120,
     "hpd_violations": 1000,
     "evictions":      100,
     # Phase 3 scrapers
