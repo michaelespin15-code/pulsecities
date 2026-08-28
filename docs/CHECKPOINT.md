@@ -1,26 +1,72 @@
 # >>> START HERE after /clear (2026-08-28 later, the read-and-tiers session) <<<
 
-**The map was rendering in two colours and the bands were why (e1622b8).** The
-score bands were 34 / 67 / 85 and the highest score New York has ever produced is
+Working tree clean. **141 commits unpushed.** Full suite 1,261 passed, 1 failed,
+and the failure is the deploy-drift check that is NEEDS MICHAEL item 3 rather
+than a bug. Nothing is running in the background.
+
+## Four things to know before anything else
+
+1. **Tonight's 02:00 pipeline runs three new steps for the first time**: the read
+   precompute, the page warmup, and the digest's scoring-change check. All three
+   are non-fatal by construction. Grep /var/log/pulsecities/scraper.log for
+   "Page warmup" and "Precompute complete".
+2. **Two tables were created live and their migrations are NOT applied through
+   alembic**: `ai_summaries` and `scoring_changes`. That makes **seven pending
+   revisions**, every one with its DDL already on the live database, which is the
+   same pattern as the previous five. **Still do not stamp.**
+3. **The read costs about $6 a month** in Anthropic spend now, on top of a $2.51
+   one-off sweep already paid. It regenerates only when a score moves a full
+   point or crosses a tier.
+4. **Sunday's digest carries a correction notice** because the permit recompute
+   moved 88 ZIPs and that is our change, not the city's. It disappears by itself
+   after 2026-09-03, when the scoring_changes row leaves the seven-day window.
+
+## The map was rendering in two colours, and the bands were why (e1622b8, 436d945)
+
+The bands were 34 / 67 / 85 and the highest score New York has ever produced is
 63.2, so the top two could not be occupied: 73 of 177 ZIPs sat in one amber
 block, the og card printed "0 ZIPs at High risk" every week, and the weekly
-digest's crossing-into-High check could never fire. Bands are now 34 / 45 / 55,
-set against the live distribution, and the map uses all four colours: 104 Low, 40
-Moderate, 26 High, 7 Critical. No score changed. Detail in the section near the
-bottom of this entry.
+digest's crossing-into-High check could never fire. Bands are 34 / 45 / 55 now,
+set against the live distribution: 104 Low, 40 Moderate, 26 High, 7 Critical. No
+score changed and no history is affected.
 
-Working tree clean. Everything below is committed, deployed and verified live on
-the box. Nothing is pushed; the count is now roughly 131 unpushed.
+**Then Michael said the orange and the red look alike and the map reads like an
+emergency. Both halves were right.** The two hot fills measured 23.9 dE apart
+where every other step of the ramp is 39 or more, so a four-band legend was
+describing a three-colour map. Critical's fill is #b5252b now, 35.5 dE from the
+orange and deeper rather than brighter.
+
+**Critical is deliberately two colours from here**: fill #b5252b, text #e4483b.
+One value cannot both survive beside the orange as a polygon and hold contrast as
+a number on the dark panel. The band stays shared; only the palette forks.
+
+The High band was also carrying 14.4% of the mapped area at 0.82 opacity, which
+was most of what read as alarm. By area: Low 61.8%, Moderate 21.2%, High 14.4%,
+Critical 2.6%. High is 0.66 now, so seven ZIPs stand out rather than thirty-three
+shouting together. Cut points were left alone on purpose: the 45-to-54 band is
+ranks 8 to 33 citywide, and 10457 is rank 1 on both executed evictions and HPD
+violations at 54.9.
+
+**Open, and editorial rather than technical:** "Critical" is an absolute word on a
+relative index. The colours match the data now. If the vocabulary still
+overstates, the honest fix is renaming the top band, which touches emails, alerts
+and the Spanish copy, so it was not done unilaterally.
 
 ## What changed, in one line each
 
-1. **The panel read runs claude-opus-5 and compares instead of restating.**
+1. **The panel read runs claude-opus-5 and compares instead of restating**, and
+   is generated off the request path: 0.2 to 0.9s where it was 5 to 12.
 2. **The eviction signal is no longer called "filings" anywhere it is counted.**
 3. **/evictions/{borough} exists**, the tier the 127 leaves never had.
 4. **/property says taxes, sales history and owner**, and finally shows the
    violations it had only been counting.
 5. **CI has a second job with a real Postgres** running 1,158 tests, up from 219
    grep-level assertions.
+6. **The score bands sit where New York actually scores**, and the two hot map
+   fills can be told apart.
+7. **/flips renders in 1.4 seconds instead of 38.**
+8. **Sunday's digest no longer reports our own recompute as the city's news**,
+   nor prints "0 LLC acquisitions" when ACRIS has simply gone quiet.
 
 ## The read (0eff4a1, 1d0cdf1)
 
@@ -140,17 +186,42 @@ environment variable, so they all still run on the box.
 
 ## State
 
-- Full suite on the box: **1,253 passed, 1 failed**, and the failure is the
-  deploy-drift check, which is NEEDS MICHAEL item 4 rather than a bug. Against a
-  schema-only database it is 1,158 passed, 92 skipped.
-- Alembic unchanged: current f3a91b6c8d27, head c8f4b16d29ea, five pending, all
-  already applied to the live database. **Do not stamp.** The chain does replay
-  from empty, which the new CI job now proves on every push.
-- ACRIS still 28 days stale against a 21-day threshold, upstream. The nightly
-  pipeline ran clean at 02:00 with the seventh scraper on its own, 450s.
+- Full suite on the box: **1,261 passed, 1 failed**, the failure being the
+  deploy-drift check, which is NEEDS MICHAEL item 3.
+- **Alembic: seven pending revisions**, every one already applied to the live
+  database by hand. The two newest are `ai_summaries` (d9c3a71e40b8) and
+  `scoring_changes` (e2b71c4d9a35). **Do not stamp.** The chain does replay from
+  an empty database, which the CI job now proves on every push.
+- Disk 73%, 22GB free. The database is 17GB, of which **9.6GB is `raw_data` in
+  two tables nothing reads**: complaints_raw 7.1GB and violations_raw 2.5GB.
+- ACRIS still frozen upstream at 2026-07-31, now 28 days. The other feeds are
+  current. The nightly pipeline ran clean at 02:00 in 450s.
+- All 177 AI reads are warm in `ai_summaries`; the sweep cost $2.51, none failed.
 - The block digest still sends 2026-09-01 10:00 ET to ten subscribers. Dry-run
-  re-checked after the label changes and reads correctly.
-- Anthropic credits are live again. The read and both digest narratives work.
+  re-checked after today's label and band changes and it reads correctly.
+- 21 subscribers, all confirmed, 13 of them from the last seven days.
+
+## Things worth knowing that nobody asked about
+
+- **tests/test_render_budgets.py may be the flaky one.** It budgets a cold render
+  at 8 seconds; /flips measured 7.0s cold on a reloaded process with cold
+  Postgres buffers. If it goes red intermittently, raise the budget rather than
+  delete the test, and check whether the cold number itself has moved.
+- **ClaudeBot's 113k-request day may or may not repeat.** If it becomes daily it
+  is sustained load on a two-vCPU box, and the property page's 512-entry cache
+  cannot hold a 97,000-URL walk. It is also the AI grounding channel the search
+  read calls valuable, so throttling it would cost something real. Watch it
+  before acting.
+- **Credential scanners are spoofing Claude-User and ChatGPT-User** user agents.
+  They are noise in the logs, but they are also probing for /.aws/credentials and
+  /config/.env on a box where those files exist elsewhere. Nothing was exposed:
+  every one of those requests 404s or 429s.
+- **Three tables inside the violation_leads database are owned by
+  `pulsecities_user`.** Rotating that password is safe. Dropping or renaming the
+  role is not.
+- **The precompute writes reads for ZIPs nobody visits.** That is the trade for
+  never making a reader wait, and it is bounded at about $6 a month plus the
+  daily cap of 500 generations.
 
 ## Later the same day: latency, cost, and an email that blamed the city
 
@@ -201,45 +272,76 @@ database. violation-leads exits at startup if its DATABASE_URL contains
 (328 MB) are owned by `pulsecities_user`. Rotating that password is safe, since
 ownership is not password-bound. **Dropping or renaming the role is not.**
 
-## Where the traffic actually comes from
+## Who is actually crawling, and what for
 
-**ClaudeBot made 113,127 requests on 2026-08-28, 72% of everything**, 112,709 of
-them 200s, 97,414 to /property and 14,544 to /llc. Googlebot was 7,146. The only
-429s were vulnerability scanners on /config and /backend.
+Measured 2026-08-28 from the nginx logs.
 
-That is the load context for the work above: a crawler walking 97,000 distinct
-property URLs goes straight through the 512-entry page cache, so nearly every one
-is a cold render.
+**ClaudeBot made 113,127 requests, 72% of all traffic, and it is brand new**: it
+made zero on Aug 21, 25 and 27, then walked 97,414 property pages and 14,544 LLC
+pages in a day. That is a bulk index crawl, not people asking questions.
+112,709 of them were 200s.
 
-**Do not quote a human number off these logs.** Assets are cached hard so real
+**People actually asking an assistant is a much smaller and real number.**
+Filtered to content pages returning 200:
+
+    ChatGPT-User      93   (92 of them /property)
+    OAI-SearchBot     63
+    Claude-User        0
+    Perplexity-User    0
+
+**Do not read the raw user-agent counts.** Claude-User showed 396 hits and
+Perplexity-User 274, and none of them were content: they are credential scanners
+spoofing those agents to probe /.aws/credentials, /config/.env and /db.sql. Any
+future log read has to filter to real paths with 200s before quoting a number.
+
+Also crawling: AhrefsBot 7,241 and SemrushBot 1,736, which are SEO tools building
+link indexes, and Googlebot 7,587 with 7,512 200s and a single 404.
+
+**The load context for the perf work:** a crawler walking 97,000 distinct
+property URLs goes straight through the 512-entry in-process page cache, so
+almost every one of those is a cold render.
+
+**No human number can be taken from these logs.** Assets are cached hard so real
 browsers make almost no asset requests, and several heavy IPs are Google ranges
-with no bot UA. Plausible and Search Console are the sources.
+with no bot user agent. Plausible and Search Console are the sources.
 
 **Subscribers: 21, all confirmed, 4 in the last two days and 13 in the last
-seven.** Mostly building watches.
+seven.** Mostly building watches, one entity follow.
 
-## The bands, and why the map was all one colour (e1622b8)
+## Bing: everything on our side works, Bing is simply not showing up
 
-Michael's read of the map was right and the cause was not the scoring.
+Asked because it felt under-indexed. It is, and it is not for a reason we
+control.
 
-    before   Low <34: 104 ZIPs    Moderate 34-66: 73    High: 0    Critical: 0
-    after    Low <34: 104         Moderate 34-44: 40    High 45-54: 26   Critical 55+: 7
+Verified working: IndexNow runs nightly at 03:28, submits 5,000 URLs per run in
+batches of 1,000, **every batch returns HTTP 200**, and 49,261 URLs have been
+submitted to date. The key file at /4494ce2738a74028c1babaef305aec53.txt serves
+200. The site is verified in Bing Webmaster Tools (`msvalidate.01` is in the
+markup). Fetching as bingbot returns a full 200 with the current content.
 
-**Why the composite tops out at 63.2.** It blends five signals, each normalised
-across all 177 ZIPs, and no neighborhood is at the extreme of all five at once.
-10457 ranks first citywide on both executed evictions and HPD violations and
-still scores 54.9, because acquisitions and permits carry 55% of the weight and
-it is mid-pack on both. Blending imperfectly correlated signals compresses toward
-the middle. 85 was never reachable.
+The crawl itself:
 
-**The Critical seven** are 10466 Wakefield, 10458 Fordham, 10468 University
-Heights, 10459 Longwood, 10030 Harlem, 11216 and 11233 Bed-Stuy. That is the same
-set the permit fix pushed to the top, which is a useful independent check.
+    date      bingbot   Googlebot
+    Aug 18      690        --      (52 of them 429, the old 5r/s limit)
+    Aug 21      889      17,731
+    Aug 23      530       5,706
+    Aug 25       81         509
+    Aug 28       34       7,587
 
-**The guard that was missing** now exists: tests/test_tier_bands.py fails when any
-band holds no ZIP against live data, and when the top band holds more than 15% of
-the city. A band nobody can occupy is either a band set against the wrong
-distribution or a dead signal.
+So Bing crawls roughly 200x less than Google and is trending down. **The 429
+episode on Aug 18 is documented but does not explain it**: bingbot kept crawling
+through Aug 23 afterwards, and there have been no 429s since. Both crawlers are
+bursty; Googlebot itself fell to 108 on Aug 27.
+
+**What would actually answer it**: Bing Webmaster Tools' Crawl Information and
+URL Inspection, which the site is verified for and which says directly whether
+pages are indexed, discovered-not-crawled, or excluded. Logs cannot. The durable
+lever underneath is backlinks, still zero, which Bing weights harder than Google
+for a young domain.
+
+The 5,000-per-run IndexNow cap was left alone. The protocol allows 10,000 per
+request, and the comment in scripts/indexnow_submit.py explains the cap exists to
+avoid the endpoint's own rate limiting.
 
 ## Two calls that were open, both now answered by measurement
 
@@ -264,20 +366,31 @@ that one stands.
 
 ## NEXT, in order
 
-1. **DOS follow-ons.** Registered agent as a second family-clustering signal,
+1. **Run `retire_raw_data.sh archive`.** Safe any time, read-only against the
+   database, and it has never been run. It is the prerequisite the `drop` phase
+   refuses to proceed without, and running it turns the maintenance window from a
+   long job into a short one. 9.6GB is waiting behind it.
+2. **Look at Bing Webmaster Tools.** Everything on our side is verified working
+   and bingbot still crawls 200x less than Google. BWT's Crawl Information is the
+   only thing that can say whether pages are indexed, discovered-not-crawled, or
+   excluded, and the site is already verified there.
+3. **DOS follow-ons.** Registered agent as a second family-clustering signal,
    Delaware jurisdiction surfaced (663 entities), a monthly
    `refresh_dos_entities --all`.
-2. **Precompute the read for all 177 ZIPs** after the nightly scoring run rather
-   than generating on a cache miss. Kills the cold 5-to-10s wait and the
-   503-when-credits-die failure.
+4. **Calibrate `WEIGHT_PERMITS`.** Still 0.21, set when the permit signal was 414
+   rows. It has never been calibrated against a real one.
+5. **Decide whether "Critical" is the right word** for the top band of a relative
+   index, given the colours now match the data.
 
 ## NEEDS MICHAEL, priority order
 
 1. **Send the FLGSP pitch.** Unchanged and still the highest-value unsent thing.
-2. **Decide on the push.** Now ~131 commits, and CI can go green on both jobs.
+2. **Decide on the push.** 141 commits, and CI can go green on both jobs.
 3. **Restart with the committed service unit**, then rotate the DB password, then
    take the maintenance window (`alembic upgrade head` + `retire_raw_data.sh
-   drop`). Still the one red test.
+   drop`). Still the one red test. Note that three tables in the violation_leads
+   database are owned by `pulsecities_user`: rotating the password is safe,
+   dropping or renaming the role is not.
 4. **HEARTBEAT_BASE_URL, ALERT_WEBHOOK_URL, dedicated R2 creds, OPS_TOKEN
    rotation.** Unchanged.
 
