@@ -104,3 +104,43 @@ def kind_select(alias: str = "") -> str:
     a = f"{alias}." if alias else ""
     return (f"CASE WHEN {a}source = 'dob_bis' THEN {a}raw_data->>'job_type' "
             f"ELSE {a}permit_type END")
+
+
+# The trade a permit covers, in words. Two vocabularies again: BIS uses its own
+# two-letter codes and DOB NOW uses the ones scrapers/dob_now_permits.py builds
+# from the per-trade flags, joined with "+" when a job carries several.
+#
+# This exists because the codes were reaching readers. A building alert said
+# "Permit filed (PMM), Mar 23" and a block digest said "(SHD)", which tells a
+# tenant nothing. The codes only started surfacing when DOB NOW arrived and
+# permits began appearing in those emails at all.
+TRADE_LABELS = {
+    # DOB NOW
+    "GC": "general construction", "STR": "structural", "FND": "foundation",
+    "DEM": "demolition", "EW": "earth work", "SOE": "excavation support",
+    "PLM": "plumbing", "MECH": "mechanical", "SPR": "sprinklers",
+    "BLR": "boiler", "SOL": "solar", "GRN": "green roof",
+    "SHD": "sidewalk shed", "SCF": "scaffold",
+    "PMM": "site protection", "POA": "place of assembly",
+    # Legacy BIS
+    "OT": "other", "PL": "plumbing", "EQ": "equipment", "MH": "manual hoist",
+    "SP": "sprinklers", "BL": "boiler", "FP": "fire protection",
+    "FB": "fuel burning", "SD": "standpipe", "FS": "fuel storage",
+    "CC": "curtain wall", "SF": "scaffold", "AN": "antenna",
+}
+
+
+def trade_label(code: str | None) -> str:
+    """Readable trade for a work_type, or "" when there is nothing to say.
+
+    Handles the DOB NOW composite form ("GC+STR" -> "general construction and
+    structural"). An unrecognised code returns "" rather than itself: a reader
+    is better served by "Permit filed." than by "Permit filed (XZ)."
+    """
+    parts = [p.strip().upper() for p in (code or "").split("+") if p.strip()]
+    words = [TRADE_LABELS[p] for p in parts if p in TRADE_LABELS]
+    if not words:
+        return ""
+    if len(words) == 1:
+        return words[0]
+    return ", ".join(words[:-1]) + " and " + words[-1]

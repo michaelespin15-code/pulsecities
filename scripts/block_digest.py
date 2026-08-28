@@ -40,7 +40,7 @@ import os
 import re
 import sys
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import resend
@@ -51,7 +51,9 @@ from config.logging_config import configure_logging
 from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
 from models.database import get_scraper_db
 from scripts.building_alerts import _wait_for_pipeline
+from api.permit_kinds import trade_label
 from scripts.lib import mailer
+from scripts.lib.backfill_windows import exclusion
 
 resend.api_key = os.getenv("RESEND_API_KEY", "")
 
@@ -107,7 +109,17 @@ def _addr_title(a: str) -> str:
 
 
 def _fmt_date(d) -> str:
-    return d.strftime("%b %-d") if d else "date not on record"
+    """Month and day for this year, and the year too for anything older.
+
+    The window here is ingest time, so a record the source published late is a
+    legitimate entry with an old date on it. Printed as "Apr 24" that reads as
+    four months ago rather than two years, which is the difference between a
+    report and a wrong one.
+    """
+    if not d:
+        return "date not on record"
+    return (d.strftime("%b %-d") if d.year == date.today().year
+            else d.strftime("%b %-d, %Y"))
 
 
 def _en_date(d) -> str:
@@ -161,6 +173,7 @@ _EVENT_SQL = {
         FROM ownership_raw
         WHERE bbl >= :lo AND bbl <= :hi AND created_at > :since
           AND doc_type IN ('DEED', 'DEEDP') AND party_type = '2'
+        /*SKIP*/
         ORDER BY doc_date DESC NULLS LAST LIMIT :cap
     """,
     "eviction": """
@@ -168,6 +181,7 @@ _EVENT_SQL = {
                NULL AS doc_amount, eviction_type AS a, docket_number AS b, NULL AS c
         FROM evictions_raw
         WHERE bbl >= :lo AND bbl <= :hi AND created_at > :since
+        /*SKIP*/
         ORDER BY executed_date DESC NULLS LAST LIMIT :cap
     """,
     "permit": """
@@ -176,6 +190,7 @@ _EVENT_SQL = {
                job_description AS c
         FROM permits_raw
         WHERE bbl >= :lo AND bbl <= :hi AND created_at > :since
+        /*SKIP*/
         ORDER BY filing_date DESC NULLS LAST LIMIT :cap
     """,
     "violation": """
@@ -185,6 +200,7 @@ _EVENT_SQL = {
                violation_class AS a, description AS b, NULL AS c
         FROM violations_raw
         WHERE bbl >= :lo AND bbl <= :hi AND created_at > :since
+        /*SKIP*/
         ORDER BY COALESCE(nov_issued_date, inspection_date) DESC NULLS LAST LIMIT :cap
     """,
     # Housing types only, the same list /neighborhood counts on. A block report
@@ -197,8 +213,14 @@ _EVENT_SQL = {
         FROM complaints_raw
         WHERE bbl >= :lo AND bbl <= :hi AND created_at > :since
           AND upper(complaint_type) = ANY(:housing_types)
+        /*SKIP*/
         ORDER BY created_date DESC NULLS LAST LIMIT :cap
     """,
+}
+
+_TABLE_OF_KIND = {
+    "deed": "ownership_raw", "permit": "permits_raw", "eviction": "evictions_raw",
+    "violation": "violations_raw", "complaint": "complaints_raw",
 }
 
 _COUNT_SQL = {
@@ -279,9 +301,10 @@ def _describe(kind: str, row) -> str:
         what = (row.a or "Eviction").strip()
         return f"{what} eviction executed, {_fmt_date(row.event_date)}, docket {row.b}."
     if kind == "permit":
-        what = (row.a or row.b or "work").strip()
+        what = trade_label(row.a)
         heavy = (row.b or "").strip().upper() in HEAVY_PERMITS
-        line = f"Permit filed ({what}), {_fmt_date(row.event_date)}."
+        line = (f"Permit filed ({what}), {_fmt_date(row.event_date)}." if what
+                else f"Permit filed, {_fmt_date(row.event_date)}.")
         desc = _plain(row.c)
         if heavy and desc:
             line += f" {desc}"
@@ -340,8 +363,15 @@ def recent_events(db, block: dict, since: datetime) -> tuple[list[dict], int]:
 
     events, total = [], 0
     for kind, sql in _EVENT_SQL.items():
-        total += db.execute(text(_COUNT_SQL[kind]), params).scalar() or 0
-        for row in db.execute(text(sql), {**params, "cap": FETCH_CAP}).fetchall():
+        # History we imported is not activity that happened. The 2026-08-28 DOB
+        # NOW load put 485,443 permits going back to 2021 inside this window;
+        # without this, the first report after any backfill is a list of old
+        # records under the heading "recorded since the last report".
+        skip_sql, skip_params = exclusion(db, _TABLE_OF_KIND[kind])
+        p = {**params, **skip_params}
+        total += db.execute(text(_COUNT_SQL[kind] + skip_sql), p).scalar() or 0
+        for row in db.execute(text(sql.replace("/*SKIP*/", skip_sql)),
+                              {**p, "cap": FETCH_CAP}).fetchall():
             bucket = _classify(kind, row)
             events.append({
                 "kind": kind,

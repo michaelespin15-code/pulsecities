@@ -269,6 +269,33 @@ class TestStandingSentences:
                    for l in lines)
 
 
+class TestDatesAndTrades:
+    def test_an_older_year_is_printed(self):
+        """The window is ingest time, so a record the source published late is a
+        legitimate entry with an old date on it. "Apr 24" reads as four months
+        ago rather than two years."""
+        assert bd._fmt_date(date(2024, 4, 24)) == "Apr 24, 2024"
+
+    def test_this_year_stays_short(self):
+        from datetime import date as _d
+        assert bd._fmt_date(date(_d.today().year, 4, 24)) == "Apr 24"
+
+    def test_a_missing_date_says_so(self):
+        assert bd._fmt_date(None) == "date not on record"
+
+    def test_a_permit_names_its_trade_in_words(self):
+        """This printed "Permit filed (PMM)" until DOB NOW made permits common
+        enough in these reports for anyone to read one."""
+        row = _row(a="GC+MECH", b="AL", c=None, event_date=date(2026, 8, 3))
+        line = bd._describe("permit", row)
+        assert "general construction and mechanical" in line
+        assert "PMM" not in line and "GC+MECH" not in line
+
+    def test_an_unrecognised_trade_is_dropped_not_printed(self):
+        row = _row(a="ZZ", b="AL", c=None, event_date=date(2026, 8, 3))
+        assert bd._describe("permit", row) == "Permit filed, Aug 3."
+
+
 class TestHouseStyle:
     def test_no_em_dashes_reach_the_reader(self):
         _, html, text, _ = bd.render(_report([_block(events=[_event()])]))

@@ -28,7 +28,9 @@ from sqlalchemy import text
 from config.logging_config import configure_logging
 from models.database import get_scraper_db
 from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
+from api.permit_kinds import trade_label
 from scripts.lib import mailer
+from scripts.lib.backfill_windows import exclusion
 
 resend.api_key = os.getenv("RESEND_API_KEY", "")
 
@@ -58,20 +60,28 @@ _EVENT_WHERE = {
                  " AND upper(complaint_type) = ANY(:housing_types)",
 }
 
+_TABLE_OF_KIND = {
+    "deed": "ownership_raw", "permit": "permits_raw", "eviction": "evictions_raw",
+    "violation": "violations_raw", "complaint": "complaints_raw",
+}
+
 _EVENT_SQL = {
     "deed": f"""
         SELECT document_id AS ref, doc_date AS event_date, party_name, doc_amount
         {_EVENT_WHERE['deed']}
+        /*SKIP*/
         ORDER BY doc_date DESC LIMIT :cap
     """,
     "permit": f"""
         SELECT permit_type AS ref, filing_date AS event_date, work_type, job_description
         {_EVENT_WHERE['permit']}
+        /*SKIP*/
         ORDER BY filing_date DESC LIMIT :cap
     """,
     "eviction": f"""
         SELECT docket_number AS ref, executed_date AS event_date, eviction_type
         {_EVENT_WHERE['eviction']}
+        /*SKIP*/
         ORDER BY executed_date DESC LIMIT :cap
     """,
     "violation": f"""
@@ -79,12 +89,14 @@ _EVENT_SQL = {
                COALESCE(nov_issued_date, inspection_date) AS event_date,
                violation_class, description
         {_EVENT_WHERE['violation']}
+        /*SKIP*/
         ORDER BY COALESCE(nov_issued_date, inspection_date) DESC NULLS LAST LIMIT :cap
     """,
     "complaint": f"""
         SELECT unique_key AS ref, created_date AS event_date,
                complaint_type, descriptor, status
         {_EVENT_WHERE['complaint']}
+        /*SKIP*/
         ORDER BY created_date DESC LIMIT :cap
     """,
 }
@@ -103,9 +115,12 @@ def _describe(kind: str, row) -> str:
         who = (row.party_name or "unknown party").strip()
         return f"Deed transfer to {who} for {_money(row.doc_amount)}, dated {_fmt_date(row.event_date)}."
     if kind == "permit":
-        what = (row.work_type or row.ref or "work").strip()
+        # Words, not the trade code. This said "Permit filed (PMM)" until DOB
+        # NOW made permits common enough in these emails for anyone to notice.
+        what = trade_label(row.work_type) or trade_label(row.ref)
         desc = (row.job_description or "").strip()
-        line = f"Permit filed ({what}), {_fmt_date(row.event_date)}."
+        line = (f"Permit filed ({what}), {_fmt_date(row.event_date)}." if what
+                else f"Permit filed, {_fmt_date(row.event_date)}.")
         if desc:
             line += f" {desc[:140]}"
         return line
@@ -142,16 +157,27 @@ def scan(db, since: datetime) -> list[dict]:
         ORDER BY s.email, s.bbl
     """)).fetchall()
 
+    # Rows a backfill wrote are history we imported, not records that landed.
+    # The 2026-08-28 DOB NOW load put 485,443 permits going back to 2021 inside
+    # this window and one watcher was emailed five of them, dated 2023 and 2024,
+    # as new records on their building. See scripts/lib/backfill_windows.py.
+    skips = {t: exclusion(db, t) for t in _TABLE_OF_KIND.values()}
+
     alerts = []
     for w in watches:
         events, total = [], 0
         for kind, sql in _EVENT_SQL.items():
+            skip_sql, skip_params = skips[_TABLE_OF_KIND[kind]]
             params = {"bbl": w.bbl, "since": since,
-                      "housing_types": list(DISPLACEMENT_COMPLAINT_TYPES)}
+                      "housing_types": list(DISPLACEMENT_COMPLAINT_TYPES),
+                      **skip_params}
             total += db.execute(
-                text(f"SELECT count(*) {_EVENT_WHERE[kind]}"), params
+                text(f"SELECT count(*) {_EVENT_WHERE[kind]}{skip_sql}"), params
             ).scalar() or 0
-            rows = db.execute(text(sql), {**params, "cap": MAX_EVENTS_PER_KIND}).fetchall()
+            rows = db.execute(
+                text(sql.replace("/*SKIP*/", skip_sql)),
+                {**params, "cap": MAX_EVENTS_PER_KIND},
+            ).fetchall()
             events.extend({"kind": kind, "line": _describe(kind, r)} for r in rows)
         if events:
             alerts.append({
