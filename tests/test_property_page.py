@@ -67,3 +67,85 @@ def test_thin_property_is_noindex():
     body = client.get(f"/property/{bbl}").text
     assert re.search(r'name="robots" content="noindex, follow"', body), \
         "a building with no records/score must be noindex"
+
+
+def _bbl_with_deeds_and_assessment():
+    db = SessionLocal()
+    try:
+        r = db.execute(text("""
+            SELECT o.bbl FROM ownership_raw o
+            JOIN parcels p ON p.bbl = o.bbl
+            WHERE o.doc_type = 'DEED' AND p.address IS NOT NULL
+              AND p.assessed_total > 0 AND p.units_res > 1
+            GROUP BY o.bbl HAVING count(*) > 1
+            LIMIT 1
+        """)).first()
+        return r.bbl if r else None
+    finally:
+        db.close()
+
+
+def test_headings_use_the_phrases_people_search():
+    """Move 06 from the 2026-08-27 search read.
+
+    "sales history", "taxes" and "owner" are live queries on this template
+    ranking 12 to 24, and the page answered every one of them while calling its
+    sections "Ownership transfers" and "The ownership chain". A heading pass
+    that quietly reverts to house jargon takes the ranking with it.
+    """
+    bbl = _bbl_with_deeds_and_assessment()
+    if not bbl:
+        pytest.skip("no deeded, assessed, multi-unit parcel in current data")
+    headings = " | ".join(re.findall(
+        r"<h2[^>]*>(.*?)</h2>", client.get(f"/property/{bbl}").text))
+    for phrase in ("Who owns", "Sales and ownership history",
+                   "Taxes and assessed value"):
+        assert phrase in headings, f"missing heading {phrase!r}; have: {headings}"
+
+    # The other two sections only render where the building has those records,
+    # so each is checked on a building that does.
+    db = SessionLocal()
+    try:
+        conditional = {
+            "Open code violations": """
+                SELECT v.bbl FROM violations_raw v JOIN parcels p ON p.bbl = v.bbl
+                WHERE v.current_status ILIKE 'OPEN%' AND p.address IS NOT NULL
+                LIMIT 1""",
+            "311 complaint history": """
+                SELECT c.bbl FROM complaints_raw c JOIN parcels p ON p.bbl = c.bbl
+                WHERE c.bbl IS NOT NULL AND p.address IS NOT NULL
+                  AND c.created_date > CURRENT_DATE - INTERVAL '365 days'
+                LIMIT 1""",
+        }
+        for phrase, sql in conditional.items():
+            row = db.execute(text(sql)).first()
+            if not row:
+                continue
+            body = client.get(f"/property/{row.bbl}").text
+            assert phrase in body, f"missing heading {phrase!r} on {row.bbl}"
+    finally:
+        db.close()
+
+
+def test_the_faq_names_the_signals_the_score_actually_reads():
+    """It claimed "assessment spikes", which carries no weight and is NULL for
+    every ZIP, and omitted HPD violations, which carries 0.08. A wrong list in
+    FAQ schema is a wrong answer an assistant repeats."""
+    from scoring.compute import (WEIGHT_COMPLAINTS, WEIGHT_EVICTIONS,
+                                 WEIGHT_HPD_VIOLATIONS, WEIGHT_LLC_ACQUISITIONS,
+                                 WEIGHT_PERMITS)
+    bbl = _bbl_with_records()
+    if not bbl:
+        pytest.skip("no property with records in current data")
+    body = client.get(f"/property/{bbl}").text
+    if "displacement risk around" not in body:
+        pytest.skip("this building's ZIP is untracked, so the answer is absent")
+    assert "assessment spike" not in body.lower(), \
+        "the FAQ names a signal the composite score does not read"
+    # Every weighted signal has to appear in the sentence that lists them.
+    assert all(w > 0 for w in (WEIGHT_LLC_ACQUISITIONS, WEIGHT_PERMITS,
+                               WEIGHT_COMPLAINTS, WEIGHT_EVICTIONS,
+                               WEIGHT_HPD_VIOLATIONS))
+    for phrase in ("LLC acquisition rate", "permit intensity", "311 complaint volume",
+                   "executed evictions", "HPD violations"):
+        assert phrase in body, f"the score's signal list omits {phrase!r}"

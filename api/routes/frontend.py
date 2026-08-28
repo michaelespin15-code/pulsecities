@@ -1702,6 +1702,14 @@ def _property_facts(bbl: str, zip_code: str, db) -> dict:
     """
     facts: dict = {}
 
+    # The tax year the assessed value belongs to. parcels carries the figure and
+    # not the year, and a tax number with no year on it is exactly the kind of
+    # fact that outlives the record it came from.
+    facts["tax_year"] = db.execute(text("""
+        SELECT max(tax_year) FROM assessment_history
+        WHERE bbl = :bbl AND assessed_total > 0
+    """), {"bbl": bbl}).scalar()
+
     # Filings that propose fewer homes than the building has, corroborated by
     # the filer's own description. The counts alone are unusable: read raw,
     # 2,164 jobs a year "remove" 44,406 homes and the biggest is a $1,500
@@ -1980,7 +1988,7 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     feeds = feeds or {}
 
     own_sec = _section(
-        "Ownership transfers",
+        "Sales and ownership history",
         "Deeds and assignments recorded in ACRIS, one row per document. Amount is the "
         "stated consideration; $0 often marks a non-arms-length transfer. An assignment "
         "moves a lender's paper and is not a sale." + _cite(feeds, "acris"),
@@ -2015,7 +2023,7 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     comp_sec = ""
     if complaints:
         comp_sec = (
-            '<section style="margin-bottom:30px;"><h2>311 housing complaints</h2>'
+            '<section style="margin-bottom:30px;"><h2>311 complaint history</h2>'
             f'<p style="font-size:.95rem;margin-bottom:8px;"><span style="font-family:\'JetBrains Mono\','
             f'monospace;font-size:1.3rem;font-weight:600;">{len(complaints)}</span> '
             '<span style="color:var(--muted);">complaints in the past 12 months</span></p>'
@@ -2157,8 +2165,34 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     chain_note = ('<p class="data-note">A deed names a party of record. Stated '
                   'consideration of $0 usually marks a transfer between related '
                   'parties rather than a sale.</p>')
-    chain_sec = _prose_section("The ownership chain", _para(*chain_paras),
+    chain_sec = _prose_section(f"Who owns {e(address)}", _para(*chain_paras),
                                chain_note if deed_chain else "")
+
+    # What the city taxes. The figure was already on the page as one clause of
+    # the lede, which is not a thing a reader searching "205 dean street taxes"
+    # can find. It is a snapshot: only the current tax year carries an assessed
+    # value, so there is no trend here to report and none is implied.
+    tax_sec = ""
+    if assessed:
+        tax_year = facts.get("tax_year")
+        tax_paras = [_sentence(
+            f"The city's Department of Finance assessed this lot at "
+            f"{_fmt_amount(assessed)}"
+            + (f" for the {int(tax_year)} tax year" if tax_year else "")
+        )]
+        # Only where the division says something. On a one-family lot the per-unit
+        # figure is the same number twice.
+        if units_res and units_res > 1:
+            tax_paras.append(
+                f"That works out to {_fmt_amount(assessed / units_res)} per "
+                f"residential unit.")
+        tax_paras.append(
+            "Assessed value is what the city taxes, not what the building would sell "
+            "for, and the two routinely differ by a wide margin. The bill itself turns "
+            "on the tax class rate and on any exemptions or abatements attached to the "
+            "lot, neither of which is published here."
+        )
+        tax_sec = _prose_section("Taxes and assessed value", _para(*tax_paras))
 
     # Eviction record, in sentences and over the full window rather than the
     # rolling twelve months the table shows.
@@ -2247,7 +2281,7 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
             label = _VIOLATION_CLASS.get(worst[0], worst[0])
             vp.append(f"The most serious open grade here is {label}, with "
                       f"{_count(viols[worst[0]]['open'], 'open violation')}.")
-        viol_sec = _prose_section("Open violations", _para(*vp),
+        viol_sec = _prose_section("Open code violations", _para(*vp),
                                   '<p class="data-note">Classes run A (non-hazardous) '
                                   'to C (immediately hazardous); DOB class I carries a '
                                   'vacate order.' + _cite(feeds, "violations") + '</p>')
@@ -2390,6 +2424,15 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
             f"Community Renewal is what settles it.",
         ))
 
+    if assessed:
+        faq.append((
+            f"What is {address} assessed at for property taxes?",
+            f"The Department of Finance assessed the lot at {_fmt_amount(assessed)}"
+            + (f" for the {int(facts['tax_year'])} tax year" if facts.get("tax_year") else "")
+            + ". That is the figure the city taxes rather than a sale price, and the "
+              "bill depends on the tax class rate and on any exemptions on the lot.",
+        ))
+
     if zip_code and peers.get("tracked"):
         faq.append((
             f"What is the displacement risk around {address}?",
@@ -2397,9 +2440,10 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
             + (f" ({hood})" if hood else "")
             + (f" scores {score:.1f} out of 100 on the PulseCities displacement index."
                if score is not None else " has no current displacement score.")
-            + f" The score reads five ZIP-level signals: eviction rate, LLC acquisition "
-              f"rate, permit intensity, assessment spikes, and 311 complaint volume. "
-              f"It describes the area around the building, not the building itself.",
+            + f" The score reads five ZIP-level signals: LLC acquisition rate, permit "
+              f"intensity, 311 complaint volume, executed evictions, and serious HPD "
+              f"violations. It describes the area around the building, not the "
+              f"building itself.",
         ))
 
     faq_html = "".join(
@@ -2649,7 +2693,7 @@ footer{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-i
 {unit_note}
 {score_block}
 {lede}
-{empty}{chain_sec}{own_sec}{ev_prose}{ev_sec}{rs_sec}{viol_sec}{dec_sec}{pm_sec}{comp_sec}{cmp_sec}{sib_sec}
+{empty}{chain_sec}{own_sec}{tax_sec}{ev_prose}{ev_sec}{rs_sec}{viol_sec}{dec_sec}{pm_sec}{comp_sec}{cmp_sec}{sib_sec}
 {watch_card}
 {faq_sec}
 <div class="cta-row">{links_html}</div>
