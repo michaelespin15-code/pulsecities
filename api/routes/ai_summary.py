@@ -53,8 +53,10 @@ MAX_TOKENS = 2000
 REQUEST_TIMEOUT = 30.0  # seconds — user-facing, but a cold read is worth waiting out
 
 # Hard ceiling on model calls per UTC day, across every client. A miss past this point
-# falls back to the deterministic summary. Generous for real traffic, cheap insurance
-# against a cache-busting loop running up a bill.
+# falls back to the deterministic summary. A generation measures ~1,600 input and ~260
+# output tokens, so the ceiling is worth about seven dollars of a runaway day and a
+# sweep of all 177 ZIPs costs under three. Real traffic never approaches it: a
+# ZIP is generated once per scoring run and every later view is a cache hit.
 DAILY_GENERATION_CAP = 500
 
 _SYSTEM_PROMPT = (
@@ -443,6 +445,15 @@ def get_neighborhood_summary(
     if message.stop_reason == "refusal":
         logger.warning("AI summary refused for %s", zip_code)
         raise HTTPException(status_code=503, detail="AI summary is not available right now.")
+
+    usage = getattr(message, "usage", None)
+    if usage is not None:
+        # Spend visibility: `journalctl -u pulsecities | grep 'summary usage'` audits real
+        # token consumption rather than estimating it. The app's root handler writes to
+        # stdout, which under systemd is the journal, not gunicorn's error file. Output
+        # tokens include thinking.
+        logger.info("summary usage zip=%s in=%s out=%s model=%s effort=%s",
+                    zip_code, usage.input_tokens, usage.output_tokens, MODEL, EFFORT)
 
     summary = "".join(b.text for b in message.content if b.type == "text").strip()
     if not summary:
