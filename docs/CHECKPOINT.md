@@ -1,4 +1,135 @@
-# >>> START HERE after /clear (2026-08-28, block digest + the permit signal) <<<
+# >>> START HERE after /clear (2026-08-28, the permit signal session) <<<
+
+Working tree clean. Two features shipped and deployed, plus four rotted guards
+fixed. The permit fix is live: **every displacement score on the site was
+recomputed and half the top ten changed.**
+
+## The one thing to read first
+
+**The permit signal carried 24.7% of the composite score and was computed from
+414 records. It now reads 32,786.** scrapers/permits.py reads ipu4-2q9a, the
+legacy DOB Permit Issuance dataset, and DOB NOW superseded it.
+
+    before        414 permits across 106 of 177 scored ZIPs
+    after      32,786 permits across 180 ZIPs
+    backfill  485,443 rows from 2021-01-01, matching upstream year by year
+
+Result of the live recompute, measured against a snapshot taken first:
+
+    ZIPs with a nonzero permit signal    105 -> 168 of 177
+    median rank shift                    7 places, mean 12.9, max 79
+    top-10 overlap                       5 of 10
+
+The falls are the ones to look at. **11694 Rockaway Park went from rank 17 to
+96**, its permit signal collapsing from 85.7 to 6.1: a handful of surviving BIS
+permits had it reading as the 17th most pressured ZIP in the city. 11693 Broad
+Channel 45 to 104. 10310 Staten Island 129 to 168. 11211 Williamsburg 26 to 64.
+The new top ten is the South Bronx (10466, 10458, 10468, 10459, 10457, 10452,
+10453) plus 10030 Harlem, 11216 and 11233 Bed-Stuy.
+
+**Why it survived five audits.** The scraper runs green every night and reports
+thirty-odd records, which reads as a quiet incremental feed rather than a dead
+one. The anomaly check did write "count 2 < 50% of static minimum 50" three
+times in fourteen nights, and it reached nobody: BaseScraper only escalates a
+low count to an email when the feed's expected minimum clears 100, and this one
+sat at 50. Then pipeline_health, the one report a human reads, carried a
+hand-written note for exactly that pattern reading "post-bulk-recovery;
+rolling-avg warning expected" -- the right symptom with an explanation that had
+gone stale. All three are fixed (f6a95b8).
+
+**The other four feeds were checked the same way and are fine**: HPD violations
+98.9%, evictions 98.1%, DCWP 100%, 311 at 99.9% once its two-day ingestion lag
+is excluded. Permits was the only one.
+
+## Shipped
+
+**The block digest (93859bd), cron installed, first send 2026-09-01 10:00 ET**
+to ten subscribers including Michael. Monthly report on the tax block around
+each watched building. The measurement killed the obvious design: a report of
+*what happened this month* is empty for seven of twelve blocks, so it carries a
+second section reading standing state which cannot come up empty. Detail in the
+section below this one.
+
+**DOB NOW permits (bc39644, b2e5c93a17df).** scrapers/dob_now_permits.py reads
+w9ak-ipjd, DOB NOW Build job filings. Notes for whoever touches it next:
+
+- **Not rbx6-tga4.** That one is the closer name match (approved permits) and is
+  wrong twice: no job_type, so "alteration to an occupied building" is
+  inexpressible, and one row per work permit, so a job with a
+  general-construction and a structural permit counts twice.
+- **scoring/compute.py is deliberately unchanged.** It still filters
+  `permit_type = 'AL'`; the scraper maps DOB NOW's spelled-out job_type onto the
+  BIS short codes. Coverage was fixed, definition was not. DOB NOW also carries
+  `initial_cost` and existing-vs-proposed dwelling units, either of which would
+  sharpen the signal, and folding them in now would confound the two changes.
+  **That is the obvious next improvement and it should be its own change.**
+- **permits_raw has two identities now** (a7d3f1e08b64), split on
+  `source_id IS NULL`. The integrity guard measured what reusing one key would
+  have cost: 20,742 DOB NOW rows share the BIS key with another row and would
+  have been dropped silently.
+- **BaseScraper has a 'backfill' status.** A 485k-row walk recorded as an
+  ordinary success puts the 14-day rolling average at ~160k and emails ops for
+  eleven nights. Use `--era` or `--since`; both set it.
+- **dob_now_permits' floor is 120, above the 100 escalation gate, on purpose.**
+  Weekends do not false-alarm: a zero-record run only escalates when the
+  source's own max date has moved past our watermark.
+
+**An upsert that refreshes a row must say so (63b505f).** mappluto completed on
+2026-08-12 having processed 858,602 records and the newest `updated_at` in the
+918k-row parcels table read 2026-07-09. `onupdate=utcnow` does not reach an
+`ON CONFLICT DO UPDATE` SET list. Two of four call sites had it right, so the
+fix is a grep, and it found a second instance (scrapers/dof.py) that a hand
+search had called clean.
+
+**Four rotted guards (97e1297).** The full suite costs five minutes, so nothing
+runs it. /this-week asserted "eviction filings", the copy its own 2026-08-19 fix
+had removed; fixing it surfaced that **the Spanish string was never corrected**
+and had been calling executed warrants "presentados" for nine days. Two email
+tests could not reach the code they tested, because conftest blanks
+RESEND_API_KEY and mailer refuses before Resend is touched; one of them was
+*passing* for that reason and would have gone on passing with the retry ladder
+deleted.
+
+**Covering index (be15b22).** _aggregate_permits went 8.8s to 1.4s. The other
+five queries reading permits_raw were measured and none moved.
+
+## NEXT, in order
+
+1. **Sharpen the permit signal now that it has data.** `initial_cost` and
+   existing-vs-proposed dwelling units are in DOB NOW and in permits_raw.raw_data
+   already. A $15,000 boiler swap and a $1.8M gut renovation currently count the
+   same. Separately worth asking: WEIGHT_PERMITS is 0.21 and was set when the
+   signal was 414 rows. It has never been calibrated against a real one.
+2. **Move 09, violation-gated sitemap expansion.** 27,862 buildings carry 5+ HPD
+   violations with no deed and no eviction. Gate at 5, not 1.
+3. **Move 05, citywide marshal index.** 60+ place variants rank 2 to 43 with
+   zero clicks and there is no citywide parent for the 127 leaves.
+4. **Move 06, plain-phrase headings on /property.**
+5. **DOS follow-ons.** Registered agent as a second clustering signal; Delaware
+   jurisdiction surfaced; a monthly `refresh_dos_entities --all`.
+
+## State
+
+- Disk 72%, up from 70%: the backfill cost ~1.2GB. 23GB free.
+- **Alembic: current f3a91b6c8d27, head is now b2e5c93a17df, FOUR pending.**
+  b8e30d5c1746 (raw_data drop) still wants the window; c4e17b2a9d38,
+  a7d3f1e08b64 and b2e5c93a17df are all guarded and their DDL is already applied
+  live. Do not stamp.
+- ACRIS 28 days stale against a 21-day threshold, unchanged and upstream.
+- `test_deploy_copy_matches_installed[pulsecities.service]` is the one guard
+  still red, and it is NEEDS MICHAEL item 1, not a bug.
+- `sales_raw` and `property_scores` are both empty tables nobody writes.
+  `idx_parcels_geometry` is 74MB with zero scans since the Aug 15 reboot. None
+  of the three was touched; all three are worth a look.
+
+## NEEDS MICHAEL, unchanged
+
+Buy Anthropic credits (AI read dead since 2026-08-23). Send the FLGSP pitch.
+Decide on the push (100+ commits unpushed, CI dead since 08-08). Restart with the
+committed service unit, then rotate the DB password, then the maintenance
+window. HEARTBEAT_BASE_URL, ALERT_WEBHOOK_URL, dedicated R2 creds, OPS_TOKEN.
+
+# >>> Earlier that day: the block digest <<<
 
 Working tree clean. The block digest shipped (93859bd) and is installed in
 /etc/cron.d/pulsecities, so it sends for the first time on **2026-09-01 at
