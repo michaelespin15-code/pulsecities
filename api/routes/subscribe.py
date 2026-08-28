@@ -12,6 +12,7 @@ import re
 from datetime import datetime, timezone
 
 import resend
+from scripts.lib import mailer
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, field_validator, model_validator
@@ -522,17 +523,20 @@ def _send_confirmation(
         log_line = ("Confirmation sent to %s for zip %s", email, zip_code)
 
     try:
-        resend.Emails.send({
-            "from": "PulseCities <alerts@pulsecities.com>",
-            "to": [email],
-            "subject": subject,
-            "html": _fill(html_body, values, escape=True),
-            "text": _fill(text_body, values),
-            "headers": {
+        # A confirmation always has exactly one thing to say. It goes through the
+        # same gate as everything else so an unfilled {placeholder} in the
+        # template, which _fill does not raise on, cannot reach a new subscriber
+        # as their first impression of the site.
+        mailer.send(
+            to=email, subject=subject,
+            html=_fill(html_body, values, escape=True),
+            text=_fill(text_body, values),
+            content_items=1,
+            headers={
                 "List-Unsubscribe": f"<{unsub_url}>",
                 "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
             },
-        })
+        )
         logger.info(*log_line)
     except Exception:
         logger.exception("Failed to send confirmation email to %s", email)

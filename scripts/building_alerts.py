@@ -27,6 +27,7 @@ from sqlalchemy import text
 
 from config.logging_config import configure_logging
 from models.database import get_scraper_db
+from scripts.lib import mailer
 
 resend.api_key = os.getenv("RESEND_API_KEY", "")
 
@@ -276,17 +277,14 @@ def run(dry_run: bool = False) -> None:
             print()
             continue
         try:
-            resend.Emails.send({
-                "from": "PulseCities <alerts@pulsecities.com>",
-                "to": [alert["email"]],
-                "subject": subject,
-                "html": html,
-                "text": text_body,
-                "headers": {
+            mailer.send(
+                to=alert["email"], subject=subject, html=html, text=text_body,
+                content_items=len(alert["events"]),
+                headers={
                     "List-Unsubscribe": f"<https://pulsecities.com/api/unsubscribe?token={alert['token']}>",
                     "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
                 },
-            })
+            )
             logger.info("Alert sent to %s for %s (%d events)",
                         alert["email"], alert["bbl"], len(alert["events"]))
         except Exception:

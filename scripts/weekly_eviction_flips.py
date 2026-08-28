@@ -24,6 +24,7 @@ from datetime import date
 from pathlib import Path
 
 import resend
+from scripts.lib import mailer
 from sqlalchemy import text
 
 from config.logging_config import configure_logging
@@ -365,12 +366,12 @@ def run(dry_run: bool = False) -> None:
         if dry_run:
             print(report)
         else:
-            resend.Emails.send({
-                "from": "PulseCities <alerts@pulsecities.com>",
-                "to": [REPORT_TO],
-                "subject": f"Eviction flips: {len(new_arcs)} new arc{'s' if len(new_arcs) != 1 else ''} this week",
-                "text": report,
-            })
+            mailer.send(
+                to=REPORT_TO,
+                subject=f"Eviction flips: {len(new_arcs)} new arc{'s' if len(new_arcs) != 1 else ''} this week",
+                text=report,
+                content_items=len(new_arcs),
+            )
             logger.info("Report emailed to %s", REPORT_TO)
 
     if not dry_run:

@@ -218,24 +218,26 @@ def send_ops_email(subject: str, body: str) -> None:
         return
 
     resend.api_key = api_key
-    payload = {
-        "from": "PulseCities Ops <alerts@pulsecities.com>",
-        "to": recipients,
-        "subject": f"[PulseCities] {subject}",
-        "text": body,
-    }
-    # The Aug 5 outage email died on a single TLS error to api.resend.com, so
-    # the send gets a short retry ladder before giving up. This runs in cron
-    # jobs, not request handlers, so blocking sleeps are fine here.
-    last_exc: Exception | None = None
-    for delay in (0, 2, 8):
-        if delay:
-            time.sleep(delay)
-        try:
-            resend.Emails.send(payload)
-            logger.info("ops-email sent to %s: %s", ", ".join(recipients), subject)
-            return
-        except Exception as exc:
-            last_exc = exc
-            logger.warning("ops-email send attempt failed: %s", exc)
-    logger.warning("Failed to send ops email after 3 attempts (non-fatal): %s", last_exc)
+    # Through the shared gate for the recipient, subject and unfilled-placeholder
+    # checks, but with min_words=0 and no content_items. An ops alert is allowed
+    # to be terse: "acris_ownership: source frozen 27d" is nine words and is the
+    # single most important message this system can send. A content floor that
+    # silenced it would be far worse than the empty email the floor exists to
+    # stop. The retry ladder moved into the mailer with it; it was added after
+    # the 2026-08-05 outage email died on one TLS error to api.resend.com.
+    try:
+        ok = mailer.send(
+            to=recipients,
+            subject=f"[PulseCities] {subject}",
+            text=body,
+            sender="PulseCities Ops <alerts@pulsecities.com>",
+            min_words=0,
+            retries=(2, 8),
+        )
+    except mailer.EmailRefused as exc:
+        logger.warning("ops email refused (non-fatal): %s", exc)
+        return
+    if ok:
+        logger.info("ops-email sent to %s: %s", ", ".join(recipients), subject)
+    else:
+        logger.warning("Failed to send ops email after 3 attempts (non-fatal)")

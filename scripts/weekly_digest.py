@@ -15,6 +15,7 @@ from html import escape as _html_escape
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import resend
+from scripts.lib import mailer
 from sqlalchemy import text
 
 from config.logging_config import configure_logging
@@ -788,23 +789,24 @@ def send_digest_email(subscription: dict, rendered: dict, dry_run: bool = False)
     if dry_run:
         logger.info("[DRY RUN] Would send '%s' to %s", rendered["subject"], subscription["email"])
         return True
-    try:
-        payload = {
-            "from":    "PulseCities <alerts@pulsecities.com>",
-            "to":      [subscription["email"]],
-            "subject": rendered["subject"],
-            "html":    rendered["html"],
+    headers = None
+    token = subscription.get("unsubscribe_token")
+    if token:
+        headers = {
+            "List-Unsubscribe": f"<https://pulsecities.com/api/unsubscribe?token={token}>",
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
         }
-        token = subscription.get("unsubscribe_token")
-        if token:
-            payload["headers"] = {
-                "List-Unsubscribe": f"<https://pulsecities.com/api/unsubscribe?token={token}>",
-                "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-            }
-        resend.Emails.send(payload)
-        return True
-    except Exception:
-        logger.exception("Resend failed for %s", subscription["email"])
+    try:
+        # content_items is what the arm actually assembled. Each arm already
+        # decided it had something to say; this makes that decision checkable at
+        # the boundary instead of trusting five arms to have got it right.
+        return mailer.send(
+            to=subscription["email"], subject=rendered["subject"],
+            html=rendered["html"], headers=headers,
+            content_items=rendered.get("content_items"),
+        )
+    except mailer.EmailRefused:
+        logger.exception("Refused to send digest to %s", subscription["email"])
         return False
 
 
