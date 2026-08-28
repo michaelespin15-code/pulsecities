@@ -9,7 +9,8 @@ Tests 1-7 cover GET /api/neighborhoods/{zip}/pulse:
   4. Each llc_acquisition item has keys: bbl, address, buyer_name, doc_date, doc_amount
   5. Each recent_permit item has keys: bbl, address, permit_type, filing_date
   6. Only doc_type IN ('DEED','DEEDP','ASST') AND party_name_normalized LIKE '%LLC%' in llc_acquisitions
-  7. Only permit_type IN ('A1','A2','NB') in recent_permits
+  7. Only renovation and new-building permits in recent_permits, across both
+     permit sources (see api/permit_kinds.py; the codes differ per source)
 
 Tests 8-14 cover GET /api/neighborhoods/{zip}/renovation-flip:
   8. GET /api/neighborhoods/11221/renovation-flip returns 200 with {detected: bool, count: int, properties: [...]}
@@ -17,7 +18,8 @@ Tests 8-14 cover GET /api/neighborhoods/{zip}/renovation-flip:
   10. GET /api/neighborhoods/99999/renovation-flip returns {detected: false, count: 0, properties: []}
   11. detected=true only when count >= 2
   12. Each property item has keys: bbl, address, buyer, transfer_date, permit_date, days_between
-  13. Only permit_type IN ('A1','A2') triggers detection (not NB, A3, etc.)
+  13. Only renovation permits trigger detection (not new-building or A3), and
+      the route asks api/permit_kinds.py rather than spelling the codes out
   14. Only permit AFTER transfer triggers (permit_date > transfer_date enforced)
 """
 
@@ -335,20 +337,34 @@ class TestRenovationFlipAPI:
         missing = required_keys - set(item.keys())
         assert not missing, f"Property item missing keys: {missing}. Got: {list(item.keys())}"
 
-    def test_sql_filters_only_a1_a2_permit_types(self):
-        """Test 13: Only A1/A2 permit types trigger detection (not new-building permits)."""
-        from api.routes.pulse import get_renovation_flip
+    def test_sql_filters_renovation_permits_and_not_new_builds(self):
+        """Test 13: only alteration permits trigger detection, never new-building.
+
+        This grepped the function source for the literals 'A1' and 'A2' until
+        2026-08-28. Those literals moved into api/permit_kinds.py when the
+        predicate was fixed to read DOB NOW as well as legacy BIS, and the test
+        failed on a route that had just gone from finding 15 flips a year to
+        639. Asserting where a string is written tests the spelling; asserting
+        which predicate the route asks for tests the contract.
+        """
         import inspect
 
+        from api.permit_kinds import renovation_sql
+        from api.routes.pulse import get_renovation_flip
+
         source = inspect.getsource(get_renovation_flip)
-        assert "'A1'" in source or '"A1"' in source, "SQL must include A1 permit type filter"
-        assert "'A2'" in source or '"A2"' in source, "SQL must include A2 permit type filter"
-        # New Building permits must NOT be in the renovation-flip permit filter
-        # Strip comments before checking, to avoid matching comment text
-        code_lines = [ln for ln in source.splitlines() if not ln.lstrip().startswith('#')]
-        code_only = "\n".join(code_lines)
-        assert "'NB'" not in code_only and '"NB"' not in code_only, \
-            "renovation-flip must NOT filter on 'NB' permit type — only A1/A2 are renovation indicators"
+        assert "renovation_sql()" in source, \
+            "renovation-flip must use the shared renovation predicate"
+        assert "renovation_or_new_sql" not in source, \
+            "renovation-flip must not match new-building permits"
+
+        predicate = renovation_sql()
+        assert "'A1'" in predicate and "'A2'" in predicate, \
+            "the renovation predicate must still cover legacy BIS alteration jobs"
+        assert "'NB'" not in predicate, \
+            "new-building permits are not a renovation-flip signal"
+        assert "dob_now" in predicate, \
+            "the predicate must also match the source carrying 96% of permits"
 
     def test_sql_enforces_permit_after_transfer(self):
         """Test 14: Only permit AFTER transfer triggers (permit_date > transfer_date enforced)."""

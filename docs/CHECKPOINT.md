@@ -93,13 +93,89 @@ deleted.
 **Covering index (be15b22).** _aggregate_permits went 8.8s to 1.4s. The other
 five queries reading permits_raw were measured and none moved.
 
+**Flip Watch was finding 15 flips a year and should have found 639 (d265361).**
+Four queries hand-rolled `raw_data->>'job_type' IN ('A1','A2')`, a column that
+only exists on legacy BIS rows, so they were reading 4,474 renovation permits in
+a year against 81,486. /flips, the homepage docket, the weekly editions, the
+neighborhood flip rows and both pulse endpoints were all affected; it is the
+feature the MTEK and PHANTOM pitches are built on. 90d went 1 to 115, 180d 6 to
+279, 365d 15 to 639.
+
+**api/permit_kinds.py owns the rule now.** permits_raw holds two vocabularies:
+BIS puts a job code in `raw_data->>'job_type'` and the permit's *trade* in
+`permit_type` (EW, PL, AL), while DOB NOW has neither and the scraper maps its
+job type into `permit_type`. So `permit_type` means a trade on one source and a
+job type on the other. Both resolve to "AL is work on an existing building",
+which is why scoring reads it unchanged, and nobody had written that down.
+tests/test_permit_kind_guards.py greps for the next hand-rolled copy, tests/
+included: test_neighborhood_flips.py had its own copy, kept the old rule when
+production was fixed, and then failed insisting a ZIP had no flips while the
+page it was checking had found some.
+
+## Two changes measured and deliberately NOT made
+
+Both were the checkpoint's own item 1 ("sharpen the permit signal now that it
+has data"). Both were built far enough to measure and neither earned a change
+to a public score. Written down so they are not re-proposed from first
+principles.
+
+**A cost floor on the permit signal: rejected.** `job_cost` is 100% populated on
+DOB NOW and the median alteration is $30,960, so half the signal really is
+repair work rather than renovation pressure. But filtering recreates in
+miniature the sparsity that just cost 24.7% of the score:
+
+    floor      permits   ZIPs   ZIPs under 10 permits
+    none        32,786    180        22
+    $25,000     17,153    178        30
+    $50,000     12,366    176        43
+    $100,000     7,709    168        48
+    $250,000     3,360    156        70
+
+And the payoff is small: median rank shift 2 at $25k, 3 at $50k, 4 at $100k,
+against the coverage fix's 7. Discarding half the data and pushing twice as many
+ZIPs into the thin regime, to move ranks two places, is not a trade worth making
+on a published number. Cost-weighting instead of filtering was also measured and
+is worse: in 20 of 180 ZIPs a single job is more than half the ZIP's total cost,
+and a $2M per-job cap only brings that to 18.
+
+**Unit loss as a score signal: rejected, and it would have published something
+false.** 2,164 jobs a year propose fewer dwelling units than the building has,
+which sounds like the most direct displacement signal in the dataset. Reading
+the actual rows says otherwise. Filers use `proposed_dwelling_units`
+inconsistently: some enter the building's total, some the units in scope, many
+leave it blank and it arrives as 0.
+
+    11 5 AVENUE     2678 -> 267 units   $65,000    "Renovation to an existing one-bedroom apartment"
+    1724 MADISON    792 -> 0 units      $1,500     "Fire Suppression Gas Shut-off Valve"
+    685 FIRST AVE   556 -> 0 units      $419,100   "interior built out of a children daycare"
+
+Shipped as a count, the site would have said "2,999 apartments proposed for
+removal in 10003" on the strength of a $1,500 gas valve. The only independent
+check available is whether the job description corroborates: across
+`units_proposed > 0` rows it does about 30% of the time, and for the 596 rows
+where proposed is 0 it does 5%, which is what confirms those are blanks.
+
+**What is real in there**, and worth surfacing later as a page-level fact rather
+than a score input, is the corroborated subset. Two fields agreeing, roughly 500
+jobs a year, and they are exactly the deconversion story:
+
+    33 PERRY STREET      3 -> 1 units   $2,280,000  "convert multi-family townhouse into single family"
+    2144 EAST 12 STREET  3 -> 1 units   $1,693,424  "Convert 3 dwellings into 1"
+    108 TROUTMAN STREET  4 -> 2 units   $1,884,445
+
+The columns are in place (`job_cost`, `units_existing`, `units_proposed`,
+migration c8f4b16d29ea, backfilled and written by the scraper going forward), so
+that work starts from data rather than from a backfill.
+
 ## NEXT, in order
 
-1. **Sharpen the permit signal now that it has data.** `initial_cost` and
-   existing-vs-proposed dwelling units are in DOB NOW and in permits_raw.raw_data
-   already. A $15,000 boiler swap and a $1.8M gut renovation currently count the
-   same. Separately worth asking: WEIGHT_PERMITS is 0.21 and was set when the
-   signal was 414 rows. It has never been calibrated against a real one.
+1. **Corroborated deconversion as a page-level fact.** Not a score input; see
+   the section above for why. ~500 jobs a year where the unit counts and the job
+   description agree that apartments are being merged away. Natural homes are
+   /property and the block digest. Columns are already there.
+   **Still open and unanswered: WEIGHT_PERMITS is 0.21, set when the signal was
+   414 rows. It has never been calibrated against a real one, and that is a
+   judgement call for Michael rather than a measurement.**
 2. **Move 09, violation-gated sitemap expansion.** 27,862 buildings carry 5+ HPD
    violations with no deed and no eviction. Gate at 5, not 1.
 3. **Move 05, citywide marshal index.** 60+ place variants rank 2 to 43 with
