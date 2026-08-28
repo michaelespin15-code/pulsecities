@@ -103,10 +103,78 @@ def _tier(score: float) -> str:
 
 
 # --- caching -----------------------------------------------------------------
-# zip -> (summary, score_key, generated_at_iso). score_key pins the cache to the
-# scoring run, so a re-scored ZIP regenerates on its next view.
+# Two layers, and the second one is why a reader does not wait.
+#
+# L1 is this dict: zip -> (summary, score_key, generated_at_iso), per process.
+# L2 is the ai_summaries table, which every worker shares and which survives a
+# reload. The read used to live only in L1, so each of the two workers paid its
+# own cold generation per ZIP and a deploy threw all of it away. On a day with
+# eight deploys that is eight waits per ZIP for whoever arrived first.
+#
+# score_key pins both layers to the scoring run, so a re-scored ZIP regenerates
+# and an unchanged one never does. scripts/precompute_reads.py fills L2 straight
+# after the nightly scoring, which is what makes a cold read rare rather than
+# merely cheap.
 _cache: dict[str, tuple[str, int, str]] = {}
 _cache_lock = threading.Lock()
+
+
+# How far a score may drift before the read is worth regenerating. Regenerating
+# on any change at all costs about $45 a month and buys nothing: a ZIP that moves
+# from 41.3 to 41.5 produces the same paragraph, because the read speaks in ranks,
+# rates and direction of travel and none of those turn on a tenth of a point.
+# Measured over 21 nights: 105 ZIPs a night move by 0.1 or more and 14 move by a
+# full point, so this threshold is the difference between $45 a month and $6.
+#
+# A tier crossing always regenerates whatever the size of the move, because that
+# is the one change that reframes the whole paragraph.
+SCORE_DRIFT_TOLERANCE = 1.0
+
+
+def is_fresh(stored_score: float | None, current_score: float) -> bool:
+    """Would the read still say the same thing at this score?"""
+    if stored_score is None:
+        return False
+    if tier(stored_score) != tier(current_score):
+        return False
+    return abs(current_score - stored_score) < SCORE_DRIFT_TOLERANCE
+
+
+def _read_stored(db: Session, zip_code: str, score: float) -> tuple[str, str] | None:
+    """The stored read for this ZIP, when it is still true of this score."""
+    row = db.execute(text(
+        "SELECT summary, generated_at, score FROM ai_summaries WHERE zip_code = :zip"
+    ), {"zip": zip_code}).first()
+    if not row or not is_fresh(row[2], score):
+        return None
+    return row[0], row[1].isoformat()
+
+
+def store_summary(db: Session, zip_code: str, key: int, summary: str, model: str,
+                  score: float | None = None) -> str:
+    """Write a generated read where every worker can find it. Returns its stamp.
+
+    Never raises into the request: a failed write costs a regeneration later,
+    which is a great deal better than a 503 in front of a reader.
+    """
+    generated_at = datetime.now(timezone.utc)
+    try:
+        db.execute(text("""
+            INSERT INTO ai_summaries (zip_code, score_key, score, summary, model, generated_at)
+            VALUES (:zip, :key, :score, :summary, :model, :at)
+            ON CONFLICT (zip_code) DO UPDATE SET
+                score_key = EXCLUDED.score_key,
+                score = EXCLUDED.score,
+                summary = EXCLUDED.summary,
+                model = EXCLUDED.model,
+                generated_at = EXCLUDED.generated_at
+        """), {"zip": zip_code, "key": key, "score": score, "summary": summary,
+               "model": model, "at": generated_at})
+        db.commit()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("could not store the read for %s: %r", zip_code, exc)
+        db.rollback()
+    return generated_at.isoformat()
 
 # Daily spend cap state.
 _gen_day: date | None = None
@@ -398,10 +466,18 @@ def get_neighborhood_summary(
 
     with _cache_lock:
         cached = _cache.get(zip_code)
-    if cached and cached[1] == key:
+    if cached and cached[1] == key:  # L1 is exact; L2 below carries the drift rule
         response.headers["Cache-Control"] = "public, max-age=3600"
         return {"zip_code": zip_code, "summary": cached[0], "model": MODEL,
                 "generated_at": cached[2], "cached": True}
+
+    stored = _read_stored(db, zip_code, score)
+    if stored:
+        with _cache_lock:
+            _cache[zip_code] = (stored[0], key, stored[1])
+        response.headers["Cache-Control"] = "public, max-age=3600"
+        return {"zip_code": zip_code, "summary": stored[0], "model": MODEL,
+                "generated_at": stored[1], "cached": True}
 
     client = _get_client()
     if client is None:
@@ -459,7 +535,7 @@ def get_neighborhood_summary(
     if not summary:
         raise HTTPException(status_code=503, detail="AI summary is not available right now.")
 
-    generated_at = datetime.now(timezone.utc).isoformat()
+    generated_at = store_summary(db, zip_code, key, summary, MODEL, score)
     with _cache_lock:
         _cache[zip_code] = (summary, key, generated_at)
 

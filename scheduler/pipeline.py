@@ -165,6 +165,10 @@ def run_nightly_pipeline() -> bool:
     if not _run_scoring():
         had_failures = True
 
+    # The panel read, generated off the request path. Scoring has just finished,
+    # so this writes the reads for whatever moved before anyone opens a panel.
+    _run_read_precompute()
+
     # MTEK portfolio monitor — needs fresh violations/permits/evictions data
     _run_mtek_monitor()
 
@@ -404,6 +408,28 @@ def _run_scoring() -> bool:
             f"scores:\n\n{exc}\n\n  tail -200 /var/log/pulsecities/scraper.log",
         )
         return False
+
+
+def _run_read_precompute() -> None:
+    """Warm the AI read for every ZIP whose score moved enough to change it.
+
+    Never fatal and never alerts. The read is an editorial layer over the
+    deterministic summary: if this does not run, the panel falls back exactly as
+    it does when the model is unreachable, and the next visitor pays a
+    generation instead. A pipeline that fails the night because a paragraph is
+    missing would be a worse trade than the paragraph.
+    """
+    try:
+        from scripts.precompute_reads import main as precompute
+        import sys as _sys
+        argv = _sys.argv
+        _sys.argv = ["precompute_reads"]
+        try:
+            precompute()
+        finally:
+            _sys.argv = argv
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Read precompute failed (non-fatal): %s", exc)
 
 
 def _run_mtek_monitor() -> None:
