@@ -131,6 +131,57 @@ The recovery advice in the pipeline's own alert text said to re-run the scorer,
    `scoring.tiers.tier()` -- but the block a reader trusts was three days stale.
 7. **tests/test_score_history_agreement.py**, six greps, in the fast lane.
 
+## Later: an SEO sweep, and the word "filings" again (22feb50)
+
+**Sixteen surfaces still called executed evictions "filings".** The 08-28 fix
+covered the panel, the summary, the og-image and the digests, and its guard
+asserted on the /this-week body alone, so the rule had one enforcer and many
+readers. Every one of the sixteen reads `evictions_raw.executed_date`. The
+biggest is the **/property meta description on ~97,790 pages**; the loudest is a
+**section heading in Sunday's digest**, in a file whose line 448 already said
+"executed residential eviction". The Spanish was already right, same split as
+before.
+
+**The grep that found them reads whole files, not lines.** The /property
+description writes `"... deed transfers, eviction "` and `f"filings, and ..."` on
+two source lines, so a per-line grep walks straight past the largest surface. It
+also collapses the concatenation without dropping newlines, or every reported
+line number shifts.
+
+**Two source attributions were wrong with it.** Dataset 6z8x-wfk4 is the Marshal
+eviction records, not housing court data. Only OCA petitions are housing court,
+and that copy already reads "petitions filed" correctly.
+
+**app.html's social description was worse than mislabelled.** It claimed "six
+public data signals" and then named rent stabilization twice while omitting 311
+complaints, which carries 0.17 and is the third-heaviest input.
+
+**The title budget: 100.0% of /property titles were truncated.** Google renders
+about 580px, roughly 60 characters. Measured over a random 20,000-parcel draw the
+old titles ran mean 77, min 65, and every single one was over 60, because the
+fixed tail was 41 characters before the address. **So "| PulseCities" was never
+displayed on any of those pages**, which makes dropping it free, and the 14
+characters it returns carry "deeds, evictions, permits", the only words that say
+why to click this instead of Zillow. Mean 60 now, 46.4% over. This is the lever
+the 2026-08-27 read pointed at: ranking without clicking, and /property is 88% of
+traffic.
+
+**The map palette guard had never run.** `test_the_two_hot_fills_are_tellable_apart`
+calls `self._app()`, defined on `TestCanonicalTierBands`, and was written into
+`TestSearchResolvesDeedBbl`, so every run since it shipped ended in
+AttributeError rather than measuring a colour. It reads the file directly now and
+passes: the two hot fills really are 35.5 dE apart. Same guard-rot shape as the
+eviction label, found the same night.
+
+Guard lane is 231 now. Three new files: `test_score_history_agreement.py`,
+`test_eviction_label.py`, `test_title_budget.py`.
+
+**Technical SEO is otherwise clean**, measured live over 24 sampled pages across
+the three big templates: all 200, canonicals all correct, median warm render
+0.08s, no non-200 in the sample. 98,847 URLs in the sitemap. Move 09 (the
+violation-gated expansion) is confirmed shipped, contrary to three older
+checkpoint sections that still list it as open.
+
 ## Found, not fixed, worth a look
 
 - **`dof_assessments` loads 73,168 records every run against a floor of 500,000**,
