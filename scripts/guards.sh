@@ -29,6 +29,16 @@
 #
 # Bypass with `git commit --no-verify` when you mean to. It is not a gate on
 # judgement, only on forgetting.
+#
+# GitHub Actions runs this same lane, which is the point of it being a script
+# rather than a list inside a hook. CI had been red on every push since at
+# least 2026-07-15 because the workflow ran `pytest -m "not integration"`
+# against a DATABASE_URL pointing at a Postgres that does not exist in the
+# runner; a red build nobody can make green is worth less than a narrow green
+# one. Two knobs make it portable:
+#
+#   PYTHON=python        the interpreter, when there is no ./venv
+#   GUARDS_NO_DB=1       also skip the handful of guards that do need Postgres
 
 set -uo pipefail
 
@@ -44,10 +54,28 @@ LANE=(
   tests/test_text_contrast.py
   tests/test_freshness_contract.py
   tests/test_alert_snooze.py
+  # One-rule-one-reader greps. Each of these was written after the rule it
+  # guards had already been bypassed in production, so each belongs in the lane
+  # that actually runs rather than the suite that does not.
+  tests/test_email_guards.py
+  tests/test_permit_kind_guards.py
+  tests/test_upsert_timestamps.py
+  tests/test_backfill_windows.py
 )
 
-PYTHONPATH=. ./venv/bin/python -m pytest "${LANE[@]}" -q \
-  --deselect "tests/test_infra_guards.py::TestDeployDrift::test_deploy_copy_matches_installed" \
+PYTHON="${PYTHON:-./venv/bin/python}"
+
+DESELECT=(
+  # True about the box, not about the commit; see the note above.
+  --deselect "tests/test_infra_guards.py::TestDeployDrift::test_deploy_copy_matches_installed"
+)
+if [ -n "${GUARDS_NO_DB:-}" ]; then
+  DESELECT+=(
+    --deselect "tests/test_infra_guards.py::TestLlmsTxtConsistency::test_generator_matches_stats_and_tier_bands"
+  )
+fi
+
+PYTHONPATH=. "$PYTHON" -m pytest "${LANE[@]}" -q "${DESELECT[@]}" \
   || {
     echo
     echo "guards failed. Fix, or commit with --no-verify if you know why."

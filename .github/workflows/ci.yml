@@ -28,7 +28,19 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Run unit tests
-        run: pytest -m "not integration" -v --tb=short
-        env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test"
+      # The same lane the pre-commit hook runs, which is why it is a script and
+      # not a list of test files here.
+      #
+      # This step used to be `pytest -m "not integration"` against a
+      # DATABASE_URL naming a Postgres that does not exist in the runner, so it
+      # failed on every push from at least 2026-07-15 onward and nobody could
+      # make it green. A red build that cannot go green stops being read: 117
+      # commits accumulated behind it. The lane below needs neither Postgres nor
+      # api.main, runs in about four seconds, and is the subset that catches
+      # structural drift, which is the class of bug this repo keeps shipping.
+      #
+      # It is deliberately narrower than the whole non-integration suite. The
+      # rest needs a database and belongs in a job that provisions one; adding
+      # that is worth doing and is not what unblocks the push.
+      - name: Run repo guards
+        run: PYTHON=python GUARDS_NO_DB=1 ./scripts/guards.sh
