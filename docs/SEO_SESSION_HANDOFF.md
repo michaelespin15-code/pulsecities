@@ -76,7 +76,95 @@ indexable from 229,286 to ~97,790.
 **Not measured, still needs Michael:** actual Google index coverage. Sitemapped
 is not indexed, and that number decides whether the shadow corpus matters at all.
 
-## The PII audit was still in flight and its result was NOT received
+## UPDATE 2: the PII audit came back. Answer is YES, and I verified it live.
+
+**This is the most serious finding of the session and it outranks every SEO item
+above.** Three claims spot-checked by me against the running site, all confirmed
+exactly as reported:
+
+    /property/1000181053   index, follow   names "Pingasova Arina" and "Wang Anthony"
+    /evictions/bushwick    index, follow   names "Drame Abdoulaye"
+    /property/3048710035   index, follow   prints "located at apt 2"
+
+### The exposures, ranked
+
+1. **/property names private home buyers and sellers. 43,212 sitemapped pages,
+   index,follow.** 54,727 BBLs carry a person-shaped ACRIS party; 73,583 distinct
+   person names. A page prints full name + street address + price + date of a
+   private residential purchase. Query at frontend.py:1763, render at :1996
+   (`_buyer_cell` links companies but prints people either way).
+2. **/api/search/landlord is an ungated people-search over 36,733 named
+   individuals**, returning name, address, ZIP, price, date **and lat/long**.
+   search.py:198, rate-limited only. Filters exclude mortgage servicers, not
+   natural persons. robots.txt disallows /api/ so it is not indexed, but
+   methodology.html advertises it in words.
+3. **Apartment numbers leak into ~13,000 indexable /property pages.**
+   `scripts/block_digest.py:250` already defines `_UNIT_TAIL` to strip them, with
+   the rationale "printing a stranger's apartment number serves nobody".
+   `_violation_text` at frontend.py:3951 has no equivalent. 26.5% of a 400-BBL
+   random sample rendered a visible unit. **The rule exists and has one enforcer.**
+4. **/llc prints a named individual's street address** as the DOS registered
+   agent, 143 indexed pages, 2,536 person-shaped agents with full addresses, some
+   residential with unit numbers. frontend.py:8093.
+5. **/evictions/{neighborhood} names 81 individuals across 43 indexed pages**
+   under "Who holds the deeds", ranked with an eviction count beside the name.
+   **This is the sharpest defamation exposure on the site.** frontend.py:6836.
+6. **/eviction-case renders address + apartment + exact execution date for 894
+   households.** The scraper appends the unit into `evictions_raw.address`
+   (evictions.py:150) and a test asserts that behaviour. Result pages are
+   noindex, so reachable but uncrawled.
+7. **/llc/{person-slug} is a full people-search dossier for 36,733 individuals**:
+   every deed, price, chain of title, a "Follow <PERSON>" email alert, an FAQ
+   headed "Who owns or controls <PERSON>?", and for 200 of them an "evictions
+   before purchase" section. noindex and unlinked, but enumerable and 200.
+8. **No privacy policy exists anywhere on the site**, while it publishes personal
+   data and collects email subscriptions.
+
+### What is already right, and the reasoning that should be copied
+
+The sibling-buildings block at frontend.py:1873 **already gates on personhood**,
+with exactly the correct rationale in the comment: *"A natural person who bought
+two houses is not a portfolio, and a page listing 'every building this named
+individual owns' is a people-search directory wearing a displacement-research
+mission statement."* **That judgement is right and is applied in one place out of
+eight.** Same one-rule-one-enforcer shape as the eviction label, the
+score_history policy and the has_signals predicate. It is the theme of the whole
+session.
+
+Also verified clean: the /llc sitemap gate admits zero person-shaped slugs;
+/flips and /radar filter to LLC only; the AI summary never receives a name; 311
+is aggregate-only with no complainant column and no free text rendered; briefs,
+/network, /ops and /api are noindex or disallowed; and **"never imply the buyer
+evicted" is respected in rendered copy** ("a recorded sequence is not a finding
+about conduct").
+
+### Stated policy vs behaviour
+
+"Nothing on this page names a tenant" is **true** on /evictions/* (those use
+`parcels.address`). It **understates /eviction-case**, which shows the unit. No
+claim about not publishing personal data exists anywhere, so the mismatch is
+absence rather than falsehood.
+
+### What I would do, for Michael to decide
+
+- **Cheapest and least arguable: item 3.** Reuse `_UNIT_TAIL` in
+  `_violation_text`. The decision is already made and written down; it is applied
+  in the email pipeline and not on the web page.
+- **Highest legal exposure: item 5**, then 1 and 4. The fix in each case is the
+  `_is_buyer_entity` gate that frontend.py:1873 already applies.
+- **Item 8 is table stakes** for a site that does either of these things.
+- I did not change anything. Naming private individuals is a product and legal
+  call, not a refactor.
+
+### Audit limits, stated by the agent
+
+Person counts come from a stricter comma-pattern regex than the repo's
+`_is_buyer_entity`, so real counts are **at least** these, not at most. The
+~13,000 figure is a 400-BBL sample extrapolated to 49,684 sitemapped BBLs with
+violations. Whether Google has actually indexed any specific person-named page
+was not tested. Outbound emails were not audited beyond block_digest.
+
+## Both subagents have now reported. Nothing is left in flight.
 
 Re-run it if it never reported. It was READ ONLY.
 
