@@ -1,4 +1,93 @@
-# >>> START HERE after /clear (2026-08-28, the permit signal session) <<<
+# >>> START HERE after /clear (2026-08-28, permits, alerts and the sitemap) <<<
+
+Working tree clean, 122 commits unpushed. Everything below is done, deployed
+and verified. The session ran long; the sections after this one are the earlier
+halves of the same day and are still accurate.
+
+## Read first: the repo is public and the DB password is in its history
+
+`gh repo view` says `isPrivate: false`, and an unauthenticated fetch of
+github.com/michaelespin15-code/pulsecities returns 200. The previous checkpoint
+called the password exposure "defence in depth, not an open door" on the
+grounds that Postgres is localhost-only behind ufw. That is still true and it is
+not the same as private: a live credential is readable by anyone.
+
+Pushing does not make it worse. The only unpushed commit touching the password
+is a4ded27, which **removes** it, and it is already in commits pushed since
+2026-04-15. Rotating it is the fix and it is unchanged as NEEDS MICHAEL item 4.
+
+**CI can now go green, which it has not done since at least 2026-07-15** (the
+last three runs all failed). The step was `pytest -m "not integration"` against
+a DATABASE_URL naming a Postgres the runner does not have, so no commit could
+have passed it. It now runs `scripts/guards.sh`, the same lane as the pre-commit
+hook, verified against a closed port: 187 passed, 3.5s.
+
+## Shipped
+
+**A row we imported is not a record that happened (5ecade9).** The DOB NOW
+backfill loaded 485,443 permits going back to 2021 at 01:52, and at 03:25 the
+daily alert read them as new and emailed a real subscriber "New at 1062 Elton
+Street: 5 new records", listing permits filed in 2023 and 2024. The dates were
+right; the word "new" was not. **NEEDS MICHAEL: that subscriber
+(ladycarmenn@aol.com) still has that email. Whether it deserves a correction is
+your call.**
+
+The ingest window is not the bug and must stay: ACRIS publishes deeds a median
+of 47 days late, 82 at p90, and HPD releases violations 234 days late at p90, so
+a watcher keyed on event dates would never hear about the deed on their own
+building. An age ceiling was measured and rejected for that reason. Instead
+`scripts/lib/backfill_windows.py` skips rows written during a run stamped
+'backfill'. **Any future backfill is now safe; run one and the alerts ignore it.**
+Verified against the exact window that mis-sent: with the exclusion, zero
+alerts; without it, the same five permits.
+
+**The block digest was going to do the same thing on 2026-09-01**, opening
+Michael's own report with nineteen backfilled permits under "recorded since the
+last report". Now correctly reports a quiet block. All ten subscribers re-checked
+through the mailer gate, 4 to 14 content items each, none refused.
+
+**Flip Watch was finding 15 flips a year and should have found 639 (d265361).**
+See the section below. `api/permit_kinds.py` owns the rule now.
+
+**The violation tier is in the sitemap (7aefdc3).** 27,825 buildings with 5+
+HPD violations, no deed, no eviction. Sitemap 69,845 -> 97,790 property URLs.
+They were held out on a worst-pair overlap figure; five independent draws put
+violation-only at 0 of 5 breaches of the 70% limit (mean 58.6%) against
+deed-only, sitemapped all along, at 3 of 5 (mean 63.0%). **That also means the
+near-duplicate guard is weaker than it looks**: it samples four pages, six
+pairs, so it rarely draws a bad one. Worth strengthening, not urgent.
+
+## NEXT, in order
+
+1. **Corroborated deconversion as a page-level fact.** ~500 jobs a year where
+   unit counts and job description agree apartments are being merged away
+   ("convert 3 dwellings into 1", $1.7M). Columns are in place. Not a score
+   input; the section below says why.
+2. **Move 05, citywide marshal index.** 60+ place variants rank 2 to 43 with
+   zero clicks and there is no citywide parent for the 127 leaves.
+3. **Move 06, plain-phrase headings on /property.**
+4. **A CI job with a database**, so the non-integration suite runs there too.
+   The guard lane is deliberately narrower and unblocks the push; it is not the
+   whole answer.
+5. **DOS follow-ons.** Registered agent as a second clustering signal, Delaware
+   jurisdiction surfaced, monthly `refresh_dos_entities --all`.
+
+**Still open and genuinely a judgement call: WEIGHT_PERMITS is 0.21, set when
+the permit signal was 414 rows. It has never been calibrated against a real one.**
+
+## State
+
+- Disk 73%. permits_raw is 2.9GB after the backfill and the column additions.
+- **Alembic: current f3a91b6c8d27, head c8f4b16d29ea, FIVE pending**, all
+  guarded, all with their DDL already applied live. b8e30d5c1746 still wants
+  the maintenance window. Do not stamp.
+- ACRIS 28 days stale against a 21-day threshold, unchanged and upstream.
+- Sitemap regenerated and served: 4 files, 97,790 property URLs. IndexNow caps
+  at 5,000/run, so the new URLs drain over about six nights.
+- `test_deploy_copy_matches_installed[pulsecities.service]` is the one guard
+  still red, and it is NEEDS MICHAEL item 1.
+
+# >>> Earlier the same day: the permit signal <<<
 
 Working tree clean. Two features shipped and deployed, plus four rotted guards
 fixed. The permit fix is live: **every displacement score on the site was
