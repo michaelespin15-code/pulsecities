@@ -373,13 +373,18 @@ class TestCanonicalTierBands:
             assert legacy not in idx, f"legacy tier threshold '{legacy}' in index.html"
 
     # Canonical tier palette, decided 2026-07-10 from real map renders:
-    # low #3E6B54, moderate #C08B2D, high #F97316, critical #EF4444.
-    # Fills and chips carry the palette; low-as-text stays slate for
+    # low #3E6B54, moderate #C08B2D, high #ed6317. Low-as-text stays slate for
     # contrast. If a hex changes, change every surface in the same commit.
-    # Framework defaults belong here, not in the palette. The house colors are
-    # #ed6317 (high) and #e4483b (critical); Tailwind's #f97316 and #ef4444 are
-    # what they replaced, and the emails kept shipping the old pair for months
-    # after the site moved because nothing was watching for them.
+    # Framework defaults belong here, not in the palette: Tailwind's #f97316 and
+    # #ef4444 are what the house colors replaced, and the emails kept shipping
+    # the old pair for months after the site moved because nothing watched.
+    #
+    # **Critical is two colours on purpose, since 2026-08-28.** The fill is
+    # #b5252b and the text is #e4483b. As one colour it could not be both: at
+    # #e4483b the polygon was 23.9 dE from the High orange beside it, which on a
+    # small ZIP reads as the same colour, and at #b5252b the score number on the
+    # dark panel loses its contrast. Fills can go deep; text cannot. The band
+    # itself stays shared, which is the thing that must not drift.
     _STALE_TIER_HEXES = ("#16a34a", "#eab308", "#22c55e", "#4ade80",
                          "#f97316", "#F97316", "#ef4444", "#EF4444")
 
@@ -392,7 +397,7 @@ class TestCanonicalTierBands:
 
     def test_landing_legend_uses_canonical_palette(self):
         idx = (Path(__file__).parent.parent / "frontend" / "index.html").read_text()
-        for canon in ("#3E6B54", "#C08B2D", "#ed6317", "#e4483b"):
+        for canon in ("#3E6B54", "#C08B2D", "#ed6317", "#b5252b"):
             assert canon in idx, f"canonical tier color '{canon}' missing from index.html legend"
         for stale in self._STALE_TIER_HEXES:
             assert stale not in idx, f"stale tier color '{stale}' in index.html"
@@ -454,3 +459,42 @@ class TestSearchResolvesDeedBbl:
             assert row.bbl in bbls, (
                 f"search for '{row.address}' returned {bbls}, expected deed BBL {row.bbl}"
             )
+
+    def test_the_two_hot_fills_are_tellable_apart(self):
+        """High and Critical sit next to each other on the map more often than
+        any other pair, and for a while they were the same colour to the eye.
+
+        They measured 23.9 dE apart, which on a ZIP-sized polygon is one colour
+        with two names. Every other step of the ramp is 39 or more. This guard
+        fails if a future palette edit closes the gap again.
+        """
+        import re as _re
+
+        def _lab(h):
+            h = h.lstrip("#")
+            rgb = [int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+            lin = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb]
+            r, g, b = lin
+            xyz = (r * .4124 + g * .3576 + b * .1805,
+                   r * .2126 + g * .7152 + b * .0722,
+                   r * .0193 + g * .1192 + b * .9505)
+            wp = (.95047, 1.0, 1.08883)
+            f = lambda t: t ** (1 / 3) if t > 0.008856 else 7.787 * t + 16 / 116
+            fx, fy, fz = [f(c / w) for c, w in zip(xyz, wp)]
+            return (116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz))
+
+        def _de(a, b):
+            return sum((x - y) ** 2 for x, y in zip(_lab(a), _lab(b))) ** .5
+
+        app = self._app()
+        ramp = _re.search(
+            r"'step', \['coalesce', \['feature-state', 'score'\], \['get', 'score'\]\],\s*"
+            r"'(#[0-9A-Fa-f]{6})',\s*34, '(#[0-9A-Fa-f]{6})',\s*45, '(#[0-9A-Fa-f]{6})',\s*"
+            r"55, '(#[0-9A-Fa-f]{6})'", app)
+        assert ramp, "could not find the four-step choropleth ramp in app.html"
+        steps = ramp.groups()
+        tight = [(a, b, _de(a, b)) for a, b in zip(steps, steps[1:]) if _de(a, b) < 30]
+        assert not tight, (
+            "adjacent map fills a reader cannot tell apart: "
+            + ", ".join(f"{a} vs {b} = {d:.1f} dE" for a, b, d in tight)
+        )

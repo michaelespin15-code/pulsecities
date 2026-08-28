@@ -428,7 +428,7 @@
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#3E6B54;display:inline-block;flex-shrink:0;"></span><span id="legend-low" class="text-slate-300">Low 0-33</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#C08B2D;display:inline-block;flex-shrink:0;"></span><span id="legend-moderate" class="text-slate-300">Moderate 34-44</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#ed6317;display:inline-block;flex-shrink:0;"></span><span id="legend-high" class="text-slate-300">High 45-54</span></div>
-                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#e4483b;display:inline-block;flex-shrink:0;"></span><span id="legend-critical" class="text-slate-300">Critical 55+</span></div>
+                <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#b5252b;display:inline-block;flex-shrink:0;"></span><span id="legend-critical" class="text-slate-300">Critical 55+</span></div>
                 <div class="flex items-center gap-2"><span style="width:10px;height:10px;border-radius:2px;background:#303c4c;display:inline-block;flex-shrink:0;"></span><span id="legend-no-data" class="text-slate-300">No data</span></div>
                 <div id="map-data-updated" class="text-slate-400 mt-1" style="font-size:12px;"></div>
                 <div id="replay-row" class="mt-1 pt-1.5" style="border-top:1px solid rgba(147,161,173,0.12);">
@@ -2240,7 +2240,7 @@
                             '#3E6B54',
                             34, '#C08B2D',
                             45, '#ed6317',
-                            55, '#e4483b'
+                            55, '#b5252b'
                         ]
                     ],
                     'fill-opacity': [
@@ -2250,7 +2250,7 @@
                             'step', ['coalesce', ['feature-state', 'score'], ['get', 'score']],
                             0.55,
                             34, 0.55,
-                            45, 0.82,
+                            45, 0.66,
                             55, 0.9
                         ]
                     ]
@@ -4107,7 +4107,7 @@
                     if (n.score !== null && n.score !== undefined) {
                         const score = document.createElement('span');
                         score.className = 'font-mono text-xs shrink-0';
-                        const c = n.score >= 55 ? '#e4483b' : n.score >= 45 ? '#ed6317' : n.score >= 34 ? '#C08B2D' : '#93a1ad';
+                        const c = n.score >= 55 ? '#b5252b' : n.score >= 45 ? '#ed6317' : n.score >= 34 ? '#C08B2D' : '#93a1ad';
                         score.style.color = c;
                         score.textContent = n.score.toFixed(1);
                         top.appendChild(score);
