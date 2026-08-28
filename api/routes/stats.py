@@ -2,7 +2,7 @@
 Citywide statistics endpoint for the homepage hero stat chips.
 
 GET /api/stats
-  Returns citywide 30-day LLC transfer count, eviction filing count, and the current
+  Returns citywide 30-day LLC transfer count, executed eviction count, and the current
   top-risk ZIP with borough and score. Designed for a single fetch — no client-side
   waterfall needed for the hero overlay.
 
@@ -261,7 +261,7 @@ def _top_risk_history(db, top_risk, days: int = 90) -> list[dict]:
 @limiter.limit("60/minute")
 def get_citywide_stats(request: Request, response: Response, db: Session = Depends(get_db)):
     """
-    Citywide 30-day LLC transfers, eviction filings, and the current top-risk ZIP.
+    Citywide 30-day LLC transfers, executed evictions, and the current top-risk ZIP.
     Consumed by the homepage hero overlay stat chips.
     """
     response.headers["Cache-Control"] = "public, max-age=3600"

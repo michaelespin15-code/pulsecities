@@ -293,7 +293,7 @@ def operator_portfolio_changes(db, days: int, zip_filter: Optional[str]) -> str:
         return out
 
     lines += _block(f"New HPD violations (since {d['cutoff']})", viol_rows)
-    lines += _block(f"New eviction filings (since {d['cutoff']})", evic_rows)
+    lines += _block(f"New executed evictions (since {d['cutoff']})", evic_rows)
     lines += _block(f"New DOB permits (since {d['cutoff']})", permit_rows)
 
     if not has_data:

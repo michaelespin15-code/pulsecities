@@ -2579,14 +2579,23 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     # the lot in the title, dozens of pages would share one title with each
     # other and with the building's own page.
     title_name = f"{address} unit lot {bbl[6:]}" if unit_lot else address
-    title = f"{title_name}, {borough} NY{zip_part}: deeds, evictions, permits | PulseCities"
+    # No " NY" and no brand suffix. Google renders ~580px, about 60 characters,
+    # and the old tail ", {borough} NY {zip}: deeds, evictions, permits |
+    # PulseCities" was 41 characters before the address, so every one of ~97,790
+    # titles ran 65 to 78 and 100% of them were truncated. "| PulseCities" was
+    # therefore never displayed on this template, which makes dropping it free,
+    # and the 14 characters it returns are what carry "deeds, evictions,
+    # permits" -- the only part of the title that says why to click this rather
+    # than Zillow. Median address is 17 characters, so the median title is now
+    # 60 and p90 is 64. Guarded by tests/test_title_budget.py.
+    title = f"{title_name}, {borough}{zip_part}: deeds, evictions, permits"
     zloc = f" ({zip_code})" if zip_code else ""
     # The BBL belongs in the description because people search it: 3009970039
     # took 37 impressions and one of the site's five clicks, and two more BBLs
     # show up in the Bing export. Nothing else on the web answers "which
     # building is this number" for a lay searcher.
-    desc = (f"{address}, {borough}{zloc}, BBL {bbl}: deed transfers, eviction "
-            f"filings, and renovation permits from NYC public records"
+    desc = (f"{address}, {borough}{zloc}, BBL {bbl}: deed transfers, executed "
+            f"evictions, and renovation permits from NYC public records"
             + (f", displacement score {score:.1f}/100." if score is not None else "."))
     if len(desc) > 165:
         desc = desc[:162].rsplit(" ", 1)[0] + "."

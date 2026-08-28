@@ -486,7 +486,12 @@ class TestSearchResolvesDeedBbl:
         def _de(a, b):
             return sum((x - y) ** 2 for x, y in zip(_lab(a), _lab(b))) ** .5
 
-        app = self._app()
+        # Read the file directly rather than self._app(), which is defined on
+        # TestCanonicalTierBands. This test was written into
+        # TestSearchResolvesDeedBbl, so every run since it shipped has ended in
+        # AttributeError rather than a colour measurement: the guard protecting
+        # the palette fix had never once executed its own assertion.
+        app = (FRONTEND / "app.html").read_text()
         ramp = _re.search(
             r"'step', \['coalesce', \['feature-state', 'score'\], \['get', 'score'\]\],\s*"
             r"'(#[0-9A-Fa-f]{6})',\s*34, '(#[0-9A-Fa-f]{6})',\s*45, '(#[0-9A-Fa-f]{6})',\s*"

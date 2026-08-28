@@ -64,6 +64,8 @@ LANE=(
   tests/test_window_anchors.py
   tests/test_deconversion.py
   tests/test_score_history_agreement.py
+  tests/test_eviction_label.py
+  tests/test_title_budget.py
 )
 
 PYTHON="${PYTHON:-./venv/bin/python}"

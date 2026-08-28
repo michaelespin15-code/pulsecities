@@ -1,5 +1,5 @@
 """
-Nightly monitor for new HPD violations, DOB permits, and eviction filings
+Nightly monitor for new HPD violations, DOB permits, and executed evictions
 on MTEK-owned properties. Runs after scrapers complete in pipeline.py.
 
 Watermark stored in scraper_runs (scraper_name="mtek_monitor"):

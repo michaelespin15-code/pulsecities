@@ -623,7 +623,7 @@ def _events_section_html(event_detail: dict) -> str:
         sections += _group("#C2410C", "LLC Acquisitions",
                            _entries(llc_rows, 2, lambda r: str(r[1]).title().replace(" Llc", " LLC")))
     if eviction_rows:
-        sections += _group("#B3261E", "Eviction Filings",
+        sections += _group("#B3261E", "Executed Evictions",
                            _entries(eviction_rows, 1, lambda _: "Residential eviction"))
     if permit_rows:
         sections += _group("#1F5D8A", "Permit Filings",

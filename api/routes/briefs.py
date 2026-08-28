@@ -384,7 +384,7 @@ def _build_zip_brief(
     <h2>Sources</h2>
     <p class="source-note">
       LLC property acquisitions: ACRIS deed records (NYC Department of Finance).<br>
-      Eviction filings: NYC housing court data via NYC Open Data.<br>
+      Executed evictions: NYC Marshal eviction records via NYC Open Data.<br>
       Building permits: NYC Department of Buildings (DOB).<br>
       HPD violations: NYC Department of Housing Preservation and Development.<br>
       311 complaints: NYC 311 Service Requests.<br>
@@ -623,12 +623,12 @@ def _build_operator_brief(
     if etb_count > 0:
         etb_html = (
             f'<section>'
-            f'<h2>Eviction filings before acquisition</h2>'
+            f'<h2>Executed evictions before acquisition</h2>'
             f'<p style="font-size:.86rem;color:var(--muted);line-height:1.65;">'
             f'Public records show {etb_count} '
-            f'{"instance" if etb_count == 1 else "instances"} where an eviction filing at a property '
+            f'{"instance" if etb_count == 1 else "instances"} where an executed eviction at a property '
             f'was followed by an acquisition from an entity in this cluster within 365 days. '
-            f'Sourced from NYC housing court records and ACRIS deed records.'
+            f'Sourced from NYC Marshal eviction records and ACRIS deed records.'
             f'</p>'
             f'</section>'
         )
