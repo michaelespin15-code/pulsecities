@@ -96,12 +96,14 @@ class TestFastAPIRoutes:
         resp = client.get("/about")
         assert "search-input" not in resp.text
 
+    @pytest.mark.needs_data
     def test_operator_returns_operator_shell(self, client):
         resp = client.get("/operator/mtek-nyc")
         assert resp.status_code == 200
         # Must serve operator.html shell, not app.html
         assert "maplibre" not in resp.text.lower()
 
+    @pytest.mark.needs_data
     def test_operator_head_returns_200(self, client):
         for slug in ("mtek-nyc", "phantom-capital", "bredif"):
             resp = client.head(f"/operator/{slug}")

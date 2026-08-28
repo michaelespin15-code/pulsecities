@@ -46,6 +46,7 @@ def test_invalid_borough_slug_uses_default():
     ("/borough/brooklyn", "https://pulsecities.com/og/borough/brooklyn.png"),
     ("/this-week", "https://pulsecities.com/og/this-week/card.png"),
 ])
+@pytest.mark.needs_data
 def test_page_references_dynamic_card(route, expected):
     html = client.get(route).text
     og = re.search(r'<meta property="og:image" content="([^"]+)"', html)

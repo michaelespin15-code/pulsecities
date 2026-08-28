@@ -81,6 +81,7 @@ def _areas(limit: int, smallest_first: bool = False):
 
 
 class TestEvictionAreaPages:
+    @pytest.mark.needs_data
     def test_pages_exist_and_are_indexable(self):
         areas = _areas(6)
         assert areas, "no neighbourhood clears the eviction floor"
@@ -166,6 +167,7 @@ class TestEvictionAreaPages:
     def test_unknown_slug_is_404_not_a_blank_page(self):
         assert client.get("/evictions/nosuchplacetown").status_code == 404
 
+    @pytest.mark.needs_data
     def test_schema_declares_faq_and_dataset(self):
         name, slug = _areas(1)[0]
         html = client.get(f"/evictions/{slug}").text
@@ -185,6 +187,7 @@ class TestEvictionAreaPages:
 class TestDiscoverability:
     """A sitemap is a hint. A link is a path."""
 
+    @pytest.mark.needs_data
     def test_hub_links_every_qualifying_area(self):
         expected = {slug for _, slug in _areas(500)}
         for lang in ("en", "es"):
@@ -196,6 +199,7 @@ class TestDiscoverability:
                 f"e.g. {sorted(missing)[:5]}"
             )
 
+    @pytest.mark.needs_data
     def test_area_page_links_back_to_hub_and_out_to_buildings(self):
         name, slug = _areas(1)[0]
         html = client.get(f"/evictions/{slug}").text
@@ -244,6 +248,7 @@ class TestBoroughTier:
         from api.routes.frontend import _EV_BOROUGHS
         return _EV_BOROUGHS
 
+    @pytest.mark.needs_data
     def test_all_five_render_and_are_indexable(self):
         for slug in self._boroughs():
             resp = client.get(f"/evictions/{slug}")
@@ -252,6 +257,7 @@ class TestBoroughTier:
             assert robots and robots.group(1).startswith("index"), \
                 f"/evictions/{slug} is {robots.group(1) if robots else 'missing robots'}"
 
+    @pytest.mark.needs_data
     def test_they_clear_the_word_floor(self):
         thin = []
         for slug in self._boroughs():
@@ -288,6 +294,7 @@ class TestBoroughTier:
         finally:
             db.close()
 
+    @pytest.mark.needs_data
     def test_the_citywide_hub_reaches_all_five(self):
         html = client.get("/evictions").text
         found = set(re.findall(r'href="/evictions/([a-z0-9-]+)"', html))
@@ -307,6 +314,7 @@ class TestBoroughTier:
             + ", ".join(orphans)
         )
 
+    @pytest.mark.needs_data
     def test_they_are_not_near_duplicates_of_each_other(self):
         grams = {s: _shingles(client.get(f"/evictions/{s}").text)
                  for s in self._boroughs()}
@@ -319,6 +327,7 @@ class TestBoroughTier:
                     worst.append(f"{a} vs {b}: {ov:.0%}")
         assert not worst, "borough pages too similar:\n  " + "\n  ".join(worst)
 
+    @pytest.mark.needs_data
     def test_totals_match_the_record(self):
         from api.routes.frontend import _EV_BOROUGHS, _borough_zips
         db = SessionLocal()
@@ -335,6 +344,7 @@ class TestBoroughTier:
         finally:
             db.close()
 
+    @pytest.mark.needs_data
     def test_the_bronx_takes_its_article(self):
         body = _text(client.get("/evictions/bronx").text)
         assert "in the Bronx" in body

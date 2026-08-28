@@ -135,6 +135,7 @@ class TestNoEmDashInRenderedPages:
         return TestClient(app)
 
     @pytest.mark.parametrize("route", _ssr_sample(), ids=lambda r: r.strip("/") or "home")
+    @pytest.mark.needs_data
     def test_no_em_dash_in_rendered_copy(self, client, route):
         resp = client.get(route)
         if resp.status_code != 200:

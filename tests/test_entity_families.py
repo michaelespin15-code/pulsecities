@@ -59,6 +59,7 @@ def _shingles(html: str) -> set:
 
 
 class TestClusteringIsConservative:
+    @pytest.mark.needs_data
     def test_families_exist_at_all(self):
         assert FAMS, "clustering produced nothing; the two-signal rule is too tight"
 
@@ -251,6 +252,7 @@ class TestFamilyHubs:
         return [(s, f) for s, f in FAMS.items()
                 if client.get(f"/network/{s}", follow_redirects=False).status_code == 200]
 
+    @pytest.mark.needs_data
     def test_hubs_render_and_are_substantial(self):
         live = self._live()
         assert live, "no family hub renders"
@@ -278,6 +280,7 @@ class TestFamilyHubs:
             + "\n  ".join(dupes)
         )
 
+    @pytest.mark.needs_data
     def test_hub_links_every_one_of_its_entities(self):
         slug, fam = self._live()[0]
         html = client.get(f"/network/{slug}").text
@@ -291,6 +294,7 @@ class TestFamilyHubs:
             f"the internal linking the hub exists to provide"
         )
 
+    @pytest.mark.needs_data
     def test_entity_pages_link_back_to_their_family(self):
         slug, fam = self._live()[0]
         name = fam["entities"][0]
@@ -333,6 +337,7 @@ class TestSellerSideFamilies:
         return [(s, f) for s, f in FAMS.items()
                 if f.get("sold", 0) and not f["buildings"]]
 
+    @pytest.mark.needs_data
     def test_a_family_may_qualify_on_the_sold_side(self):
         assert any(f.get("sold", 0) for f in FAMS.values()), \
             "no family has a sold side; clustering is buyer-only again"

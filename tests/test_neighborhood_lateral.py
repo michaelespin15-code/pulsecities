@@ -54,6 +54,7 @@ def _nav_and_footer_stripped(html: str) -> str:
     return html
 
 
+@pytest.mark.needs_data
 def test_displacement_cta_present_everywhere():
     html = client.get("/neighborhood/11216").text
     assert 'class="disp-cta"' in html
@@ -70,6 +71,7 @@ def test_operators_section_links_operator_pages():
         f"{z} operators section has no /operator links"
 
 
+@pytest.mark.needs_data
 def test_nearby_is_same_borough_and_excludes_self():
     z = "11216"  # Bedford-Stuyvesant, Brooklyn — dense, always has borough peers
     borough = _borough_from_zip(z)
@@ -87,6 +89,7 @@ def test_nearby_ranked_by_score_desc():
     assert scores == sorted(scores, reverse=True), f"nearby not score-desc: {scores}"
 
 
+@pytest.mark.needs_data
 def test_spanish_lateral_headers():
     html = client.get("/neighborhood/11216?lang=es").text
     assert "Más vecindarios de" in html

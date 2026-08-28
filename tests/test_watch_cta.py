@@ -8,6 +8,8 @@ Plausible conversion event, and render in both languages.
 
 import warnings
 
+import pytest
+
 from fastapi.testclient import TestClient
 
 from api.main import app
@@ -18,6 +20,7 @@ client = TestClient(app)
 ZIP = "11216"
 
 
+@pytest.mark.needs_data
 def test_watch_card_present_and_wired_en():
     body = client.get(f"/neighborhood/{ZIP}").text
     assert 'class="watch-card"' in body
@@ -28,6 +31,7 @@ def test_watch_card_present_and_wired_en():
     assert "Watch this block" in body
 
 
+@pytest.mark.needs_data
 def test_watch_card_localized_es():
     body = client.get(f"/neighborhood/{ZIP}?lang=es").text
     assert 'class="watch-card"' in body

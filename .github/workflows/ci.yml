@@ -44,3 +44,62 @@ jobs:
       # that is worth doing and is not what unblocks the push.
       - name: Run repo guards
         run: PYTHON=python GUARDS_NO_DB=1 ./scripts/guards.sh
+
+  # The second lane: a real Postgres, the schema built the way production built
+  # it, and every test that does not need records in the tables.
+  #
+  # Two things this catches that the guard lane cannot. The migration chain has
+  # to apply from nothing, which is the only place that is ever proven: the
+  # production database was migrated one revision at a time over months and
+  # would not notice a chain that no longer replays. And 1,158 tests exercise
+  # the app for real, against 219 grep-level assertions.
+  #
+  # It cannot hold 918,000 parcels, so the tests that assert on rendered records
+  # carry `needs_data` and skip here. They still run on the box, where the
+  # records are. tests/conftest.py decides that by asking the database rather
+  # than by reading an environment variable, so a CI run that did have data
+  # would run them.
+  schema-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:14-3.3
+        env:
+          POSTGRES_USER: pulsecities_user
+          POSTGRES_PASSWORD: ci_only_not_a_secret
+          POSTGRES_DB: pulsecities
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://pulsecities_user:ci_only_not_a_secret@localhost:5432/pulsecities
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libpq-dev libgdal-dev
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build the schema from the migration chain
+        run: alembic upgrade head
+
+      - name: Run the suite that does not need records
+        run: pytest -m "not integration" -q

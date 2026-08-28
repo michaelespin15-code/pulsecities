@@ -5,6 +5,8 @@ pages. Previously they emitted zero JSON-LD and rendered addresses as plain text
 
 import warnings
 
+import pytest
+
 from fastapi.testclient import TestClient
 
 from api.main import app
@@ -16,12 +18,14 @@ client = TestClient(app)
 OP = "/operator/mtek-nyc"
 
 
+@pytest.mark.needs_data
 def test_operator_has_dataset_and_breadcrumb_schema():
     body = client.get(OP).text
     assert '"@type": "Dataset"' in body, "operator page must emit a Dataset schema"
     assert '"@type": "BreadcrumbList"' in body, "operator page must emit a breadcrumb"
 
 
+@pytest.mark.needs_data
 def test_operator_links_out_to_property_and_neighborhood():
     body = client.get(OP).text
     assert 'href="/property/' in body, "acquisition addresses must link to /property"

@@ -73,6 +73,7 @@ class TestSitemapShape:
             n = xml.count("<url>")
             assert n <= _SPEC_CAP, f"{name} has {n} URLs, over the {_SPEC_CAP} cap"
 
+    @pytest.mark.needs_data
     def test_property_pages_are_present(self):
         assert _PROPERTY_LOCS, "no /property pages in sitemap"
 
@@ -103,11 +104,13 @@ class TestViolationTier:
         class vacuously green."""
         assert len(_PROPERTY_TIERS) == len(_PROPERTY_LOCS)
 
+    @pytest.mark.needs_data
     def test_the_tier_is_present(self):
         assert any(p == "0.4" for _u, p in _PROPERTY_TIERS), (
             "no property URL carries the violation tier's priority; either the "
             "gate stopped matching or the tier was dropped")
 
+    @pytest.mark.needs_data
     def test_the_tier_is_not_the_whole_sitemap(self):
         """The gate is 5 violations, not 1. At 1 it would be 117,237 buildings
         and this file would be back to indexing boilerplate."""
@@ -120,6 +123,7 @@ class TestViolationTier:
         assert MIN_VIOLATIONS >= 2, (
             "one violation is a fact about a building, not a history")
 
+    @pytest.mark.needs_data
     def test_a_violation_tier_page_is_indexable(self):
         """The sitemap gate and the page's own robots tag have to agree; a
         sitemapped noindex URL is a crawl-budget bonfire."""
@@ -131,6 +135,7 @@ class TestViolationTier:
 class TestGatesAgree:
     """The sitemap must never disagree with the robots tag in either direction."""
 
+    @pytest.mark.needs_data
     def test_sitemapped_properties_are_indexable(self):
         sample = _PROPERTY_LOCS[:: max(1, len(_PROPERTY_LOCS) // 8)][:8]
         assert sample
@@ -167,6 +172,7 @@ class TestGatesAgree:
             )
             assert path not in _PROPERTY_LOCS, f"{path} has no records but is sitemapped"
 
+    @pytest.mark.needs_data
     def test_sitemapped_llcs_are_indexable(self):
         slugs = re.findall(r"<loc>https://pulsecities\.com(/llc/[a-z0-9-]+)</loc>", _ALL_URLS)
         assert slugs, "no /llc pages in sitemap"

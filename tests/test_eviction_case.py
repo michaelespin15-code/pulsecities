@@ -133,6 +133,7 @@ class TestWiring:
         assert len(block) == 2, "no nginx location for /eviction-case"
         assert "proxy_cache off;" in block[1].split("}", 1)[0]
 
+    @pytest.mark.needs_data
     def test_the_evictions_page_points_at_it(self):
         for params in ({}, {"lang": "es"}):
             html = client.get("/evictions", params=params).text
@@ -140,6 +141,7 @@ class TestWiring:
                 f"the evictions page does not link the lookup ({params})"
             )
 
+    @pytest.mark.needs_data
     def test_every_surface_that_shows_an_eviction_offers_the_lookup(self):
         """Someone holding case paperwork lands on one of these, not on the
         lookup itself. /evictions/{name} is 127 pages and /property is where an

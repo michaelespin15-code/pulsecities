@@ -61,10 +61,12 @@ class TestTheIndex:
 
 
 class TestItIsNotAnOrphan:
+    @pytest.mark.needs_data
     def test_hubs_link_back_to_it(self, fams):
         slug = next(iter(fams))
         assert 'href="/network"' in client.get(f"/network/{slug}").text
 
+    @pytest.mark.needs_data
     def test_the_llc_directory_links_it(self):
         assert 'href="/network"' in client.get("/llc").text
 
