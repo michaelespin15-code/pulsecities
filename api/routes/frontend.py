@@ -1798,6 +1798,26 @@ def _property_facts(bbl: str, zip_code: str, db) -> dict:
     facts["violations"] = {r.violation_class: {"n": int(r.n), "open": int(r.open or 0)}
                            for r in viol if r.violation_class}
 
+    # The violations themselves, which were the one record class the page counted
+    # and never showed. 27,825 buildings are in the sitemap precisely because they
+    # carry five or more, and every one of those pages said "written 9 violations"
+    # and stopped. Newest first; the date is the notice, falling back to the
+    # inspection that produced it.
+    facts["violation_rows"] = [
+        {"class": r.violation_class, "status": r.current_status,
+         "date": r.dated.isoformat() if r.dated else None,
+         "description": r.description}
+        for r in db.execute(text("""
+            SELECT violation_class, current_status, description,
+                   COALESCE(nov_issued_date, inspection_date) AS dated
+            FROM violations_raw
+            WHERE bbl = :bbl
+            ORDER BY COALESCE(nov_issued_date, inspection_date) DESC NULLS LAST,
+                     violation_id DESC
+            LIMIT 8
+        """), {"bbl": bbl}).fetchall()
+    ]
+
     # Registration history is the displacement signal, so both endpoints of the
     # series matter, not just the latest count.
     rs = db.execute(text("""
@@ -2286,6 +2306,29 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
                                   'to C (immediately hazardous); DOB class I carries a '
                                   'vacate order.' + _cite(feeds, "violations") + '</p>')
 
+    viol_table = ""
+    vrows = facts.get("violation_rows") or []
+    if vrows:
+        open_words = ("open", "not complied", "nov sent", "notice of issuance")
+        rows_html = "".join(
+            f'<tr><td class="sc">{e(_violation_text(v.get("description")))}'
+            f'<span class="sw">{e((v.get("status") or "").title())}</span></td>'
+            f'<td class="sr">{_d(v.get("date"))}</td>'
+            f'<td class="si">{e(v.get("class") or "")}</td></tr>'
+            for v in vrows
+        )
+        still_open = sum(1 for v in vrows
+                         if any(w in (v.get("status") or "").lower() for w in open_words))
+        viol_table = _section(
+            "Violation history",
+            f"The {len(vrows)} most recent violations written against this building, "
+            f"newest first"
+            + (f", {still_open} of them still open" if still_open else "")
+            + ". Each row is the inspector's own wording with the statute citation "
+              "removed." + _cite(feeds, "violations"),
+            ("Violation", "Issued", "Class"), rows_html,
+        )
+
     # The building against its ZIP. Turns a lone score into a comparison, and
     # is the paragraph that earns the link up to the neighbourhood page.
     cmp_paras = []
@@ -2693,7 +2736,7 @@ footer{border-top:1px solid var(--border);padding:24px 20px calc(env(safe-area-i
 {unit_note}
 {score_block}
 {lede}
-{empty}{chain_sec}{own_sec}{tax_sec}{ev_prose}{ev_sec}{rs_sec}{viol_sec}{dec_sec}{pm_sec}{comp_sec}{cmp_sec}{sib_sec}
+{empty}{chain_sec}{own_sec}{tax_sec}{ev_prose}{ev_sec}{rs_sec}{viol_sec}{viol_table}{dec_sec}{pm_sec}{comp_sec}{cmp_sec}{sib_sec}
 {watch_card}
 {faq_sec}
 <div class="cta-row">{links_html}</div>
@@ -3876,6 +3919,48 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 
 
 _flips_cache: tuple[str, float] | None = None  # cleared on restart
+
+
+# Two shapes of citation prefix, because not every description uses a colon:
+# "§ 27-2005, 27-2007 HMC ... § 25-171: REPLACE OR REPAIR" and
+# "§ 27-2013 ADM CODE PAINT WITH LIGHT COLORED PAINT".
+_VIOL_COLON = re.compile(r"^[^:]{0,140}:\s*")
+# Consumes citation tokens one at a time until it reaches a word, which is more
+# forgiving than one pattern for the whole prefix: a citation can read
+# "§ 27-2045(B)(1)(B) HMC, § 12-06, § 12-07, § 12-09 RCNY" and a single greedy
+# character class either stops at the first letter inside a paren or eats the
+# sentence.
+_VIOL_CITE = re.compile(
+    r"^(?:[&§]"
+    r"|\d+[\d\-.]*"
+    r"|\(?[A-Za-z0-9]{1,4}\)"
+    r"|(?:HMC|ADM\s+CODE|M/D\s+LAW|MDL|RCNY|LAW)\b"
+    r"|[,;:.\s]+)+",
+    re.IGNORECASE)
+
+
+def _violation_text(desc: str) -> str:
+    """The half of an HPD violation a tenant can read.
+
+    Every description opens with the statute it was written under, so the rows
+    would otherwise read "§ 27-2005, 27-2007, 27-2041.1 HMC, §238" eight times
+    down the page and say nothing about any of them. The inspector's wording is
+    kept verbatim after that; only the case is normalised, and only where the
+    record is shouting.
+    """
+    body = (desc or "").strip()
+    if ":" in body[:140]:
+        body = _VIOL_COLON.sub("", body)
+    # The citation run survives a colon strip as often as it replaces one:
+    # "(a) § HMC:FILE ANNUAL BEDBUG REPORT" and "B)(5) HMC, § 12-06 RCNY POST".
+    body = _VIOL_CITE.sub("", body).lstrip(" ()[],.;:-")
+    body = body.strip(" .,;")
+    if not body:
+        return "Violation issued"
+    letters = [ch for ch in body if ch.isalpha()]
+    if letters and sum(ch.isupper() for ch in letters) / len(letters) > 0.8:
+        body = body[:1].upper() + body[1:].lower()
+    return body[:110].rstrip(" ,;") + "\u2026" if len(body) > 110 else body
 
 
 def _fmt_amount(v) -> str:
