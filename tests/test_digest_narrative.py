@@ -177,3 +177,42 @@ class TestRenderWithNarrative:
             narrative=None,
         )
         assert "The Week, In Plain English" not in rendered["html"]
+
+
+class TestCitywideAttribution:
+    """A displacement tracker must not report its own corrections as the city's
+    news, and must not print a zero the reader cannot tell from missing data.
+
+    Both of these were live in the email that was due to send on 2026-08-30:
+    "87 ZIP codes moved by 3+ points this week" was the permit recompute landing
+    on every ZIP at once, and "0 LLC acquisitions" was ACRIS having published
+    nothing since July 31 rather than a week without a single LLC purchase in
+    New York.
+    """
+
+    def test_a_scoring_change_is_named_rather_than_implied(self):
+        src = (__import__("pathlib").Path(__file__).parent.parent
+               / "scripts" / "weekly_digest.py").read_text()
+        assert "FROM scoring_changes" in src, (
+            "the digest no longer checks whether the movement was ours"
+        )
+        assert "not a change in the record" in src, (
+            "the digest reports a recompute without saying it was a recompute"
+        )
+
+    def test_the_movement_window_matches_the_word_week(self):
+        src = (__import__("pathlib").Path(__file__).parent.parent
+               / "scripts" / "weekly_digest.py").read_text()
+        block = src.split("# D: notable pulse events")[0]
+        assert "week_ago" in block.split("movers = ")[0].split("rows = db.execute")[-1], (
+            "the movers query compares against something other than a week ago "
+            "while the copy says 'this week'"
+        )
+
+    def test_a_stale_deed_feed_is_named_not_printed_as_zero(self):
+        src = (__import__("pathlib").Path(__file__).parent.parent
+               / "scripts" / "weekly_digest.py").read_text()
+        assert "no deeds have been published" in src, (
+            "the digest prints 0 LLC acquisitions when the feed is simply silent"
+        )
+        assert "feed_anchor" in src, "the digest guesses at feed freshness"

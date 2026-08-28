@@ -832,6 +832,11 @@ def is_meaningful_citywide_update(db) -> tuple[bool, list[str]]:
 
     # A + B: score movement — one batch query for both conditions
     try:
+        # Against a week ago, because this is a weekly email. It used to compare
+        # against the previous scored day and call the answer "this week", which
+        # is the mislabelled-window shape docs/ops/failure_patterns.md keeps
+        # catching: the sentence was not wrong about the number, it was wrong
+        # about what the number covered.
         rows = db.execute(text("""
             SELECT cur.zip_code,
                    cur.composite_score  AS score_now,
@@ -841,19 +846,35 @@ def is_meaningful_citywide_update(db) -> tuple[bool, list[str]]:
             WHERE cur.scored_at  = :today
               AND prev.scored_at = (
                   SELECT MAX(scored_at) FROM score_history
-                  WHERE zip_code = cur.zip_code AND scored_at < :today
+                  WHERE zip_code = cur.zip_code AND scored_at <= :week_ago
               )
-        """), {"today": today}).fetchall()
+        """), {"today": today, "week_ago": today - timedelta(days=7)}).fetchall()
+
+        # Did the scores move because the city moved, or because we did? A
+        # recompute lands on every ZIP at once and would otherwise be reported
+        # as the week's news. The block digest already refuses to call a
+        # backfill "new"; this is the same rule for the score.
+        ours = db.execute(text("""
+            SELECT summary FROM scoring_changes
+            WHERE changed_on > :week_ago AND changed_on <= :today
+            ORDER BY changed_on DESC LIMIT 1
+        """), {"today": today, "week_ago": today - timedelta(days=7)}).scalar()
 
         movers = sum(1 for r in rows if abs(float(r[1] or 0) - float(r[2] or 0)) >= 3.0)
         if movers >= 3:
-            reasons.append(f"{movers} ZIP codes moved by 3+ points this week")
+            if ours:
+                reasons.append(
+                    f"{movers} ZIP codes moved by 3+ points this week, after "
+                    f"{ours}. That is a change in how the score reads the record, "
+                    f"not a change in the record")
+            else:
+                reasons.append(f"{movers} ZIP codes moved by 3+ points this week")
 
         # Crossings into High, against the one canonical floor.
         high_floor = floor_for("High")
         new_high = [r for r in rows
                     if float(r[1] or 0) >= high_floor and float(r[2] or 0) < high_floor]
-        if new_high:
+        if new_high and not ours:
             names = ", ".join(r[0] for r in new_high[:3])
             reasons.append(f"{len(new_high)} ZIP(s) entered High tier: {names}")
     except Exception:
@@ -903,11 +924,28 @@ def is_meaningful_citywide_update(db) -> tuple[bool, list[str]]:
             WHERE created_at >= :cutoff AND eviction_type ILIKE 'R%'
         """), {"cutoff": week_ago}).scalar() or 0
 
+        # A zero the reader cannot tell from a quiet week. Both counts are of
+        # records *ingested* this week, which is the right question for a weekly
+        # email, but ACRIS has published nothing since 2026-07-31 and so the
+        # deed half is structurally zero. "0 LLC acquisitions" reads as "no LLC
+        # bought a building in New York this week", which is not what the record
+        # says and not something anyone can know. Say which it is.
+        from api.freshness import feed_anchor
+        try:
+            deeds_through = feed_anchor(db, "acris")
+        except Exception:  # noqa: BLE001 — a missing anchor must not lose the line
+            deeds_through = None
+        deeds_stale = bool(deeds_through and deeds_through < week_ago)
+
         total_events = int(llc_count) + int(eviction_count)
         if total_events >= 5:
+            if deeds_stale:
+                parts = (f"{eviction_count} evictions; no deeds have been published "
+                         f"since {deeds_through.strftime('%b %-d')}")
+            else:
+                parts = f"{llc_count} LLC acquisitions, {eviction_count} evictions"
             reasons.append(
-                f"{total_events} notable public-record events this week "
-                f"({llc_count} LLC acquisitions, {eviction_count} evictions)"
+                f"{total_events} notable public-record events this week ({parts})"
             )
     except Exception:
         logger.warning("Citywide condition D query failed — skipping", exc_info=True)
