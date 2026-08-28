@@ -24,6 +24,8 @@ abort the whole pipeline because one source is down.
 """
 
 import logging
+import os
+import time
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import text
@@ -168,6 +170,9 @@ def run_nightly_pipeline() -> bool:
     # The panel read, generated off the request path. Scoring has just finished,
     # so this writes the reads for whatever moved before anyone opens a panel.
     _run_read_precompute()
+
+    # Render the expensive pages once each so the first real visitor does not.
+    _warm_heavy_pages()
 
     # MTEK portfolio monitor — needs fresh violations/permits/evictions data
     _run_mtek_monitor()
@@ -430,6 +435,64 @@ def _run_read_precompute() -> None:
             _sys.argv = argv
     except Exception as exc:  # noqa: BLE001
         logger.warning("Read precompute failed (non-fatal): %s", exc)
+
+
+# The pages whose cold render costs seconds rather than milliseconds, and which
+# a visitor can land on directly from search. Each holds its own in-process cache
+# for an hour, so this both fills that and pulls the underlying rows into the
+# Postgres buffer cache, which is most of the difference between a 1-second
+# render and a 14-second one after a night of scraping has churned the buffers.
+_HEAVY_PAGES = ("/flips", "/this-week", "/evictions", "/displacement", "/radar")
+
+# Each worker has its own cache, so one request per page warms one worker. Three
+# passes over two workers is enough to leave neither cold without turning a
+# warmup into a load test.
+_WARM_PASSES = 3
+
+
+def _warm_heavy_pages() -> None:
+    """Ask the running site for its slowest pages, through its own socket.
+
+    Never fatal. This is a courtesy to the first visitor after a nightly run,
+    not a step the night depends on, and gunicorn may legitimately be reloading
+    underneath it.
+    """
+    import socket
+    import urllib.request
+
+    sock_path = "/tmp/gunicorn.sock"
+    if not os.path.exists(sock_path):
+        logger.info("Page warmup skipped: no socket at %s", sock_path)
+        return
+
+    class _UnixHandler(urllib.request.AbstractHTTPHandler):
+        def http_open(self, req):
+            return self.do_open(_UnixConnection, req)
+
+    import http.client
+
+    class _UnixConnection(http.client.HTTPConnection):
+        def connect(self):
+            self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            self.sock.settimeout(60)
+            self.sock.connect(sock_path)
+
+    opener = urllib.request.build_opener(_UnixHandler)
+    warmed = 0
+    for _ in range(_WARM_PASSES):
+        for path in _HEAVY_PAGES:
+            started = time.monotonic()
+            try:
+                with opener.open(f"http://localhost{path}", timeout=60) as resp:
+                    resp.read(1024)
+                elapsed = time.monotonic() - started
+                if elapsed > 2.0:
+                    logger.info("warmed %s in %.1fs", path, elapsed)
+                warmed += 1
+            except Exception as exc:  # noqa: BLE001
+                logger.info("warmup of %s skipped: %s", path, exc)
+    logger.info("Page warmup: %d of %d renders",
+                warmed, _WARM_PASSES * len(_HEAVY_PAGES))
 
 
 def _run_mtek_monitor() -> None:
