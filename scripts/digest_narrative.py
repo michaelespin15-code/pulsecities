@@ -25,9 +25,13 @@ logger = logging.getLogger(__name__)
 # PULSE_AI_MODEL flips every narrative surface to a different model without a
 # deploy — the cost lever if volume ever makes Opus pricing matter. Read at
 # call time so a cron env change takes effect on the next run.
-DEFAULT_MODEL = "claude-opus-4-8"
-MAX_TOKENS = 300
-REQUEST_TIMEOUT = 30.0  # cron context — patient, but never hang a send run
+DEFAULT_MODEL = "claude-opus-5"
+EFFORT = "medium"
+
+# Thinking tokens are charged against max_tokens, so the old 300 would have starved the
+# paragraph rather than shortened it. Length is governed by the prompt, not by this.
+MAX_TOKENS = 2000
+REQUEST_TIMEOUT = 60.0  # cron context — patient, but never hang a send run
 
 
 def _model() -> str:
@@ -49,7 +53,7 @@ _SYSTEM_PROMPT = (
 
 _SIGNAL_LABELS = {
     "permit_intensity":     "renovation permits",
-    "eviction_rate":        "eviction filings",
+    "eviction_rate":        "executed evictions",
     "llc_acquisition_rate": "LLC acquisitions",
     "complaint_rate":       "tenant complaints",
     "rs_unit_loss":         "rent-stabilized unit loss",
@@ -123,6 +127,8 @@ def _generate(cache_key: str, system_prompt: str, facts: str) -> str | None:
         message = client.messages.create(
             model=_model(),
             max_tokens=MAX_TOKENS,
+            thinking={"type": "adaptive"},
+            output_config={"effort": EFFORT},
             system=system_prompt,
             messages=[{"role": "user", "content": facts}],
         )

@@ -302,7 +302,7 @@ def _build_zip_brief(
     _signals = [
         ("llc_acquisitions", "LLC property acquisitions",               "past 365 days",     raw_counts.get("llc_acquisitions", 0)),
         ("permits",          "Building permits (residential, 3+ units)", "past 365 days",     raw_counts.get("permits", 0)),
-        ("evictions",        "Residential eviction filings",             "past 365 days",     raw_counts.get("evictions", 0)),
+        ("evictions",        "Residential evictions executed",           "past 365 days",     raw_counts.get("evictions", 0)),
         ("hpd_violations",   "HPD violations (Class B and C)",           "past 90 days",      raw_hpd),
         ("complaint_rate",   "311 housing complaints",                   "past 365 days",     raw_counts.get("complaint_rate", 0)),
         ("rs_unit_loss",     "Rent-stabilized unit loss",                "annual comparison", None),
@@ -356,7 +356,7 @@ def _build_zip_brief(
   <h1>Evidence brief for {e(zip_code)}</h1>
   <p class="generated">Generated {ts}.{e(upd_note)} Data from NYC public records.</p>
 
-  <p class="summary">{e(summary) if summary else "PulseCities summarizes public records associated with displacement pressure in this area, including permits, complaints, eviction filings, ownership transfers, HPD violations, and rent-stabilized housing records."}</p>
+  <p class="summary">{e(summary) if summary else "PulseCities summarizes public records associated with displacement pressure in this area, including permits, complaints, executed evictions, ownership transfers, HPD violations, and rent-stabilized housing records."}</p>
 
   <section>
     <h2>Displacement pressure score</h2>

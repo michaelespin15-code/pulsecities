@@ -100,7 +100,7 @@ def _render(
     # Evictions
     ev_color = _ORANGE if evictions_30d >= 5 else _MUTED
     draw.text((80, 270), str(evictions_30d), font=f_count, fill=ev_color)
-    draw.text((80, 326), "eviction filings this month", font=f_label, fill=_MUTED)
+    draw.text((80, 326), "evictions executed this month", font=f_label, fill=_MUTED)
 
     # Permits
     pm_color = _ORANGE if permits_30d >= 10 else _MUTED

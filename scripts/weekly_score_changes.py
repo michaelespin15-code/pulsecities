@@ -50,7 +50,7 @@ SIGNAL_LABELS: dict[str, str] = {
     "llc_acquisition_rate": "LLC acquisitions",
     "permit_intensity":      "permit filings",
     "complaint_rate":        "311 complaints",
-    "eviction_rate":         "eviction filings",
+    "eviction_rate":         "executed evictions",
     "rs_unit_loss":          "rent-stabilized unit loss",
     "assessment_spike":      "tax assessment spike",
 }

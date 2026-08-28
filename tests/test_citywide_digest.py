@@ -126,7 +126,8 @@ class TestCitywideNarrative:
         monkeypatch.setattr(digest_narrative, "_get_client", lambda: fake)
         monkeypatch.delenv("PULSE_AI_MODEL", raising=False)
         generate_citywide_narrative(_summary())
-        assert fake.last_kwargs["model"] == "claude-opus-4-8"
+        assert fake.last_kwargs["model"] == "claude-opus-5"
+        assert fake.last_kwargs["max_tokens"] >= 1000  # thinking tokens share this budget
 
 
 # ---------------------------------------------------------------------------

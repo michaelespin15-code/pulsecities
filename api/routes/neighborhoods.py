@@ -649,7 +649,7 @@ def _percentile_tier(percent_rank: float) -> str:
 
 _SIGNAL_LABELS = {
     "permits": "renovation permit filings",
-    "evictions": "eviction filings",
+    "evictions": "executed evictions",
     "llc_acquisitions": "LLC property acquisitions",
     "complaint_rate": "tenant complaints",
     "rs_unit_loss": "rent-stabilized unit loss",
@@ -719,7 +719,7 @@ def _fetch_raw_counts(db: Session, zip_code: str) -> dict[str, int]:
 # Spanish driver names for the summary sentence; keys mirror _SIGNAL_LABELS.
 _SIGNAL_LABELS_ES = {
     "permits": "solicitudes de permisos de renovación",
-    "evictions": "casos de desalojo",
+    "evictions": "desalojos ejecutados",
     "llc_acquisitions": "adquisiciones de propiedades por LLC",
     "complaint_rate": "quejas de inquilinos",
     "rs_unit_loss": "pérdida de unidades de renta estabilizada",

@@ -73,8 +73,19 @@ class TestPromptAndFacts:
         assert "Never use an em dash" in p
         assert "Do not invent" in p
 
-    def test_uses_opus_4_8(self):
-        assert ai.MODEL == "claude-opus-4-8"
+    def test_pins_the_model_and_leaves_room_for_thinking(self):
+        # Thinking tokens are charged against max_tokens; at the old 400 a thinking model
+        # returns an empty paragraph and the panel silently hides itself.
+        assert ai.MODEL == "claude-opus-5"
+        assert ai.MAX_TOKENS >= 1000
+
+    def test_prompt_demands_comparison_not_restatement(self):
+        # The whole point of the read is the judgement a reader cannot make from the
+        # panel: where this ZIP stands, and which way it is moving.
+        p = ai._SYSTEM_PROMPT
+        assert "Compare, do not restate" in p
+        assert "rate per 1,000 apartments" in p
+        assert "not measured" in p
 
     def test_build_facts_includes_score_tier_and_signals(self):
         facts = ai._build_facts(
@@ -86,6 +97,36 @@ class TestPromptAndFacts:
         assert "High pressure" in facts
         assert "renovation permit filings" in facts  # signal label, not raw key
         assert "111" in facts
+
+    def test_build_facts_renders_the_comparative_block(self):
+        facts = ai._build_facts(
+            "Bedford-Stuyvesant", "Brooklyn", "11216", 71.1,
+            {"permits": 100.0, "rs_unit_loss": 0.0},
+            {"evictions": 238},
+            {"zip_total": 177, "composite_rank": 12, "buildings": 2000, "apartments": 20000,
+             "signal_standing": {"permits": {"dormant": False, "rank": 3, "median": 16.9},
+                                 "rs_unit_loss": {"dormant": True, "rank": 1, "median": 0.0}},
+             "evictions_90": 40, "evictions_90_prior": 61, "complaints_90": 5,
+             "complaints_90_prior": 4, "llc_90": 7, "deed_lag_days": 21,
+             "top_buyer": ("SOME HOLDINGS LLC", 4), "deconversions": (2, 5)},
+        )
+        assert "rank 12 of 177" in facts
+        assert "rank 3 of 177" in facts
+        assert "11.9 per 1,000 apartments" in facts          # 238 evictions / 20,000 homes
+        assert "40 now against 61 a year ago" in facts
+        assert "SOME HOLDINGS LLC" in facts
+        # A signal nobody measures must never be handed over as a zero. Every ZIP would
+        # otherwise rank 1 for rent-stabilized loss, which reads as the worst in the city.
+        assert "rent-stabilized unit loss: not measured" in facts
+        assert "window ends where the records end" in facts
+
+    def test_build_facts_survives_an_empty_context(self):
+        # The renderer is pure; a context the database could not supply drops out rather
+        # than rendering a guess.
+        facts = ai._build_facts("X", "Brooklyn", "11216", 40.0, {"permits": 10.0},
+                                {"evictions": 5})
+        assert "rank" not in facts
+        assert "per 1,000" not in facts
 
     def test_tier_bands_match_map_legend(self):
         # Canonical bands: Low 0-33, Moderate 34-66, High 67-84, Critical 85+.
@@ -128,7 +169,7 @@ class TestSummaryEndpoint:
         r1 = client.get(f"/api/neighborhoods/{zip_code}/summary")
         assert r1.status_code == 200, r1.text
         body = r1.json()
-        assert body["summary"] and body["model"] == "claude-opus-4-8"
+        assert body["summary"] and body["model"] == "claude-opus-5"
         assert body["cached"] is False
         assert fake.messages.calls == 1
 
@@ -144,8 +185,11 @@ class TestSummaryEndpoint:
         zip_code = self._live_zip()
         _get_client().get(f"/api/neighborhoods/{zip_code}/summary")
         sent = fake.messages.last_kwargs
-        assert sent["model"] == "claude-opus-4-8"
-        assert "displacement-pressure score" in sent["messages"][0]["content"]
+        assert sent["model"] == "claude-opus-5"
+        assert sent["output_config"]["effort"] == ai.EFFORT
+        content = sent["messages"][0]["content"]
+        assert "displacement-pressure score" in content
+        assert "scored NYC ZIP codes" in content   # the comparative block reached the model
         assert "Never use an em dash" in sent["system"]
 
     def test_refusal_degrades_to_503(self, monkeypatch):
