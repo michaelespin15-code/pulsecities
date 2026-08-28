@@ -152,6 +152,72 @@ environment variable, so they all still run on the box.
   re-checked after the label changes and reads correctly.
 - Anthropic credits are live again. The read and both digest narratives work.
 
+## Later the same day: latency, cost, and an email that blamed the city
+
+**/flips took 38 seconds to render cold (6ef309e).** `reno_permits` scanned a
+year of permits_raw and grouped by bbl, then inner-joined that against the LLC
+purchases and threw the rest away. That scan was small while the renovation rule
+only matched legacy BIS rows; the DOB NOW backfill made it match 96% of the
+record, and the BIS half is a `raw_data->>'job_type'` extraction no index can
+serve. **The page got slower by being fixed.** Scoping the scan to the lots that
+can qualify: query 29.6s -> 1.0s, page 38.2s -> 1.4s, same 60 rows.
+tests/test_render_budgets.py is the guard, loose at 8s on purpose.
+
+**The read is off the request path (7f9b262).** `ai_summaries` is a shared cache
+both workers see and a reload does not clear, and scripts/precompute_reads.py
+fills it in the nightly run. After a reload, which used to be the worst case:
+**0.22s to 0.9s against 5 to 12 seconds.** All 177 are warm; the sweep cost $2.51
+and none failed.
+
+**The regeneration trigger is a full point or a tier crossing, not any change.**
+Measured over 21 nights: any-change is 105 ZIPs a night, $45/month; a full point
+is 14 a night, $6/month. A ZIP moving 41.3 to 41.5 produces the same paragraph.
+`api.routes.ai_summary.is_fresh` owns it and both callers import it.
+
+**Sunday's digest was going to report our own correction as the city's news
+(0140f12).** "87 ZIP codes moved by 3+ points this week" was the permit recompute
+landing on every ZIP at once. `scoring_changes` records that, and the line now
+says so. Two more in the same email: the movers query compared against yesterday
+while the copy said "this week", and "0 LLC acquisitions" was ACRIS having
+published nothing since Jul 31 rather than a quiet week.
+
+**The nightly run warms the five expensive pages (c233236)**, because what
+remains after the query fix is buffer-cache cost: 7.0s cold after a reload, 0.02s
+to 1.3s once warmed.
+
+## PulseCities and violation-leads share a Postgres cluster, nothing else
+
+Asked and verified, because both have a table called `violations_raw`:
+
+    pulsecities      17 GB    owner pulsecities_user
+    violation_leads  5.9 GB   owner violation_app
+
+`violation_app` holds **no grants** on any pulsecities table, there is no dblink
+or postgres_fdw and **zero foreign tables**, and this repo never names the other
+database. violation-leads exits at startup if its DATABASE_URL contains
+"pulsecities". The raw_data drop cannot reach it.
+
+**One legacy thread runs the other way:** 3 tables inside `violation_leads`
+(328 MB) are owned by `pulsecities_user`. Rotating that password is safe, since
+ownership is not password-bound. **Dropping or renaming the role is not.**
+
+## Where the traffic actually comes from
+
+**ClaudeBot made 113,127 requests on 2026-08-28, 72% of everything**, 112,709 of
+them 200s, 97,414 to /property and 14,544 to /llc. Googlebot was 7,146. The only
+429s were vulnerability scanners on /config and /backend.
+
+That is the load context for the work above: a crawler walking 97,000 distinct
+property URLs goes straight through the 512-entry page cache, so nearly every one
+is a cold render.
+
+**Do not quote a human number off these logs.** Assets are cached hard so real
+browsers make almost no asset requests, and several heavy IPs are Google ranges
+with no bot UA. Plausible and Search Console are the sources.
+
+**Subscribers: 21, all confirmed, 4 in the last two days and 13 in the last
+seven.** Mostly building watches.
+
 ## The bands, and why the map was all one colour (e1622b8)
 
 Michael's read of the map was right and the cause was not the scoring.
