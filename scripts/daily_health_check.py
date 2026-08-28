@@ -36,7 +36,12 @@ logger = logging.getLogger(__name__)
 # not get to hold its own opinion about how stale a feed is.
 FRESHNESS_CHECKS = [
     ("acris_ownership", "bnx9-e6tj", "recorded_datetime"),
-    ("dob_permits",     "ipu4-2q9a", "dobrundate"),
+    # DOB NOW, not legacy BIS. Both write permits_raw so fetch_db_max reads the
+    # same value either way, which means checking BIS would be green by
+    # construction: DOB NOW's dates would keep the union fresh however dead BIS
+    # got. Checking the source that actually carries the permits is the only
+    # version of this check that can fail.
+    ("dob_now_permits", "w9ak-ipjd", "first_permit_date"),
     ("evictions",       "6z8x-wfk4", "executed_date"),
     ("311_complaints",  "erm2-nwe9", "created_date"),
     ("hpd_violations",  "wvxf-dwi5", "inspectiondate"),

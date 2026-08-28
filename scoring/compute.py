@@ -119,6 +119,22 @@ def _aggregate_permits(db: Session, cutoff: date | None = None, until: date | No
     permits there are almost always owner-driven renovations, not landlord harassment.
     Permits without a BBL match in parcels are excluded (can't confirm residential).
     cutoff: explicit start-of-window date; defaults to today - 365 days when None.
+
+    This query is deliberately unchanged from when permits_raw had one source,
+    and that is the point. On 2026-08-28 it returned 414 rows across 106 of 177
+    scored ZIPs while carrying 24.7% of the composite weight, because
+    scrapers/permits.py reads ipu4-2q9a and DOB NOW superseded it: 6,501 permits
+    held against roughly 170,000 upstream over the same 365 days. The fix was a
+    second scraper, not a second definition. scrapers/dob_now_permits.py maps
+    DOB NOW's spelled-out job_type onto the same BIS short codes, so 'AL' still
+    means "alteration to an existing building" and this filter reads both feeds
+    without knowing there are two.
+
+    Note what that means for anyone reading a score across the change: the
+    signal's coverage moved, its definition did not. DOB NOW also carries
+    initial_cost and existing-versus-proposed dwelling units, either of which
+    would sharpen this considerably, and folding those in here at the same time
+    would leave nobody able to say which change moved the scores.
     """
     effective = cutoff if cutoff is not None else (date.today() - timedelta(days=365))
     rows = db.execute(

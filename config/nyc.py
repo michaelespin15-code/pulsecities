@@ -25,7 +25,8 @@ SOCRATA_BASE_URL = "https://data.cityofnewyork.us/resource"
 DATASET_IDS = {
     # Tier 1 — Core displacement signals (all scrapers built)
     "311_complaints":        "erm2-nwe9",
-    "dob_permits":           "ipu4-2q9a",
+    "dob_permits":           "ipu4-2q9a",   # legacy BIS; DOB NOW superseded it, see below
+    "dob_now_permits":       "w9ak-ipjd",   # DOB NOW Build job filings, 96% of current permits
     "hpd_violations":        "wvxf-dwi5",
     "evictions":             "6z8x-wfk4",   # lagging: executed evictions only
     "acris_master":          "bnx9-e6tj",
@@ -88,6 +89,11 @@ DISPLACEMENT_COMPLAINT_TYPES = (
 SCRAPER_EXPECTED_MIN_RECORDS = {
     "311_complaints": 5000,
     "dob_permits":    50,          # steady-state incremental: 3-year LIKE scan, ~2-36 new rows/day after bulk load
+    # Measured over 2026-08-20 to 08-28: 1,443 rows in eight days, ~180/day
+    # across all job types. Half of that is the floor, and it is deliberately
+    # not lower: the whole reason this scraper exists is that dob_permits
+    # decayed to a trickle while still reporting success every night.
+    "dob_now_permits": 90,
     "hpd_violations": 1000,
     "evictions":      100,
     # Phase 3 scrapers

@@ -38,6 +38,7 @@ from scrapers.dhcr_rs import DhcrRsScraper
 from scrapers.evictions import EvictionsScraper
 from scrapers.ownership import OwnershipScraper
 from scrapers.dof import DOFScraper
+from scrapers.dob_now_permits import DobNowPermitsScraper
 from scrapers.permits import PermitsScraper
 from scrapers.pluto import PlutoScraper
 from scrapers.violations import ViolationsScraper
@@ -134,6 +135,12 @@ def run_nightly_pipeline() -> bool:
     scrapers = [
         ("311_complaints", ComplaintsScraper),
         ("dob_permits", PermitsScraper),
+        # Both permit feeds run. dob_permits reads legacy BIS, which still
+        # publishes a trickle of late permits on old jobs; dob_now_permits reads
+        # DOB NOW, which is where 96% of current permits actually are. They write
+        # to the same table under different `source` values and different unique
+        # indexes, so neither can overwrite the other.
+        ("dob_now_permits", DobNowPermitsScraper),
         ("evictions", EvictionsScraper),
         ("acris_ownership", OwnershipScraper),
         ("dcwp_licenses", DcwpScraper),

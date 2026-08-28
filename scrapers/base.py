@@ -50,7 +50,20 @@ class BaseScraper(ABC):
     PAGE_SIZE = 50_000
     PAGE_TIMEOUT: int = 60  # subclasses may override (e.g. slow Socrata endpoints)
 
+    # A one-off historical walk is a real run and deserves a real audit row, but
+    # it is not a sample of normal behaviour. Recorded as an ordinary success it
+    # poisons the 14-day rolling average the anomaly check reads: the DOB NOW
+    # backfill moved 485k rows against a nightly 180, so from the third night
+    # onward every normal run lands under 50% of the average and emails ops.
+    # That is eleven nights of false alarms, which is how a real one gets
+    # ignored. This status is excluded from the average by _compute_rolling_avg
+    # (which counts only success and warning) and still carries the watermark,
+    # because the backfill genuinely did advance it.
+    BACKFILL_STATUS = "backfill"
+
     def __init__(self) -> None:
+        # Set by a backfill entry point before run(); see BACKFILL_STATUS.
+        self.is_backfill = False
         self.app_token = os.getenv("NYC_OPEN_DATA_APP_TOKEN", "")
         if not self.app_token:
             logger.warning(
@@ -160,7 +173,7 @@ class BaseScraper(ABC):
             db.query(ScraperRun)
             .filter(
                 ScraperRun.scraper_name == self.SCRAPER_NAME,
-                ScraperRun.status == "success",
+                ScraperRun.status.in_(("success", self.BACKFILL_STATUS)),
                 ScraperRun.watermark_timestamp.isnot(None),
             )
             .order_by(ScraperRun.started_at.desc())
@@ -336,7 +349,11 @@ class BaseScraper(ABC):
             expected_min = SCRAPER_EXPECTED_MIN_RECORDS.get(self.SCRAPER_NAME)
             rolling_avg = self._compute_rolling_avg(db, started_at)
 
-            if not source_unchanged:
+            # A backfill is measured against nothing: it walks a window chosen by
+            # hand, so "fewer rows than usual" has no meaning for it.
+            if self.is_backfill:
+                source_unchanged = False
+            elif not source_unchanged:
                 if expected_min and records_processed < expected_min * 0.5:
                     warnings.append(
                         f"count {records_processed} < 50% of static minimum {expected_min}"
@@ -346,6 +363,9 @@ class BaseScraper(ABC):
                         f"count {records_processed} < 50% of {_ROLLING_WINDOW_DAYS}-day "
                         f"rolling average {rolling_avg:.0f}"
                     )
+
+            if self.is_backfill:
+                warnings = []
 
             if warnings:
                 msg = "; ".join(warnings)
@@ -363,7 +383,9 @@ class BaseScraper(ABC):
                 (rolling_avg is not None and rolling_avg > 100)
                 or (expected_min_floor is not None and expected_min_floor > 100)
             )
-            if source_unchanged:
+            if self.is_backfill:
+                scraper_run.status = self.BACKFILL_STATUS
+            elif source_unchanged:
                 # Source ceiling has not moved past what we already hold; a
                 # 0-record run here is steady state, not an anomaly worth paging on.
                 scraper_run.status = "success"

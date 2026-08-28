@@ -65,6 +65,7 @@ _FRESHNESS = {
     "hpd_violations":  timedelta(days=7),
     "311_complaints":  timedelta(days=7),
     "dob_permits":     timedelta(days=7),
+    "dob_now_permits": timedelta(days=7),
     "dcwp_licenses":   timedelta(days=7),
     "dhcr_rs":         timedelta(days=400),   # annual snapshot — see _SNAPSHOT_SOURCES
 }

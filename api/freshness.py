@@ -31,7 +31,13 @@ read them.
 # failure it exists to catch.
 FRESHNESS_SOURCES = [
     ("acris",      "acris_ownership", "ownership_raw",  "doc_date",         21),
-    ("permits",    "dob_permits",     "permits_raw",    "filing_date",      10),
+    # Anchored on dob_now_permits, not dob_permits. Both scrapers write
+    # permits_raw.filing_date so the data-through query is unchanged, but the
+    # feed's health is DOB NOW's health: BIS carries 4% of current permits and
+    # is decaying on purpose, so checking it would report a feed as sick for
+    # doing exactly what it is expected to do. The old name stays resolvable
+    # below.
+    ("permits",    "dob_now_permits", "permits_raw",    "filing_date",      10),
     ("evictions",  "evictions",       "evictions_raw",  "executed_date",    14),
     ("complaints", "311_complaints",  "complaints_raw", "created_date",     10),
     ("violations", "hpd_violations",  "violations_raw", "inspection_date",  10),
@@ -43,6 +49,13 @@ _BY_NAME = {}
 for _slug, _scraper, _table, _column, _days in FRESHNESS_SOURCES:
     for _key in (_slug, _scraper):
         _BY_NAME[_key] = (_table, _column, _days)
+
+# Scraper names that fill a feed listed above without being the one that names
+# it. FRESHNESS_SOURCES carries one row per feed because every consumer renders
+# one card per row, so a second scraper on the same table is an alias here
+# rather than a second entry that would draw the permits card twice.
+for _alias, _feed in (("dob_permits", "permits"),):
+    _BY_NAME[_alias] = _BY_NAME[_feed]
 
 
 def real_date(column: str, created: str = "created_at") -> str:
