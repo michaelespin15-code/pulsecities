@@ -57,6 +57,33 @@ deed-only, sitemapped all along, at 3 of 5 (mean 63.0%). **That also means the
 near-duplicate guard is weaker than it looks**: it samples four pages, six
 pairs, so it rarely draws a bad one. Worth strengthening, not urgent.
 
+## Also shipped: every deed window now ends where the deeds end
+
+ACRIS lags and freezes. A window running to CURRENT_DATE spends its tail on days
+that cannot contain a deed, and the shortfall scales with the lag over the
+window, not with the lag:
+
+    window     to CURRENT_DATE          to the last published deed
+    30 days             1 deed                          558 deeds
+    90 days   4 radar clusters                 11 radar clusters
+    365 days        639 flips                         700 flips
+
+**The 30-day case set `signal_counts.llc_acquisitions` to zero for every ZIP in
+/api/stats**, so the dominant-signal label on the site's central ranking could
+never say an LLC was buying. Wakefield now reads `dominant_signal:
+llc_acquisitions`. Thirteen sites fixed; `api/freshness.window_sql` owns the
+rule and `tests/test_window_anchors.py` greps for the next bare one. Only ACRIS
+gets it: the other feeds were within two days of the calendar.
+
+A disclosure line had been shipped for this class on 2026-08-18 and was only
+half the fix. **That is the pattern worth carrying: when a lagging feed is
+found, check whether the number was fixed or only labelled.**
+
+Two latent bugs surfaced when a query returned rows for the first time:
+social_post.py crashed on `r.days_between.days` (Postgres hands back an int),
+and its `_fmt_date` dropped the year, composing "LLC acquired Jul 24" for a 2025
+deed. It is a manual tool, not in cron.
+
 ## NEXT, in order
 
 1. **Corroborated deconversion as a page-level fact.** ~500 jobs a year where
@@ -82,7 +109,8 @@ the permit signal was 414 rows. It has never been calibrated against a real one.
   guarded, all with their DDL already applied live. b8e30d5c1746 still wants
   the maintenance window. Do not stamp.
 - ACRIS 28 days stale against a 21-day threshold, unchanged and upstream.
-- Sitemap regenerated and served: 4 files, 97,790 property URLs. IndexNow caps
+- Sitemap regenerated and served: 4 files, 97,790 property URLs.
+- The guard lane is 201 assertions in 4s and CI runs the same script. IndexNow caps
   at 5,000/run, so the new URLs drain over about six nights.
 - `test_deploy_copy_matches_installed[pulsecities.service]` is the one guard
   still red, and it is NEEDS MICHAEL item 1.
