@@ -1,5 +1,14 @@
 # >>> START HERE after /clear (2026-08-28 later, the read-and-tiers session) <<<
 
+**The map was rendering in two colours and the bands were why (e1622b8).** The
+score bands were 34 / 67 / 85 and the highest score New York has ever produced is
+63.2, so the top two could not be occupied: 73 of 177 ZIPs sat in one amber
+block, the og card printed "0 ZIPs at High risk" every week, and the weekly
+digest's crossing-into-High check could never fire. Bands are now 34 / 45 / 55,
+set against the live distribution, and the map uses all four colours: 104 Low, 40
+Moderate, 26 High, 7 Critical. No score changed. Detail in the section near the
+bottom of this entry.
+
 Working tree clean. Everything below is committed, deployed and verified live on
 the box. Nothing is pushed; the count is now roughly 131 unpushed.
 
@@ -143,20 +152,56 @@ environment variable, so they all still run on the box.
   re-checked after the label changes and reads correctly.
 - Anthropic credits are live again. The read and both digest narratives work.
 
+## The bands, and why the map was all one colour (e1622b8)
+
+Michael's read of the map was right and the cause was not the scoring.
+
+    before   Low <34: 104 ZIPs    Moderate 34-66: 73    High: 0    Critical: 0
+    after    Low <34: 104         Moderate 34-44: 40    High 45-54: 26   Critical 55+: 7
+
+**Why the composite tops out at 63.2.** It blends five signals, each normalised
+across all 177 ZIPs, and no neighborhood is at the extreme of all five at once.
+10457 ranks first citywide on both executed evictions and HPD violations and
+still scores 54.9, because acquisitions and permits carry 55% of the weight and
+it is mid-pack on both. Blending imperfectly correlated signals compresses toward
+the middle. 85 was never reachable.
+
+**The Critical seven** are 10466 Wakefield, 10458 Fordham, 10468 University
+Heights, 10459 Longwood, 10030 Harlem, 11216 and 11233 Bed-Stuy. That is the same
+set the permit fix pushed to the top, which is a useful independent check.
+
+**The guard that was missing** now exists: tests/test_tier_bands.py fails when any
+band holds no ZIP against live data, and when the top band holds more than 15% of
+the city. A band nobody can occupy is either a band set against the wrong
+distribution or a dead signal.
+
+## Two calls that were open, both now answered by measurement
+
+**The deed-only sitemap gate: leave it alone.** The hypothesis was that
+single-deed one- and two-family houses are the thin tier dragging the template,
+and it does not survive being measured. Of 44,418 deed-only pages, the 18,200
+that carry a deed and nothing else on a small building overlap at mean 67%, and
+the rest of the tier overlaps at mean 66%. There is no thin subset to cut. More
+to the point, `/neighborhood`, the template the SEO plan holds up as the good
+one, re-measured the same day at **mean 67%, max 77%**, which is where the
+deed-only tier already sits. Cutting 18,200 real pages would buy nothing.
+
+**`WEIGHT_RS_UNIT_LOSS = 0.15` is not being wasted, and the previous checkpoint
+was wrong to say so.** scoring/compute.py Step 5.5 redistributes dormant-signal
+weight across the active signals and has done since before this session; a
+signal that is 0.0 for every ZIP contributes no weight at all. The read still
+renders it as "not measured" rather than zero, which remains correct. What was
+real is the band problem it pointed at, fixed above.
+
+`WEIGHT_PERMITS = 0.21` is still uncalibrated against a live permit signal, and
+that one stands.
+
 ## NEXT, in order
 
-1. **Decide the deed-only sitemap gate.** One deed on a one- or two-family house
-   is the thinnest page the site publishes, it is 66% mean overlap with its
-   siblings, and the violation tier already demands five records for exactly this
-   reason. Tightening it is a call about what belongs in the index.
-2. **`WEIGHT_RS_UNIT_LOSS = 0.15` on a signal that is 0.0 for every ZIP.** The
-   dormancy is documented in scoring/compute.py and the read now says "not
-   measured", but 15% of the composite is being spent on nothing. Same question
-   for `WEIGHT_PERMITS = 0.21`, which was set when the permit signal was 414 rows.
-3. **DOS follow-ons.** Registered agent as a second family-clustering signal,
+1. **DOS follow-ons.** Registered agent as a second family-clustering signal,
    Delaware jurisdiction surfaced (663 entities), a monthly
    `refresh_dos_entities --all`.
-4. **Precompute the read for all 177 ZIPs** after the nightly scoring run rather
+2. **Precompute the read for all 177 ZIPs** after the nightly scoring run rather
    than generating on a cache miss. Kills the cold 5-to-10s wait and the
    503-when-credits-die failure.
 
