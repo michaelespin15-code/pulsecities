@@ -42,6 +42,15 @@ _SPEC_CAP = 50_000
 
 _ROBOTS = re.compile(r'<meta name="robots" content="([^"]+)"')
 
+# (path, priority) for every property URL, so a tier can be checked by the
+# priority the generator assigned it rather than by re-deriving the gate here.
+_PROPERTY_TIERS = re.findall(
+    r"<loc>https://pulsecities\.com(/property/\d+)</loc>\s*"
+    r"<lastmod>[^<]*</lastmod>\s*<changefreq>[^<]*</changefreq>\s*"
+    r"<priority>([0-9.]+)</priority>",
+    _ALL_URLS,
+)
+
 
 def _robots(path: str) -> str:
     resp = client.get(path)
@@ -78,6 +87,45 @@ class TestSitemapShape:
             f"only {len(set(stamps))} distinct lastmod values across "
             f"{len(stamps)} property URLs; the stamp is not per-URL"
         )
+
+
+class TestViolationTier:
+    """Buildings with a violation history but no deed and no eviction.
+
+    Added 2026-08-28. They were held out on a worst-pair overlap figure, and
+    re-measuring across five independent draws of ten pages put them at 0 of 5
+    breaches of the 70% near-duplicate limit against 3 of 5 for the deed-only
+    pages that had been sitemapped all along.
+    """
+
+    def test_the_parser_sees_every_property_url(self):
+        """A regex that silently matches nothing would make the rest of this
+        class vacuously green."""
+        assert len(_PROPERTY_TIERS) == len(_PROPERTY_LOCS)
+
+    def test_the_tier_is_present(self):
+        assert any(p == "0.4" for _u, p in _PROPERTY_TIERS), (
+            "no property URL carries the violation tier's priority; either the "
+            "gate stopped matching or the tier was dropped")
+
+    def test_the_tier_is_not_the_whole_sitemap(self):
+        """The gate is 5 violations, not 1. At 1 it would be 117,237 buildings
+        and this file would be back to indexing boilerplate."""
+        tier = sum(1 for _u, p in _PROPERTY_TIERS if p == "0.4")
+        assert 0 < tier < len(_PROPERTY_TIERS) * 0.5, (
+            f"violation tier is {tier} of {len(_PROPERTY_TIERS)} URLs; gate looks wrong")
+
+    def test_the_gate_constant_is_above_one(self):
+        from scripts.generate_sitemap import MIN_VIOLATIONS
+        assert MIN_VIOLATIONS >= 2, (
+            "one violation is a fact about a building, not a history")
+
+    def test_a_violation_tier_page_is_indexable(self):
+        """The sitemap gate and the page's own robots tag have to agree; a
+        sitemapped noindex URL is a crawl-budget bonfire."""
+        tier = [u for u, p in _PROPERTY_TIERS if p == "0.4"]
+        assert tier, "no violation-tier URLs to check"
+        assert _robots(tier[0]) == "index, follow"
 
 
 class TestGatesAgree:

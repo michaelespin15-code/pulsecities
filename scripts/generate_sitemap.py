@@ -17,16 +17,23 @@ of boilerplate running 81% identical page to page. It now requires a
 building-level record, and this file's gate is set to match rather than to
 compensate for it.
 
-Sitemapped property pages are the ones with a deed or an eviction: the
-ownership-and-displacement story the site is actually about, and the shape of
-the address queries in the search exports. Measured 5-gram overlap by record
-profile, against /neighborhood at 68-69% as the known-good benchmark:
+Sitemapped property pages are the ones carrying a building-level record: a
+deed, an eviction, or a substantial violation history. Measured 5-gram overlap
+by record profile, against /neighborhood at 68-69% as the known-good benchmark:
 
     deed + eviction   52% mean    sitemapped, priority 0.6
-    deed only         69% mean    sitemapped, priority 0.5
+    deed only         63% mean    sitemapped, priority 0.5
     eviction only     68% mean    sitemapped, priority 0.5
-    violations only   66% mean    indexable, not sitemapped
+    5+ violations     59% mean    sitemapped, priority 0.4   (added 2026-08-28)
+    1-4 violations    66% mean    indexable, not sitemapped
     no records        75% mean    noindex
+
+The violation tier was held out on its worst-pair figure rather than its mean,
+and re-measuring settled it. Across five independent draws of ten pages each,
+violation-only pages breached the 70% near-duplicate limit in 0 of 5 draws
+(mean 58.6%), while the deed-only pages sitemapped all along breached it in
+3 of 5 (mean 63.0%). The tier being kept out was more distinctive than one
+already in.
 
 lastmod is the date of that page's newest record, not the date this ran. 2,111
 of the old 2,159 URLs claimed the same lastmod, which tells a crawler nothing
@@ -54,6 +61,13 @@ _BASE = "https://pulsecities.com"
 # The spec caps a sitemap at 50,000 URLs; leave headroom so a growth spurt
 # between runs cannot silently push a file over the line.
 _URLS_PER_FILE = 45_000
+
+# Violations needed before a building with no deed and no eviction earns a
+# sitemap entry. See the table above: the mean overlap barely moves with this
+# number, so it is set on what the count means rather than on the metric. One
+# violation is a fact about a building; five is a history worth a page in an
+# index.
+MIN_VIOLATIONS = 5
 
 # (path, changefreq, priority, lastmod or None for today)
 _CORE = [
@@ -148,33 +162,54 @@ def build() -> dict[str, str]:
                 SELECT bbl, max(executed_date) AS last_evict
                 FROM evictions_raw WHERE {real_date('executed_date')}
                 GROUP BY bbl
+            ),
+            v AS (
+                -- A violation history, not a violation. The HAVING is the whole
+                -- gate: 117,237 buildings carry at least one and 27,825 carry
+                -- five, and one is a fact about a building where five is a
+                -- pattern. Without it this is the 596,432-parcel boilerplate
+                -- sitemap this file already had to undo once.
+                SELECT bbl,
+                       max(COALESCE(nov_issued_date, inspection_date)) AS last_viol
+                FROM violations_raw
+                WHERE {real_date('COALESCE(nov_issued_date, inspection_date)')}
+                GROUP BY bbl
+                HAVING count(*) >= {MIN_VIOLATIONS}
             )
             SELECT p.bbl,
                    GREATEST(COALESCE(d.last_deed, DATE '1900-01-01'),
-                            COALESCE(e.last_evict, DATE '1900-01-01')) AS lastmod,
-                   (d.last_deed IS NOT NULL AND e.last_evict IS NOT NULL) AS full_arc
+                            COALESCE(e.last_evict, DATE '1900-01-01'),
+                            COALESCE(v.last_viol, DATE '1900-01-01')) AS lastmod,
+                   (d.last_deed IS NOT NULL AND e.last_evict IS NOT NULL) AS full_arc,
+                   (d.last_deed IS NULL AND e.last_evict IS NULL) AS viol_only
             FROM parcels p
             JOIN neighborhoods n ON n.zip_code = p.zip_code
             JOIN displacement_scores ds ON ds.zip_code = p.zip_code
             LEFT JOIN d ON d.bbl = p.bbl
             LEFT JOIN e ON e.bbl = p.bbl
+            LEFT JOIN v ON v.bbl = p.bbl
             WHERE p.address IS NOT NULL AND n.name IS NOT NULL AND ds.score IS NOT NULL
-              AND (d.last_deed IS NOT NULL OR e.last_evict IS NOT NULL)
+              AND (d.last_deed IS NOT NULL OR e.last_evict IS NOT NULL
+                   OR v.last_viol IS NOT NULL)
             UNION ALL
             -- Condo unit lots recovered by refresh_condo_addresses: no parcels
             -- row by construction, so no overlap with the branch above. Same
             -- gates, and the route renders them through the same fallback.
             SELECT c.bbl,
                    GREATEST(COALESCE(d.last_deed, DATE '1900-01-01'),
-                            COALESCE(e.last_evict, DATE '1900-01-01')) AS lastmod,
-                   (d.last_deed IS NOT NULL AND e.last_evict IS NOT NULL) AS full_arc
+                            COALESCE(e.last_evict, DATE '1900-01-01'),
+                            COALESCE(v.last_viol, DATE '1900-01-01')) AS lastmod,
+                   (d.last_deed IS NOT NULL AND e.last_evict IS NOT NULL) AS full_arc,
+                   (d.last_deed IS NULL AND e.last_evict IS NULL) AS viol_only
             FROM condo_unit_addresses c
             JOIN neighborhoods n ON n.zip_code = c.zip_code
             JOIN displacement_scores ds ON ds.zip_code = c.zip_code
             LEFT JOIN d ON d.bbl = c.bbl
             LEFT JOIN e ON e.bbl = c.bbl
+            LEFT JOIN v ON v.bbl = c.bbl
             WHERE n.name IS NOT NULL AND ds.score IS NOT NULL
-              AND (d.last_deed IS NOT NULL OR e.last_evict IS NOT NULL)
+              AND (d.last_deed IS NOT NULL OR e.last_evict IS NOT NULL
+                   OR v.last_viol IS NOT NULL)
             ORDER BY bbl
         """)).fetchall()
 
@@ -300,8 +335,11 @@ def build() -> dict[str, str]:
     # changefreq is "monthly" because a property page changes when a record
     # lands, which for most lots is never. The old blanket "weekly" was a claim
     # the data did not support on 1,792 URLs.
+    # 0.4 for the violation-only tier: a real record, and a weaker signal than a
+    # lot that has changed hands or seen a marshal at the door.
     prop = [
-        (f"/property/{r.bbl}", "monthly", "0.6" if r.full_arc else "0.5",
+        (f"/property/{r.bbl}", "monthly",
+         "0.6" if r.full_arc else ("0.4" if r.viol_only else "0.5"),
          r.lastmod.isoformat())
         for r in property_rows
     ]
