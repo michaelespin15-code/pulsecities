@@ -202,14 +202,17 @@ _BUILDING_CONFIRMATION_HTML = _WELCOME_SHELL.replace("{title}", "You're watching
     "{file_line}", "Watch opened {opened} &middot; BBL {bbl} &middot; NYC public records"
 ).replace("{note_body}", "".join([
     _NOTE_P.format("You're watching {address}."),
-    _NOTE_P.format("When a new record lands on this building, you'll get an email the next morning: a deed transfer, a renovation permit, an executed eviction, or a housing violation. Quiet stretches send nothing, so when an email arrives it means something happened at this address."),
+    _NOTE_P.format("When a new record lands on this building, you'll get an email the next morning: a deed transfer, a renovation permit, an executed eviction, a housing violation, or a 311 housing complaint. Quiet stretches send nothing, so when an email arrives it means something happened at this address."),
+    _NOTE_P.format("On the first of each month you'll also get a short report on the tax block this building sits on. Most buildings are quiet for long stretches and the street around them is not, and the deed next door is usually the earlier signal."),
     _NOTE_P.format('The building\'s record is here:<br><a href="https://pulsecities.com/property/{bbl}" style="color:#C2410C;">pulsecities.com/property/{bbl}</a>'),
 ]))
 
 _BUILDING_CONFIRMATION_TEXT = """
 You're watching {address}.
 
-When a new record lands on this building, you'll get an email the next morning: a deed transfer, a renovation permit, an executed eviction, or a housing violation. Quiet stretches send nothing, so when an email arrives it means something happened at this address.
+When a new record lands on this building, you'll get an email the next morning: a deed transfer, a renovation permit, an executed eviction, a housing violation, or a 311 housing complaint. Quiet stretches send nothing, so when an email arrives it means something happened at this address.
+
+On the first of each month you'll also get a short report on the tax block this building sits on. Most buildings are quiet for long stretches and the street around them is not, and the deed next door is usually the earlier signal.
 
 The building's record: https://pulsecities.com/property/{bbl}
 

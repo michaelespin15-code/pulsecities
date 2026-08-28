@@ -18,6 +18,12 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 20 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.gen_llms_txt >> /var/log/pulsecities/sitemap.log 2>&1
 # Building-watch alerts — daily after the scrape; quiet nights send nothing
 25 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.building_alerts >> /var/log/pulsecities/building_alerts.log 2>&1
+# Monthly block digest — the first of the month, 10 AM ET. Building watchers
+# hear nothing for months at a time (zero events in thirty days across the
+# twelve watched buildings), so this covers the whole tax block around each
+# watched address. DST-pinned the same way the weekly digest is: fire at both
+# UTC slots that straddle 10:00 Eastern and guard on the Eastern clock.
+0 14,15 1 * * root [ "$(TZ=America/New_York date +\%H)" = "10" ] && cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.block_digest >> /var/log/pulsecities/block_digest.log 2>&1
 # OCA housing-court petition aggregates — weekly; the upstream extract updates on its own cadence
 15 4 * * 1 root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.oca_ingest >> /var/log/pulsecities/oca_ingest.log 2>&1
 # 03:50, not 03:30: the dump raced another tenant's 03:30 backup on two
