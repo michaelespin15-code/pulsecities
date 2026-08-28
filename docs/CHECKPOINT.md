@@ -1,3 +1,176 @@
+# >>> START HERE after /clear (2026-08-28 later, the read-and-tiers session) <<<
+
+Working tree clean. Everything below is committed, deployed and verified live on
+the box. Nothing is pushed; the count is now roughly 131 unpushed.
+
+## What changed, in one line each
+
+1. **The panel read runs claude-opus-5 and compares instead of restating.**
+2. **The eviction signal is no longer called "filings" anywhere it is counted.**
+3. **/evictions/{borough} exists**, the tier the 127 leaves never had.
+4. **/property says taxes, sales history and owner**, and finally shows the
+   violations it had only been counting.
+5. **CI has a second job with a real Postgres** running 1,158 tests, up from 219
+   grep-level assertions.
+
+## The read (0eff4a1, 1d0cdf1)
+
+Michael asked for the model change and for the read to stop being templated. Both
+are done and live.
+
+`claude-opus-5`, adaptive thinking, medium effort, on the panel read and on both
+digest narratives. **Thinking tokens are charged against `max_tokens`**, so the
+old 400 and 300 would have returned empty paragraphs rather than short ones; both
+are 2000 now and the length limit lives in the prompt. Cost measured from the new
+`summary usage` line in the journal: ~1,600 in, ~260 out, about $0.015 a
+generation and under $3 for a sweep of all 177 ZIPs.
+
+The prompt rewrite matters more than the model. The read used to open with the
+score and walk the ranked signal list, which is the panel restated. It is now
+handed what a reader cannot work out: citywide rank per signal, the rate per
+1,000 apartments, the same 90 days a year earlier, the score a season back, the
+most active LLC buyer, and filings proposing to remove homes. Whole context block
+measures 0.3s to 0.9s; a cold read is 5s to 10s and cached per ZIP per scoring
+run.
+
+Sampled five ZIPs at random rather than by score: 103 to 117 words, five
+different openings, every one led with a comparison.
+
+**Two data findings the enrichment forced:**
+
+- **`rs_unit_loss` is 0.0 for all 177 ZIPs**, dormant since the DHCR multi-year
+  dataset was decommissioned, and it still carries `WEIGHT_RS_UNIT_LOSS = 0.15`.
+  Ranked naively every ZIP came out rank 1 and the model duly told two of them
+  "no rent-stabilized units were recorded lost". It renders as "not measured"
+  now, and the prompt says not measured is not zero. **The weight is still
+  Michael's call.**
+- **Signal scores and per-1,000 rates are different scales.** Handed both, the
+  model called a rate a multiple of a median signal score.
+
+## The eviction label (0eff4a1)
+
+The signal counts warrants a marshal executed, and eight strings called them
+filings. The tooltip two lines under the panel label already read "Executed
+residential evictions by NYC marshals. Filed cases that resolved without
+execution are not counted." The Spanish was corrected on 2026-08-19; the English
+never was. Panel label, count line, lag note, the deterministic summary sentence,
+the brief, the og-image and both digests now agree.
+
+## Move 05, the borough tier (cb8ee91)
+
+`/evictions/{borough}` for the five, sharing the leaf route and its cache. No
+neighbourhood is named after a borough, so the namespaces cannot collide.
+
+Each page carries what neither other tier can say: every neighbourhood page it
+parents with 30-day, 12-month and total counts; the rate per 1,000 apartments;
+the buildings with three or more executions and who holds their deeds; the
+borough's share of the citywide record. **The Bronx runs 21.5 executions per
+1,000 apartments and 32% of every execution the city has published.** On raw
+counts Brooklyn looks comparable. Per apartment it is not close.
+
+Linked in three directions, sitemap and llms.txt carry them, eight guards
+including one that fails if a borough page omits a neighbourhood it claims to
+parent.
+
+Found while building it: the leaf pages had been shipping `sib-list`, a class
+_LLC_PAGE_CSS does not define, so both record lists on all 127 pages rendered
+with default bullets.
+
+## Move 06 and the violations (eabc818, 9abfdcb)
+
+Headings now use the phrases the search exports show people typing: "Who owns
+{address}", "Sales and ownership history", "Open code violations", "311 complaint
+history", plus a new "Taxes and assessed value" block, since the assessed figure
+was one clause of the lede and "taxes" is a live query.
+
+**The FAQ named a signal the score does not read.** It told every visitor the
+composite reads "assessment spikes", which carries no weight and is NULL for all
+177 ZIPs, and omitted HPD violations, which carries 0.08. That answer sits in
+FAQPage schema on ~97,000 pages. The guard now derives the list from the weights.
+
+**The bigger find: 27,825 buildings are in the sitemap because they carry five or
+more violations, and the page printed the count and not one row.** /property
+carries a Violation history table now, eight rows, newest first, class and status
+beside each, with the statute prefix stripped so a row reads "Repair or replace
+the carbon monoxide detecting device" rather than "§ 27-2045(B)(1)(B) HMC, §
+12-06...".
+
+## The duplicate guard, which could not see any of that (NEXT item 4)
+
+It drew four pages, six pairs, always the same four, from the richest tier the
+sitemap admits. Measured properly, five draws of eight per tier, 140 pairs each:
+
+    tier             mean  median  p95  max  pairs at or above 70%
+    deed+eviction     60%    60%   68%  73%   1 of 140
+    deed only         66%    66%   70%  78%  11 of 140
+    violation only    55%    56%   60%  62%   0 of 140   (was 63%/77%)
+
+The violation tier moved because the page now shows its violations. **Deed-only
+pages remain the weak tier and it is not a formatting problem**: single-deed one-
+and two-family houses have an address, a year, a unit count, an owner, one deed
+and one assessed value, and nothing else on record. Padding would be dishonest.
+**The fix is the sitemap gate, which admits one deed where the violation tier
+insists on five, and that is a call about what belongs in the index.**
+
+The guard now samples every tier by random draw and asserts on the mean as well
+as the max, because a mean that rises is boilerplate added to the template.
+
+## CI now has a database (b92176b, NEXT item 3)
+
+Second job: postgis/postgis:14-3.3, `alembic upgrade head`, then
+`pytest -m "not integration"`. Two things it catches that the guard lane cannot.
+**The migration chain has to apply from nothing**, which is proven nowhere else:
+the production database was migrated one revision at a time over months and would
+not notice a chain that no longer replays. It applied clean, all five pending
+revisions included. And **1,158 tests run for real** against 219 grep assertions.
+
+A runner cannot hold 918,000 parcels, so the 36 tests that assert on rendered
+records carry a new `needs_data` marker and skip there. `tests/conftest.py`
+decides by asking the database whether `parcels` has a row, not by reading an
+environment variable, so they all still run on the box.
+
+## State
+
+- Full suite on the box: **1,253 passed, 1 failed**, and the failure is the
+  deploy-drift check, which is NEEDS MICHAEL item 4 rather than a bug. Against a
+  schema-only database it is 1,158 passed, 92 skipped.
+- Alembic unchanged: current f3a91b6c8d27, head c8f4b16d29ea, five pending, all
+  already applied to the live database. **Do not stamp.** The chain does replay
+  from empty, which the new CI job now proves on every push.
+- ACRIS still 28 days stale against a 21-day threshold, upstream. The nightly
+  pipeline ran clean at 02:00 with the seventh scraper on its own, 450s.
+- The block digest still sends 2026-09-01 10:00 ET to ten subscribers. Dry-run
+  re-checked after the label changes and reads correctly.
+- Anthropic credits are live again. The read and both digest narratives work.
+
+## NEXT, in order
+
+1. **Decide the deed-only sitemap gate.** One deed on a one- or two-family house
+   is the thinnest page the site publishes, it is 66% mean overlap with its
+   siblings, and the violation tier already demands five records for exactly this
+   reason. Tightening it is a call about what belongs in the index.
+2. **`WEIGHT_RS_UNIT_LOSS = 0.15` on a signal that is 0.0 for every ZIP.** The
+   dormancy is documented in scoring/compute.py and the read now says "not
+   measured", but 15% of the composite is being spent on nothing. Same question
+   for `WEIGHT_PERMITS = 0.21`, which was set when the permit signal was 414 rows.
+3. **DOS follow-ons.** Registered agent as a second family-clustering signal,
+   Delaware jurisdiction surfaced (663 entities), a monthly
+   `refresh_dos_entities --all`.
+4. **Precompute the read for all 177 ZIPs** after the nightly scoring run rather
+   than generating on a cache miss. Kills the cold 5-to-10s wait and the
+   503-when-credits-die failure.
+
+## NEEDS MICHAEL, priority order
+
+1. **Send the FLGSP pitch.** Unchanged and still the highest-value unsent thing.
+2. **Decide on the push.** Now ~131 commits, and CI can go green on both jobs.
+3. **Restart with the committed service unit**, then rotate the DB password, then
+   take the maintenance window (`alembic upgrade head` + `retire_raw_data.sh
+   drop`). Still the one red test.
+4. **HEARTBEAT_BASE_URL, ALERT_WEBHOOK_URL, dedicated R2 creds, OPS_TOKEN
+   rotation.** Unchanged.
+
+
 # >>> START HERE after /clear (2026-08-28, the permit-record session) <<<
 
 Working tree clean. 20 commits, none pushed (125 unpushed in total). Everything
