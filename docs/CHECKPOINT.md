@@ -1,3 +1,183 @@
+# >>> START HERE after /clear (2026-08-27/28, the search-data session) <<<
+
+Working tree clean, 14 commits since 31ef117. Everything below is done and
+verified except what is under NEEDS MICHAEL and NEXT. A pre-commit hook now runs
+128 guards in 3.4s on every commit, so if a commit is refused, read it.
+
+## The one thing to read first
+
+**Michael pulled live Search Console for the first time since traction: 731
+clicks, 29,700 impressions, 2.5% CTR, average position 8 to 11.** The Aug 18
+baseline was 5 clicks. That export is the source of most of this session's work
+and the numbers are in `memory/project_search_read_2026_08_27.md`. The diagnosis
+moved: indexing and thin content are fixed, and the site now ranks and does not
+get clicked.
+
+Two artifacts hold the analysis. They are private to Michael's claude.ai account
+and he could not open them in his browser (wrong account signed in); standalone
+copies are at `reports/` in the repo, gitignored.
+
+    Health audit    https://claude.ai/code/artifact/9df855cd-3675-48bf-9c95-210edeb83168
+    Growth plan     https://claude.ai/code/artifact/243aaca3-1245-4932-a634-9d3e1352ac5a
+
+## Shipped
+
+**The freshness rule had one reader and seventeen bypasses (72f9dfa, 2e81055).**
+Two ownership_raw rows carry a filer-typed doc_date of 2026-08-27 on a deed
+recorded 2026-07-29, ingested 2026-08-11. The rule excluded them only while they
+sat ahead of the calendar, and on 2026-08-27 the calendar reached them: ACRIS
+went "frozen 27d" to "current today" and /api/status published data_through
+2026-08-27 on a feed frozen since July. `generate_sitemap.py` had been writing a
+FUTURE `<lastmod>` onto all 200 hub URLs for sixteen nights. /ops hand-rolled the
+freshness query with a bare `<= CURRENT_DATE` while its comment claimed it agreed
+with /api/status. Fixed with `freshness.real_date(column, created_at)`, which does
+not expire, applied to both sitemap queries, /ops, /api/stats, /llc, radar and
+family clustering. `tests/test_date_guards.py` greps for the eighteenth one;
+19 known bypasses remain in a KNOWN_UNGUARDED list that may shrink, never grow.
+Full case study in `docs/ops/failure_patterns.md`.
+
+**Guards were rotting because the suite costs 76s (4d05132).** Three separate
+guards existed and had not been run: the logrotate check already knew the condo
+log was unrotated, and five assertions in test_source_freshness_disclosure had
+been red since the commit that wrote them. `scripts/guards.sh` is the subset
+needing neither Postgres nor api.main: 128 assertions, 3.4s, installed as
+`.git/hooks/pre-commit` by symlink. Deploy-drift checks are deliberately excluded
+(true about the box, not the commit).
+
+**Move 01, deed vocabulary on /llc (38bf651).** The template ranked 5 to 9 on
+~1,700 impressions of grantor/grantee/chain-of-title/ACRIS queries and contained
+none of those words. Retitled, deed rows now print their ACRIS document ID and
+BBL, chain-of-title section added. First draft of the prose was generic and
+pushed the thinnest LLC pages to 72% five-gram overlap against the 70% guard;
+rewritten per-entity, worst pair 67.8%.
+
+**Citations on every fact block (b75d7a3).** All five blocks on /property and the
+chain of title on /llc end with "Source: NYC HPD violations, current through
+August 25, 2026", dates from api/freshness so the page and /api/status cannot
+disagree. Reason: AI crawlers fetched 82,631 pages in 15 days against Googlebot's
+68,881, and a machine cannot come back to check a number later.
+
+**Move 03 part one, sideways links (38a89ba).** `_sibling_buildings` was gated on
+curated operator classifications covering 566 parcels; falling through to the
+deed buyer covers 6,669. Gated on `_is_buyer_entity` because the first working
+version listed buildings for MARIE FRANCK AS TRUSTEE and LAMBERT JUNIOR D, which
+is a people-search directory. Also fixed the one JS-only nav row on the site
+(4459ea0), on all 177 neighborhood hubs.
+
+**Move 02, the DOS registry (46ad460).** data.ny.gov n9v6-gdp6 joined to deed
+buyers: DOS ID, filing date, jurisdiction, registered agent. 12,743 rows in 26s,
+81% match, selective ingest (dataset is 4.2M rows, disk is at 69%). Nightly at
+03:08. **All 82 FLGSP shells are Delaware companies filed 2026-01-23, two months
+before they took title, every one designating SUMMIT MALLS MANAGEMENT LLC at
+1350 6th Avenue.** Reading the first run's output caught two classifier bugs: 447
+rows spelled "The Limited Liability Company" and 106 spelled "C T CORPORATION
+SYSTEM" were being called named third parties.
+
+**One email gate (6b65a95, 84b0a26).** Five `resend.Emails.send` call sites had
+five different answers to "is this worth sending", one of them none at all.
+`scripts/lib/mailer.py` owns it now; the grep guard found `scheduler/alerts.py`
+on its first run, which a hand search had missed. Primary guarantee is
+`content_items`; a measured word floor backs it up. **Measuring caught the
+guard's own bug**: the floor was 45 on a guess, a real one-event alert renders 39,
+so it would have blocked "your building was sold". Ops alerts pass with
+min_words=0 because "acris_ownership: source frozen 27d" is nine words.
+311 housing complaints added to the alert scan: the four scanned feeds produced
+24 events in 90 days across the watched buildings, 311 alone produced 109.
+
+## The correction that matters, so it is not re-derived
+
+**Internal linking does not drive this site's traffic, and I claimed it did.**
+Measured: 1,856 property pages are reachable from the eviction tier, 51 of them
+earned a visitor (2.7%), against 1,280 of 67,989 unlinked (1.88%). That is 1.4x,
+close enough to chance. Googlebot already crawled 57,131 distinct URLs, 81% of
+the sitemap, so discovery was never the bottleneck. **Move 03's case is
+engagement, not SEO, and Move 09 has no link-graph dependency.**
+
+## NEXT, in order
+
+1. **The block digest.** The measured fix for the retention hole and the only
+   piece of that work not shipped. 9 of 13 real subscribers are building
+   watchers whose only channel is an event-driven alert; across the 12 watched
+   buildings there were **0 events in 30 days**, and 3 buildings have had none in
+   a year. Radius test: building 3/12 have monthly activity, **block 12/12**,
+   ZIP 12/12 but at 1,000-4,200 events a month. A tax block is a median of 59
+   parcels, so it really is "your street". Needs a cap: 1062 Elton Street's block
+   runs 108 events a month. `pbarcia@aol.com` subscribed to three adjacent
+   buildings on 42nd Street, which is a user hand-building this feature.
+   A monthly *building* report was tried on paper and rejected: it would be
+   empty for 8 of 12 buildings even including 311 and open-violation state.
+2. **Move 09, violation-gated sitemap expansion.** 27,862 buildings carry 5+ HPD
+   violations with no deed and no eviction, so they are absent from the sitemap.
+   Now unblocked. Gate at 5, not 1 (117,309 would qualify at 1).
+3. **Move 05, citywide marshal index.** 60+ place variants of "eviction marshal
+   {place}" rank 2 to 43 with zero clicks; the head term `nyc marshal eviction
+   list` sits at position 43 and there is no citywide parent for the 127 leaves.
+4. **Move 06, plain-phrase headings on /property.** "sales history", "taxes",
+   "owner" are live queries ranking 12 to 24.
+5. **DOS follow-ons.** Registered agent as a second family-clustering signal
+   (independent of the filing address, and Summit Malls proves it works);
+   Delaware jurisdiction as a surfaced signal (663 entities); a monthly
+   `refresh_dos_entities --all` since the nightly only resolves new names.
+
+## Traps and state, so the next session does not walk into them
+
+1. **Alembic: current is f3a91b6c8d27, head is c4e17b2a9d38, TWO migrations are
+   pending and that is correct.** b8e30d5c1746 drops raw_data and wants the
+   maintenance window. c4e17b2a9d38 adds dos_entities and **guards its own
+   create**, because the table was made directly when the feature shipped. I
+   stamped to head by mistake during this session and reverted it; do not stamp.
+   `alembic upgrade head` during the window applies the drop then skips the
+   create.
+2. **The pre-commit hook runs on every commit.** `--no-verify` exists. To extend
+   the lane, edit `LANE` in `scripts/guards.sh`.
+3. **The one guard that stays red is `test_deploy_copy_matches_installed
+   [pulsecities.service]`.** That is NEEDS MICHAEL item 1 below, not a bug.
+4. **Do not build person pages.** Person-name queries convert at 12.3% against a
+   2.5% site average and are the best-converting queries the site has. 71,197
+   person-shaped deed parties, and the ones being searched hold 1-2 buildings.
+   Only 163 hold 5+, and the top of that list is banks.
+5. Everything in the previous checkpoint's trap list still stands: measure SSR
+   through the gunicorn socket, nothing during the 02:00 run, the nginx SSR cache
+   keys on path plus ?lang only, most SSR heads are f-strings, `esc()` copy
+   cannot carry markup, `_count()` pluralises the head noun, a new SSR route
+   needs an nginx location block.
+
+## NEEDS MICHAEL, priority order
+
+1. **Buy Anthropic credits.** The AI read has been dead since 2026-08-23 and 27
+   real visitors hit it in five days. It is the one feature failing in front of
+   users, and the weekly digest narratives are down with it.
+2. **Send the FLGSP pitch.** Re-verified and send-ready as of 2026-08-27
+   (da26805): 82 buildings, 82 entities, all deeds 2026-03-31, prices summing to
+   exactly $451,300,000, 99 evictions of which 98 predate the sale. Three counts
+   were refreshed (RS units 4,793 to 4,823, open violations 10,350 to 9,838,
+   worst building 778 to 841). **Stale again after a week.** The DOS finding
+   above makes it stronger. Recipients named in the file.
+3. **Decide on the push.** 97 commits unpushed, CI dead since 2026-08-08, and
+   `.github/workflows/ci.yml` runs on push to main. Verified it does not worsen
+   credential exposure: the DB password is already in 403 pushed commits back to
+   2026-04-15. Postgres is localhost-only behind ufw, so it is defence-in-depth,
+   not an open door. **The purge plan must cover the remote**, not just local
+   history.
+4. **Restart with the committed service unit**, then rotate the DB password, then
+   the maintenance window (`alembic upgrade head` + `retire_raw_data.sh drop`,
+   ~11GB of a 16GB DB). Unchanged from the previous checkpoint.
+5. **HEARTBEAT_BASE_URL, ALERT_WEBHOOK_URL, dedicated R2 creds, OPS_TOKEN
+   rotation.** Unchanged.
+
+## Numbers worth not re-deriving
+
+    Search Console   731 clicks / 29.7k impressions / 2.5% CTR / position 8-11
+    logs vs console  nginx unique search-referred IPs run ~1.8x GSC clicks
+    subscribers      21 rows, 17 addresses, 13 real people (4 are Michael's, 1 test)
+                     9 of 13 are building watchers, 3 ZIP, 2 company
+    funnel           /property 977 visitors -> 11 signups (1.13%)
+                     /llc 126 -> 2 (1.59%); both live capture points convert alike
+    engagement       73% of organic visitors read one page and leave
+    crawl            GPTBot 76,289 vs Googlebot 68,881 over 15 days
+    sitemap          1,052 core + 69,845 property
+    backlinks        0. Still the ceiling, and no code change touches it.
+
 # >>> START HERE after /clear (2026-08-19, family follow + five-audit sweep) <<<
 
 Everything below is done, committed and verified except the items under NEEDS
