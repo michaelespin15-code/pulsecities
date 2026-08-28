@@ -28,6 +28,15 @@ by record profile, against /neighborhood at 68-69% as the known-good benchmark:
     1-4 violations    66% mean    indexable, not sitemapped
     no records        75% mean    noindex
 
+**The eviction-only figure above is contested and is the one number here that
+could justify a bad decision.** The table was measured with this file's own
+draw; tests/test_content_depth.py measures on a different scale, and on that
+scale the other tiers roughly agree (deed+eviction 60 vs 62, deed-only 66 vs 67,
+violation-only 55 vs 56) while eviction-only comes out at **57.5% and 58.4%
+across two independent draws of twenty**, the second-*best* tier rather than the
+worst. Whichever scale is right, 68% is the figure that would argue for cutting
+18,357 pages, and no draw reproduces it. Re-measure before acting on it.
+
 The violation tier was held out on its worst-pair figure rather than its mean,
 and re-measuring settled it. Across five independent draws of ten pages each,
 violation-only pages breached the 70% near-duplicate limit in 0 of 5 draws

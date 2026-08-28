@@ -46,6 +46,7 @@ from pathlib import Path
 import resend
 from sqlalchemy import text
 
+from api.violation_text import UNIT_TAIL
 from api.freshness import (FRESHNESS_SOURCES, db_through_sql, feed_anchor,
                            real_date, window_sql)
 from config.logging_config import configure_logging
@@ -250,7 +251,9 @@ _LEADING_SECTION = re.compile(r"^[\s\u00a7\d.,;()\-]+")
 # HPD appends the apartment the inspector stood in. A block report is about
 # buildings, the clause is what pushed the useful half of the sentence past the
 # character budget, and printing a stranger's apartment number serves nobody.
-_UNIT_TAIL = re.compile(r"\s+(located at|at apt\.?|in apt\.?)\b.*$", re.I | re.S)
+# The pattern moved to api/violation_text.py once the audit found the web page
+# had never applied it; this file was its only reader for two days.
+_UNIT_TAIL = UNIT_TAIL
 
 
 def _plain(description: str, limit: int = 110) -> str:

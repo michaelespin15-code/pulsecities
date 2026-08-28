@@ -24,6 +24,7 @@ from sqlalchemy.orm import Session
 
 from api.permit_kinds import (DECONVERSION_PARAMS, deconversion_sql,
                               renovation_sql)
+from api.violation_text import strip_unit
 from api.freshness import (ACRIS_THROUGH_SQL, FRESHNESS_SOURCES, db_through_sql,
                            feed_anchor, real_date, window_sql)
 from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
@@ -3963,6 +3964,11 @@ def _violation_text(desc: str) -> str:
     # The citation run survives a colon strip as often as it replaces one:
     # "(a) § HMC:FILE ANNUAL BEDBUG REPORT" and "B)(5) HMC, § 12-06 RCNY POST".
     body = _VIOL_CITE.sub("", body).lstrip(" ()[],.;:-")
+    # HPD appends the apartment the inspector stood in, and this page already
+    # prints the street address beside the row, so the pair names a household.
+    # The rule is owned by api/violation_text.py because the block digest had
+    # been applying it alone since 2026-08-28.
+    body = strip_unit(body)
     body = body.strip(" .,;")
     if not body:
         return "Violation issued"

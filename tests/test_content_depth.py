@@ -114,6 +114,10 @@ def _faq_questions(html: str) -> list[dict]:
 _TIERS = {
     "deed+eviction": "d.bbl IS NOT NULL AND e.bbl IS NOT NULL",
     "deed only":     "d.bbl IS NOT NULL AND e.bbl IS NULL",
+    # Eviction-only was missing until 2026-08-28 and it is 18,357 sitemapped
+    # pages, 18.8% of the corpus, that no draw could reach. Two independent
+    # draws measure it at 57.5% and 58.4% mean overlap, the second-best tier.
+    "eviction only": "d.bbl IS NULL AND e.bbl IS NOT NULL",
     "violation only": "d.bbl IS NULL AND e.bbl IS NULL AND v.bbl IS NOT NULL",
 }
 
@@ -141,6 +145,12 @@ _TIERS = {
 _MEAN_CEILING = {
     "deed+eviction": 0.66,
     "deed only": 0.72,
+    # Eviction-only measured 57.7% mean, 69.6% max on this file's own draw of
+    # eight, 2026-08-28. scripts/generate_sitemap.py's docstring records this
+    # tier at 68%, the worst of the four, and no draw reproduces that: it is the
+    # second-best. The stale figure is the one that would argue for cutting
+    # 18,357 pages, which is why the tier is guarded here now.
+    "eviction only": 0.64,
     "violation only": 0.62,
 }
 _MAX_CEILING = 0.85
