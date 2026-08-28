@@ -80,12 +80,20 @@ _FLIP_SQL = text(f"""
           AND p.zip_code IS NOT NULL
 {_NOISE_SQL}
     ),
+    -- Scoped to the lots that could possibly qualify. The join below is an
+    -- inner join on bbl, so every other building's permits were being read and
+    -- then discarded: a full year of permits_raw, and the BIS half of the
+    -- renovation rule is a JSONB extraction that no index can serve. That cost
+    -- 30 seconds a render, and it only started costing it when the DOB NOW
+    -- backfill made this query correct. Restricting the scan to the LLC
+    -- purchases changes no row of the result.
     reno_permits AS (
-        SELECT bbl, MIN(filing_date) AS first_permit_date
-        FROM permits_raw
-        WHERE {renovation_sql()}
-          AND filing_date >= CURRENT_DATE - make_interval(days => :lookback)
-        GROUP BY bbl
+        SELECT pr.bbl, MIN(pr.filing_date) AS first_permit_date
+        FROM permits_raw pr
+        WHERE {renovation_sql('pr')}
+          AND pr.filing_date >= CURRENT_DATE - make_interval(days => :lookback)
+          AND pr.bbl IN (SELECT bbl FROM llc_transfers)
+        GROUP BY pr.bbl
     ),
     combined AS (
         SELECT DISTINCT ON (l.bbl)
