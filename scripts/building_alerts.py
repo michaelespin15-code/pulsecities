@@ -27,6 +27,7 @@ from sqlalchemy import text
 
 from config.logging_config import configure_logging
 from models.database import get_scraper_db
+from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
 from scripts.lib import mailer
 
 resend.api_key = os.getenv("RESEND_API_KEY", "")
@@ -45,6 +46,16 @@ _EVENT_WHERE = {
     "permit": "FROM permits_raw WHERE bbl = :bbl AND created_at > :since",
     "eviction": "FROM evictions_raw WHERE bbl = :bbl AND created_at > :since",
     "violation": "FROM violations_raw WHERE bbl = :bbl AND created_at > :since",
+    # 311 was missing entirely, which is why a watcher on a quiet building heard
+    # nothing for a month: across the twelve watched buildings, the four feeds
+    # above produced 24 events in 90 days and 311 alone produced 109.
+    #
+    # Housing types only. A watcher does not want "Litter Basket Request" as a
+    # building alert, and 3044477501 carries those alongside the plumbing.
+    # DISPLACEMENT_COMPLAINT_TYPES is the same list /neighborhood counts on, so
+    # the alert and the page cannot disagree about what a housing complaint is.
+    "complaint": "FROM complaints_raw WHERE bbl = :bbl AND created_at > :since"
+                 " AND upper(complaint_type) = ANY(:housing_types)",
 }
 
 _EVENT_SQL = {
@@ -70,6 +81,12 @@ _EVENT_SQL = {
         {_EVENT_WHERE['violation']}
         ORDER BY COALESCE(nov_issued_date, inspection_date) DESC NULLS LAST LIMIT :cap
     """,
+    "complaint": f"""
+        SELECT unique_key AS ref, created_date AS event_date,
+               complaint_type, descriptor, status
+        {_EVENT_WHERE['complaint']}
+        ORDER BY created_date DESC LIMIT :cap
+    """,
 }
 
 
@@ -94,6 +111,16 @@ def _describe(kind: str, row) -> str:
         return line
     if kind == "eviction":
         return f"{(row.eviction_type or 'Eviction').strip()} eviction executed, {_fmt_date(row.event_date)}, docket {row.ref}."
+    if kind == "complaint":
+        what = (row.complaint_type or "Housing").strip().title()
+        desc = (row.descriptor or "").strip().title()
+        line = f"311 complaint: {what}"
+        if desc and desc.upper() != what.upper():
+            line += f", {desc}"
+        line += f", {_fmt_date(row.event_date)}."
+        if (row.status or "").strip():
+            line += f" Status {row.status.strip().lower()}."
+        return line
     cls = f"class {row.violation_class}" if row.violation_class else "unclassified"
     desc = (row.description or "").strip()
     line = f"HPD violation issued ({cls}), {_fmt_date(row.event_date)}."
@@ -119,7 +146,8 @@ def scan(db, since: datetime) -> list[dict]:
     for w in watches:
         events, total = [], 0
         for kind, sql in _EVENT_SQL.items():
-            params = {"bbl": w.bbl, "since": since}
+            params = {"bbl": w.bbl, "since": since,
+                      "housing_types": list(DISPLACEMENT_COMPLAINT_TYPES)}
             total += db.execute(
                 text(f"SELECT count(*) {_EVENT_WHERE[kind]}"), params
             ).scalar() or 0

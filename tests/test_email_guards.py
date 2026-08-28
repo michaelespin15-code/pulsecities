@@ -146,3 +146,44 @@ class TestVisibleWords:
     def test_style_and_script_blocks_are_stripped(self):
         html = "<style>.a{color:red}</style><script>var x=1</script><p>hello there</p>"
         assert mailer.visible_words(html) == ["hello", "there"]
+
+
+class TestTheAlertScansWhatMatters:
+    """311 was the missing feed, and it is the one this audience cares about.
+
+    Across the twelve watched buildings the four original feeds produced 24
+    events in 90 days; 311 alone produced 109. The subscribers are aol.com and
+    msn.com residents, not investors, and heat, plumbing and mold is what they
+    signed up to hear about. One watched building, 681 5 Avenue, alerts only
+    because of this feed and would otherwise never have heard from us.
+    """
+
+    def test_complaints_are_scanned(self):
+        from scripts.building_alerts import _EVENT_SQL, _EVENT_WHERE
+        assert "complaint" in _EVENT_WHERE and "complaint" in _EVENT_SQL
+
+    def test_only_housing_complaint_types_qualify(self):
+        """A watcher does not want "Litter Basket Request" as a building alert,
+        and at least one watched building files those alongside its plumbing."""
+        from scripts.building_alerts import _EVENT_WHERE
+        assert "housing_types" in _EVENT_WHERE["complaint"], (
+            "the complaint scan is unfiltered and will alert on litter baskets"
+        )
+
+    def test_the_filter_is_the_same_list_the_site_counts_on(self):
+        """Two lists of housing complaint types would drift, and the drift shows
+        up as an alert about a subject the neighbourhood page does not count."""
+        import scripts.building_alerts as ba
+        from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
+        assert ba.DISPLACEMENT_COMPLAINT_TYPES is DISPLACEMENT_COMPLAINT_TYPES
+
+    def test_a_complaint_renders_a_readable_line(self):
+        from scripts.building_alerts import _describe
+        from datetime import date
+
+        class Row:
+            ref = "1"; event_date = date(2026, 6, 15)
+            complaint_type = "PLUMBING"; descriptor = "BASIN/SINK"; status = "Open"
+        line = _describe("complaint", Row())
+        assert "311 complaint" in line and "Plumbing" in line and "Basin/Sink" in line
+        assert "{" not in line, "unfilled placeholder in an alert line"
