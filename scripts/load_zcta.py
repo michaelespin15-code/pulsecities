@@ -25,6 +25,7 @@ import requests
 import shapely
 from dotenv import load_dotenv
 from geoalchemy2.shape import from_shape
+from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import insert
 
 # Load .env before importing models so DATABASE_URL is available
@@ -138,6 +139,9 @@ def load_zcta(db) -> int:
                 set_={
                     "geometry": wkb_geom,
                     "name": name,
+                    # onupdate=utcnow does not reach an ON CONFLICT SET list;
+                    # see the same note in scrapers/pluto.py.
+                    "updated_at": text("now()"),
                 },
             )
         )

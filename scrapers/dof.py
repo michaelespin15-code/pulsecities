@@ -181,6 +181,12 @@ class DOFScraper(BaseScraper):
                     # DOF owns assessed_total ONLY
                     # Do NOT overwrite units_res, geometry, owner_name, address (PLUTO owns those)
                     "assessed_total": insert(Parcel).excluded.assessed_total,
+                    # The `updated_at` in the VALUES list above only applies to
+                    # rows that insert. On conflict the SET list is this dict and
+                    # nothing else, so without this line an assessment refresh
+                    # updates the value and leaves the column that dates it
+                    # untouched. Same defect as scrapers/pluto.py had.
+                    "updated_at": now,
                 },
             )
         )

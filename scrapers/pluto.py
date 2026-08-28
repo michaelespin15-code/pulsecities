@@ -187,6 +187,16 @@ class PlutoScraper(BaseScraper):
                     "owner_type": insert(Parcel).excluded.owner_type,
                     "assessed_total": insert(Parcel).excluded.assessed_total,
                     "geometry": insert(Parcel).excluded.geometry,
+                    # SQLAlchemy's onupdate=utcnow fires for an ORM UPDATE and
+                    # not for ON CONFLICT DO UPDATE, whose SET list is exactly
+                    # this dict. Leaving it out froze parcels.updated_at at
+                    # first insert: on 2026-08-28 the newest value in a 918k-row
+                    # table read 2026-07-09, five weeks after a PLUTO run that
+                    # had refreshed every one of them. The row data was right
+                    # and the column that says when it was right was not, which
+                    # is the false-freshness shape this codebase keeps paying
+                    # for. tests/test_upsert_timestamps.py greps for the next one.
+                    "updated_at": text("now()"),
                 },
             )
         )
