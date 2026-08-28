@@ -1,112 +1,138 @@
-# >>> START HERE after /clear (2026-08-28, permits, alerts and the sitemap) <<<
+# >>> START HERE after /clear (2026-08-28, the permit-record session) <<<
 
-Working tree clean, 122 commits unpushed. Everything below is done, deployed
-and verified. The session ran long; the sections after this one are the earlier
-halves of the same day and are still accurate.
+Working tree clean. 20 commits, none pushed (125 unpushed in total). Everything
+below is done, deployed and verified live. Full suite 1,543 passed, 1 failed,
+and that one failure is NEEDS MICHAEL item 4 rather than a bug.
 
-## Read first: the repo is public and the DB password is in its history
+## Things with a clock on them, read these first
 
-`gh repo view` says `isPrivate: false`, and an unauthenticated fetch of
-github.com/michaelespin15-code/pulsecities returns 200. The previous checkpoint
-called the password exposure "defence in depth, not an open door" on the
-grounds that Postgres is localhost-only behind ufw. That is still true and it is
-not the same as private: a live credential is readable by anyone.
+1. **The block digest sends for the first time on 2026-09-01 at 10:00 ET** to
+   ten real subscribers, Michael among them. It has never sent. The cron is
+   installed in /etc/cron.d/pulsecities. To hold it, comment that line out. A
+   preview of all ten was rendered and reviewed on 2026-08-28 and read
+   correctly.
+2. **A real subscriber has a wrong email from this morning.**
+   `ladycarmenn@aol.com` was sent "New at 1062 Elton Street: 5 new records" at
+   03:25, listing permits filed in 2023 and 2024 that a backfill had just
+   loaded. The dates on them were right; the word "new" was not. The cause is
+   fixed. **Whether that deserves a correction is Michael's call and nothing
+   has been sent.**
+3. **The GitHub repo is public** (`isPrivate: false`, unauthenticated fetch
+   returns 200) and the live DB password is in its pushed history. The previous
+   checkpoint called this "defence in depth, not an open door" on the grounds
+   that Postgres is localhost-only behind ufw. That is still true and it is not
+   the same as private. Pushing does not worsen it: the only unpushed commit
+   touching the password is a4ded27, which *removes* it. Rotating is the fix.
+4. **Tonight's 02:00 pipeline is the first to run the seventh scraper**
+   (dob_now_permits) on its own. It has run twice by hand and once
+   accidentally under the nightly, all clean. If it misbehaves, the log is
+   /var/log/pulsecities/scraper.log.
+5. **IndexNow has ~28,000 new URLs queued** from the sitemap expansion and caps
+   at 5,000 a run, so it drains over about six nights. That is by design, not a
+   backlog to clear.
 
-Pushing does not make it worse. The only unpushed commit touching the password
-is a4ded27, which **removes** it, and it is already in commits pushed since
-2026-04-15. Rotating it is the fix and it is unchanged as NEEDS MICHAEL item 4.
+## The through-line of the whole session
 
-**CI can now go green, which it has not done since at least 2026-07-15** (the
-last three runs all failed). The step was `pytest -m "not integration"` against
-a DATABASE_URL naming a Postgres the runner does not have, so no commit could
-have passed it. It now runs `scripts/guards.sh`, the same lane as the pre-commit
-hook, verified against a closed port: 187 passed, 3.5s.
+Every significant find was the same shape: **something that looked healthy and
+was returning almost nothing.** Not one of them raised an error, and several had
+a comment or a disclosure line nearby explaining the symptom away.
+
+If you only remember one heuristic from this session: **when a feature looks
+fine, check what volume it returns against what it should return.** That is what
+found all of the following.
 
 ## Shipped
 
-**A row we imported is not a record that happened (5ecade9).** The DOB NOW
-backfill loaded 485,443 permits going back to 2021 at 01:52, and at 03:25 the
-daily alert read them as new and emailed a real subscriber "New at 1062 Elton
-Street: 5 new records", listing permits filed in 2023 and 2024. The dates were
-right; the word "new" was not. **NEEDS MICHAEL: that subscriber
-(ladycarmenn@aol.com) still has that email. Whether it deserves a correction is
-your call.**
+**The permit signal was 24.7% of the composite score and was computed from 414
+records (bc39644).** `scrapers/permits.py` reads `ipu4-2q9a`, the legacy DOB
+Permit Issuance dataset, and DOB NOW superseded it. New scraper on `w9ak-ipjd`,
+485,443 rows backfilled from 2021, and the signal is now 32,786 records.
 
-The ingest window is not the bug and must stay: ACRIS publishes deeds a median
-of 47 days late, 82 at p90, and HPD releases violations 234 days late at p90, so
-a watcher keyed on event dates would never hear about the deed on their own
-building. An age ceiling was measured and rejected for that reason. Instead
-`scripts/lib/backfill_windows.py` skips rows written during a run stamped
-'backfill'. **Any future backfill is now safe; run one and the alerts ignore it.**
-Verified against the exact window that mis-sent: with the exclusion, zero
-alerts; without it, the same five permits.
+Every displacement score was recomputed. ZIPs with a nonzero permit signal went
+105 -> 168 of 177; median rank shift 7 places, max 79; **half the top ten
+changed.** 11694 Rockaway Park fell from rank 17 to 96 as its permit signal
+collapsed from 85.7 to 6.1. The new top ten is the South Bronx plus Harlem and
+Bed-Stuy.
 
-**The block digest was going to do the same thing on 2026-09-01**, opening
-Michael's own report with nineteen backfilled permits under "recorded since the
-last report". Now correctly reports a quiet block. All ten subscribers re-checked
-through the mailer gate, 4 to 14 content items each, none refused.
+**Why it survived five audits**, which is the part worth keeping: the scraper
+ran green nightly reporting ~34 records, which reads as a quiet feed. The
+anomaly check *did* fire three times in fourteen nights and reached nobody,
+because BaseScraper only escalates a low count to an email when the feed's
+expected minimum clears 100 and this one sat at 50. Then pipeline_health, the
+one report a human reads, carried a hand-written note for exactly that pattern:
+"post-bulk-recovery; rolling-avg warning expected". Correct when written, stale
+by the time it mattered. All three fixed (f6a95b8).
+
+The other four feeds were checked the same way and are fine: HPD violations
+98.9%, evictions 98.1%, DCWP 100%, 311 at 99.9% net of ingestion lag.
 
 **Flip Watch was finding 15 flips a year and should have found 639 (d265361).**
-See the section below. `api/permit_kinds.py` owns the rule now.
+Four queries hand-rolled `raw_data->>'job_type' IN ('A1','A2')`, a column only
+legacy BIS rows have. 90d went 1 to 115, 180d 6 to 279, 365d 15 to 639. This is
+the feature the MTEK and PHANTOM pitches are built on. `api/permit_kinds.py`
+owns the rule now.
 
-**The violation tier is in the sitemap (7aefdc3).** 27,825 buildings with 5+
-HPD violations, no deed, no eviction. Sitemap 69,845 -> 97,790 property URLs.
-They were held out on a worst-pair overlap figure; five independent draws put
-violation-only at 0 of 5 breaches of the 70% limit (mean 58.6%) against
-deed-only, sitemapped all along, at 3 of 5 (mean 63.0%). **That also means the
-near-duplicate guard is weaker than it looks**: it samples four pages, six
-pairs, so it rarely draws a bad one. Worth strengthening, not urgent.
+**Every deed window ended at the calendar rather than at the data (cd1a076,
+05ffec9).** ACRIS was 28 days behind, and the shortfall scales with the lag over
+the window: a 30-day deed count read **1** where it should read **558**; radar's
+90-day window found 4 clusters instead of 11. The 30-day case set
+`signal_counts.llc_acquisitions` to zero for every ZIP in /api/stats, so the
+dominant-signal label on the site's central ranking could never say an LLC was
+buying. Thirteen sites fixed. A disclosure line for this class had shipped on
+2026-08-18 and was only half the fix.
 
-## Also shipped: every deed window now ends where the deeds end
+**The block digest (93859bd), and the hole the backfill opened in it
+(5ecade9).** Monthly tax-block report for building watchers, because across the
+twelve watched buildings there were zero events in thirty days. A report of
+*what happened* is empty for seven of twelve blocks, so it carries a
+standing-state section that cannot come up empty. Then the DOB NOW backfill put
+485k historical permits inside its ingest window and it was going to open
+Michael's own report with nineteen of them. `scripts/lib/backfill_windows.py`
+skips rows written during a run stamped 'backfill'. **Any future backfill is now
+safe by construction.**
 
-ACRIS lags and freezes. A window running to CURRENT_DATE spends its tail on days
-that cannot contain a deed, and the shortfall scales with the lag over the
-window, not with the lag:
+**Homes proposed for removal (1a4d203).** 853 buildings have filed to reduce the
+number of homes they hold since DOB NOW began, 1,771 homes. On /property with
+the filed description verbatim, and counted on the block digest.
 
-    window     to CURRENT_DATE          to the last published deed
-    30 days             1 deed                          558 deeds
-    90 days   4 radar clusters                 11 radar clusters
-    365 days        639 flips                         700 flips
+**The violation tier is in the sitemap (7aefdc3).** 27,825 buildings with 5+ HPD
+violations, no deed, no eviction. 69,845 -> 97,790 property URLs.
 
-**The 30-day case set `signal_counts.llc_acquisitions` to zero for every ZIP in
-/api/stats**, so the dominant-signal label on the site's central ranking could
-never say an LLC was buying. Wakefield now reads `dominant_signal:
-llc_acquisitions`. Thirteen sites fixed; `api/freshness.window_sql` owns the
-rule and `tests/test_window_anchors.py` greps for the next bare one. Only ACRIS
-gets it: the other feeds were within two days of the calendar.
+**CI can go green for the first time since July (0aac330).** It ran
+`pytest -m "not integration"` against a Postgres the runner does not have, so no
+commit could ever pass. It now runs `scripts/guards.sh`, the same lane as the
+pre-commit hook: 219 assertions, ~5s.
 
-A disclosure line had been shipped for this class on 2026-08-18 and was only
-half the fix. **That is the pattern worth carrying: when a lagging feed is
-found, check whether the number was fixed or only labelled.**
+Smaller: an upsert that refreshed rows without moving `updated_at` in PLUTO and
+DOF (63b505f); a covering index taking the scoring aggregate 8.8s to 1.4s
+(be15b22); five rotted guards, one of which was hiding a Spanish label that had
+been calling executed warrants "filed" for nine days (97e1297, 6dc4d01).
 
-Two latent bugs surfaced when a query returned rows for the first time:
-social_post.py crashed on `r.days_between.days` (Postgres hands back an int),
-and its `_fmt_date` dropped the year, composing "LLC acquired Jul 24" for a 2025
-deed. It is a manual tool, not in cron.
+## Two methods this session earned, which matter more than any one fix
 
-## Shipped: the filings that remove homes
+**Sample randomly, never by the metric.** The deconversion rule was validated
+twice by reading the biggest unit losses and both times it looked convincing
+while being wrong: a hotel converting 606 rooms to 312 apartments and a
+dormitory reconfiguring 267 suites. Both reduce a count and neither removes a
+home. A random sample of ten showed the real signal immediately. The same trap
+appeared twice more: a violation-page overlap that looked disqualifying at
+74.9% until five draws showed it breached 0 of 5 while the pages already
+sitemapped breached 3 of 5, and a permit cost floor that "obviously" improved
+quality until it was seen dropping genuine $100 filings.
 
-853 buildings have filed to reduce the number of homes they hold since DOB NOW
-began, 1,771 homes in total, and nothing on the site said so. /property carries
-a "Homes proposed for removal" block; the block digest carries a count for the
-reader's own street (6 buildings on one West Village block, 6 on one in Cobble
-Hill).
+**Ask whether a lagging feed was fixed or only labelled.** The window-anchoring
+disclosure shipped ten days before the numbers underneath it were corrected.
 
-    442 West 22 Street, 23 homes to 1, $525,844
-    "CONVERT MULTIPLE DWELLING TO SINGLE FAMILY DWELLING"
+## Rules that now live in one place, with a grep guarding each
 
-**Not a score input, deliberately.** api.permit_kinds.deconversion_sql carries
-the four conditions and why each exists; the two things measured and REJECTED
-are written down there too, so they are not retried: a cost floor (the cheapest
-rows are real, "$100, PROPOSED CONVERSION OF EXISTING 3-FAMILY BUILDING") and
-requiring the filing's count to be at or below PLUTO's (drops real cases,
-because PLUTO is often already updated to the post-conversion number).
+Each was written after the rule had already been bypassed in production. All are
+in the pre-commit lane and in CI.
 
-**The method matters more than the feature.** Every check was made against a
-RANDOM sample. Sampling the largest rows hid a hotel converting 606 rooms into
-312 apartments and a dormitory reconfiguring 267 suites for two full rounds:
-both reduce a count, neither removes a home. The parcel-alias argument is
-required rather than optional so the join that excludes them cannot be dropped.
+    api/permit_kinds.py            what a permit is; two source vocabularies
+    api/freshness.window_sql       windows end at the feed, not the calendar
+    scripts/lib/backfill_windows   imported history is not new activity
+    scripts/lib/mailer.py          one gate for outgoing mail
+    api/freshness.real_date        a record cannot postdate its own ingest
 
 ## NEXT, in order
 
@@ -116,29 +142,58 @@ required rather than optional so the join that excludes them cannot be dropped.
 2. **Move 06, plain-phrase headings on /property.** "sales history", "taxes",
    "owner" are live queries ranking 12 to 24.
 3. **A CI job with a database**, so the non-integration suite runs there too.
-   The guard lane is deliberately narrower and is what unblocks the push; it is
-   not the whole answer.
-4. **Strengthen the near-duplicate guard.** It samples four pages, six pairs,
-   so it rarely draws a bad one; deed-only pages breach the 70% limit in 3 of 5
+   The guard lane is deliberately narrower and is what unblocks the push.
+4. **Strengthen the near-duplicate guard.** It samples four pages, six pairs, so
+   it rarely draws a bad one; deed-only pages breach the 70% limit in 3 of 5
    independent draws of ten.
 5. **DOS follow-ons.** Registered agent as a second clustering signal, Delaware
    jurisdiction surfaced (663 entities), monthly `refresh_dos_entities --all`.
 
-**Still open and genuinely a judgement call: WEIGHT_PERMITS is 0.21, set when
-the permit signal was 414 rows. It has never been calibrated against a real one.**
+**Open and genuinely a judgement call, not a measurement: `WEIGHT_PERMITS` is
+0.21, set when the permit signal was 414 rows. It has never been calibrated
+against a real one.** The signal's *definition* was deliberately left alone so
+the coverage fix could be measured on its own; `initial_cost` and the dwelling
+counts are in `permits_raw` and would sharpen it.
 
 ## State
 
-- Disk 73%. permits_raw is 2.9GB after the backfill and the column additions.
-- **Alembic: current f3a91b6c8d27, head c8f4b16d29ea, FIVE pending**, all
-  guarded, all with their DDL already applied live. b8e30d5c1746 still wants
-  the maintenance window. Do not stamp.
-- ACRIS 28 days stale against a 21-day threshold, unchanged and upstream.
-- Sitemap regenerated and served: 4 files, 97,790 property URLs.
-- The guard lane is 201 assertions in 4s and CI runs the same script. IndexNow caps
-  at 5,000/run, so the new URLs drain over about six nights.
-- `test_deploy_copy_matches_installed[pulsecities.service]` is the one guard
-  still red, and it is NEEDS MICHAEL item 1.
+- **Alembic: current f3a91b6c8d27, head c8f4b16d29ea, FIVE pending.** All are
+  guarded and their DDL is already applied to the live database, so the gap is
+  expected. b8e30d5c1746 (the raw_data drop) still wants the maintenance
+  window. **Do not stamp.**
+- Disk 73%, 22GB free. permits_raw is 2.9GB after the backfill.
+- ACRIS 28 days stale against a 21-day threshold, upstream and unchanged. The
+  other four feeds are within two days.
+- permits_raw: 745,407 BIS rows, 485,443 DOB NOW.
+- 21 confirmed subscribers, 10 of them block-digest recipients.
+- Sitemap: 4 files, 97,790 property URLs, served.
+- Guard lane: 219 assertions, ~5s, installed as .git/hooks/pre-commit and run
+  by CI. Full suite runs in halves on this box; see the older sections.
+- `sales_raw` and `property_scores` are empty tables nobody writes.
+  `idx_parcels_geometry` is 74MB with zero scans since the Aug 15 reboot. None
+  was touched; all three are worth a look someday.
+
+## NEEDS MICHAEL, priority order
+
+1. **Buy Anthropic credits.** The AI read has been dead since 2026-08-23 and is
+   the one feature failing in front of users. Weekly digest narratives are down
+   with it.
+2. **Send the FLGSP pitch.** Re-verified send-ready 2026-08-27 (da26805) and
+   stale again after a week. The DOS finding makes it stronger: all 82 shells
+   are Delaware companies filed 2026-01-23, two months before they took title,
+   every one designating SUMMIT MALLS MANAGEMENT LLC.
+3. **Decide on the push.** 125 commits, and CI can now go green. See item 3 of
+   the clock list for why the push does not worsen the credential exposure.
+4. **Restart with the committed service unit**, then rotate the DB password,
+   then take the maintenance window (`alembic upgrade head` +
+   `retire_raw_data.sh drop`, ~11GB of a 16GB database):
+
+       cp deploy/pulsecities.service /etc/systemd/system/pulsecities.service
+       systemctl daemon-reload && systemctl restart pulsecities
+
+   This is the one red test in the suite.
+5. **HEARTBEAT_BASE_URL, ALERT_WEBHOOK_URL, dedicated R2 creds, OPS_TOKEN
+   rotation.** Unchanged.
 
 # >>> Earlier the same day: the permit signal <<<
 
