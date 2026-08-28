@@ -61,6 +61,7 @@ LANE=(
   tests/test_permit_kind_guards.py
   tests/test_upsert_timestamps.py
   tests/test_backfill_windows.py
+  tests/test_window_anchors.py
 )
 
 PYTHON="${PYTHON:-./venv/bin/python}"

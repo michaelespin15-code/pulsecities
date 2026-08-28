@@ -46,7 +46,8 @@ from pathlib import Path
 import resend
 from sqlalchemy import text
 
-from api.freshness import FRESHNESS_SOURCES, db_through_sql, real_date
+from api.freshness import (FRESHNESS_SOURCES, db_through_sql, feed_anchor,
+                           real_date, window_sql)
 from config.logging_config import configure_logging
 from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
 from models.database import get_scraper_db
@@ -467,7 +468,11 @@ def standing_state(db, block: dict) -> dict:
     carrying them, 0 to 7 deeds in the last twelve months.
     """
     lo, hi = block["block"] + "0000", block["block"] + "9999"
-    p = {"lo": lo, "hi": hi}
+    # The twelve months of deeds end at the last day ACRIS published, not at
+    # today. On 2026-08-28 that was 28 days back, so a calendar window spent a
+    # month of its year on days that could not contain a sale, and this report
+    # would have told a reader their block was quieter than it was.
+    p = {"lo": lo, "hi": hi, "anchor": feed_anchor(db)}
     q = lambda sql: db.execute(text(sql), p).scalar() or 0  # noqa: E731
 
     open_where = ("bbl >= :lo AND bbl <= :hi "
@@ -492,12 +497,12 @@ def standing_state(db, block: dict) -> dict:
         "deeds_12m": q(
             "SELECT count(*) FROM ownership_raw WHERE bbl >= :lo AND bbl <= :hi "
             "AND doc_type IN ('DEED','DEEDP') AND party_type = '2' "
-            "AND doc_date > CURRENT_DATE - INTERVAL '365 days' AND "
+            "AND " + window_sql("doc_date", 365) + " AND "
             + real_date("doc_date")),
         "sold_buildings_12m": q(
             "SELECT count(DISTINCT bbl) FROM ownership_raw WHERE bbl >= :lo AND bbl <= :hi "
             "AND doc_type IN ('DEED','DEEDP') AND party_type = '2' "
-            "AND doc_date > CURRENT_DATE - INTERVAL '365 days' AND "
+            "AND " + window_sql("doc_date", 365) + " AND "
             + real_date("doc_date")),
         "evictions_12m": q(
             "SELECT count(*) FROM evictions_raw WHERE bbl >= :lo AND bbl <= :hi "

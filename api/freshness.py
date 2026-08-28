@@ -120,3 +120,50 @@ def db_through_sql(name: str) -> str:
 # because the watermark tracks recorded_datetime from the feed and can run
 # ahead of the doc dates that actually persisted.
 ACRIS_THROUGH_SQL = db_through_sql("acris")
+
+
+def feed_anchor(db, name: str = "acris"):
+    """The last day this feed actually published, for windowing.
+
+    Reads the same query /api/status publishes, so a page and the status
+    endpoint cannot disagree about where a feed stops.
+    """
+    from sqlalchemy import text as _text
+    from datetime import date as _date
+    try:
+        return db.execute(_text(db_through_sql(name))).scalar() or _date.today()
+    except Exception:  # noqa: BLE001 - a windowing helper must not take a page down
+        return _date.today()
+
+
+def window_sql(column: str, days: int, param: str = "anchor") -> str:
+    """The last `days` days of *published* data, not the last `days` days.
+
+    A window ending at CURRENT_DATE over a lagging feed spends its tail on days
+    that cannot contain a record, and the shortfall is not proportional to the
+    lag, it is proportional to the lag over the window. ACRIS was 28 days behind
+    on 2026-08-28:
+
+        window   deeds found, to today   to the last published deed
+        30 days                      1                         558
+        90 days       4 radar clusters             11 radar clusters
+        365 days            639 flips                   700 flips
+
+    A thirty-day deed count reading 1 instead of 558 is not a rounding error. It
+    made `llc_acquisitions` zero for every ZIP in /api/stats, which meant the
+    dominant-signal label on the site's central ranking could never say an LLC
+    was buying, however many were.
+
+    Callers bind the anchor once per query and share it across every predicate
+    on the same feed:
+
+        sql = f"... WHERE {window_sql('o.doc_date', 30)} ..."
+        db.execute(text(sql), {"anchor": feed_anchor(db, "acris")})
+
+    Only worth applying to a feed that lags. Evictions, violations and 311 were
+    all within two days of the calendar when this was written; ACRIS is the one
+    that freezes for weeks, and tests/test_window_anchors.py greps for a bare
+    CURRENT_DATE window on its columns.
+    """
+    return (f"{column} > (:{param})::date - INTERVAL '{days} days' "
+            f"AND {column} <= (:{param})::date")

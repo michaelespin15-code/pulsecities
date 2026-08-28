@@ -15,7 +15,8 @@ from slowapi.util import get_remote_address
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from api.freshness import FRESHNESS_SOURCES, real_date, through_sql
+from api.freshness import (FRESHNESS_SOURCES, feed_anchor, real_date,
+                            through_sql, window_sql)
 from models.database import get_db
 
 router = APIRouter(prefix="/stats", tags=["stats"])
@@ -112,7 +113,9 @@ def compute_top_risk(db) -> tuple[dict | None, list[dict]]:
             WHERE o.party_type = '2'
               AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
               AND o.party_name_normalized LIKE '%LLC%'
-              AND o.doc_date >= CURRENT_DATE - INTERVAL '30 days'
+              -- Window ends at the last published deed, not at the calendar.
+              -- ACRIS lags weeks; see api.freshness.window_sql.
+              AND {window_sql('o.doc_date', 30)}
               AND p.zip_code IS NOT NULL
               AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
               AND o.party_name_normalized NOT ILIKE '%LOAN SERVICING%'
@@ -174,7 +177,7 @@ def compute_top_risk(db) -> tuple[dict | None, list[dict]]:
           AND n.name IS NOT NULL
         ORDER BY ds.score DESC
         LIMIT 9
-    """)).fetchall()
+    """), {"anchor": feed_anchor(db)}).fetchall()
 
     _RAW = {
         "llc_acquisitions": "raw_llc",

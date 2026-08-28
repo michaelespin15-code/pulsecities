@@ -24,7 +24,7 @@ from sqlalchemy.orm import Session
 
 from api.permit_kinds import renovation_sql
 from api.freshness import (ACRIS_THROUGH_SQL, FRESHNESS_SOURCES, db_through_sql,
-                           real_date)
+                           feed_anchor, real_date, window_sql)
 from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
 from models.database import get_db
 from scoring.tiers import tier
@@ -1405,7 +1405,7 @@ def neighborhood_page(zip_code: str, lang: str = "en", db: Session = Depends(get
     # citywide /flips feed, scoped to the neighborhood. Unique, indexable content
     # that also seeds internal links to /property; renders only when non-empty, so
     # quiet ZIPs stay lean rather than becoming thin pages.
-    flip_rows = db.execute(text("""
+    flip_rows = db.execute(text(f"""
         WITH llc_transfers AS (
             SELECT o.bbl, o.doc_date AS transfer_date,
                    o.party_name_normalized AS buyer, o.doc_amount, p.address
@@ -1414,7 +1414,9 @@ def neighborhood_page(zip_code: str, lang: str = "en", db: Session = Depends(get
             WHERE o.party_name_normalized LIKE '%LLC%'
               AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
               AND o.party_type = '2'
-              AND o.doc_date >= CURRENT_DATE - INTERVAL '365 days'
+              -- Window ends at the last published deed, not at the calendar.
+              -- ACRIS lags weeks; see api.freshness.window_sql.
+              AND {window_sql('o.doc_date', 365)}
               AND p.zip_code = :zip
         ),
         reno_permits AS (
@@ -1433,7 +1435,7 @@ def neighborhood_page(zip_code: str, lang: str = "en", db: Session = Depends(get
         WHERE r.first_permit_date > l.transfer_date
           AND (r.first_permit_date - l.transfer_date) <= 60
         ORDER BY l.bbl, l.transfer_date DESC
-    """), {"zip": zip_code}).fetchall()
+    """), {"zip": zip_code, "anchor": feed_anchor(db)}).fetchall()
     flips = [
         {
             "bbl": r.bbl,

@@ -16,6 +16,7 @@ Usage:
     python scripts/social_post.py --dry-run # print to stdout only, no log write
 """
 
+from api.freshness import feed_anchor
 import argparse
 import logging
 import os
@@ -42,8 +43,13 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 def _fmt_date(d: date) -> str:
-    """'Apr 15' style — no leading zero on the day."""
-    return d.strftime("%b %-d")
+    """'Apr 15' this year, 'Apr 15, 2025' for anything older.
+
+    The year is not decoration here. These strings go into posts, and the deed
+    windows behind them reach back further than a reader assumes: on 2026-08-28
+    this printed "LLC acquired Jul 24" for a deed recorded in 2025.
+    """
+    return d.strftime("%b %-d") if d.year == date.today().year else d.strftime("%b %-d, %Y")
 
 
 def _neighborhood_label(name: str | None, zip_code: str) -> str:
@@ -188,11 +194,16 @@ def find_renovation_flips(db) -> list[dict]:
         neigh = r.neighborhood or r.zip_code
         acq = _fmt_date(r.acquisition_date)
         pmt = _fmt_date(r.permit_date)
-        days = r.days_between.days if r.days_between else 0
+        # Postgres date-minus-date arrives as a plain int through psycopg;
+        # guard for a timedelta in case the driver hands one back. This crashed
+        # on the first row it ever saw, on 2026-08-28: the query above windowed
+        # deeds against the calendar over a feed lagging 28 days, so it had
+        # been returning nothing and the line had never run.
+        days = getattr(r.days_between, "days", r.days_between) or 0
 
         body = (
-            f"Renovation-flip pattern detected at {addr}, {neigh} — "
-            f"LLC acquired {acq}, renovation permit filed {pmt} ({days} days later)"
+            f"Renovation-flip pattern detected at {addr}, {neigh}. "
+            f"LLC acquired {acq}, renovation permit filed {pmt}, {days} days later."
         )
         findings.append({"type": "RENO_FLIP", "zip": r.zip_code, "tweet": _tweet(body)})
 
@@ -276,12 +287,14 @@ def find_dual_signals(db) -> list[dict]:
           AND o.party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
           AND o.party_name_normalized NOT ILIKE '%CREDIT UNION%'
           AND (
-              o.doc_date       >= CURRENT_DATE - INTERVAL '1 day'
+              -- Deeds anchor on the last published day; a one-day calendar
+              -- window over a feed that lags weeks never fires at all.
+              o.doc_date       >  (:anchor)::date - INTERVAL '1 day'
               OR pr.filing_date >= CURRENT_DATE - INTERVAL '1 day'
           )
         ORDER BY par.bbl, ABS(pr.filing_date - o.doc_date) ASC
         LIMIT 5
-    """)).fetchall()
+    """), {"anchor": feed_anchor(db)}).fetchall()
 
     findings = []
     for r in rows:

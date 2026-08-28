@@ -19,6 +19,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
+from api.freshness import feed_anchor, window_sql
 from models.database import get_db
 from scoring.tiers import tier
 from models.neighborhoods import Neighborhood
@@ -287,7 +288,9 @@ def get_top_risk_neighborhoods(
                 WHERE o.party_type = '2'
                   AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
                   AND o.party_name_normalized LIKE '%LLC%'
-                  AND o.doc_date >= CURRENT_DATE - INTERVAL '365 days'
+                  -- Window ends at the last published deed, not at the calendar.
+                  -- ACRIS lags weeks; see api.freshness.window_sql.
+                  AND {window_sql('o.doc_date', 365)}
                   AND p.zip_code IS NOT NULL
                   AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
                   AND o.party_name_normalized NOT ILIKE '%LOAN SERVICING%'
@@ -402,7 +405,7 @@ def get_top_risk_neighborhoods(
             LIMIT :limit
             """
         ),
-        params,
+        {**params, "anchor": feed_anchor(db)},
     ).fetchall()
 
     # Raw count column map: dominant signal key -> actual 365-day count column from CTE.
@@ -514,7 +517,9 @@ def get_top_movers(
             WHERE o.party_type = '2'
               AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
               AND o.party_name_normalized LIKE '%LLC%'
-              AND o.doc_date >= CURRENT_DATE - INTERVAL '30 days'
+              -- Window ends at the last published deed, not at the calendar.
+              -- ACRIS lags weeks; see api.freshness.window_sql.
+              AND {window_sql('o.doc_date', 30)}
               AND p.zip_code IS NOT NULL
               AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
               AND o.party_name_normalized NOT ILIKE '%LOAN SERVICING%'
@@ -573,7 +578,8 @@ def get_top_movers(
         ORDER BY delta DESC
         LIMIT :limit
     """), {"limit": min(capped * 3, 60),
-           "complaint_types": list(DISPLACEMENT_COMPLAINT_TYPES)}).fetchall()
+           "complaint_types": list(DISPLACEMENT_COMPLAINT_TYPES),
+           "anchor": feed_anchor(db)}).fetchall()
 
     _RAW_COLS = {
         "llc_acquisitions": "raw_llc",
@@ -654,13 +660,15 @@ _SIGNAL_LABELS = {
 
 def _fetch_raw_counts(db: Session, zip_code: str) -> dict[str, int]:
     """Raw event counts for the past 365 days — same filters as the scoring engine."""
-    rows = db.execute(text("""
+    rows = db.execute(text(f"""
         SELECT
             (SELECT COUNT(*) FROM ownership_raw o
              JOIN parcels p ON o.bbl = p.bbl
              WHERE p.zip_code = :zip AND o.party_type = '2'
                AND o.doc_type IN ('DEED','DEEDP','ASST')
-               AND o.doc_date >= CURRENT_DATE - INTERVAL '365 days'
+               -- Window ends at the last published deed, not at the calendar.
+               -- ACRIS lags weeks; see api.freshness.window_sql.
+               AND {window_sql('o.doc_date', 365)}
                AND p.units_res > 0
                AND o.party_name_normalized LIKE '%LLC%'
                AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
@@ -697,7 +705,8 @@ def _fetch_raw_counts(db: Session, zip_code: str) -> dict[str, int]:
                AND created_date >= CURRENT_DATE - INTERVAL '365 days'
                AND complaint_type = ANY(:ctypes)
             ) AS complaint_rate
-    """), {"zip": zip_code, "ctypes": list(DISPLACEMENT_COMPLAINT_TYPES)}).fetchone()
+    """), {"zip": zip_code, "ctypes": list(DISPLACEMENT_COMPLAINT_TYPES),
+            "anchor": feed_anchor(db)}).fetchone()
 
     return {
         "llc_acquisitions": int(rows[0] or 0),
@@ -859,14 +868,16 @@ def get_active_buyers(request: Request, response: Response, zip_code: str, db: S
         return cached[0]
 
     # Top LLC grantees in this ZIP (same filters as scoring engine)
-    rows = db.execute(text("""
+    rows = db.execute(text(f"""
         SELECT o.party_name_normalized, COUNT(*) AS cnt
         FROM ownership_raw o
         JOIN parcels p ON o.bbl = p.bbl
         WHERE p.zip_code = :zip
           AND o.party_type = '2'
           AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
-          AND o.doc_date >= CURRENT_DATE - INTERVAL '365 days'
+          -- Window ends at the last published deed, not at the calendar.
+          -- ACRIS lags weeks; see api.freshness.window_sql.
+          AND {window_sql('o.doc_date', 365)}
           AND p.units_res > 0
           AND o.party_name_normalized LIKE '%LLC%'
           AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
@@ -885,7 +896,7 @@ def get_active_buyers(request: Request, response: Response, zip_code: str, db: S
         GROUP BY o.party_name_normalized
         ORDER BY cnt DESC
         LIMIT 50
-    """), {"zip": zip_code}).fetchall()
+    """), {"zip": zip_code, "anchor": feed_anchor(db)}).fetchall()
 
     if not rows:
         _BUYERS_CACHE[zip_code] = ([], _time.monotonic() + _BUYERS_TTL)

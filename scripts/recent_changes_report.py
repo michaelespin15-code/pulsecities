@@ -11,6 +11,7 @@ Usage:
 Read-only. No DB writes.
 """
 
+from api.freshness import feed_anchor
 import argparse
 import sys
 from pathlib import Path
@@ -230,11 +231,14 @@ def section_recent_raw_events(db, days: int) -> None:
         WHERE o.party_type = '2'
           AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
           AND o.party_name_normalized ILIKE '%LLC%'
-          AND o.doc_date >= CURRENT_DATE - :days * INTERVAL '1 day'
+          -- Anchored on the last published deed, not the calendar: ACRIS lags
+          -- weeks and a report of "the last N days" would cover fewer.
+          AND o.doc_date >  (:anchor)::date - :days * INTERVAL '1 day'
+          AND o.doc_date <= (:anchor)::date
         ORDER BY (ds.score IS NOT NULL) DESC, ds.score DESC NULLS LAST,
                  o.doc_date DESC
         LIMIT 50
-    """), {"days": days}).fetchall()
+    """), {"days": days, "anchor": feed_anchor(db)}).fetchall()
     _print_table(f"LLC transfers (last {days} days)", llc,
         ["ZIP", "Buyer", "Date", "Amount"],
         [(lambda r: r.zip_code, 6),

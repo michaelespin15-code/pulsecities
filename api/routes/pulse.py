@@ -39,6 +39,7 @@ from sqlalchemy.orm import Session
 
 from api.permit_kinds import (KIND_LABELS, kind_select,
                               renovation_or_new_sql, renovation_sql)
+from api.freshness import feed_anchor, window_sql
 from models.database import get_db
 
 logger = logging.getLogger(__name__)
@@ -67,7 +68,9 @@ def get_neighborhood_pulse(
     400 is returned for invalid zip format.
 
     LLC acquisitions: doc_type IN ('DEED','DEEDP','ASST'), party_type='GRANTEE',
-    party_name_normalized LIKE '%LLC%', doc_date >= CURRENT_DATE - 90 days.
+    party_name_normalized LIKE '%LLC%', and the last 90 days of *published*
+    deeds (api.freshness.window_sql; ACRIS lags, so the window ends at the last
+    day the city published rather than at today).
     Joined to parcels to resolve street address from BBL.
 
     Recent permits: permit_type IN ('A1','A2','NB'), zip_code = :zip,
@@ -85,7 +88,7 @@ def get_neighborhood_pulse(
     # DISTINCT ON (o.bbl) keeps the most recent acquisition per building — a BBL
     # that had two transfers in 90 days (rare but possible) only surfaces once.
     llc_rows = db.execute(
-        text("""
+        text(f"""
             SELECT * FROM (
                 SELECT DISTINCT ON (o.bbl)
                     o.bbl,
@@ -99,7 +102,9 @@ def get_neighborhood_pulse(
                   AND o.party_type = '2'
                   AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
                   AND o.party_name_normalized LIKE '%LLC%'
-                  AND o.doc_date >= CURRENT_DATE - INTERVAL '90 days'
+                  -- Window ends at the last published deed, not at the calendar.
+                  -- ACRIS lags weeks; see api.freshness.window_sql.
+                  AND {window_sql('o.doc_date', 90)}
                   AND o.party_name_normalized NOT ILIKE '%MORTGAGE%'
                   AND o.party_name_normalized NOT ILIKE '%LOAN SERVICING%'
                   AND o.party_name_normalized NOT ILIKE '%LOAN SERVICE%'
@@ -110,7 +115,7 @@ def get_neighborhood_pulse(
             ORDER BY doc_date DESC
             LIMIT 25
         """),
-        {"zip": zip_code},
+        {"zip": zip_code, "anchor": feed_anchor(db)},
     ).fetchall()
 
     # --- Recent Permits query ---
@@ -226,7 +231,7 @@ def get_renovation_flip(
     # on same BBL within 60 days, permit AFTER transfer, last 180 days.
     # Joins ownership_raw -> parcels to resolve ZIP (ownership_raw has no zip_code column).
     rows = db.execute(
-        text("""
+        text(f"""
             WITH llc_transfers AS (
                 SELECT p.zip_code, o.bbl, o.doc_date AS transfer_date,
                        o.party_name_normalized AS buyer, o.doc_amount,
@@ -236,7 +241,9 @@ def get_renovation_flip(
                 WHERE o.party_name_normalized LIKE '%LLC%'
                   AND o.doc_type IN ('DEED', 'DEEDP', 'ASST')
                   AND o.party_type = '2'
-                  AND o.doc_date >= CURRENT_DATE - INTERVAL '180 days'
+                  -- Window ends at the last published deed, not at the calendar.
+                  -- ACRIS lags weeks; see api.freshness.window_sql.
+                  AND {window_sql('o.doc_date', 180)}
                   AND p.zip_code = :zip_code
             ),
             reno_permits AS (
@@ -258,7 +265,7 @@ def get_renovation_flip(
             )
             SELECT * FROM combined ORDER BY transfer_date DESC
         """),
-        {"zip_code": zip_code},
+        {"zip_code": zip_code, "anchor": feed_anchor(db)},
     ).fetchall()
 
     def _days(v):
