@@ -84,20 +84,45 @@ social_post.py crashed on `r.days_between.days` (Postgres hands back an int),
 and its `_fmt_date` dropped the year, composing "LLC acquired Jul 24" for a 2025
 deed. It is a manual tool, not in cron.
 
+## Shipped: the filings that remove homes
+
+853 buildings have filed to reduce the number of homes they hold since DOB NOW
+began, 1,771 homes in total, and nothing on the site said so. /property carries
+a "Homes proposed for removal" block; the block digest carries a count for the
+reader's own street (6 buildings on one West Village block, 6 on one in Cobble
+Hill).
+
+    442 West 22 Street, 23 homes to 1, $525,844
+    "CONVERT MULTIPLE DWELLING TO SINGLE FAMILY DWELLING"
+
+**Not a score input, deliberately.** api.permit_kinds.deconversion_sql carries
+the four conditions and why each exists; the two things measured and REJECTED
+are written down there too, so they are not retried: a cost floor (the cheapest
+rows are real, "$100, PROPOSED CONVERSION OF EXISTING 3-FAMILY BUILDING") and
+requiring the filing's count to be at or below PLUTO's (drops real cases,
+because PLUTO is often already updated to the post-conversion number).
+
+**The method matters more than the feature.** Every check was made against a
+RANDOM sample. Sampling the largest rows hid a hotel converting 606 rooms into
+312 apartments and a dormitory reconfiguring 267 suites for two full rounds:
+both reduce a count, neither removes a home. The parcel-alias argument is
+required rather than optional so the join that excludes them cannot be dropped.
+
 ## NEXT, in order
 
-1. **Corroborated deconversion as a page-level fact.** ~500 jobs a year where
-   unit counts and job description agree apartments are being merged away
-   ("convert 3 dwellings into 1", $1.7M). Columns are in place. Not a score
-   input; the section below says why.
-2. **Move 05, citywide marshal index.** 60+ place variants rank 2 to 43 with
-   zero clicks and there is no citywide parent for the 127 leaves.
-3. **Move 06, plain-phrase headings on /property.**
-4. **A CI job with a database**, so the non-integration suite runs there too.
-   The guard lane is deliberately narrower and unblocks the push; it is not the
-   whole answer.
+1. **Move 05, citywide marshal index.** 60+ place variants of "eviction marshal
+   {place}" rank 2 to 43 with zero clicks, and there is no citywide parent for
+   the 127 leaves.
+2. **Move 06, plain-phrase headings on /property.** "sales history", "taxes",
+   "owner" are live queries ranking 12 to 24.
+3. **A CI job with a database**, so the non-integration suite runs there too.
+   The guard lane is deliberately narrower and is what unblocks the push; it is
+   not the whole answer.
+4. **Strengthen the near-duplicate guard.** It samples four pages, six pairs,
+   so it rarely draws a bad one; deed-only pages breach the 70% limit in 3 of 5
+   independent draws of ten.
 5. **DOS follow-ons.** Registered agent as a second clustering signal, Delaware
-   jurisdiction surfaced, monthly `refresh_dos_entities --all`.
+   jurisdiction surfaced (663 entities), monthly `refresh_dos_entities --all`.
 
 **Still open and genuinely a judgement call: WEIGHT_PERMITS is 0.21, set when
 the permit signal was 414 rows. It has never been calibrated against a real one.**
