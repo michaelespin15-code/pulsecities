@@ -145,6 +145,7 @@ def fetch_scraper_latest(db) -> list[dict]:
             started_at,
             records_processed,
             records_failed,
+            expected_min_records,
             watermark_timestamp,
             warning_message,
             error_message
@@ -257,7 +258,12 @@ def run_health_report(db) -> int:
         warn     = s["warning_message"] or ""
         err      = s["error_message"] or ""
 
-        label = scraper_health_label(status, recs, None)
+        # The third argument was a hardcoded None until 2026-08-28, which made
+        # the DEGRADED branch of scraper_health_label unreachable from the one
+        # report a human reads. On the night the DOB NOW backfill overlapped the
+        # nightly run, dob_now_permits returned 0 records against a floor of 120
+        # and this line printed OK.
+        label = scraper_health_label(status, recs, s["expected_min_records"])
 
         # ACRIS staleness context
         extra = ""

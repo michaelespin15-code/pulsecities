@@ -112,56 +112,15 @@ class TestScoreHistoryModel:
 
 
 # ---------------------------------------------------------------------------
-# Task 2: Pipeline snapshot and API endpoint tests
+# Task 2: API endpoint tests
+#
+# Three tests for snapshot_scores() stood here and are gone with the function.
+# It was a second writer to score_history, copying displacement_scores after the
+# fact, and displacement_scores carries no hpd_violations or rs_unit_loss column,
+# so every row it wrote had two of six signals NULL. Nothing in production called
+# it. The rules that replaced them live in tests/test_score_history_agreement.py:
+# one writer, and a conflict policy that refreshes.
 # ---------------------------------------------------------------------------
-
-class TestSnapshotScores:
-    """Tests 6-7: snapshot_scores() pipeline function."""
-
-    def test_snapshot_scores_exists_and_is_callable(self):
-        """Test 6 (partial): snapshot_scores function is importable from pipeline."""
-        from scheduler.pipeline import snapshot_scores
-        assert callable(snapshot_scores)
-
-    def test_snapshot_scores_idempotent(self):
-        """
-        Test 7: Calling snapshot_scores() twice in the same day produces the same row count.
-        Uses a mock db to verify ON CONFLICT DO NOTHING behavior via execute calls.
-        """
-        from unittest.mock import MagicMock, patch
-        from scheduler.pipeline import snapshot_scores
-
-        # First call — normal execute
-        mock_db = MagicMock()
-        snapshot_scores(mock_db)
-        assert mock_db.execute.called, "snapshot_scores must call db.execute()"
-        assert mock_db.commit.called, "snapshot_scores must call db.commit()"
-
-        # Second call on same mock — still calls execute (idempotent via SQL ON CONFLICT)
-        mock_db.reset_mock()
-        snapshot_scores(mock_db)
-        assert mock_db.execute.called
-
-    def test_snapshot_scores_uses_on_conflict_do_nothing(self):
-        """Test 6: snapshot_scores SQL contains ON CONFLICT ON CONSTRAINT uq_score_history_zip_date DO NOTHING."""
-        from unittest.mock import MagicMock, call
-        from sqlalchemy import text
-        from scheduler.pipeline import snapshot_scores
-
-        mock_db = MagicMock()
-        snapshot_scores(mock_db)
-
-        # Inspect the SQL text that was passed to execute
-        assert mock_db.execute.called
-        call_args = mock_db.execute.call_args
-        sql_arg = call_args[0][0]
-        sql_text = str(sql_arg)
-        assert "ON CONFLICT" in sql_text.upper(), (
-            "snapshot_scores must use ON CONFLICT ... DO NOTHING for idempotency"
-        )
-        assert "uq_score_history_zip_date" in sql_text, (
-            "snapshot_scores must reference constraint uq_score_history_zip_date"
-        )
 
 
 @pytest.mark.integration

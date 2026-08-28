@@ -7,7 +7,16 @@
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-0 2 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scheduler.main >> /var/log/pulsecities/scraper.log 2>&1
+# flock, because on 2026-08-28 a manual DOB NOW backfill (01:52-02:15, 484k
+# rows) was still writing permits_raw when this run's scoring step read it at
+# 02:07. The scores that landed in score_history for that date were computed
+# against a half-loaded table. This keeps two pipeline runs apart; a manual
+# backfill has to take the same lock to be covered by it.
+#
+# bash -c is load-bearing. `flock LOCK cmd` parses as
+# `flock LOCK cd /root/pulsecities` followed by an unlocked, un-cd'd cmd,
+# which is worse than no lock at all.
+0 2 * * * root flock -n /tmp/pulsecities-pipeline.lock bash -c 'cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scheduler.main' >> /var/log/pulsecities/scraper.log 2>&1
 # Condo unit-lot address recovery — after the scrape, before the sitemap reads it
 5 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.refresh_condo_addresses >> /var/log/pulsecities/condo_addresses.log 2>&1
 # Department of State registration for new LLC deed buyers. After the scrape so

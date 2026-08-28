@@ -777,10 +777,13 @@ def _build_summary(score: float | None, breakdown: dict[str, Any], raw_counts: d
 
     Tier thresholds — must mirror the map legend (app.html) and weekly digest, or a
     neighborhood reads as one tier in the summary and a different color on the map:
-      Critical  85–100  — severe, multiple signals elevated
-      High      67–84   — clear pressure, dominant signal named
-      Moderate  34–66   — emerging pressure, primary signal named
-      Low        0–33   — limited evidence of displacement pressure
+      Critical  55+     severe, multiple signals elevated
+      High      45–54   clear pressure, dominant signal named
+      Moderate  34–44   emerging pressure, primary signal named
+      Low        0–33   limited evidence of displacement pressure
+
+    The numbers above are documentation. scoring.tiers.tier() is the only reader
+    of the cut points, so this block cannot drift the behaviour, only the reader.
 
     Top signals are the breakdown keys with values above 30 (non-trivial),
     sorted descending. Up to 2 are named in the sentence.

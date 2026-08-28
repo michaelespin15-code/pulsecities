@@ -51,7 +51,6 @@ from scripts.reconcile_upstream import (
     reconcile_feed,
     rewind_watermark,
 )
-from scoring.compute import snapshot_scores  # re-exported for test imports
 
 logger = logging.getLogger(__name__)
 
@@ -389,18 +388,44 @@ def _run_scoring() -> bool:
                     "failed sanity checks. Check scoring/compute.py logs for details.",
                 )
                 return False
-            # Snapshot invariant: every scored zip must have landed in today's
-            # score_history. A shortfall means the snapshot was lost or partial
-            # (history charts and digest trends silently go stale from there).
-            snapshotted = db.execute(
-                text("SELECT COUNT(*) FROM score_history WHERE scored_at = CURRENT_DATE")
-            ).scalar() or 0
+            # Snapshot invariant: today's score_history must both cover every
+            # scored zip and agree with what the map is serving. Counting rows
+            # alone missed the 2026-08-28 divergence entirely, because 177 stale
+            # rows count exactly like 177 fresh ones: the nightly run scored at
+            # 02:07, a post-backfill recompute landed at 02:21, and score_history
+            # kept the first set under an ON CONFLICT DO NOTHING it no longer
+            # uses. Eight ZIPs read one band in the chart and another on the map.
+            snapshotted, diverged = db.execute(
+                text(
+                    """
+                    SELECT COUNT(*),
+                           COUNT(*) FILTER (
+                               WHERE d.score IS NOT NULL
+                                 AND abs(h.composite_score - d.score) > 0.05
+                           )
+                    FROM score_history h
+                    LEFT JOIN displacement_scores d USING (zip_code)
+                    WHERE h.scored_at = CURRENT_DATE
+                    """
+                )
+            ).one()
             if snapshotted < n:
                 notify_ops(
                     "Scoring engine: score_history snapshot incomplete",
                     f"Scored {n} zips but score_history has {snapshotted} rows for "
                     f"today. Recover by re-running the scorer (idempotent same-day): "
-                    f"cd /root/pulsecities && venv/bin/python -m scoring.compute",
+                    f"venv/bin/python -m scoring.compute",
+                )
+                return False
+            if diverged:
+                notify_ops(
+                    "Scoring engine: history disagrees with the map",
+                    f"{diverged} of {snapshotted} ZIPs have a score_history row for "
+                    f"today that differs from displacement_scores. The trend chart "
+                    f"and the map are showing different numbers for the same day. "
+                    f"Re-run the scorer to reconcile, which now refreshes the "
+                    f"history row: cd /root/pulsecities && "
+                    f"venv/bin/python -m scoring.compute",
                 )
                 return False
         logger.info("Scoring engine: scored and snapshotted %d zip codes", n)

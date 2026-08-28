@@ -1077,7 +1077,11 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
     scored_count = total_attempted - len(skipped_zips)
 
     # --- Step 7: Write daily snapshot to score_history ---
-    # ON CONFLICT DO NOTHING — if scoring runs multiple times on the same date, only keep first.
+    # ON CONFLICT DO UPDATE — the last scoring run of a date is the one the chart
+    # shows, which is what displacement_scores already does one step above. The
+    # two writes carried opposite policies until 2026-08-28, so any day that
+    # scored twice left the map on the second run and the history chart on the
+    # first: on 08-28 that was 156 of 177 ZIPs, eight of them in a different band.
     # When as_of_date is provided (backfill), use it as scored_at; otherwise use today.
     scored_at = as_of_date if as_of_date is not None else date.today()
     skipped_set = set(skipped_zips)
@@ -1102,7 +1106,16 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
                     (:zip_code, :scored_at, :composite_score, :permit_intensity,
                      :eviction_rate, :llc_acquisition_rate, :hpd_violations,
                      :complaint_rate, :rs_unit_loss, :now, :now)
-                ON CONFLICT ON CONSTRAINT uq_score_history_zip_date DO NOTHING
+                ON CONFLICT ON CONSTRAINT uq_score_history_zip_date
+                DO UPDATE SET
+                    composite_score      = EXCLUDED.composite_score,
+                    permit_intensity     = EXCLUDED.permit_intensity,
+                    eviction_rate        = EXCLUDED.eviction_rate,
+                    llc_acquisition_rate = EXCLUDED.llc_acquisition_rate,
+                    hpd_violations       = EXCLUDED.hpd_violations,
+                    complaint_rate       = EXCLUDED.complaint_rate,
+                    rs_unit_loss         = EXCLUDED.rs_unit_loss,
+                    updated_at           = EXCLUDED.updated_at
                 """
             ),
             {
@@ -1155,45 +1168,6 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
             )
 
     return scored_count
-
-
-# ---------------------------------------------------------------------------
-# snapshot_scores — standalone daily snapshot, safe to call outside compute_scores()
-# ---------------------------------------------------------------------------
-
-def snapshot_scores(db) -> None:
-    """
-    Copy current displacement_scores into score_history for today's date.
-    ON CONFLICT DO NOTHING makes this idempotent — safe to call multiple times per day.
-    """
-    from datetime import date, datetime, timezone
-    db.execute(
-        text(
-            """
-            INSERT INTO score_history
-                (zip_code, scored_at, composite_score, permit_intensity,
-                 eviction_rate, llc_acquisition_rate, hpd_violations,
-                 complaint_rate, rs_unit_loss, created_at, updated_at)
-            SELECT
-                zip_code,
-                :scored_at,
-                score,
-                permit_intensity,
-                eviction_rate,
-                llc_acquisition_rate,
-                NULL,
-                complaint_rate,
-                NULL,
-                :now,
-                :now
-            FROM displacement_scores
-            WHERE score IS NOT NULL
-            ON CONFLICT ON CONSTRAINT uq_score_history_zip_date DO NOTHING
-            """
-        ),
-        {"scored_at": date.today(), "now": datetime.now(timezone.utc)},
-    )
-    db.commit()
 
 
 # ---------------------------------------------------------------------------

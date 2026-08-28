@@ -1,3 +1,158 @@
+# >>> START HERE after /clear (2026-08-28 night, the relative-index session) <<<
+
+Michael asked why the map still shows Critical, High and Moderate tiles, and
+whether New York is in mass displacement right now. The short answer is no, and
+the map was never able to say otherwise. Chasing that turned up a real bug that
+had already corrupted one day of permanent history.
+
+**One thing needs a human command, and it is one line.** Today's score_history
+row was computed against a half-loaded permits table and is still wrong. The fix
+is now in the code; the repair is not, because the scoring engine is a
+production write:
+
+    venv/bin/python -m scoring.compute
+
+A dry run was checked first and produces max=63.2 avg=31.1, which is exactly
+what displacement_scores already holds. **The map will not move.** Only the
+2026-08-28 history row changes, from the half-loaded numbers to the real ones.
+
+## Is New York in panic mode? No, and the index cannot answer that question
+
+**The composite is a ranking, not a measurement.** `scoring/compute.py` Step 5
+normalizes each signal to the 5th-95th percentile of that night's spread across
+the 177 ZIPs. The top 5% of ZIPs fill the top of every signal's scale by
+construction, on the worst night in the city's history and on the calmest.
+
+Measured over the 314 days in score_history:
+
+    month      mean score   sd     mean eviction signal
+    2025-10       30.2      15.4        39.0
+    2026-02       29.9      15.8        35.5
+    2026-08       30.5      15.2        33.0
+
+The mean composite has moved 1.1 points in ten months and the spread has not
+moved at all. Over the same window, actual executed evictions citywide ran
+between 1,246 and 1,842 a month, a 48% swing between trough and peak. **The
+index absorbed the entire swing and reported nothing.** That is not a bug in the
+normalization; it is what percentile normalization is for. It is a bug in what
+the words on top of it promise.
+
+So "7 Critical, 26 High" is not a measurement of how bad New York is. It is the
+top 4% and the next 15%. Those counts have been near-constant since October and
+would look the same if every eviction in the city stopped tomorrow.
+
+**The tiles are still telling the truth about rank.** The seven Critical ZIPs run
+9 to 13 executed evictions per 1,000 apartments a year against a citywide median
+of 3.4 and a citywide rate of 4.3. East Tremont is 12.6, University Heights 12.0,
+Belmont 11.8. Three times the median is real and worth a colour. But 12.6 per
+1,000 is 1.3% of homes in a year, which is chronic pressure, not an emergency,
+and by area the map is 61.8% Low.
+
+**What is actually wrong is that nothing on the site has an absolute anchor.**
+NEXT item 5 in the last checkpoint asked whether "Critical" is the right word and
+called it editorial. It is not only editorial. Renaming the band leaves the
+deeper hole: a reader cannot ask this site "is it getting worse?" and get an
+answer, because every number on it is a rank. The honest fixes, in order of
+weight: rename the top band (touches emails, alerts, Spanish); or add one
+absolute citywide measure, executed evictions per 1,000 apartments per month
+against its own twelve-month trend, which is the number the index throws away.
+Neither was done unilaterally.
+
+## The bug this uncovered: history and the map disagreed about the same day
+
+`compute_scores()` writes the same numbers to two tables in one pass, and the two
+writes had opposite conflict policies:
+
+    displacement_scores   ON CONFLICT DO UPDATE     last run of the day wins
+    score_history         ON CONFLICT DO NOTHING    first run of the day wins
+
+Harmless on a day that scores once. Wrong on every day that scores twice, which
+is exactly what a data fix looks like.
+
+**What happened on 2026-08-28**, from the logs and table timestamps:
+
+    01:52:55   manual DOB NOW backfill starts, 484,000 permits
+    02:07:38   nightly pipeline scores  ->  max 60.2, and this is what history kept
+    02:15:44   backfill finishes
+    02:21:50   a recompute runs        ->  max 63.2, and this is what the map shows
+
+The nightly run scored against a permits table that was still being loaded. Its
+numbers went into the permanent record, and the correction fourteen minutes later
+was silently discarded by DO NOTHING. **156 of 177 ZIPs disagreed between the
+chart and the map, by a mean of 0.92 points and a maximum of 8.0. Eight sat in
+different bands: 10452 and 10457 read Critical in the trend chart and High on the
+map on the same afternoon.**
+
+The recovery advice in the pipeline's own alert text said to re-run the scorer,
+"idempotent same-day". Under DO NOTHING that advice could not work. It works now.
+
+## Why three separate instruments all said fine
+
+1. **The pipeline's snapshot guard counted rows.** 177 stale rows count exactly
+   like 177 fresh ones. It now counts per-ZIP disagreements against
+   displacement_scores instead, and fails the pipeline when any row differs by
+   more than 0.05.
+2. **The live-vs-history drift check compares averages, at a 30% tolerance.**
+   The averages were 31.1 and 31.67 -- a 1.8% difference -- while 156 ZIPs
+   disagreed. Averaging is the wrong instrument for per-row divergence because
+   the errors cancel. `scripts/pipeline_health.py` prints max=63.2 for live and
+   max=60.2 for history on adjacent lines and calls the drift OK. The threshold
+   was left alone; the per-ZIP count is the right instrument and now exists.
+3. **`scraper_health_label()` has a DEGRADED branch that could not fire.** The
+   only caller passed `None` for expected_min and the query never selected the
+   column. On the night DOB NOW returned 0 records against a floor of 120 -- the
+   feed whose own config comment says "watch dob_now_permits: this one going
+   quiet is the plan" -- the one report a human reads printed OK. Now wired.
+
+## What changed
+
+1. **score_history Step 7 upserts** instead of dropping later runs, and assigns
+   updated_at in the SET list.
+2. **`snapshot_scores()` is deleted.** It was a second writer to score_history,
+   copying displacement_scores after the fact. displacement_scores carries no
+   hpd_violations or rs_unit_loss column, so every row it wrote had two of six
+   signals NULL. Nothing in production called it; it survived as a re-export in
+   scheduler/pipeline.py "for test imports", kept alive only by its own three
+   tests. Those tests are gone with it.
+3. **The pipeline guard checks agreement, not row count** (above).
+4. **pipeline_health passes the real expected minimum** (above). The report now
+   shows dob_now_permits and dob_permits DEGRADED at 0 records, and
+   dof_assessments DEGRADED. Labels are display-only and feed no email, so this
+   adds no alert traffic.
+5. **The nightly cron takes a flock.** It had none, alone among the crons on this
+   box. `bash -c` is load-bearing there: `flock LOCK cd /x && cmd` parses as
+   `flock LOCK cd /x` followed by an unlocked, un-cd'd command, which is worse
+   than no lock. **This is a deploy-drift change** -- `cp deploy/pulsecities.cron
+   /etc/cron.d/pulsecities` when convenient. The lock only separates two pipeline
+   runs; a manual backfill has to take the same lock to be covered.
+6. **The band docstring in api/routes/neighborhoods.py said 85-100 / 67-84 /
+   34-66**, the pre-recalibration numbers, in a comment that claims to be the
+   mirror of the map legend. Behaviour was never wrong -- it calls
+   `scoring.tiers.tier()` -- but the block a reader trusts was three days stale.
+7. **tests/test_score_history_agreement.py**, six greps, in the fast lane.
+
+## Found, not fixed, worth a look
+
+- **`dof_assessments` loads 73,168 records every run against a floor of 500,000**,
+  the identical count on 2026-07-09 and 2026-08-09, which is the signature of a
+  pagination cap rather than a quiet source. assessment_history holds 917,978
+  rows for tax year 2026 and 28k-40k for each of 2018-2023, and **2024 and 2025
+  are missing entirely**. That is why the assessment signal is dormant and why
+  compute.py logs "<2 tax years" every night: only one year has real coverage.
+  It carries no weight today, so nothing user-facing is wrong, but the signal
+  cannot activate until this is fixed. This is the same unstable-pagination shape
+  documented in docs/ops/failure_patterns.md.
+- **The history chart has a cliff on 2026-08-28 that the city did not cause.**
+  The permit recompute moved the mean ZIP 4.2 points with a maximum of 20.8, and
+  87 ZIPs moved 3 or more. A normal night moves the mean ZIP 0.24 points with a
+  maximum of 3.1 and one ZIP over 3. Rockaway Park reads 50.0 then 30.6; the
+  Upper West Side reads 10.0 then 30.8. The weekly digest was taught to disclose
+  this (0140f12) and `scoring_changes` already holds the row. **The chart on ~177
+  neighbourhood pages was not**, and a reader looking at a 20-point overnight
+  drop has no way to know it was our arithmetic. The mechanism to annotate it
+  already exists.
+
+
 # >>> START HERE after /clear (2026-08-28 later, the read-and-tiers session) <<<
 
 Working tree clean. **141 commits unpushed.** Full suite 1,261 passed, 1 failed,

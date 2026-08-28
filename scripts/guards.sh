@@ -63,6 +63,7 @@ LANE=(
   tests/test_backfill_windows.py
   tests/test_window_anchors.py
   tests/test_deconversion.py
+  tests/test_score_history_agreement.py
 )
 
 PYTHON="${PYTHON:-./venv/bin/python}"
