@@ -25,6 +25,7 @@ from slowapi.util import get_remote_address
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from api.permit_kinds import renovation_sql
 from models.database import get_db
 
 logger = logging.getLogger(__name__)
@@ -64,7 +65,7 @@ _FLIP_SQL = text(f"""
     reno_permits AS (
         SELECT bbl, MIN(filing_date) AS first_permit_date
         FROM permits_raw
-        WHERE raw_data->>'job_type' IN ('A1', 'A2')
+        WHERE {renovation_sql()}
           AND filing_date >= CURRENT_DATE - make_interval(days => :lookback)
         GROUP BY bbl
     ),

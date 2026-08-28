@@ -37,17 +37,19 @@ from slowapi.util import get_remote_address
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from api.permit_kinds import (KIND_LABELS, kind_select,
+                              renovation_or_new_sql, renovation_sql)
 from models.database import get_db
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/neighborhoods", tags=["pulse"])
 limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
-PERMIT_TYPE_LABELS = {
-    "A1": "Major Renovation",
-    "A2": "Alteration",
-    "NB": "New Building",
-}
+# Labels live in api.permit_kinds, which knows both sources' vocabularies. This
+# name is kept because the API contract documented above references it and
+# tests import it; it now covers DOB NOW's codes too, so a permit from the feed
+# that carries 96% of the record stops rendering as the bare string "AL".
+PERMIT_TYPE_LABELS = dict(KIND_LABELS)
 
 
 @router.get("/{zip_code}/pulse")
@@ -117,18 +119,21 @@ def get_neighborhood_pulse(
     # DISTINCT ON (bbl) keeps only the most recent permit per building — a building that
     # filed three alterations in 90 days (common for staged renos) only surfaces once,
     # preventing the same address from repeating in the activity feed.
-    # The A1/A2/NB job classification is in raw_data->>'job_type'.
+    # Job classification lives in a different column per source, so the
+    # predicate and the label expression both come from api.permit_kinds. Read
+    # straight from raw_data->>'job_type' this query saw 5.5% of the record once
+    # DOB NOW carried the rest.
     permit_rows = db.execute(
         text("""
             SELECT * FROM (
                 SELECT DISTINCT ON (bbl)
                     bbl,
                     address,
-                    raw_data->>'job_type' AS permit_type,
+                    """ + kind_select() + """ AS permit_type,
                     filing_date
                 FROM permits_raw
                 WHERE zip_code = :zip
-                  AND raw_data->>'job_type' IN ('A1', 'A2', 'NB')
+                  AND """ + renovation_or_new_sql() + """
                   AND filing_date >= CURRENT_DATE - INTERVAL '90 days'
                 ORDER BY bbl, filing_date DESC
             ) deduped
@@ -237,7 +242,7 @@ def get_renovation_flip(
             reno_permits AS (
                 SELECT bbl, MIN(filing_date) AS first_permit_date
                 FROM permits_raw
-                WHERE raw_data->>'job_type' IN ('A1', 'A2')
+                WHERE """ + renovation_sql() + """
                   AND filing_date >= CURRENT_DATE - INTERVAL '180 days'
                   AND zip_code = :zip_code
                 GROUP BY bbl

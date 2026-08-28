@@ -48,6 +48,9 @@ Field mapping (Socrata -> model):
   job_type           -> permit_type   mapped to AL / NB / DM / NW, see JOB_TYPE_CODE
   <trade>_work_type_ -> work_type     compact summary, see TRADES
   first_permit_date  -> filing_date   the permit event, and the watermark
+  initial_cost       -> job_cost      100% populated; median job is $30,960
+  existing_dwelling_units -> units_existing  89% populated
+  proposed_dwelling_units -> units_proposed  1,985 jobs a year propose fewer
   house_no + street_name -> address
   owner_first_name + owner_last_name -> owner_name
 """
@@ -137,6 +140,9 @@ class JobFilingInput(BaseModel):
     postcode: str | None = None
     zip: str | None = None
     job_type: str | None = None
+    initial_cost: str | None = None
+    existing_dwelling_units: str | None = None
+    proposed_dwelling_units: str | None = None
     first_permit_date: str | None = None
     filing_date: str | None = None
     job_description: str | None = None
@@ -198,6 +204,29 @@ def _parse_date(value: str | None) -> date | None:
         except ValueError:
             continue
     return None
+
+
+def _number(value: str | None) -> float | None:
+    """A Socrata numeric field that is only sometimes a number.
+
+    These arrive as text and a blank, a dash or "N/A" is common. Returning None
+    rather than raising keeps one malformed cost from quarantining a permit
+    whose date, lot and job type are all fine.
+    """
+    if value is None:
+        return None
+    raw = str(value).strip().replace(",", "").replace("$", "")
+    if not raw:
+        return None
+    try:
+        return float(raw)
+    except ValueError:
+        return None
+
+
+def _whole(value: str | None) -> int | None:
+    n = _number(value)
+    return int(n) if n is not None and n >= 0 else None
 
 
 def _clean_zip(value: str | None) -> str | None:
@@ -324,6 +353,13 @@ class DobNowPermitsScraper(BaseScraper):
             "permit_type": permit_type,
             "work_type": _work_type(raw),
             "owner_name": (owner or (record.owner_s_business_name or "").strip())[:200] or None,
+            # Scale, and whether the job removes housing. The whole reason the
+            # scraper carries these: half of all "alterations" are under
+            # $31,000, so counting a boiler swap and a gut renovation as one
+            # thing each is most of what is wrong with the permit signal.
+            "job_cost": _number(record.initial_cost),
+            "units_existing": _whole(record.existing_dwelling_units),
+            "units_proposed": _whole(record.proposed_dwelling_units),
             "filing_date": permit_date,
             "expiration_date": None,
             "job_description": record.job_description,

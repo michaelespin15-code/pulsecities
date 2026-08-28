@@ -22,6 +22,7 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Resp
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from api.permit_kinds import renovation_sql
 from api.freshness import (ACRIS_THROUGH_SQL, FRESHNESS_SOURCES, db_through_sql,
                            real_date)
 from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
@@ -1415,7 +1416,7 @@ def neighborhood_page(zip_code: str, lang: str = "en", db: Session = Depends(get
         reno_permits AS (
             SELECT bbl, MIN(filing_date) AS first_permit_date
             FROM permits_raw
-            WHERE raw_data->>'job_type' IN ('A1', 'A2')
+            WHERE """ + renovation_sql() + """
               AND filing_date >= CURRENT_DATE - INTERVAL '365 days'
               AND zip_code = :zip
             GROUP BY bbl

@@ -24,7 +24,7 @@ Append-only raw table — records are never modified after insert.
 
 from datetime import date
 
-from sqlalchemy import Date, Index, String, Text, text
+from sqlalchemy import Date, Index, Integer, Numeric, String, Text, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -64,6 +64,16 @@ class PermitRaw(TimestampMixin, Base):
     work_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
     owner_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
+    # Scale of the job, and whether it removes housing. DOB NOW carries all
+    # three; the legacy BIS dataset carries none of them, so every one of these
+    # is NULL on a dob_bis row and any predicate over them excludes that source
+    # entirely. That is deliberate and is written down in migration
+    # c8f4b16d29ea, because a silent source exclusion is exactly the failure
+    # this table has already had once.
+    job_cost: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
+    units_existing: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    units_proposed: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
     filing_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     expiration_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     job_description: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -86,6 +96,10 @@ class PermitRaw(TimestampMixin, Base):
         # Without it that is a bitmap heap scan pulling ~250MB to read them:
         # 8.8s, against 1.4s as an index-only scan. Created CONCURRENTLY by
         # migration b2e5c93a17df, declared here so it is not lost on a rebuild.
+        # Jobs that propose fewer dwelling units than the building has. Small:
+        # 1,985 rows a year citywide. Created CONCURRENTLY by c8f4b16d29ea.
+        Index("idx_permits_unit_loss", "filing_date", "bbl",
+              postgresql_where=text("units_proposed < units_existing")),
         Index("idx_permits_scoring", "permit_type", "filing_date",
               postgresql_include=["bbl", "zip_code"],
               postgresql_where=text("bbl IS NOT NULL AND zip_code IS NOT NULL")),

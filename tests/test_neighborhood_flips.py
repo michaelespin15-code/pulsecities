@@ -11,12 +11,19 @@ from sqlalchemy import text
 from fastapi.testclient import TestClient
 
 from api.main import app
+from api.permit_kinds import renovation_sql
 from models.database import SessionLocal
 
 warnings.filterwarnings("ignore")
 client = TestClient(app)
 
-_FLIP_ZIPS_SQL = text("""
+# The renovation predicate comes from api.permit_kinds rather than being spelled
+# out here. It was spelled out here, with the same `job_type IN ('A1','A2')` the
+# four production queries used, and when they were fixed to read both sources
+# this test kept the old rule and started failing: it believed 10001 had no
+# flips while the page it was checking had found some. A fixture that restates
+# a rule is a second implementation of it.
+_FLIP_ZIPS_SQL = text(f"""
     WITH llc AS (
         SELECT o.bbl, o.doc_date td, p.zip_code
         FROM ownership_raw o JOIN parcels p ON p.bbl = o.bbl
@@ -26,7 +33,7 @@ _FLIP_ZIPS_SQL = text("""
     ),
     rp AS (
         SELECT bbl, MIN(filing_date) fp FROM permits_raw
-        WHERE raw_data->>'job_type' IN ('A1','A2')
+        WHERE {renovation_sql()}
           AND filing_date >= CURRENT_DATE - INTERVAL '365 days' GROUP BY bbl
     )
     SELECT DISTINCT l.zip_code FROM llc l JOIN rp r ON r.bbl = l.bbl
