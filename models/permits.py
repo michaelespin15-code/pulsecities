@@ -24,7 +24,7 @@ Append-only raw table — records are never modified after insert.
 
 from datetime import date
 
-from sqlalchemy import Date, Index, String, Text
+from sqlalchemy import Date, Index, String, Text, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -81,6 +81,14 @@ class PermitRaw(TimestampMixin, Base):
     #                                 work_type) WHERE source_id IS NULL
     __table_args__ = (
         Index("idx_permits_raw_bbl", "bbl"),
+        # Covers scoring/_aggregate_permits, which reads a 365-day window of
+        # alteration permits and projects four narrow columns off 2.5KB rows.
+        # Without it that is a bitmap heap scan pulling ~250MB to read them:
+        # 8.8s, against 1.4s as an index-only scan. Created CONCURRENTLY by
+        # migration b2e5c93a17df, declared here so it is not lost on a rebuild.
+        Index("idx_permits_scoring", "permit_type", "filing_date",
+              postgresql_include=["bbl", "zip_code"],
+              postgresql_where=text("bbl IS NOT NULL AND zip_code IS NOT NULL")),
         Index("idx_permits_raw_filing_date", "filing_date"),
         Index("idx_permits_raw_zip_code", "zip_code"),
         Index("idx_permits_raw_created_at", "created_at"),  # for 90-day cleanup
