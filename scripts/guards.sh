@@ -67,6 +67,7 @@ LANE=(
   tests/test_eviction_label.py
   tests/test_title_budget.py
   tests/test_violation_unit_privacy.py
+  tests/test_person_privacy.py
 )
 
 PYTHON="${PYTHON:-./venv/bin/python}"
@@ -74,6 +75,10 @@ PYTHON="${PYTHON:-./venv/bin/python}"
 DESELECT=(
   # True about the box, not about the commit; see the note above.
   --deselect "tests/test_infra_guards.py::TestDeployDrift::test_deploy_copy_matches_installed"
+  # Renders sixty property pages against the live database, twelve seconds. The
+  # rule and the one-owner greps in that file are what belong in a pre-commit
+  # lane; the rendered sweep runs in the full suite and in CI's database job.
+  --deselect "tests/test_person_privacy.py::TestNoPersonSurvivesOnAPage"
 )
 if [ -n "${GUARDS_NO_DB:-}" ]; then
   DESELECT+=(

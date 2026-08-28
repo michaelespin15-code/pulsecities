@@ -24,6 +24,7 @@ from sqlalchemy.orm import Session
 
 from api.permit_kinds import (DECONVERSION_PARAMS, deconversion_sql,
                               renovation_sql)
+from api.person_privacy import is_natural_person, public_name
 from api.violation_text import strip_unit
 from api.freshness import (ACRIS_THROUGH_SQL, FRESHNESS_SOURCES, db_through_sql,
                            feed_anchor, real_date, window_sql)
@@ -1982,6 +1983,12 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
         matching also caught people ("... AS TRUSTEE"), so the form token has
         to stand on its own."""
         name = o.get("buyer") or ""
+        # A private individual's name does not go on an indexable page beside
+        # their address and the price they paid. Organisations keep theirs.
+        # api/person_privacy.py owns that test; _ENTITY_FORM_RE below answers a
+        # narrower question, whether the name can be linked to /llc/{slug}.
+        if is_natural_person(name):
+            return e(public_name(name))
         shown = _entity_title(name)
         if ((o.get("doc_type") or "").upper() == "DEED"
                 and _ENTITY_FORM_RE.search(name)
@@ -1998,7 +2005,7 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     doc_rows = "".join(
         f'<tr><td class="sc">{_buyer_cell({"buyer": d["buyer"], "doc_type": d["doc_type"]})}'
         f'<span class="sw">{e(d["doc_type"])}'
-        + (f' from {e(_entity_title(d["seller"]))}' if d["seller"] else "")
+        + (f' from {e(public_name(d["seller"]))}' if d["seller"] else "")
         + '</span></td>'
         f'<td class="sr">{_d(d["date"].isoformat()) if d["date"] else ""}</td>'
         f'<td class="si">{_money(d["amount"])}</td></tr>'
@@ -2138,8 +2145,12 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     held_line = ""
     owner_name = (parcel.get("owner_name") or "").strip()
     if owner_name:
+        # DOF's owner-of-record field, a separate source from the ACRIS parties
+        # above and one that keeps its comma ("KARIM, ABDOOL"). It needs the
+        # same gate: a private homeowner's name is the thing being withheld,
+        # not one particular column's version of it.
         held_line = _sentence(f"The city's property file lists the owner of record "
-                              f"as {e(_entity_title(owner_name))}")
+                              f"as {e(public_name(owner_name, 'a private individual'))}")
 
     assessed = parcel.get("assessed_total") or 0
     assess_line = ""
@@ -2157,7 +2168,12 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
         latest = deed_chain[0]
         first_sentence = f"The most recent recorded deed is dated {_d(latest['date'].isoformat())}"
         if latest["buyer"]:
-            first_sentence += f", transferring the lot to {e(_entity_title(latest['buyer']))}"
+            # Prose wording, so the redaction reads as a sentence rather than
+            # as the table cell's standalone "Private individual".
+            first_sentence += (
+                f", transferring the lot to "
+                f"{e(public_name(latest['buyer'], 'a private individual'))}"
+            )
         if latest["amount"] > 0:
             first_sentence += f" for a stated {_fmt_amount(latest['amount'])}"
         chain_paras.append(_sentence(first_sentence))
@@ -2405,9 +2421,9 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     faq: list[tuple[str, str]] = []
     who = ""
     if deed_chain and deed_chain[0]["buyer"]:
-        who = _entity_title(deed_chain[0]["buyer"])
+        who = public_name(deed_chain[0]["buyer"], "a private individual")
     elif owner_name:
-        who = _entity_title(owner_name)
+        who = public_name(owner_name, "a private individual")
     if who:
         ans = (f"The most recent deed on file for {address} names {who}. "
                f"Deeds record the party that took title, which is often a holding "
@@ -6586,6 +6602,14 @@ def _eviction_borough_page(slug: str, db: Session):
             '<a href="/eviction-case">Look up that case &rarr;</a>'
         ) + f'<ul class="rec-list">{rows_html}</ul>'
 
+    # Repeat-eviction buildings held by a private individual are not a
+    # portfolio. Measured 2026-08-28: of 102 person-shaped names printed here,
+    # only 6 held 5+ buildings citywide and all 6 were misclassified
+    # organisations (US Bank Trust, RCF 2 Acquisition Trust, four HDFCs, which
+    # are affordable-housing nonprofits). Every genuine individual held one
+    # building, so a portfolio threshold protected nothing and the gate is flat.
+    owners = [o for o in owners if not is_natural_person(o.buyer)]
+
     owner_sec = ""
     if owners:
         def _owner_link(nm: str) -> str:
@@ -6968,6 +6992,14 @@ def eviction_area_page(slug: str, db: Session = Depends(get_db)):
             f'Holding a marshal docket number or a court index number? '
             f'<a href="/eviction-case">Look up that case &rarr;</a>'
         ) + f'<ul class="rec-list">{"".join(_recent_row(r) for r in recent)}</ul>'
+
+    # Repeat-eviction buildings held by a private individual are not a
+    # portfolio. Measured 2026-08-28: of 102 person-shaped names printed here,
+    # only 6 held 5+ buildings citywide and all 6 were misclassified
+    # organisations (US Bank Trust, RCF 2 Acquisition Trust, four HDFCs, which
+    # are affordable-housing nonprofits). Every genuine individual held one
+    # building, so a portfolio threshold protected nothing and the gate is flat.
+    owners = [o for o in owners if not is_natural_person(o.buyer)]
 
     owner_sec = ""
     if owners:
@@ -8098,9 +8130,18 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
         )
         kindof = _dos_agent_kind(name, dos.agent_name)
         if kindof == "third_party":
-            agent_where = ", ".join(x for x in (
-                _entity_title(dos.agent_address or ""),
-                _entity_title(dos.agent_city or ""), dos.agent_state or "") if x)
+            # A designated agent is a public role, so the name stays. The
+            # street address does not when the agent is a natural person: these
+            # are frequently home addresses, and that person may have no
+            # connection to anything else on the page. City and state keep the
+            # line useful without publishing where someone lives.
+            _agent_parts = (
+                (_entity_title(dos.agent_city or ""), dos.agent_state or "")
+                if is_natural_person(dos.agent_name or "")
+                else (_entity_title(dos.agent_address or ""),
+                      _entity_title(dos.agent_city or ""), dos.agent_state or "")
+            )
+            agent_where = ", ".join(x for x in _agent_parts if x)
             dp.append(
                 f"Service of process is designated to "
                 f"{esc(_entity_title(dos.agent_name))}"
