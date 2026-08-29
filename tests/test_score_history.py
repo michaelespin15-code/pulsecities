@@ -7,6 +7,8 @@ Task 1 (model structure): Tests 1-5 use SQLAlchemy's inspect() on the mapper.
 Task 2 (pipeline + API): Tests 6-10 use mocks for pipeline and TestClient for API.
 """
 
+from pathlib import Path
+
 import pytest
 from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.orm import DeclarativeBase
@@ -79,7 +81,10 @@ class TestScoreHistoryModel:
         import os
         import glob
 
-        migrations_path = "/root/pulsecities/migrations/versions"
+        # Repo-relative. This was "/root/pulsecities/migrations/versions",
+        # which exists only on the deploy box, so it failed on every CI run
+        # with a message about a missing migration rather than a missing path.
+        migrations_path = str(Path(__file__).resolve().parent.parent / "migrations" / "versions")
         migration_files = sorted(glob.glob(f"{migrations_path}/*score_history*.py"))
         assert len(migration_files) >= 1, (
             f"No migration file found for score_history in {migrations_path}"
