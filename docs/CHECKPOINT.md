@@ -1,15 +1,22 @@
 # >>> START HERE after /clear (2026-08-29, the assessment-year session) <<<
 
-**Two commands are waiting on you and they are the point of the session.** The
-code is committed and the /property copy is deployed; the data is not repaired,
-because both steps are production writes and the second one deletes rows.
+**Done and verified live.** Code committed, /property deployed, data repaired.
+59,423 fabricated year-stamps deleted, 608,240 DOF rows refiled under their real
+fiscal years with 0 failed, 50,806 parcels took a corrected assessment. The nine
+year counts match Socrata's own `$group=year` row for row, so nothing was lost.
 
-    venv/bin/python -m scripts.repair_assessment_years    # dry-run first with --dry-run
-    venv/bin/python -m scrapers.dof
+    420 East 58 St, unit 1075   was $287K "for the 2026 tax year"
+                                 now $306K for the 2018 tax year
+    944 Park Avenue             was $371,324, a 2015/16 figure, now $424K
+    40 East 66 Street           was $134,775, a 2011/12 figure, now $155K
 
-Until they run, `tests/test_assessment_year_provenance.py` is red on purpose and
-its failure message is the instruction. It is marked `needs_data`, so CI skips
-it and only the box sees it.
+All four render sites on the page carry the year: lede, tax section, the FAQ,
+and the FAQPage JSON-LD twin. The scraper ran under the pipeline `flock`.
+
+**The spike signal is still dormant at 0 ZIPs**, which is the check that
+mattered: assessment_history now holds ten distinct years carrying assessments
+where it held one, and the old global year selection would have paired 2026
+against 2018 and activated on eight years of drift.
 
 ## What was wrong, and it was public
 
@@ -89,6 +96,10 @@ Every new guard here was verified by breaking the thing on purpose:
 
 `_sync_parcel_assessments` commits, so the test that runs it stubs the commit
 out. The suite committed deletes of two days of score_history once.
+
+`tests/test_assessment_year_provenance.py` shipped red on purpose, asserting the
+live table while the repair was still unrun. It is green now. Keep it: it is the
+only thing that would notice a future writer dating a lot it never read.
 
 ## State
 
