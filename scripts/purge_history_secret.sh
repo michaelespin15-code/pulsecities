@@ -68,7 +68,13 @@ print(f"redacting {len(found)} distinct credential(s)", file=sys.stderr)
 EXTRACT
 
 ORIGIN=$(git remote get-url origin)
+# `yes |` answers filter-repo's "already ran, continue?" prompt. It also gets
+# SIGPIPE the moment filter-repo stops reading, and with `set -o pipefail` that
+# aborted this script immediately after a successful rewrite, leaving the origin
+# remote removed and the summary unprinted. Run it outside the pipeline check.
+set +o pipefail
 yes | git filter-repo --replace-text "$REPLACE" --force
+set -o pipefail
 
 # filter-repo drops the remote on purpose; put it back.
 git remote add origin "$ORIGIN" 2>/dev/null || git remote set-url origin "$ORIGIN"
