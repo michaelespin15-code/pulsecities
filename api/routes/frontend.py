@@ -331,6 +331,7 @@ _FOOTER_HTML = """<footer>
     <a href="/displacement" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">Displacement</a>
     <a href="/methodology" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">Methodology</a>
     <a href="/about" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">About</a>
+    <a href="/privacy" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">Privacy</a>
     <a href="/press" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">Press</a>
     <a href="/status" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">Status</a>
     <a href="mailto:nycdisplacement@gmail.com" style="color:#93a1ad;" onmouseover="this.style.color='#e4e8ec'" onmouseout="this.style.color='#93a1ad'">Contact</a>

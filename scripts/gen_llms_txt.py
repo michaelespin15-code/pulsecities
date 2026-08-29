@@ -170,6 +170,7 @@ reads as prose to the parsers that check it.
 - [Press findings](https://pulsecities.com/press): verified findings with ACRIS document IDs and paper-trail CSVs
 - [API documentation](https://pulsecities.com/developers): endpoint reference and usage terms
 - [Methodology](https://pulsecities.com/methodology): full scoring methodology
+- [What this site publishes](https://pulsecities.com/privacy): which public records are published, which are deliberately withheld (individuals' names, apartment numbers, tenant names, private home addresses), and how to ask for a correction
 
 ## About
 

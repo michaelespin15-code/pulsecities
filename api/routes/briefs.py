@@ -165,7 +165,7 @@ def _nav_html() -> str:
 
 def _footer_html() -> str:
     return """<footer><div class="footer-links">
-  <a href="/">Home</a><a href="/map">Map</a><a href="/neighborhoods">Neighborhoods</a><a href="/displacement">Displacement</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="/press">Press</a><a href="/status">Status</a><a href="mailto:nycdisplacement@gmail.com">Contact</a>
+  <a href="/">Home</a><a href="/map">Map</a><a href="/neighborhoods">Neighborhoods</a><a href="/displacement">Displacement</a><a href="/methodology">Methodology</a><a href="/about">About</a><a href="/privacy">Privacy</a><a href="/press">Press</a><a href="/status">Status</a><a href="mailto:nycdisplacement@gmail.com">Contact</a>
 </div></footer>"""
 
 

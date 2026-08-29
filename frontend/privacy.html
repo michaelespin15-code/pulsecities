@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme: dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#111823">
+    <title>What this site publishes | PulseCities</title>
+    <meta name="description" content="Which public records PulseCities publishes, which it deliberately withholds, and how to ask for a correction.">
+    <link rel="canonical" href="https://pulsecities.com/privacy">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23ed6317' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+    <meta property="og:title" content="What this site publishes | PulseCities">
+    <meta property="og:description" content="Which public records PulseCities publishes, which it deliberately withholds, and how to ask for a correction.">
+    <meta property="og:url" content="https://pulsecities.com/privacy">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="PulseCities">
+    <meta property="og:image" content="https://pulsecities.com/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="What PulseCities publishes and withholds">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="What this site publishes | PulseCities">
+    <meta name="twitter:description" content="Which public records PulseCities publishes, which it deliberately withholds, and how to ask for a correction.">
+    <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
+    <meta name="twitter:image:alt" content="What PulseCities publishes and withholds">
+
+<link rel="preload" href="/fonts/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}</style>
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebPage",
+                "name": "What this site publishes",
+                "alternateName": "Pulse Cities",
+                "description": "Which public records PulseCities publishes, which it deliberately withholds, and how to ask for a correction.",
+                "url": "https://pulsecities.com/privacy",
+                "dateModified": "2026-04",
+                "author": { "@type": "Person", "name": "Michael Espin" },
+                "publisher": { "@type": "Organization", "name": "PulseCities", "alternateName": "Pulse Cities" }
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": "Home",
+                        "item": "https://pulsecities.com/"
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": "Methodology",
+                        "item": "https://pulsecities.com/privacy"
+                    }
+                ]
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": "What does the score mean?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "The score shows how many displacement-pressure signals appear in public records for a ZIP code. A higher number means more indicators are present. It does not predict what will happen to any specific tenant or building."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Does this predict eviction?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "No. PulseCities shows where public-record pressure is building, not where evictions will occur. The score reflects activity in the record, not outcomes."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Where does the data come from?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "All data is from NYC Open Data: ACRIS deed records, DOB permits, HPD violations, 311 complaints, eviction records, and HPD building registrations. Every dataset is public record."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "How often is it updated?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "Scrapers run nightly at 2am UTC. Most datasets refresh daily. ACRIS data lags approximately two weeks; eviction data lags two to four weeks."
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+    </script>
+
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>
+    <script>
+        window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+        plausible.init()
+        plausible('Methodology View')
+    </script>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        h1, h2, h3 { text-wrap: balance; }
+
+        :root {
+            --bg:       #111823;
+            --surface:  #1b2534;
+            --border:   rgba(147, 161, 173, 0.12);
+            --text:     #e4e8ec;
+            --muted:    #93a1ad;
+            --dim:      #8a97a2;
+            --faint:    #818c97;
+            --orange:   #ed6317;
+            --sky:      #6fb1d8;
+            --amber:    #d9a441;
+            --red:      #ec6a5e;
+            --mono:     'JetBrains Mono', monospace;
+        }
+
+        html { scroll-behavior: smooth; }
+        section[id] { scroll-margin-top: 68px; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            font-size: 15px;
+            overflow-x: hidden;
+        }
+
+        a { color: var(--sky); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ---- Nav ---- */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(17, 24, 35, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .nav-brand {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--orange);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-brand:hover { text-decoration: none; opacity: 0.85; }
+
+        .nav-breadcrumb {
+            font-size: 12px;
+            color: var(--faint);
+            font-family: var(--mono);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 13px;
+        }
+
+        /* ---- Layout ---- */
+        .container {
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 56px 24px 80px;
+        }
+
+        /* ---- Header ---- */
+        .page-header { margin-bottom: 48px; }
+
+        .page-label {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--orange);
+            font-family: var(--mono);
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-family: 'Bricolage Grotesque', 'DM Sans', sans-serif;
+            font-size: clamp(22px, 4vw, 30px);
+            font-weight: 600;
+            line-height: 1.25;
+            color: var(--text);
+            margin-bottom: 16px;
+        }
+
+        .page-intro {
+            font-size: 16px;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        /* ---- Sections ---- */
+        section { margin-bottom: 52px; }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-family: 'DM Sans', sans-serif;
+            margin: 24px 0 10px;
+        }
+
+        p { margin-bottom: 14px; color: var(--text); }
+        p:last-child { margin-bottom: 0; }
+
+        /* ---- Data source cards ---- */
+        .source-list { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+
+        .source-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+
+        .source-card-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+
+        .source-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .source-id {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--sky);
+        }
+
+        .source-desc {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* ---- Signals table ---- */
+        /* The page body clips horizontal overflow, so the table scrolls in its
+           own wrapper on narrow screens instead of truncating. */
+        .signals-table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .signals-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 4px;
+            font-size: 14px;
+        }
+
+        .signals-table th {
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--faint);
+            font-family: var(--mono);
+            padding: 0 12px 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .signals-table td {
+            padding: 11px 12px 11px 0;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+            color: var(--text);
+        }
+
+        .signals-table tr:last-child td { border-bottom: none; }
+
+        .weight-badge {
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--orange);
+            white-space: nowrap;
+        }
+
+        .window-badge {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .dormant-note {
+            font-size: 12px;
+            color: var(--faint);
+            font-family: var(--mono);
+            margin-top: 3px;
+        }
+
+        /* ---- Score ranges ---- */
+        .score-ranges { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+
+        .score-range {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 14px;
+        }
+
+        .score-range-num {
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 600;
+            min-width: 60px;
+        }
+
+        .score-range-label { color: var(--muted); }
+
+        .color-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ---- Bonus signals ---- */
+        .bonus-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+
+        .bonus-list li {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .bonus-pts {
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--amber);
+            flex-shrink: 0;
+        }
+
+        /* ---- Callout box ---- */
+        .callout {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--sky);
+            border-radius: 8px;
+            padding: 16px 18px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* ---- Can/can't lists ---- */
+        .capability-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+
+        .capability-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .cap-icon { flex-shrink: 0; margin-top: 2px; font-size: 13px; }
+
+        /* ---- Tech stack ---- */
+        .tech-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
+        .tech-chip {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--sky);
+            background: rgba(111, 177, 216, 0.08);
+            border: 1px solid rgba(111, 177, 216, 0.2);
+            border-radius: 6px;
+            padding: 4px 10px;
+        }
+
+        /* ---- Contact ---- */
+        .contact-block {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .contact-name { font-size: 16px; font-weight: 600; color: var(--text); }
+
+        .contact-links { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 4px; }
+
+        .contact-link {
+            font-size: 13px;
+            color: var(--sky);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* ---- Footer ---- */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 28px 24px calc(env(safe-area-inset-bottom) + 28px);
+            text-align: center;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .footer-byline {
+            font-size: 14px;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .footer-byline a {
+            color: var(--sky);
+            font-weight: 500;
+        }
+
+        .footer-byline a:hover { text-decoration: underline; }
+
+        .footer-links { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+
+        .footer-links a { color: var(--muted); font-size: 13px; }
+        .footer-links a:hover { color: var(--text); }
+
+        /* ---- Mobile ---- */
+        @media (max-width: 600px) {
+            .container { padding: 36px 16px 60px; }
+            nav { padding: 0 16px; }
+            .nav-breadcrumb { display: none; }
+            .signals-table { font-size: 13px; }
+            .signals-table th, .signals-table td { padding-right: 8px; }
+        }
+    .skip-link { position:absolute;top:-48px;left:0;z-index:9999;background:#1b2534;color:#6fb1d8;padding:8px 16px;font-size:14px;text-decoration:none;border-radius:0 0 4px 0;transition:top 0.1s; }
+    .skip-link:focus { top:0; }
+    .src-link { color: inherit; text-decoration: none; }
+    .src-link:hover, .src-link:focus-visible { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to content</a>
+
+<nav>
+    <a href="/" class="nav-brand">
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <rect width="32" height="32" rx="6" fill="#1a1a2e"/>
+            <polyline points="2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16" fill="none" stroke="#ed6317" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        PulseCities
+    </a>
+    <span class="nav-breadcrumb">/ methodology</span>
+    <div class="nav-right">
+        <a href="/map">Open the map</a>
+    </div>
+</nav>
+
+
+<main id="main-content">
+<div class="container">
+
+    <header class="page-header">
+        <p class="page-label">Privacy</p>
+        <h1>What this site publishes</h1>
+        <p class="page-intro">
+            Every figure on PulseCities comes from a public New York City record. Publishing those records is
+            lawful, and it is not the whole question. This page states what the site puts on a page, what it
+            deliberately leaves off, and how to reach a person about it.
+        </p>
+    </header>
+
+    <section id="what-we-publish">
+        <h2>What is published</h2>
+        <p>
+            Pages are organised around buildings, companies and places, never around people. A building page
+            carries its deed record, its assessed value, its open HPD violations, its 311 complaint counts, its
+            DOB permits and any executed evictions recorded at that address. A company page carries the deeds
+            that company is named on. A neighborhood page carries counts and rates for the ZIP.
+        </p>
+        <p>
+            Company names are published in full. A limited liability company, a corporation, a trust, a bank or
+            a housing development fund corporation is named wherever it appears in the record, including where
+            that name is the only answer to who owns a building.
+        </p>
+    </section>
+
+    <section id="what-we-withhold">
+        <h2>What is withheld, and why</h2>
+        <p>
+            Four things are in the public record and are not on this site.
+        </p>
+        <ul class="method-list">
+            <li>
+                <strong>The names of private individuals.</strong> ACRIS names every party to a deed, and most
+                of them are people buying a home rather than companies building a portfolio. Where a deed party
+                is a person, pages read &ldquo;a private individual&rdquo; instead of the name. The transfer, the
+                date and the price are still shown, because those describe the transaction rather than the buyer.
+            </li>
+            <li>
+                <strong>Apartment numbers.</strong> HPD writes the unit an inspector stood in into the violation
+                text, and the eviction file appends it to the street address. A street address plus a unit plus a
+                date describes one household. The instruction to the landlord is kept; the unit is removed.
+            </li>
+            <li>
+                <strong>Tenant names, and any name attached to an eviction.</strong> The city does not publish
+                who was evicted and neither does this site. Eviction records here carry an address, a date and a
+                marshal docket number.
+            </li>
+            <li>
+                <strong>A private person&rsquo;s home address.</strong> A company&rsquo;s registered agent is a
+                public role and is named, but where that agent is a person, the page shows the city and state
+                rather than the street.
+            </li>
+        </ul>
+        <p>
+            Search follows the same line. Company and LLC names are searchable; individuals are not. Deeds held
+            by a private person still count toward every total on the site, and cannot be looked up by name,
+            because a name-searchable index of private homeowners is a different product than this one.
+        </p>
+    </section>
+
+    <section id="not-a-finding">
+        <h2>A record is not a finding</h2>
+        <p>
+            A violation is an inspector&rsquo;s observation, a complaint is something a resident reported, and an
+            eviction is an action a court authorised and a marshal carried out. None of them is a finding about
+            anyone&rsquo;s conduct, and this site does not present them as one. A displacement score describes
+            where pressure is concentrated relative to the rest of the city. It is not evidence that a specific
+            owner has broken a law.
+        </p>
+        <p>
+            Where a page shows an eviction and a later sale at the same building, it is describing the order of
+            two dated records. A recorded sequence is not a claim about cause.
+        </p>
+    </section>
+
+    <section id="analytics">
+        <h2>What is collected from you</h2>
+        <p>
+            Page analytics run on Plausible, which is cookieless and stores no personal data and no cross-site
+            identifier. There is no advertising network on this site and nothing here is sold or shared with one.
+        </p>
+        <p>
+            If you subscribe to an alert, your email address is stored so the alert can be sent, along with the
+            building, block or company you asked to watch. It is used for that and for nothing else. Every email
+            carries a one-click unsubscribe, and unsubscribing deletes the subscription.
+        </p>
+    </section>
+
+    <section id="corrections">
+        <h2>Corrections and removals</h2>
+        <p>
+            City records contain errors, and this site inherits them. If something here is wrong, or if a page
+            names you as an individual anywhere, write to
+            <a href="mailto:nycdisplacement@gmail.com">nycdisplacement@gmail.com</a> with the address or the page
+            and what is wrong with it. Corrections that can be verified against the city record are made, and a
+            page that names a private individual is a defect on this site whether or not the record is accurate.
+        </p>
+        <p>
+            Where the underlying city record itself is wrong, the correction has to be made at the source, since
+            this site re-reads those feeds nightly and would otherwise restore the error. The
+            <a href="/methodology">methodology page</a> lists every source and links to it.
+        </p>
+    </section>
+
+</div>
+</main>
+
+<footer>
+    <p class="footer-byline">Built by Michael Espin</p>
+    <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/neighborhoods">Neighborhoods</a>
+        <a href="/displacement">Displacement</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/about">About</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/press">Press</a>
+        <a href="/status">Status</a>
+        <a href="mailto:nycdisplacement@gmail.com">Contact</a>
+        <a href="https://www.linkedin.com/in/michaelespin/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="https://x.com/PulseCities" target="_blank" rel="noopener noreferrer" aria-label="PulseCities on X" style="display:inline-flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+    </div>
+</footer>
+
+<style>@media(max-width:767px){main{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)!important;}}</style>
+</body>
+</html>
