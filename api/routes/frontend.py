@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session
 from api.permit_kinds import (DECONVERSION_PARAMS, deconversion_sql,
                               renovation_sql)
 from api.person_privacy import is_natural_person, public_name
-from api.violation_text import strip_unit
+from api.unit_privacy import strip_apartment, strip_unit
 from api.freshness import (ACRIS_THROUGH_SQL, FRESHNESS_SOURCES, db_through_sql,
                            feed_anchor, real_date, window_sql)
 from config.nyc import DISPLACEMENT_COMPLAINT_TYPES
@@ -9392,7 +9392,7 @@ def eviction_case_page(q: str = "", db: Session = Depends(get_db)):
     recent_rows = "".join(
         f'<li class="rec-row">'
         + (f'<a href="/property/{esc(r.bbl)}">' if r.bbl else '<div class="rec-static">')
-        + f'<div><div class="rec-addr">{esc(_addr_title(r.address))}</div>'
+        + f'<div><div class="rec-addr">{esc(_addr_title(strip_apartment(r.address)))}</div>'
         f'<div class="rec-geo">{esc((r.borough or "").title())} {esc(r.zip_code or "")} '
         f'&middot; docket {esc(r.docket_number or "n/a")} '
         f'&middot; index {esc(r.court_index_number or "n/a")}</div></div>'
@@ -9408,7 +9408,7 @@ def eviction_case_page(q: str = "", db: Session = Depends(get_db)):
         if rows:
             cards = ""
             for r in rows:
-                place = ", ".join(x for x in [_addr_title(r.address) if r.address else "",
+                place = ", ".join(x for x in [_addr_title(strip_apartment(r.address)) if r.address else "",
                                               (r.borough or "").title(), r.zip_code or ""] if x)
                 link = (f'<a href="/property/{esc(r.bbl)}">The full record for this building &rarr;</a>'
                         if r.bbl else

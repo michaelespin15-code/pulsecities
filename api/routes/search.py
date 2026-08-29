@@ -49,6 +49,7 @@ from slowapi.util import get_remote_address
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from api.person_privacy import org_sql
 from config.nyc import ACRIS_TRANSFER_DOC_TYPES
 from models.database import get_db
 
@@ -228,7 +229,7 @@ def search_landlord(
 
     # --- Summary --- aggregates over ALL matching records, not capped at 50
     summary_row = db.execute(
-        text("""
+        text(f"""
             SELECT
                 COUNT(*) AS total_properties,
                 COUNT(DISTINCT p.zip_code) AS unique_zip_codes,
@@ -245,6 +246,14 @@ def search_landlord(
               AND o.party_name_normalized NOT ILIKE '%LOAN SERVICE%'
               AND o.party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
               AND o.party_name_normalized NOT ILIKE '%CREDIT UNION%'
+              -- Organisations only. This endpoint returned 36,733 natural
+              -- persons by surname substring, each with an address and a
+              -- lat/long, which is a people-search rather than a landlord
+              -- search. The servicer filters above answer a different
+              -- question and do not help here. Gated in SQL rather than in
+              -- Python so the summary aggregate and the rows describe the
+              -- same population.
+              AND {org_sql('o.party_name_normalized')}
         """),
         {"pattern": pattern, "doc_types": list(ACRIS_TRANSFER_DOC_TYPES)},
     ).fetchone()
@@ -252,7 +261,7 @@ def search_landlord(
     # --- Results --- LIMIT 50, most recent deed first
     # lat/lng: parcel point geometry preferred; neighborhood polygon centroid as fallback.
     result_rows = db.execute(
-        text("""
+        text(f"""
             SELECT
                 o.bbl,
                 p.address,
@@ -279,6 +288,14 @@ def search_landlord(
               AND o.party_name_normalized NOT ILIKE '%LOAN SERVICE%'
               AND o.party_name_normalized NOT ILIKE '%FEDERAL SAVINGS%'
               AND o.party_name_normalized NOT ILIKE '%CREDIT UNION%'
+              -- Organisations only. This endpoint returned 36,733 natural
+              -- persons by surname substring, each with an address and a
+              -- lat/long, which is a people-search rather than a landlord
+              -- search. The servicer filters above answer a different
+              -- question and do not help here. Gated in SQL rather than in
+              -- Python so the summary aggregate and the rows describe the
+              -- same population.
+              AND {org_sql('o.party_name_normalized')}
             ORDER BY o.doc_date DESC NULLS LAST
             LIMIT 50
         """),

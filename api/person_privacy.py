@@ -38,30 +38,56 @@ person-shaped by that test purely because their names were long.
 
 import re
 
-# Organisation tokens as they actually appear in ACRIS party names. Deliberately
-# broader than _ENTITY_FORM_RE, which knows only LLC|PLLC|LLP|CORP|INC|LTD|LP and
-# therefore reads "WELLS FARGO BANK NATIONAL ASSOCIATION" and "BFH HOUSING
-# DEVELOPMENT FUND CORPORATION" as people. "CORPORATION" does not match \bCORP\b.
-_ORG_TOKEN = re.compile(
-    r"\b("
-    r"LLC|L\.L\.C|PLLC|LLP|L\.P|LP|INC|INCORPORATED|CORP|CORPORATION|LTD|LIMITED"
-    r"|CO|COMPANY|COMPANIES|TRUST|BANK|BANKING|ASSOCIATION|ASSN|N\.A|NA"
-    r"|FUND|HDFC|HOUSING|DEVELOPMENT|PARTNERS|PARTNERSHIP|REALTY|REALTIES"
-    r"|PROPERTIES|PROPERTY|HOLDINGS|HOLDING|MANAGEMENT|MGMT|GROUP|ENTERPRISES"
-    r"|VENTURES|CAPITAL|EQUITIES|INVESTORS|INVESTMENT|INVESTMENTS|ACQUISITION"
-    r"|ACQUISITIONS|FOUNDATION|INSTITUTE|SOCIETY|AUTHORITY|AGENCY|DEPARTMENT"
-    r"|CHURCH|TEMPLE|SYNAGOGUE|MOSQUE|MINISTRIES|CONGREGATION|PARISH|DIOCESE"
-    r"|UNIVERSITY|COLLEGE|HOSPITAL|CENTER|CENTRE|MUSEUM|ACADEMY|SCHOOL"
-    r"|CITY|STATE|COUNTY|BOARD|COMMISSION|NYCHA|HPD|MTA|USA|AMERICA"
-    r"|CONDOMINIUM|CONDO|COOPERATIVE|CO-OP|COOP|APARTMENTS|TOWERS|PLAZA"
-    r"|ASSOCIATES|GROUP|SERVICES|SOLUTIONS|VENTURE|PORTFOLIO|PRESERVATION"
-    r")\b"
-)
-
 # The source truncates party_name_normalized at 48 characters. A name long
 # enough to be cut is an organisation in every case checked; a person's name
 # does not reach 48 characters.
 _TRUNCATION_LEN = 48
+
+# Organisation tokens as they actually appear in ACRIS party names. Deliberately
+# broader than _ENTITY_FORM_RE, which knows only LLC|PLLC|LLP|CORP|INC|LTD|LP and
+# therefore reads "WELLS FARGO BANK NATIONAL ASSOCIATION" and "BFH HOUSING
+# DEVELOPMENT FUND CORPORATION" as people. "CORPORATION" does not match \bCORP\b.
+# Organisation tokens as they actually appear in ACRIS party names. Deliberately
+# broader than _ENTITY_FORM_RE, which knows only LLC|PLLC|LLP|CORP|INC|LTD|LP and
+# therefore reads "WELLS FARGO BANK NATIONAL ASSOCIATION" and "BFH HOUSING
+# DEVELOPMENT FUND CORPORATION" as people. "CORPORATION" does not match \bCORP\b.
+#
+# Kept as a list because two readers need it in two languages: this module
+# compiles a Python regex from it, and org_sql() emits the Postgres equivalent
+# for /api/search/landlord, which has to gate its summary aggregate in SQL so the
+# counts describe the same population as the rows. Retyping it in SQL is exactly
+# how the two would drift.
+_ORG_WORDS = (
+    "LLC", r"L\.L\.C", "PLLC", "LLP", r"L\.P", "LP", "INC", "INCORPORATED",
+    "CORP", "CORPORATION", "LTD", "LIMITED", "CO", "COMPANY", "COMPANIES",
+    "TRUST", "BANK", "BANKING", "ASSOCIATION", "ASSN", r"N\.A", "NA",
+    "FUND", "HDFC", "HOUSING", "DEVELOPMENT", "PARTNERS", "PARTNERSHIP",
+    "REALTY", "REALTIES", "PROPERTIES", "PROPERTY", "HOLDINGS", "HOLDING",
+    "MANAGEMENT", "MGMT", "GROUP", "ENTERPRISES", "VENTURES", "CAPITAL",
+    "EQUITIES", "INVESTORS", "INVESTMENT", "INVESTMENTS", "ACQUISITION",
+    "ACQUISITIONS", "FOUNDATION", "INSTITUTE", "SOCIETY", "AUTHORITY", "AGENCY",
+    "DEPARTMENT", "CHURCH", "TEMPLE", "SYNAGOGUE", "MOSQUE", "MINISTRIES",
+    "CONGREGATION", "PARISH", "DIOCESE", "UNIVERSITY", "COLLEGE", "HOSPITAL",
+    "CENTER", "CENTRE", "MUSEUM", "ACADEMY", "SCHOOL", "CITY", "STATE",
+    "COUNTY", "BOARD", "COMMISSION", "NYCHA", "HPD", "MTA", "USA", "AMERICA",
+    "CONDOMINIUM", "CONDO", "COOPERATIVE", "CO-OP", "COOP", "APARTMENTS",
+    "TOWERS", "PLAZA", "ASSOCIATES", "SERVICES", "SOLUTIONS", "VENTURE",
+    "PORTFOLIO", "PRESERVATION",
+)
+
+_ORG_TOKEN = re.compile(r"\b(" + "|".join(_ORG_WORDS) + r")\b")
+
+
+def org_sql(column: str) -> str:
+    """
+    The same rule as a Postgres predicate, for callers that must filter in SQL.
+
+    Postgres spells a word boundary \\y rather than \\b. The length arm mirrors
+    _TRUNCATION_LEN: a name the source had to cut is an organisation.
+    """
+    pattern = r"\y(" + "|".join(_ORG_WORDS) + r")\y"
+    return f"({column} ~* '{pattern}' OR length({column}) >= {_TRUNCATION_LEN})"
+
 
 REDACTED = "Private individual"
 

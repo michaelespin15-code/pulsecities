@@ -46,7 +46,7 @@ from pathlib import Path
 import resend
 from sqlalchemy import text
 
-from api.violation_text import UNIT_TAIL
+from api.unit_privacy import UNIT_TAIL
 from api.freshness import (FRESHNESS_SOURCES, db_through_sql, feed_anchor,
                            real_date, window_sql)
 from config.logging_config import configure_logging
