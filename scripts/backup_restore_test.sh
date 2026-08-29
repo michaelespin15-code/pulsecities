@@ -27,7 +27,7 @@ MIN_FREE_GB=22
 CORE_TABLES=(complaints_raw permits_raw evictions_raw violations_raw ownership_raw operators)
 ROW_FLOOR_RATIO=0.80   # restored count must be >= this fraction of live
 
-DATABASE_URL=$(grep -E '^DATABASE_URL=' "$APP_DIR/.env" | cut -d= -f2-)
+. "$APP_DIR/scripts/lib/pgenv.sh"
 
 _now() { date -u '+%Y-%m-%dT%H:%M:%SZ'; }
 
@@ -89,7 +89,7 @@ first=1
 all_ok=1
 for tbl in "${CORE_TABLES[@]}"; do
     restored=$(sudo -u postgres psql -tAc "SELECT COUNT(*) FROM $tbl" -d "$SCRATCH_DB" 2>/dev/null | tr -dc '0-9')
-    live=$(psql "$DATABASE_URL" -tAc "SELECT COUNT(*) FROM $tbl" 2>/dev/null | tr -dc '0-9')
+    live=$(psql "$PGDSN" -tAc "SELECT COUNT(*) FROM $tbl" 2>/dev/null | tr -dc '0-9')
     restored=${restored:-0}; live=${live:-0}
     ok="true"
     # non-empty, and >= floor * live (guard against live=0)

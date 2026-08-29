@@ -26,17 +26,13 @@ APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 # Same pattern as backup_db.sh. .env is not valid shell (ALERT_SNOOZE carries a
 # value with spaces and a colon), so sourcing it exits 127; only this one
 # variable is needed anyway.
-DATABASE_URL=$(grep -E '^DATABASE_URL=' "$APP_DIR/.env" | cut -d= -f2-)
-if [ -z "${DATABASE_URL:-}" ]; then
-    echo "ERROR: DATABASE_URL not found in $APP_DIR/.env" >&2
-    exit 1
-fi
+. "$APP_DIR/scripts/lib/pgenv.sh"
 
 run() {
     echo ">>> $1"
     # CREATE INDEX CONCURRENTLY cannot run inside a transaction block, so each
     # statement goes in its own psql invocation with autocommit.
-    psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "SET maintenance_work_mem = '256MB';" -c "$1"
+    psql "$PGDSN" -v ON_ERROR_STOP=1 -c "SET maintenance_work_mem = '256MB';" -c "$1"
 }
 
 time run "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_complaints_bbl_date
@@ -46,13 +42,13 @@ time run "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_violations_bbl_date
           ON violations_raw (bbl, inspection_date DESC);"
 
 echo ">>> invalid indexes (should be empty):"
-psql "$DATABASE_URL" -c "
+psql "$PGDSN" -c "
     SELECT c.relname FROM pg_class c
     JOIN pg_index i ON i.indexrelid = c.oid
     WHERE NOT i.indisvalid AND c.relname LIKE 'idx_%_bbl_date';"
 
 echo ">>> plan check on the BBL that was timing out:"
-psql "$DATABASE_URL" -c "
+psql "$PGDSN" -c "
     EXPLAIN (ANALYZE, BUFFERS)
     SELECT * FROM complaints_raw
     WHERE bbl = '2048330028' AND created_date >= now() - interval '365 days'

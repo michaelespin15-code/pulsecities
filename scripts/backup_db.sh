@@ -8,7 +8,7 @@
 # Runs from cron at 03:30 UTC, after the 02:00 scraper pipeline has settled.
 #
 # Restore:
-#   gunzip -c /var/backups/pulsecities/pulsecities_YYYY-MM-DD.sql.gz | psql "$DATABASE_URL"
+#   gunzip -c /var/backups/pulsecities/pulsecities_YYYY-MM-DD.sql.gz | psql "$PGDSN"
 # =============================================================================
 
 set -euo pipefail
@@ -29,13 +29,10 @@ RETENTION_DAYS=1
 
 mkdir -p "$BACKUP_DIR"
 
-# pg_dump takes a libpq connection URI as its dbname argument, so the existing
-# DATABASE_URL works as-is — no need to export the rest of the env.
-DATABASE_URL=$(grep -E '^DATABASE_URL=' "$APP_DIR/.env" | cut -d= -f2-)
-if [ -z "${DATABASE_URL:-}" ]; then
-    echo "ERROR: DATABASE_URL not found in $APP_DIR/.env" >&2
-    exit 1
-fi
+# Credentials come in through the environment, not argv. Passing the full URI
+# to pg_dump put the password in `ps` for the length of the dump; see
+# scripts/lib/pgenv.sh for what that cost on 2026-08-29.
+. "$APP_DIR/scripts/lib/pgenv.sh"
 
 OUT="$BACKUP_DIR/pulsecities_$(date +%F).sql.gz"
 
@@ -44,7 +41,7 @@ OUT="$BACKUP_DIR/pulsecities_$(date +%F).sql.gz"
 # file as the newest "backup" until Sunday's restore test noticed.
 TMP="$OUT.tmp"
 trap 'rm -f "$TMP"' EXIT
-pg_dump "$DATABASE_URL" | gzip > "$TMP"
+pg_dump "$PGDSN" | gzip > "$TMP"
 gzip -t "$TMP"
 mv "$TMP" "$OUT"
 trap - EXIT
