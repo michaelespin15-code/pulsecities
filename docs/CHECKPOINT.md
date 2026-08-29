@@ -1,3 +1,84 @@
+# >>> START HERE after /clear (2026-08-29 night, HPD owners + the rotation incident) <<<
+
+## Two commands are yours
+
+    bash scripts/purge_history_secret.sh     # then the force-push it prints
+    # and: GSC generative-AI panel + Bing Webmaster "AI Performance" tab
+
+**The DB password is rotated.** The credential in 551 blobs of public history is
+dead, so the purge is hygiene now, not risk. 0 forks is what makes a rewrite
+actually effective. The script refuses to run on a dirty tree or with unpushed
+commits and stops before the force-push.
+
+## What broke, and it was mine
+
+I handed over a `bash <<'BLOCK'` heredoc to paste. **The harness flattens
+multi-line blocks**: each line ran in its own shell with `$NEW` and `$OLD`
+empty. The guards printed ABORT harmlessly and the two destructive lines ran
+anyway, so `ALTER ROLE ... PASSWORD ''` removed the password and the sed wrote an
+empty one. Every new connection failed scram-sha-256 and the socket served 500
+for about three minutes while nginx's 10-minute cache hid it. Recovered with a
+single-line `&&` chain and a length guard before the destructive step.
+
+**Never hand over a heredoc or a variable set in one command and used in the
+next.** One line, `&&`, or a script file.
+
+Then a routine `pgrep -a pg_dump` printed the *new* password, because
+`pg_dump "$DATABASE_URL"` puts credentials in argv where any user reads them from
+`ps` for the length of the dump. Rotated again; `scripts/lib/pgenv.sh` owns it
+now and exports PGPASSWORD plus a stripped PGDSN.
+
+## HPD registered owners: data and rule shipped, no surface yet
+
+593,632 contacts across 178,113 buildings, 6,796 withheld.
+
+This is the defensible answer to naming individuals, and the deed data was not.
+HPD requires a responsible party on file **so tenants and the courts can reach
+them**, and only of multiple dwellings and of 1-2 family homes the owner does not
+occupy. That requirement is the filter ACRIS never had: 77.1% of registered lots
+carry 3+ residential units.
+
+**The service address is never stored.** 19.7% of IndividualOwner contacts give
+the registered building as their business address, so for ~23,000 people that
+field is a home address. Compared at ingest, discarded; the table has no column
+that could hold it. `api/owner_disclosure.py` owns the rule,
+`tests/test_owner_disclosure.py` checks the schema has no address column and
+that the stored verdict still matches the function.
+
+Traps for the next feed: `tesw-yqqr` has boroid/block/lot and **no bbl column**,
+while the violation_leads copy has a derived one, so they are not
+interchangeable. And `6bgk-3dad` is DOB ECB violations, not registration
+contacts; contacts are `feu5-w2e2`.
+
+## Also this session
+
+- **RSS feed** at /feed.xml, 20 weekly editions, autodiscovery on the four
+  publication pages, in llms.txt. Cron 03:22.
+- **Preferred Sources**: pulsecities.com is listed in the tool. One text link on
+  /this-week, /this-week/archive, /week/{slug} and both digest email footers.
+  Not the shared footer: it multiplies a repeat audience, and a property-page
+  visitor searched one address once.
+- **Meta budget**: 183 pages were over. Titles at 69 were losing "| PulseCities"
+  unread while paying 13 characters for it. /neighborhood carried a 209-char
+  description on 177 pages whose last 121 characters were a feed list identical
+  on every one. `tests/test_meta_budget.py` measures all 20 templates rendered.
+- **CSS palette**: 8 templates named tokens nothing declared, which is why
+  /radar and /flips looked washed out. An undeclared custom property falls back
+  per property: color inherits (grey text renders white), background takes its
+  initial (a panel renders transparent), border-color takes currentColor.
+
+## Still open
+
+- `/neighborhood` duplication **67.2% mean containment, 12 of 66 pairs over 70%**,
+  measured with the repo's own metric. `test_content_depth.py` covers /property
+  and /llc and not this.
+- `_norm_map` log transform, +0.066, decided and unapplied. Close the 0.027
+  reproduction gap first.
+- 9 unchecked pyflakes dead locals; one of the ten was the 10,197-page bug.
+- retire_raw_data (frees ~9.6GB) then the ACRIS history backfill (needs ~8.6GB).
+  198k deeds on file and 99.8% are 2025-2026, which is why chain-of-title
+  queries earn ~1,400 impressions in three days at zero clicks.
+
 # >>> START HERE after /clear (2026-08-29, the assessment-year session) <<<
 
 **Done and verified live.** Code committed, /property deployed, data repaired.
