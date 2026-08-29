@@ -7879,6 +7879,22 @@ def llc_entity_page(slug: str, db: Session = Depends(get_db)):
         return _not_found()
     name = ent.name
 
+    # No page here is about a private individual. 40,532 of 64,279 distinct deed
+    # grantees are person-shaped, and each rendered ~1,500 words: every deed,
+    # every address, the prices, an FAQ headed "Who owns or controls <PERSON>?",
+    # and for 200 of them an eviction executed in the year before their purchase.
+    #
+    # The route's own reason for rendering them, "so those searches always land",
+    # could never work: the pages are noindex, so a name search cannot reach one.
+    # Measured before removal: 23 human hits on /llc today and every one a
+    # company, zero internal links to a person slug across six page types.
+    #
+    # The argument that settles it is not traffic. /privacy tells every reader
+    # that the names of private individuals are withheld. While these answered,
+    # that was false, and a stated policy the code contradicts is worse than none.
+    if is_natural_person(name):
+        return _not_found()
+
     def _side(party_type: str):
         # 17,114 of 64,849 deed BBLs are condo unit lots (1001 and up) that
         # PLUTO does not carry, so a quarter of this table joined to nothing:
