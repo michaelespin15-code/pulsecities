@@ -463,15 +463,23 @@ def _ssr_nav(active: str = "", lang: str = "en", toggle_html: str = "", track: b
 # in via format slots; everything a reader sees as prose lives here.
 _NB_L = {
     "en": {
-        "title_scored": "{name} ({zip}) Displacement Score {s}/100 | PulseCities",
+        # No "| PulseCities" on the SERP titles. Measured 2026-08-29: this
+        # template rendered 62 characters, so the brand was being truncated
+        # away on all 177 pages and charging 13 characters for the privilege.
+        # Same finding and same fix as /property. og:title keeps it, because a
+        # social card has the room and the brand earns its place there.
+        "title_scored": "{name} ({zip}) displacement score {s}/100",
         "social_scored": "{name} ({zip}) | Displacement Score {s}/100 | PulseCities",
-        "title_unscored": "{name} ({zip}) NYC Displacement Signals | PulseCities",
-        "desc_scored": ("{name} shows {tier} displacement-pressure signals based on NYC public records, "
-                        "including LLC acquisitions, executed evictions, 311 complaints, HPD violations, "
-                        "permits, and rent-stabilized housing data."),
-        "desc_unscored": ("Track displacement-pressure signals in {name} ({zip}) from NYC public records: "
-                          "LLC acquisitions, executed evictions, 311 complaints, HPD violations, permits, "
-                          "and rent-stabilized housing data."),
+        "title_unscored": "{name} ({zip}) NYC displacement signals",
+        # The old description was 209 characters, 49 past where an engine cuts,
+        # and its last 121 were a list of source names identical on every one
+        # of the 177 pages. That is the same copy the content audit measured as
+        # 67.6% mean overlap. The score and the tier differ per ZIP; the list
+        # of feeds never did.
+        "desc_scored": ("{name} ({zip}) shows {tier} displacement pressure, scoring {s} of 100 "
+                        "on deeds, evictions and violations from NYC public records."),
+        "desc_unscored": ("Deeds, executed evictions, complaints and housing violations in "
+                          "{name} ({zip}), rebuilt nightly from the NYC public record."),
         "nav": [("/map", "Map"), ("/methodology", "Methodology"), ("/about", "About"), ("/press", "Press")],
         "back_map": "&#8592; Back to map",
         "all_borough": "All {borough} ZIPs",
@@ -552,15 +560,15 @@ _NB_L = {
         "lang_toggle_label": "ES", "lang_toggle_aria": "Ver esta página en español",
     },
     "es": {
-        "title_scored": "{name} ({zip}) Puntuación de desplazamiento {s}/100 | PulseCities",
+        # Spanish runs longer than English for the same statement, so these are
+        # shorter still rather than translated at the same length.
+        "title_scored": "{name} ({zip}) puntuación {s}/100",
         "social_scored": "{name} ({zip}) | Puntuación de desplazamiento {s}/100 | PulseCities",
-        "title_unscored": "{name} ({zip}) Señales de desplazamiento en NYC | PulseCities",
-        "desc_scored": ("{name} muestra señales de presión de desplazamiento {tier} según registros "
-                        "públicos de NYC, incluyendo adquisiciones LLC, casos de desalojo, quejas al "
-                        "311, violaciones HPD, permisos y datos de renta estabilizada."),
-        "desc_unscored": ("Sigue las señales de presión de desplazamiento en {name} ({zip}) desde "
-                          "registros públicos de NYC: adquisiciones LLC, casos de desalojo, quejas al "
-                          "311, violaciones HPD, permisos y datos de renta estabilizada."),
+        "title_unscored": "{name} ({zip}) señales de desplazamiento",
+        "desc_scored": ("{name} ({zip}) muestra presión de desplazamiento {tier}, con {s} de 100 "
+                        "según escrituras, desalojos y violaciones de vivienda."),
+        "desc_unscored": ("Escrituras, desalojos ejecutados, quejas y violaciones de vivienda en "
+                          "{name} ({zip}), del registro público de NYC, cada noche."),
         "nav": [("/map", "Mapa"), ("/methodology", "Metodología"), ("/about", "Acerca de"), ("/press", "Prensa")],
         "back_map": "&#8592; Volver al mapa",
         "all_borough": "Todos los ZIP de {borough}",
@@ -759,7 +767,7 @@ def _build_neighborhood_page(
         score_str    = f"{score:.1f}"
         page_title   = L["title_scored"].format(name=name, zip=zip_code, borough=borough_disp, s=score_str)
         social_title = L["social_scored"].format(name=name, zip=zip_code, borough=borough_disp, s=score_str)
-        meta_desc    = L["desc_scored"].format(name=name, zip=zip_code,
+        meta_desc    = L["desc_scored"].format(name=name, zip=zip_code, s=score_str,
                                                tier=_TIER_WORDS[lang][tier_label].lower())
     else:
         tier_label, tier_color = "Unknown", "#93a1ad"
@@ -3784,8 +3792,7 @@ _LIST_L = {
         "nav_radar": "Radar", "nav_meth": "Methodology", "nav_nbhds": "Neighborhoods",
         "b_title": "{borough} Displacement Risk by ZIP Code | PulseCities",
         "b_desc": ("Displacement-pressure scores for all {n} scored ZIP codes in {borough}, "
-                   "ranked by current score. Highest right now: {top} ({zip}) at {s}/100. "
-                   "Public records, refreshed nightly."),
+                   "ranked by score. Highest now: {top} ({zip}) at {s}/100."),
         "b_h1": "{borough} displacement risk by ZIP",
         "b_intro": ("Every scored ZIP in {borough}, ranked by current displacement pressure. "
                     "Scores come from six public-record signals and refresh nightly. Open any "
@@ -4165,7 +4172,7 @@ def flip_watch_page(db: Session = Depends(get_db)):
 
     # "Flip Watch" is a name we invented; nobody types it. The H1 and nav
     # keep the brand, the title says what the page is.
-    title = "NYC renovation flips: LLC bought, permit within 60 days | PulseCities"
+    title = "NYC renovation flips: LLC bought, permit within 60 days"
     desc = (
         f"{n} NYC buildings where an LLC bought and filed a renovation permit within "
         f"{FLIP_WINDOW_DAYS} days, sourced from ACRIS deeds and DOB permits. Updated nightly."
@@ -4667,7 +4674,7 @@ def speculation_radar_page(db: Session = Depends(get_db)):
         )
 
     # Same as /flips: the brand is not the query.
-    title = "NYC LLC buying clusters: one buyer, one ZIP, one window | PulseCities"
+    title = "NYC LLC buying clusters: one buyer, one ZIP, one window"
     desc = (
         f"{n} NYC buying runs where one LLC took the deed on {MIN_BUILDINGS} or more "
         f"buildings in the same ZIP within {RADAR_WINDOW_DAYS} days, sourced from ACRIS "
@@ -5045,8 +5052,8 @@ def week_edition_page(slug: str, db: Session = Depends(get_db)):
     )
     title = f"NYC displacement, week of {range_label} | PulseCities"
     desc = (
-        f"NYC displacement week in review, {range_label}: {top_line}, "
-        f"{counts.evictions:,} executed evictions, {counts.permits:,} construction permits. Public records only."
+        f"Week of {range_label}: {top_line}, {counts.evictions:,} executed "
+        f"evictions, {counts.permits:,} construction permits, from NYC public records."
     )
     jsonld = _jsonld({
         "@context": "https://schema.org",
@@ -5331,8 +5338,8 @@ def this_week_page(db: Session = Depends(get_db)):
     )
     title = "This week in NYC displacement | PulseCities"
     desc = (
-        f"NYC displacement week in review, {range_label}: {top_line}, "
-        f"{counts.evictions:,} executed evictions, {counts.permits:,} construction permits. Public records only."
+        f"Week of {range_label}: {top_line}, {counts.evictions:,} executed "
+        f"evictions, {counts.permits:,} construction permits, from NYC public records."
     )
 
     # /this-week emitted no structured data (regression vs /week/{slug}). It is a
@@ -5794,8 +5801,8 @@ that repeats every year is seasonal, not progress.</div>
 
     title = "The state of NYC displacement | PulseCities"
     desc = (
-        "A live read of NYC displacement pressure, rebuilt nightly from public records: "
-        "hottest neighborhoods, largest landlords, eviction-to-resale flips, and buying clusters."
+        "A live read of NYC displacement pressure, rebuilt nightly from public "
+        "records: hottest neighborhoods, biggest landlords, flips and buying clusters."
     )
     jsonld = _jsonld({
         "@context": "https://schema.org",
@@ -6321,9 +6328,11 @@ def evictions_page(lang: str = "en", db: Session = Depends(get_db)):
     # eviction build: 150 executions with address, neighborhood and date. The
     # title said "tracker", which is the word we use rather than the word they
     # type.
-    title = "NYC marshal eviction list: recent executions by address | PulseCities"
+    title = "NYC marshal eviction list: recent executions by address"
+    # 160 exactly before this trim, on a line carrying a count that can gain a
+    # digit. A budget met by one character is a budget that fails on a busy month.
     desc = (f"{d30:,} residential marshal evictions executed across NYC in the past 30 days, "
-            f"tracked nightly from public records, with the neighborhoods where they concentrate.")
+            f"from public records, with the neighborhoods where they concentrate.")
 
     faq = [
         ("What is a marshal eviction?",
