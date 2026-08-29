@@ -46,6 +46,29 @@ prints it as fact:
 sitemapped pages** carry a sentence of that shape. Verified live before the fix
 and again after, through the socket.
 
+## And then the score was backtested
+
+`scripts/backtest_score.py`, findings in `docs/score_backtest_2026-08-29.md`.
+First time the site's central claim was checked against an outcome.
+
+**The composite loses to its own components on all four outcomes**, and to plain
+persistence. On its own recipe next quarter it scores 0.813 against
+complaint_rate alone at 0.818.
+
+**The defect is one function.** Not the weights, not the window: longer windows
+are better and flatten past 180 days. But the same recipe over 365 days scores
+**0.906** where the shipped composite scores **0.813**, and on byte-identical
+inputs the transform explains it. `_norm_map` scales linearly in value between
+the 5th and 95th percentile; these rates are right-skewed, so that packs most
+ZIPs into a band where noise reorders them. **rank 0.906, clamped_linear 0.840.**
+
+The clamp is not the culprit, but it ties **exactly nine ZIPs at 100.0 on every
+one of the five signals**. The top of the map has no ordering.
+
+**`WEIGHT_PERMITS = 0.21` is negative against future evictions and LLC deeds.**
+
+Nothing applied. Rank normalisation rescales every number on the site.
+
 ## How it was found, which is the reusable part
 
 `scheduler/alerts.py` called `mailer.send` and never imported mailer, so every
