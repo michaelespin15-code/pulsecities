@@ -42,7 +42,17 @@ jobs:
       # It is deliberately narrower than the whole non-integration suite. The
       # rest needs a database and belongs in a job that provisions one; adding
       # that is worth doing and is not what unblocks the push.
+      # DATABASE_URL is set to a DSN nothing connects to, and it is load-bearing.
+      # models/database.py builds its engine at import time and raises without
+      # one, so any lane test importing a module that imports it dies during
+      # collection rather than failing an assertion: tests/test_freshness_contract.py
+      # imports scripts.daily_health_check, which imports models.database, and
+      # that single chain took the whole job down. GUARDS_NO_DB deselects the
+      # handful of checks that genuinely query, so nothing here opens a socket.
+      # The proper fix is a lazily built engine; this is the honest small one.
       - name: Run repo guards
+        env:
+          DATABASE_URL: postgresql://guards:guards@127.0.0.1:1/guards_never_connects
         run: PYTHON=python GUARDS_NO_DB=1 ./scripts/guards.sh
 
   # The second lane: a real Postgres, the schema built the way production built

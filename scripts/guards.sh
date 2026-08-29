@@ -97,6 +97,9 @@ DESELECT=(
 if [ -n "${GUARDS_NO_DB:-}" ]; then
   DESELECT+=(
     --deselect "tests/test_infra_guards.py::TestLlmsTxtConsistency::test_generator_matches_stats_and_tier_bands"
+    # Queries scoring_changes and the history series. Marked `integration`, but
+    # this lane selects by file rather than by marker, so it has to be named.
+    --deselect "tests/test_scoring_change_notes.py::TestTheNotesEndpoint"
   )
 fi
 
