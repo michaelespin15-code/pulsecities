@@ -59,6 +59,7 @@ LANE=(
   # that actually runs rather than the suite that does not.
   tests/test_email_guards.py
   tests/test_ops_email_delivery.py
+  tests/test_undefined_names.py
   tests/test_permit_kind_guards.py
   tests/test_upsert_timestamps.py
   tests/test_backfill_windows.py

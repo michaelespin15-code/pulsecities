@@ -34,6 +34,7 @@ psycopg2-binary==2.9.12
 pydantic==2.13.4
 pydantic_core==2.46.4
 Pygments==2.20.0
+pyflakes==3.4.0
 pytest==9.1.0
 python-dotenv==1.2.2
 pytz==2026.1.post1
