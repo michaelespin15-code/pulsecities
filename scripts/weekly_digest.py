@@ -766,6 +766,9 @@ def render_zip_digest(
           <p style="margin:0 0 8px;font-family:{_MONO};font-size:10px;color:#8A8578;line-height:1.7;">
             PulseCities reads NYC public records. Scores are risk indicators, not claims of wrongdoing.
           </p>
+          <p style="margin:0 0 8px;font-family:{_MONO};font-size:10px;line-height:1.7;">
+            <a href="https://www.google.com/preferences/source?q=pulsecities.com" style="color:#8A8578;">Add PulseCities as a preferred source on Google</a>
+          </p>
           <p style="margin:0;font-family:{_MONO};font-size:10px;line-height:1.7;">
             <a href="https://pulsecities.com/api/unsubscribe?token={token}" style="color:#8A8578;">Unsubscribe</a>
           </p>
@@ -1284,6 +1287,9 @@ def render_citywide_digest(subscription: dict, summary: dict, narrative: str | N
           </p>
           <p style="margin:0 0 8px;font-family:{_MONO};font-size:10px;color:#8A8578;line-height:1.7;">
             PulseCities reads NYC public records. Scores are risk indicators, not claims of wrongdoing.
+          </p>
+          <p style="margin:0 0 8px;font-family:{_MONO};font-size:10px;line-height:1.7;">
+            <a href="https://www.google.com/preferences/source?q=pulsecities.com" style="color:#8A8578;">Add PulseCities as a preferred source on Google</a>
           </p>
           <p style="margin:0;font-family:{_MONO};font-size:10px;line-height:1.7;">
             <a href="https://pulsecities.com/api/unsubscribe?token={token}" style="color:#8A8578;">Unsubscribe</a>
