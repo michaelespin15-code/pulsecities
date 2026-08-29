@@ -717,6 +717,7 @@ def _build_neighborhood_page(
     operators_here: list | None = None,
     nearby: list | None = None,
     ev_count: int = 0,
+    ev_trend: tuple[int, int] = (0, 0),
     lang: str = "en",
 ) -> str:
     e = _html.escape
@@ -1014,9 +1015,43 @@ def _build_neighborhood_page(
             )
             ev_cta = ("See the address-level record &rarr;" if lang != "es"
                       else "Ver el registro por direcci&oacute;n &rarr;")
+
+            # The absolute answer, at the grain the reader asked about. The
+            # score above it is a rank and cannot move with the city; this can.
+            # Only rendered when the prior year has something to compare
+            # against, because "0 against 0" is not a trend and reads as one.
+            _recent, _prior = ev_trend
+            ev_trend_line = ""
+            if _prior > 0 and _recent >= 0:
+                _delta = _recent - _prior
+                if lang != "es":
+                    _dir = ("more" if _delta > 0 else "fewer" if _delta < 0
+                            else "the same number")
+                    _tail = (f"{abs(_delta):,} {_dir} than the twelve months before that"
+                             if _delta else "the same number as the twelve months before that")
+                    ev_trend_line = (
+                        f'<p class="section-sub" style="margin-top:8px">'
+                        f'{_recent:,} of them in the last twelve complete months, '
+                        f'{_tail} ({_prior:,}). The score above is a rank against the '
+                        f'other 176 neighborhoods. This is the count itself, so it can go down.'
+                        f'</p>'
+                    )
+                else:
+                    _dir = ("m&aacute;s" if _delta > 0 else "menos" if _delta < 0 else "igual")
+                    _tail = (f"{abs(_delta):,} {_dir} que los doce meses anteriores"
+                             if _delta else "igual que los doce meses anteriores")
+                    ev_trend_line = (
+                        f'<p class="section-sub" style="margin-top:8px">'
+                        f'{_recent:,} en los &uacute;ltimos doce meses completos, '
+                        f'{_tail} ({_prior:,}). La puntuaci&oacute;n de arriba es una '
+                        f'clasificaci&oacute;n frente a los otros 176 vecindarios. '
+                        f'Esto es el recuento en s&iacute; mismo, as&iacute; que puede bajar.'
+                        f'</p>'
+                    )
             ev_area_section = f"""  <section style="margin-bottom:32px;">
     <h2>{e(ev_h)}</h2>
     <p class="section-sub">{ev_body}</p>
+{ev_trend_line}
     <p class="disp-cta"><a href="/evictions/{e(ev_slug)}">{ev_cta}</a></p>
   </section>
 """
@@ -1497,6 +1532,7 @@ def neighborhood_page(zip_code: str, lang: str = "en", db: Session = Depends(get
         petitions=petitions, vacates=vacates, flips=flips,
         operators_here=operators_here, nearby=nearby, lang=lang,
         ev_count=_ev_area_counts(name, db) if name else 0,
+        ev_trend=_ev_area_trend(name, db) if name else (0, 0),
     )
     _page_cache[cache_key] = (page_html, time.monotonic() + _PAGE_TTL)
     return HTMLResponse(page_html)
@@ -6459,6 +6495,47 @@ def _ev_area_counts(name: str, db) -> int:
     """), {"name": name}).scalar() or 0
     _ev_counts[name] = (int(n), time.monotonic() + _EV_AREA_TTL)
     return int(n)
+
+
+
+_ev_trends: dict[str, tuple[tuple[int, int], float]] = {}
+
+
+def _ev_area_trend(name: str, db) -> tuple[int, int]:
+    """
+    Executed residential evictions in this neighbourhood over the last twelve
+    complete months, and over the twelve before them.
+
+    The neighbourhood page carries a displacement score, which is a rank: it
+    says where this ZIP sits against the other 176 and would read much the same
+    in a calm year or a terrible one. A reader who wants to know whether their
+    own neighbourhood is getting worse cannot get that from a rank. This is the
+    level, at the grain they actually asked about.
+
+    **Whole months, current one excluded**, for the same reason the citywide
+    figure on /displacement does it: a half-finished month set against a full
+    month a year earlier renders as a collapse that did not happen, and per ZIP
+    the counts are small enough that the artefact is larger.
+    """
+    hit = _ev_trends.get(name)
+    if hit and time.monotonic() < hit[1]:
+        return hit[0]
+    row = db.execute(text("""
+        SELECT
+          count(*) FILTER (
+              WHERE e.executed_date >= date_trunc('month', CURRENT_DATE) - INTERVAL '12 months'
+                AND e.executed_date <  date_trunc('month', CURRENT_DATE)) AS recent,
+          count(*) FILTER (
+              WHERE e.executed_date >= date_trunc('month', CURRENT_DATE) - INTERVAL '24 months'
+                AND e.executed_date <  date_trunc('month', CURRENT_DATE) - INTERVAL '12 months') AS prior
+        FROM evictions_raw e
+        JOIN neighborhoods n ON n.zip_code = e.zip_code
+        WHERE n.name = :name AND e.eviction_type = 'Residential'
+          AND e.executed_date IS NOT NULL
+    """), {"name": name}).first()
+    out = (int(row.recent or 0), int(row.prior or 0)) if row else (0, 0)
+    _ev_trends[name] = (out, time.monotonic() + _EV_AREA_TTL)
+    return out
 
 
 def _ev_areas(db) -> dict[str, str]:

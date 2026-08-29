@@ -119,3 +119,65 @@ class TestItRendersAnAnswer:
             f"{this_month} is still running and its partial count would render "
             f"as a collapse against a full month a year earlier"
         )
+
+
+class TestTheNeighbourhoodTrend:
+    """
+    The same question, asked locally. /neighborhood is 177 pages and the
+    duplication audit measured it as the site's WORST template: 67.6% mean
+    5-gram overlap with 41 of 190 pairs over the 70% line, against 66.7% and
+    8 of 190 for the deed-only tier the project debated cutting. Its unique
+    content ratio was 47.4% where every property tier ran 66% or better.
+
+    A year-over-year eviction count for that ZIP is the shape that fixes both
+    problems at once: a reader gets the absolute answer their neighbourhood
+    page could not give, and the page gains numbers that exist on no other page.
+    """
+
+    def test_the_window_excludes_the_current_month(self):
+        src = (REPO / "api" / "routes" / "frontend.py").read_text()
+        m = re.search(r"def _ev_area_trend.*?(?=\ndef )", src, re.S)
+        assert m, "could not find _ev_area_trend; the grep has rotted"
+        q = m.group(0)
+        assert re.search(r"<\s+date_trunc\('month', CURRENT_DATE\)", q), (
+            "a partial current month against a full one a year earlier renders a "
+            "collapse in evictions on any day before month end, per ZIP this time"
+        )
+        assert q.count("INTERVAL '12 months'") >= 2, (
+            "twelve complete months against the twelve before them"
+        )
+        assert "Residential" in q, "commercial evictions are not displacement"
+
+    @pytest.mark.needs_data
+    def test_a_neighbourhood_page_states_the_comparison(self):
+        from fastapi.testclient import TestClient
+        from api.main import app
+        page = re.sub(r"<[^>]+>", " ", TestClient(app).get("/neighborhood/10458").text)
+        page = re.sub(r"\s+", " ", page)
+        # Scoped to the block. "more" and "fewer" occur elsewhere on the page,
+        # so a whole-page search passes with the sentence deleted.
+        i = page.find("last twelve complete months")
+        assert i >= 0, "the year-over-year sentence is missing"
+        block = page[i:i + 260]
+        assert re.search(r"(more|fewer|the same number)", block, re.I), (
+            "the page has to say which direction, not only two counts"
+        )
+        assert "rank" in block.lower(), (
+            "without this the reader reads the count as one more score"
+        )
+
+    @pytest.mark.needs_data
+    def test_the_spanish_page_states_it_too(self):
+        """These pages are bilingual and the Spanish has been the correct half
+        before, so it does not get to be the untranslated half now."""
+        from fastapi.testclient import TestClient
+        from api.main import app
+        page = re.sub(r"<[^>]+>", " ", TestClient(app).get("/neighborhood/10458?lang=es").text)
+        page = re.sub(r"\s+", " ", page)
+        i = page.find("meses completos")
+        assert i >= 0, "the Spanish year-over-year sentence is missing"
+        block = page[i:i + 300]
+        assert re.search(r"(m&aacute;s|menos|igual)", block, re.I), (
+            "the Spanish block renders untranslated"
+        )
+        assert "complete months" not in block, "English leaked into the Spanish block"
