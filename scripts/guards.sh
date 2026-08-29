@@ -58,6 +58,7 @@ LANE=(
   # guards had already been bypassed in production, so each belongs in the lane
   # that actually runs rather than the suite that does not.
   tests/test_email_guards.py
+  tests/test_ops_email_delivery.py
   tests/test_permit_kind_guards.py
   tests/test_upsert_timestamps.py
   tests/test_backfill_windows.py

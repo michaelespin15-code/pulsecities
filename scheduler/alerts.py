@@ -35,6 +35,8 @@ from datetime import date
 
 import requests
 
+from scripts.lib import mailer
+
 logger = logging.getLogger(__name__)
 
 ALERT_WEBHOOK_URL: str = os.getenv("ALERT_WEBHOOK_URL", "")
@@ -236,6 +238,15 @@ def send_ops_email(subject: str, body: str) -> None:
         )
     except mailer.EmailRefused as exc:
         logger.warning("ops email refused (non-fatal): %s", exc)
+        return
+    except Exception as exc:  # noqa: BLE001 — see the failure contract above
+        # Two of this function's callers invoke it from inside an `except`
+        # block. A raise here replaces the failure being reported with the
+        # failure to report it, and the operator learns about neither. The
+        # missing `mailer` import that this line now catches went a day
+        # without anyone noticing because flush_alerts() was the only caller
+        # that had its own guard.
+        logger.exception("ops email failed to send (non-fatal): %s", exc)
         return
     if ok:
         logger.info("ops-email sent to %s: %s", ", ".join(recipients), subject)
