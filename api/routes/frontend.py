@@ -47,14 +47,45 @@ _PAGE_TTL = 3600
 # Plausible analytics, injected into every SSR page head right after the JSON-LD
 # block. The server-rendered pages build their own <head> and were previously
 # untracked, so the highest-intent pages (neighborhood, flips, radar, operators)
-# reported nothing. Interpolated as {_PLAUSIBLE}; the braces are literal here
+# reported nothing. Interpolated as {_HEAD_TAIL}; the braces are literal here
 # because this is a plain string, not an f-string.
+# The house palette, as custom properties.
+#
+# Measured 2026-08-29: this file uses var(--...) 195 times and defined :root
+# twice. Every other template referenced tokens no rule on the page declared,
+# so the browser fell back per property rather than per intent:
+#
+#   color: var(--dim)          invalid at computed-value time -> inherit, so
+#                              dim grey text rendered as body white
+#   background: var(--surface) not inherited -> initial, so a panel meant to
+#                              be #16202d rendered transparent
+#   border-color: var(--line)  -> currentColor, so a hairline rendered bright
+#
+# That is why /radar and /flips looked washed out beside the landing page while
+# both bodies were the same #111823. Interpolated through _HEAD_TAIL below,
+# because this file has no shared head builder and canonical alone is written
+# at seventeen call sites.
+#
+# Values are the ones the two working :root blocks already carried, so pages
+# that render correctly today do not move. --surface and --line are added
+# because both were referenced and neither was ever declared.
+_PALETTE_CSS = (
+    "\n<style>:root{--bg:#111823;--surface:#16202d;--border:rgba(147,161,173,.1);"
+    "--line:rgba(147,161,173,.1);--text:#eef2f5;--muted:#93a1ad;--dim:#8a97a2;"
+    "--faint:#818c97;--accent:#ed6317}</style>"
+)
+
 _PLAUSIBLE = (
     '\n<script async src="https://plausible.io/js/pa-U5kR6cdEChGa28HrQF_3J.js"></script>'
     '\n<script>window.plausible=window.plausible||function(){(plausible.q=plausible.q||[])'
     '.push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};'
     'plausible.init()</script>'
 )
+
+# Everything every server-rendered head needs. The palette has to reach the
+# same pages the analytics snippet already reaches, and this is the only
+# thing all seventeen of them interpolate.
+_HEAD_TAIL = _PALETTE_CSS + _PLAUSIBLE
 
 
 def _template() -> str:
@@ -1167,7 +1198,7 @@ def _build_neighborhood_page(
 <meta name="twitter:image" content="{e(og_image)}">
 <script type="application/ld+json">{dataset_ld}</script>
 <script type="application/ld+json">{faq_ld}</script>
-<script type="application/ld+json">{breadcrumb_ld}</script>{_PLAUSIBLE}
+<script type="application/ld+json">{breadcrumb_ld}</script>{_HEAD_TAIL}
 <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}</style>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
@@ -2771,7 +2802,7 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23ed6317' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <script type="application/ld+json">{place_ld}</script>
 <script type="application/ld+json">{bc_ld}</script>
-{f'<script type="application/ld+json">{faq_ld}</script>' if faq_ld else ""}{_PLAUSIBLE}
+{f'<script type="application/ld+json">{faq_ld}</script>' if faq_ld else ""}{_HEAD_TAIL}
 <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}</style>
 """
 
@@ -3452,7 +3483,7 @@ def operators_directory(db: Session = Depends(get_db)):
 <meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<script type="application/ld+json">{jsonld}</script>{_HEAD_TAIL}
 <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}</style>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
@@ -3704,7 +3735,7 @@ def neighborhoods_directory(lang: str = "en", db: Session = Depends(get_db)):
 <meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<script type="application/ld+json">{jsonld}</script>{_HEAD_TAIL}
 <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}</style>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
@@ -3957,7 +3988,7 @@ def borough_page(slug: str, lang: str = "en", db: Session = Depends(get_db)):
 <meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og/borough/{slug}.png">
-<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<script type="application/ld+json">{jsonld}</script>{_HEAD_TAIL}
 <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}</style>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
@@ -4208,7 +4239,7 @@ def flip_watch_page(db: Session = Depends(get_db)):
 <meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<script type="application/ld+json">{jsonld}</script>{_HEAD_TAIL}
 <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}</style>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
@@ -4468,7 +4499,7 @@ def flips_editions_page(db: Session = Depends(get_db)):
 <meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<script type="application/ld+json">{jsonld}</script>{_HEAD_TAIL}
 <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}</style>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
@@ -4711,7 +4742,7 @@ def speculation_radar_page(db: Session = Depends(get_db)):
 <meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{_html.escape(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
-<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<script type="application/ld+json">{jsonld}</script>{_HEAD_TAIL}
 <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}</style>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
@@ -5103,7 +5134,7 @@ def week_edition_page(slug: str, db: Session = Depends(get_db)):
 <meta name="twitter:description" content="{e(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
-<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<script type="application/ld+json">{jsonld}</script>{_HEAD_TAIL}
 <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}</style>
 <style>{_WEEK_CSS}</style>
 </head>
@@ -5204,7 +5235,7 @@ def week_archive_index(db: Session = Depends(get_db)):
 <meta name="twitter:description" content="{e(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
-<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<script type="application/ld+json">{jsonld}</script>{_HEAD_TAIL}
 <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}</style>
 <style>{_WEEK_CSS}</style>
 </head>
@@ -5388,7 +5419,7 @@ def this_week_page(db: Session = Depends(get_db)):
 <meta name="description" content="{e(desc)}">
 <link rel="canonical" href="https://pulsecities.com/this-week">
 <link rel="alternate" type="application/rss+xml" title="PulseCities weekly" href="https://pulsecities.com/feed.xml">
-<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<script type="application/ld+json">{jsonld}</script>{_HEAD_TAIL}
 <meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(desc)}">
 <meta property="og:url" content="https://pulsecities.com/this-week">
@@ -5845,7 +5876,7 @@ that repeats every year is seasonal, not progress.</div>
 <meta name="twitter:description" content="{esc(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og-image.png">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a2e'/%3E%3Cpolyline points='2,16 7,16 10,9 13,23 16,13 19,19 22,16 30,16' fill='none' stroke='%23ed6317' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<script type="application/ld+json">{jsonld}</script>{_HEAD_TAIL}
 <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}</style>
 """
 
@@ -6396,7 +6427,7 @@ def evictions_page(lang: str = "en", db: Session = Depends(get_db)):
 <meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{esc(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og/site/evictions.png">
-<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<script type="application/ld+json">{jsonld}</script>{_HEAD_TAIL}
 <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}</style>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
@@ -7547,7 +7578,7 @@ def who_owns_page(db: Session = Depends(get_db)):
 <meta name="twitter:title" content="{_html.escape(title)}">
 <meta name="twitter:description" content="{esc(desc)}">
 <meta name="twitter:image" content="https://pulsecities.com/og/site/who-owns.png">
-<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<script type="application/ld+json">{jsonld}</script>{_HEAD_TAIL}
 <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}</style>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
@@ -7785,7 +7816,7 @@ def _llc_head(title: str, desc: str, url: str, robots: str, jsonld: str,
 <meta name="twitter:title" content="{e(title)}">
 <meta name="twitter:description" content="{e(desc)}">
 <meta name="twitter:image" content="{image}">
-<script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
+<script type="application/ld+json">{jsonld}</script>{_HEAD_TAIL}
 <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{{font-family:'Bricolage Grotesque';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/dm-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}@font-face{{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}}</style>
 <style>{_LLC_PAGE_CSS}</style>"""
 
