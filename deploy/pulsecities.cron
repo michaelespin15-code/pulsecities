@@ -25,6 +25,10 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 8 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.refresh_dos_entities >> /var/log/pulsecities/dos_entities.log 2>&1
 15 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.generate_sitemap >> /var/log/pulsecities/sitemap.log 2>&1
 20 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.gen_llms_txt >> /var/log/pulsecities/sitemap.log 2>&1
+# RSS of the completed weekly editions. After the sitemap, because both read
+# the same week enumeration and the sitemap run is what proves the database is
+# answering. Same log as the sitemap and llms.txt, so no new logrotate entry.
+22 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.generate_feed >> /var/log/pulsecities/sitemap.log 2>&1
 # Building-watch alerts — daily after the scrape; quiet nights send nothing
 25 3 * * * root cd /root/pulsecities && /root/pulsecities/venv/bin/python -m scripts.building_alerts >> /var/log/pulsecities/building_alerts.log 2>&1
 # Monthly block digest — the first of the month, 10 AM ET. Building watchers

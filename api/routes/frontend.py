@@ -5067,6 +5067,7 @@ def week_edition_page(slug: str, db: Session = Depends(get_db)):
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
 <link rel="canonical" href="{canonical}">
+<link rel="alternate" type="application/rss+xml" title="PulseCities weekly" href="https://pulsecities.com/feed.xml">
 <meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(desc)}">
 <meta property="og:url" content="{canonical}">
@@ -5166,6 +5167,7 @@ def week_archive_index(db: Session = Depends(get_db)):
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
 <link rel="canonical" href="{canonical}">
+<link rel="alternate" type="application/rss+xml" title="PulseCities weekly" href="https://pulsecities.com/feed.xml">
 <meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(desc)}">
 <meta property="og:url" content="{canonical}">
@@ -5359,6 +5361,7 @@ def this_week_page(db: Session = Depends(get_db)):
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
 <link rel="canonical" href="https://pulsecities.com/this-week">
+<link rel="alternate" type="application/rss+xml" title="PulseCities weekly" href="https://pulsecities.com/feed.xml">
 <script type="application/ld+json">{jsonld}</script>{_PLAUSIBLE}
 <meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(desc)}">
