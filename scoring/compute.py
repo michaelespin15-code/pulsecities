@@ -320,55 +320,56 @@ def _aggregate_assessment_spike(db: Session) -> List[Tuple[str, float]]:
     """
     Compute YoY assessment spike per ZIP, weighted by units_res.
 
-    Joins assessment_history for the two most recent tax years on the same BBL,
-    computes (current - prior) / prior as spike_pct per BBL, then aggregates
-    to ZIP level as a units_res-weighted average (COALESCE zero-unit parcels to 1).
+    Pairs each BBL with its own two most recent tax years, requires them to be
+    consecutive, computes (current - prior) / prior as spike_pct per BBL, then
+    aggregates to ZIP level as a units_res-weighted average (COALESCE zero-unit
+    parcels to 1).
 
     Only positive spikes are counted — assessment decreases do not contribute.
-    Returns [] if fewer than 2 distinct tax years exist in assessment_history,
-    keeping the signal dormant until the second annual MapPLUTO run.
+    Returns [] when no BBL has a consecutive pair ending in the newest year on
+    file, which keeps the signal dormant until the second annual MapPLUTO run.
     """
-    # Only years that carry an assessment count. assessment_history is shared:
-    # scripts/backfill_rs_history.py writes 197,730 rows for tax years 2018-2023
-    # holding stabilized_units with assessed_total NULL, and DOF writes the real
-    # assessment rows. Counting every tax_year returns 7, clears this guard, and
-    # then picks 2023 as the prior year, whose 32,565 joined BBLs are all
-    # discarded by `p.assessed_total > 0`. Zero rows, and a dormancy message
-    # blaming a year count that was never the problem.
-    year_count = db.execute(
-        text("SELECT COUNT(DISTINCT tax_year) FROM assessment_history"
-             " WHERE assessed_total IS NOT NULL")
-    ).scalar() or 0
-
-    if year_count < 2:
-        return []
-
+    # Pairing is per BBL and the pair has to be consecutive, ending in the
+    # newest year the table holds. Three populations share this table and only
+    # one of them is a year-over-year series:
+    #
+    #   scripts/backfill_rs_history.py  2018-2023, stabilized_units, no assessment
+    #   scrapers/dof.py                 2010/11-2018/19, a frozen DOF archive
+    #   scrapers/pluto.py               the current year, one row per annual run
+    #
+    # The old query took the two most recent years across the whole table and
+    # joined them on bbl. With only the RS rows and one MapPLUTO year that read
+    # 7 distinct years, cleared the guard, picked 2023 as prior, and returned
+    # nothing because every 2023 row has a NULL assessment. Once DOF files its
+    # real years the same query would pair 2026 against 2018 and call an
+    # eight-year drift a spike, on the 14,143 condo unit lots that appear in
+    # both feeds.
+    #
+    # "Consecutive, ending at the newest year" is the shape the signal was
+    # always described as measuring, and it is derived from the data rather
+    # than the clock, so it needs no maintenance when a year rolls over.
     rows = db.execute(
         text("""
-            WITH two_years AS (
-                SELECT tax_year,
-                       ROW_NUMBER() OVER (ORDER BY tax_year DESC) AS rn
-                FROM (SELECT DISTINCT tax_year FROM assessment_history
-                       WHERE assessed_total IS NOT NULL) t
-            ),
-            current_h AS (
-                SELECT bbl, assessed_total
+            WITH ranked AS (
+                SELECT bbl, tax_year, assessed_total,
+                       ROW_NUMBER() OVER (PARTITION BY bbl ORDER BY tax_year DESC) AS rn
                 FROM assessment_history
-                WHERE tax_year = (SELECT tax_year FROM two_years WHERE rn = 1)
+                WHERE assessed_total IS NOT NULL
             ),
-            prior_h AS (
-                SELECT bbl, assessed_total
-                FROM assessment_history
-                WHERE tax_year = (SELECT tax_year FROM two_years WHERE rn = 2)
+            newest AS (
+                SELECT MAX(tax_year) AS tax_year FROM ranked
             ),
             spike_per_bbl AS (
                 SELECT c.bbl,
                        GREATEST(0.0,
                            (c.assessed_total - p.assessed_total)::float / p.assessed_total
                        ) AS spike_pct
-                FROM current_h c
-                JOIN prior_h p ON c.bbl = p.bbl
-                WHERE p.assessed_total > 0
+                FROM ranked c
+                JOIN ranked p ON p.bbl = c.bbl AND p.rn = 2
+                WHERE c.rn = 1
+                  AND c.tax_year = (SELECT tax_year FROM newest)
+                  AND c.tax_year = p.tax_year + 1
+                  AND p.assessed_total > 0
                   AND c.assessed_total > p.assessed_total
             )
             SELECT par.zip_code,
@@ -748,10 +749,11 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
         )
     if not assessment_spike_rows:
         logger.warning(
-            "Assessment spike signal is dormant: fewer than 2 tax years in "
-            "assessment_history carry an assessed_total. The table also holds "
-            "rent-stabilization rows (stabilized_units, no assessment), which "
-            "are not eligible. Signal activates after the second annual MapPLUTO run."
+            "Assessment spike signal is dormant: no lot carries assessments for "
+            "two consecutive tax years ending in the newest year on file. The "
+            "table also holds rent-stabilization rows with no assessment, and a "
+            "DOF archive that stops at 2018/19, and neither is a year-over-year "
+            "series. Signal activates after the second annual MapPLUTO run."
         )
     # Dormancy check: warn when prior-year DHCR data is absent (expected until 2027).
     if not rs_loss_rows:

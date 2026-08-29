@@ -2206,8 +2206,16 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     assessed = parcel.get("assessed_total") or 0
     assess_line = ""
     if assessed:
-        assess_line = (f"Its most recent total assessed value is "
-                       f"{_fmt_amount(assessed)}.")
+        # Named with its year. "Most recent" is true of every one of these and
+        # tells the reader nothing: MapPLUTO lots carry the current roll, and
+        # the 59,780 condo unit lots that only DOF has ever described carry a
+        # figure from a feed that stops at fiscal 2018/19. Reading "most recent
+        # assessed value" off a 2018 number on a page about pressure now is the
+        # false-freshness shape, and the year is already in facts.
+        assess_year = facts.get("tax_year")
+        assess_line = (f"Its total assessed value is {_fmt_amount(assessed)}"
+                       + (f", for the {int(assess_year)} tax year" if assess_year else "")
+                       + ".")
 
     lede = _para(lede_open, build_line, held_line, assess_line)
 

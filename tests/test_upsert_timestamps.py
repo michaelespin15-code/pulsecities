@@ -56,12 +56,29 @@ class TestUpsertsRefreshTheirTimestamp:
         )
 
     def test_the_grep_actually_finds_the_known_call_sites(self):
-        """A guard that matches nothing passes forever. These four are the ones
-        that existed when it was written."""
+        """A guard that matches nothing passes forever. These are the sites the
+        grep is known to reach.
+
+        scrapers/dof.py was a fourth until 2026-08-29. Its parcel write is
+        `on_conflict_do_nothing` now, because nine fiscal years share the bbl
+        conflict key and letting the last one win resolved to a different year
+        per lot. The timestamp discipline did not go away with it: the value is
+        chosen afterwards by `_sync_parcel_assessments`, which sets updated_at
+        in the same statement, and test_dof_scraper.py pins the DO NOTHING.
+        """
         found = {path for path, _ in _call_sites()}
-        for expected in ("scrapers/pluto.py", "scrapers/dof.py",
-                         "scrapers/violations.py", "scripts/load_zcta.py"):
+        for expected in ("scrapers/pluto.py", "scrapers/violations.py",
+                         "scripts/load_zcta.py"):
             assert expected in found, f"{expected} no longer matches the grep"
+
+    def test_the_dof_assessment_sync_dates_what_it_writes(self):
+        """The one write in that file that still moves a row."""
+        src = (REPO / "scrapers" / "dof.py").read_text()
+        m = re.search(r"def _sync_parcel_assessments.*?(?=\n    def |\ndef )", src, re.S)
+        assert m, "the sync is gone; parcels.assessed_total has no writer"
+        assert "updated_at = now()" in m.group(0), (
+            "the sync sets assessed_total without moving updated_at"
+        )
 
     def test_pluto_is_fixed(self):
         """The one that was actually wrong, pinned so it cannot regress."""

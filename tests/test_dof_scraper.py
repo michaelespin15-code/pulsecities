@@ -202,32 +202,71 @@ class TestParseAssessedValue:
 # ---------------------------------------------------------------------------
 
 class TestUpsertBatch:
+    @staticmethod
+    def _batch():
+        return [
+            {"bbl": "1007060035", "borough": 1, "block": "00706", "lot": "0035",
+             "address": "447 10 AVENUE", "zip_code": "10001",
+             "assessed_total": 342732.0, "assessment_year": 2018},
+            # second row has no address/zip — the heterogeneity that broke compile
+            {"bbl": "1007060036", "borough": 1, "block": "00706", "lot": "0036",
+             "address": None, "zip_code": None,
+             "assessed_total": 100.0, "assessment_year": 2018},
+        ]
+
+    @staticmethod
+    def _capturing_db():
+        calls = []
+        db = MagicMock()
+
+        def _capture(stmt, params=None):
+            calls.append((stmt, params))
+            return MagicMock(rowcount=2)
+
+        db.execute.side_effect = _capture
+        return db, calls
+
     def test_multirow_insert_compiles_with_uniform_params(self, scraper):
         """Every row must bind the same columns. With mixed keys plus the
         on_speculation_watch_list/created_at/updated_at defaults, the multi-row
         insert failed to compile and killed the nightly pipeline."""
-        captured = {}
-        db = MagicMock()
-
-        def _capture(stmt):
-            captured["stmt"] = stmt
-            return MagicMock(rowcount=2)
-
-        db.execute.side_effect = _capture
-
-        batch = [
-            {"bbl": "1007060035", "borough": 1, "block": "00706", "lot": "0035",
-             "address": "447 10 AVENUE", "zip_code": "10001", "assessed_total": 342732.0},
-            # second row has no address/zip — the heterogeneity that broke compile
-            {"bbl": "1007060036", "borough": 1, "block": "00706", "lot": "0036",
-             "address": None, "zip_code": None, "assessed_total": 100.0},
-        ]
+        db, calls = self._capturing_db()
+        batch = self._batch()
         scraper._upsert_batch(db, batch)
 
-        compiled = captured["stmt"].compile(dialect=postgresql.dialect())
+        parcel_stmt = calls[-1][0]
+        compiled = parcel_stmt.compile(dialect=postgresql.dialect())
         for col in ("on_speculation_watch_list", "created_at", "updated_at"):
             bound = [k for k in compiled.params if k.startswith(col)]
             assert len(bound) == len(batch), f"{col} not bound on every row: {bound}"
+
+    def test_every_row_is_filed_under_the_year_it_came_from(self, scraper):
+        """The feed carries nine fiscal years per lot. A loader that writes the
+        assessment without the year cannot tell them apart, and parcels then
+        held whichever year the paginator emitted last."""
+        db, calls = self._capturing_db()
+        batch = self._batch()
+        batch[1]["assessment_year"] = 2014  # same lot-shape, different year
+        scraper._upsert_batch(db, batch)
+
+        history = [(str(stmt), params) for stmt, params in calls
+                   if "assessment_history" in str(stmt)]
+        assert history, "no row was filed under a tax year"
+        years = sorted(row["tax_year"] for row in history[0][1])
+        assert years == [2014, 2018], years
+
+    def test_the_parcel_write_does_not_pick_a_year(self, scraper):
+        """Which fiscal year lands in parcels.assessed_total is decided once,
+        after the walk, by _sync_parcel_assessments. Deciding it in the batch
+        upsert means deciding it by pagination order."""
+        db, calls = self._capturing_db()
+        scraper._upsert_batch(db, self._batch())
+
+        parcel_sql = str(calls[-1][0].compile(dialect=postgresql.dialect()))
+        assert "DO NOTHING" in parcel_sql.upper(), (
+            "the parcel upsert overwrites assessed_total again, which is the "
+            "pagination-order bug: nine years share the bbl conflict key"
+        )
 
 
 class TestParseFieldMapping:

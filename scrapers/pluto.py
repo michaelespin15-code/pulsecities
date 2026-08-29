@@ -67,6 +67,7 @@ class PlutoScraper(BaseScraper):
         # The dataset is ~900k rows; pagination handles this fine
         where = "bbl IS NOT NULL"
 
+        run_started = datetime.now(timezone.utc)
         records_processed = 0
         records_failed = 0
         batch: list[dict] = []
@@ -86,33 +87,47 @@ class PlutoScraper(BaseScraper):
         if batch:
             records_processed += self._upsert_batch(db, batch)
 
-        self._write_assessment_snapshot(db)
+        self._write_assessment_snapshot(db, run_started)
 
         logger.info("PLUTO load complete: %d upserted, %d failed", records_processed, records_failed)
         # No watermark for PLUTO — it's a full refresh
         return records_processed, records_failed, None
 
-    def _write_assessment_snapshot(self, db) -> None:
-        """
-        Copy assessed_total from parcels into assessment_history for the current calendar year.
-        ON CONFLICT DO NOTHING makes this idempotent — re-running PLUTO in the same year
-        leaves existing history rows untouched, which is intentional: the first run of the
-        year captures the DOF fiscal-year assessment, and mid-year re-runs don't overwrite it.
+    def _write_assessment_snapshot(self, db, run_started: datetime) -> None:
+        """File this run's assessments under the current year.
+
+        Scoped to the lots this run actually refreshed. It used to read every
+        parcel carrying an assessed value, which is 918,338 rows, and MapPLUTO
+        covers 858,602 of them. The other 59,423 are condo unit lots that only
+        scrapers/dof.py has ever seen, and their assessments are from fiscal
+        years between 2010/11 and 2018/19. Stamping the calendar year on those
+        is what let /property tell 10,197 indexed pages that a 2014/15 figure
+        was "the 2026 tax year". A snapshot may only date what it looked at.
+
+        DO UPDATE, not DO NOTHING. The old comment argued the first run of the
+        year should win so a mid-year re-run could not disturb it, which reads
+        as caution and is the same policy that kept a half-loaded permits table
+        in score_history on 2026-08-28. A re-run is nearly always a correction.
         """
         tax_year = datetime.now(timezone.utc).year
-        db.execute(
+        result = db.execute(
             text("""
                 INSERT INTO assessment_history (bbl, assessed_total, tax_year, created_at)
                 SELECT bbl, assessed_total, :tax_year, NOW()
                 FROM parcels
                 WHERE assessed_total IS NOT NULL
                   AND bbl IS NOT NULL
-                ON CONFLICT DO NOTHING
+                  AND updated_at >= :run_started
+                ON CONFLICT (bbl, tax_year) DO UPDATE
+                   SET assessed_total = EXCLUDED.assessed_total
             """),
-            {"tax_year": tax_year},
+            {"tax_year": tax_year, "run_started": run_started},
         )
         db.commit()
-        logger.info("Assessment history snapshot written for tax_year=%d", tax_year)
+        logger.info(
+            "Assessment history snapshot written for tax_year=%d: %d lots this run touched",
+            tax_year, result.rowcount,
+        )
 
     def _parse(self, db, raw: dict) -> dict | None:
         # BBL — try direct field first, then construct from parts

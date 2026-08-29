@@ -36,6 +36,11 @@ that has nothing to do with it.
 import re
 from pathlib import Path
 
+import pytest
+from sqlalchemy import text
+
+from models.database import SessionLocal
+
 REPO = Path(__file__).resolve().parent.parent
 SRC = (REPO / "scoring" / "compute.py").read_text()
 
@@ -52,26 +57,85 @@ def _fn() -> str:
     return _CONCAT.sub(" ", m.group(0))
 
 
-class TestYearSelectionIgnoresNonAssessmentYears:
-    def test_the_year_count_requires_an_assessment(self):
-        fn = _fn()
-        m = re.search(r"COUNT\(DISTINCT tax_year\)\s+FROM assessment_history([^\"']*)", fn)
-        assert m, "the distinct-year count is gone or reshaped"
-        assert "assessed_total IS NOT NULL" in m.group(1), (
-            "counting every tax_year includes the 197,730 rent-stabilization rows "
-            "written by backfill_rs_history.py, which carry no assessed_total. The "
-            "count then clears its own >= 2 guard on years that cannot be compared."
+@pytest.fixture()
+def db():
+    session = SessionLocal()
+    yield session
+    session.rollback()
+    session.close()
+
+
+@pytest.mark.integration
+@pytest.mark.needs_data
+class TestOnlyAComparablePairCounts:
+    """What the signal must ignore, asserted by running it.
+
+    The two checks here used to grep the function's source for
+    `assessed_total IS NOT NULL` beside two particular CTE names. Both went red
+    the first time the query was reshaped, while the rule they protect was
+    still enforced -- more strictly, since the ranking now filters the NULLs at
+    the source and no all-NULL year can be ranked at all. A guard that fails on
+    a rewrite it approves of is not measuring the rule.
+
+    So this sets up each shape the signal must reject, in one transaction that
+    is rolled back, and asks which ZIPs come out. The years are far in the
+    future on purpose: the aggregate looks at the newest year in the table, so
+    2098/2099 rows put every real row out of contention and leave the fixtures
+    alone in the result.
+    """
+
+    # One case per lot, each in its own ZIP so the result is unambiguous.
+    RISE = ("3038840333", "11207")      # 2098 -> 2099, up. The only one that counts.
+    NULL_PRIOR = ("5012720320", "10303")  # prior year carries no assessment
+    GAP = ("4024660017", "11377")       # 2090 -> 2099, eight years apart
+    FALL = ("4097710009", "11432")      # 2098 -> 2099, down
+
+    def _seed(self, db):
+        rows = [
+            (self.RISE[0], 2098, 100_000.0), (self.RISE[0], 2099, 200_000.0),
+            (self.NULL_PRIOR[0], 2098, None), (self.NULL_PRIOR[0], 2099, 200_000.0),
+            (self.GAP[0], 2090, 100_000.0), (self.GAP[0], 2099, 200_000.0),
+            (self.FALL[0], 2098, 200_000.0), (self.FALL[0], 2099, 100_000.0),
+        ]
+        db.execute(
+            text("""INSERT INTO assessment_history (bbl, assessed_total, tax_year, created_at)
+                    VALUES (:bbl, :total, :year, NOW())
+                    ON CONFLICT (bbl, tax_year) DO UPDATE
+                       SET assessed_total = EXCLUDED.assessed_total"""),
+            [{"bbl": b, "year": y, "total": t} for b, y, t in rows],
         )
 
-    def test_the_two_years_chosen_must_carry_assessments(self):
-        fn = _fn()
-        m = re.search(r"SELECT DISTINCT tax_year FROM assessment_history([^)]*)\)", fn)
-        assert m, "the two_years CTE is gone or reshaped"
-        assert "assessed_total IS NOT NULL" in m.group(1), (
-            "current and prior are picked as the two most recent tax_years in the "
-            "table. Without this filter prior resolves to 2023, a rent-stabilization "
-            "year, and every joined row is discarded by `p.assessed_total > 0`."
+    def test_the_signal_takes_the_rise_and_nothing_else(self, db):
+        from scoring.compute import _aggregate_assessment_spike
+
+        self._seed(db)
+        zips = dict(_aggregate_assessment_spike(db))
+
+        assert self.RISE[1] in zips, (
+            "a lot assessed higher in the newest year than in the year before it "
+            "is the whole signal, and it did not come through"
         )
+        assert zips[self.RISE[1]] > 0
+
+        assert self.NULL_PRIOR[1] not in zips, (
+            "the prior year carried no assessed_total. That is the shape of the "
+            "197,730 rent-stabilization rows backfill_rs_history.py writes, and "
+            "choosing one as the prior year is what made the dormancy message lie"
+        )
+        assert self.GAP[1] not in zips, (
+            "2090 and 2099 are not a year over year comparison. scrapers/dof.py "
+            "files a frozen archive that stops at 2018/19, so without this the "
+            "signal would read an eight-year drift on the 14,143 condo unit lots "
+            "that appear in both feeds as a spike"
+        )
+        assert self.FALL[1] not in zips, "an assessment that fell is not a spike"
+
+    def test_it_is_dormant_on_the_real_table(self, db):
+        """No synthetic rows: today nothing has two consecutive years, and the
+        signal has to say so by returning nothing rather than by guessing."""
+        from scoring.compute import _aggregate_assessment_spike
+
+        assert _aggregate_assessment_spike(db) == []
 
 
 class TestTheMessageIsTrue:

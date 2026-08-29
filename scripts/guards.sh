@@ -95,6 +95,9 @@ DESELECT=(
   --deselect "tests/test_person_pages_gone.py::TestTheRouteRefuses::test_a_person_slug_404s"
   --deselect "tests/test_person_pages_gone.py::TestTheRouteRefuses::test_a_company_slug_still_renders"
   --deselect "tests/test_person_pages_gone.py::TestTheRouteRefuses::test_the_sitemapped_llc_pages_all_still_resolve"
+  # Runs the assessment aggregate against 1.1M history rows twice, six seconds.
+  # The message assertions in that file are the pre-commit-worthy half.
+  --deselect "tests/test_assessment_dormancy.py::TestOnlyAComparablePairCounts"
 )
 if [ -n "${GUARDS_NO_DB:-}" ]; then
   DESELECT+=(

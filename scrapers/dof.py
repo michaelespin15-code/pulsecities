@@ -1,12 +1,34 @@
 """
 NYC Department of Finance (DOF) property assessment data loader.
 Dataset: w7rz-68fs (NYC Open Data — Socrata API)
-Update frequency: annual (fiscal year assessments)
 
-This is a full-refresh scraper, not incremental. Every run fetches all records
-and upserts into the parcels table. There is no datetime watermark because DOF
-does not expose a reliable updated_at field — assessment values change once per
-fiscal year, not incrementally.
+WHAT THIS FEED ACTUALLY IS. Nine fiscal years, 2010/11 through 2018/19, for
+72,898 lots, 608,240 rows. Roughly 8.3 rows per lot, one per year. It is a
+frozen historical archive: DOF stopped publishing to it after 2018/19.
+
+That shape was misread for a long time and it cost the site a public wrong
+number. The loader fetched all nine years, threw the year away, and upserted
+every row into parcels keyed on bbl alone, so `assessed_total` ended up holding
+whichever fiscal year the paginator happened to emit last. Measured on a random
+sample of 35 overlapping lots, 30 held a value that is exactly a DOF avtot from
+some year between 2010/11 and 2018/19, and the year varied at random per lot:
+2011/12, 2013/14, 2014/15, 2016/17, 2018/19. PLUTO could not correct any of it,
+because these are condo unit lots and MapPLUTO carries the billing lot instead.
+
+/property then printed "the city assessed this lot at $287K for the 2026 tax
+year" on 10,197 sitemapped pages. The figure was the 2014/15 assessment. The
+year came from assessment_history, where scrapers/pluto.py had stamped the
+calendar year onto every parcel carrying an assessed value, including 59,423 it
+had never seen.
+
+So this loader now writes the year it read. assessment_history is keyed
+(bbl, tax_year) and takes one row per real fiscal year, which is order
+independent by construction. parcels.assessed_total is derived from that table
+after the walk, per lot, newest year first, and only for lots MapPLUTO does not
+cover: a 2018/19 assessment must never overwrite a current one.
+
+There is no datetime watermark. DOF exposes no reliable updated_at, and this
+archive has not moved in seven years.
 
 Field ownership (DOF vs MapPLUTO):
   DOF owns:    assessed_total
@@ -29,7 +51,7 @@ Field mapping (Socrata → model):
   lot          → lot          (str, zero-padded to 4 digits)
   avtot        → assessed_total (assessed value; primary field)
   fullval      → assessed_total (fallback if avtot is absent or zero)
-  year         → (watermark/audit; stored as int of first year, e.g. "2018/19" → 2018)
+  year         → assessment_history.tax_year (int of the first year, "2018/19" → 2018)
   staddr       → address      (only if PLUTO address is None — DOF does not own address)
   zip          → zip_code     (only if PLUTO zip_code is None — DOF does not own zip)
 """
@@ -37,6 +59,7 @@ Field mapping (Socrata → model):
 import logging
 from datetime import datetime, timezone
 
+from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import insert
 
 from models.bbl import normalize_bbl
@@ -67,6 +90,8 @@ class DOFScraper(BaseScraper):
 
         records_processed = 0
         records_failed = 0
+        no_year = 0
+        newest_year: int | None = None
         batch: list[dict] = []
 
         for raw in self.paginate(where):
@@ -74,7 +99,16 @@ class DOFScraper(BaseScraper):
             if row is None:
                 records_failed += 1
                 continue
+            # A row whose fiscal year will not parse cannot be filed under a
+            # year, and an assessment filed under the wrong year is the bug
+            # this loader exists to have stopped making. Drop it and say so.
+            if row["assessment_year"] is None:
+                no_year += 1
+                records_failed += 1
+                continue
 
+            if newest_year is None or row["assessment_year"] > newest_year:
+                newest_year = row["assessment_year"]
             batch.append(row)
 
             if len(batch) >= 2_000:
@@ -84,13 +118,72 @@ class DOFScraper(BaseScraper):
         if batch:
             records_processed += self._upsert_batch(db, batch)
 
+        if no_year:
+            logger.warning(
+                "dof_assessments: %d rows carried no parseable fiscal year and "
+                "were not loaded", no_year,
+            )
+
+        synced = self._sync_parcel_assessments(db, newest_year)
+
         logger.info(
-            "DOF assessment load complete: %d upserted, %d failed",
+            "DOF assessment load complete: %d rows upserted, %d failed, "
+            "%d parcels took a DOF assessment",
             records_processed,
             records_failed,
+            synced,
         )
         # No watermark for DOF, full refresh dataset
         return records_processed, records_failed, None
+
+    def _sync_parcel_assessments(self, db, newest_year: int | None) -> int:
+        """Set parcels.assessed_total from the newest DOF year this lot has.
+
+        Deliberately a single statement after the walk rather than a value
+        carried on each upserted row. Pagination order is unspecified where the
+        sort key ties, and this feed has nine rows per lot, so "the last row
+        wins" resolved to a different fiscal year per lot. DISTINCT ON with an
+        explicit ORDER BY resolves to the newest year for every lot, whatever
+        order the rows arrived in.
+
+        The NOT EXISTS is the ownership rule from the header made executable. A
+        lot MapPLUTO covers already carries a current assessment, and this
+        archive stopped in 2018/19; overwriting the first with the second is how
+        /property came to publish an eleven-year-old number.
+
+        The ceiling is the newest year this run actually read, not a pinned
+        2018. Pinning it would be the stale-constraint shape the ops notes
+        already catalogue: if DOF ever resumes publishing, a constant keeps the
+        loader filing new assessments as though they were archive.
+        """
+        if newest_year is None:
+            return 0
+
+        result = db.execute(
+            text("""
+                UPDATE parcels p
+                   SET assessed_total = d.assessed_total,
+                       updated_at = now()
+                  FROM (
+                        SELECT DISTINCT ON (bbl) bbl, assessed_total
+                          FROM assessment_history
+                         WHERE assessed_total IS NOT NULL
+                           AND tax_year <= :dof_ceiling
+                         ORDER BY bbl, tax_year DESC
+                       ) d
+                 WHERE p.bbl = d.bbl
+                   AND p.assessed_total IS DISTINCT FROM d.assessed_total
+                   AND NOT EXISTS (
+                        SELECT 1 FROM assessment_history newer
+                         WHERE newer.bbl = p.bbl
+                           AND newer.tax_year > :dof_ceiling
+                           AND newer.assessed_total IS NOT NULL
+                       )
+            """),
+            {"dof_ceiling": newest_year},
+        )
+        db.commit()
+        return result.rowcount
 
     def _parse(self, db, raw: dict) -> dict | None:
         # BBL: try bble field first (10-digit canonical), fall back to parts
@@ -127,7 +220,9 @@ class DOFScraper(BaseScraper):
                 # Both present but zero, treat as None (no valid assessment)
                 assessed_total = None
 
-        # Year watermark: extract first 4 digits from "YYYY/YY" string
+        # The fiscal year this assessment belongs to, "2018/19" -> 2018. This
+        # is the whole point of the row: nine of them share a BBL and differ
+        # only here, so a loader that drops it cannot tell them apart.
         year_raw = raw.get("year")
         assessment_year = None
         if year_raw:
@@ -146,17 +241,43 @@ class DOFScraper(BaseScraper):
             "address": (raw.get("staddr") or "").strip() or None,
             "zip_code": _clean_zip(raw.get("zip")),
             "assessed_total": assessed_total,
+            "assessment_year": assessment_year,
             "raw_data": raw,
         }
 
     def _upsert_batch(self, db, batch: list[dict]) -> int:
-        # Every row must carry the same columns. A multi-row insert with
-        # heterogeneous keys, plus the Python-side defaults on
-        # on_speculation_watch_list/created_at/updated_at, makes SQLAlchemy bind
-        # the first row's defaults un-suffixed while later rows get _m1.., which
-        # fails to compile (the f405 that aborted the nightly pipeline). Supply
-        # all columns on every row, and the NOT NULL watch-list flag explicitly.
+        """File every row under its own fiscal year, then make sure the lot exists.
+
+        Two writes, and the order matters. assessment_history is the record: it
+        is keyed (bbl, tax_year), so nine years of the same lot land in nine
+        rows and no year can overwrite another. parcels only needs the lot to
+        exist, because _sync_parcel_assessments picks the value afterwards from
+        the years actually on file.
+        """
         now = datetime.now(timezone.utc)
+
+        # One row per (lot, fiscal year). DO UPDATE rather than DO NOTHING: a
+        # re-run after DOF restates a value has to be able to correct it, and
+        # the same DO NOTHING in score_history is what let a half-loaded
+        # permits table stay in the permanent record on 2026-08-28.
+        history_rows = _dedupe_by_bbl_year(batch)
+        if history_rows:
+            db.execute(
+                text("""
+                    INSERT INTO assessment_history (bbl, assessed_total, tax_year, created_at)
+                    VALUES (:bbl, :assessed_total, :tax_year, :created_at)
+                    ON CONFLICT (bbl, tax_year) DO UPDATE
+                       SET assessed_total = EXCLUDED.assessed_total
+                """),
+                [{"bbl": r["bbl"], "assessed_total": r["assessed_total"],
+                  "tax_year": r["assessment_year"], "created_at": now}
+                 for r in history_rows],
+            )
+
+        # The lot itself. DO NOTHING on the assessment: which year wins is
+        # decided once, after the walk, by _sync_parcel_assessments. Deciding
+        # it here means deciding it by pagination order, which is what put a
+        # 2014/15 figure under a 2026 heading on ten thousand pages.
         parcel_rows = []
         for row in _dedupe_by_bbl(batch):
             parcel_rows.append({
@@ -172,39 +293,49 @@ class DOFScraper(BaseScraper):
                 "updated_at": now,
             })
 
+        # Every row must carry the same columns. A multi-row insert with
+        # heterogeneous keys, plus the Python-side defaults on
+        # on_speculation_watch_list/created_at/updated_at, makes SQLAlchemy bind
+        # the first row's defaults un-suffixed while later rows get _m1.., which
+        # fails to compile (the f405 that aborted the nightly pipeline). Supply
+        # all columns on every row, and the NOT NULL watch-list flag explicitly.
         stmt = (
             insert(Parcel)
             .values(parcel_rows)
-            .on_conflict_do_update(
-                constraint="uq_parcels_bbl",
-                set_={
-                    # DOF owns assessed_total ONLY
-                    # Do NOT overwrite units_res, geometry, owner_name, address (PLUTO owns those)
-                    "assessed_total": insert(Parcel).excluded.assessed_total,
-                    # The `updated_at` in the VALUES list above only applies to
-                    # rows that insert. On conflict the SET list is this dict and
-                    # nothing else, so without this line an assessment refresh
-                    # updates the value and leaves the column that dates it
-                    # untouched. Same defect as scrapers/pluto.py had.
-                    "updated_at": now,
-                },
-            )
+            .on_conflict_do_nothing(constraint="uq_parcels_bbl")
         )
-        result = db.execute(stmt)
+        db.execute(stmt)
         db.commit()
-        return result.rowcount
+        return len(history_rows)
 
 
 def _dedupe_by_bbl(batch: list[dict]) -> list[dict]:
     """Last occurrence per BBL wins.
 
-    The DOF feed repeats a BBL within one page (easement and condo rows
-    share the parcel key), and two rows with the same conflict key in a
-    single INSERT ... ON CONFLICT is a CardinalityViolation.
+    A BBL repeats within a page because this feed carries one row per fiscal
+    year and there are nine of them. The note that used to sit here said the
+    repeats were easement and condo rows sharing a parcel key, which is why
+    nobody looked at the year: the duplicate had already been explained. Two
+    rows with the same conflict key in a single INSERT ... ON CONFLICT is a
+    CardinalityViolation, so the collapse still has to happen. It is only safe
+    now because the caller no longer takes the assessment from the survivor.
     """
     deduped: dict[str, dict] = {}
     for row in batch:
         deduped[row["bbl"]] = row
+    return list(deduped.values())
+
+
+def _dedupe_by_bbl_year(batch: list[dict]) -> list[dict]:
+    """Last occurrence per (BBL, fiscal year) wins.
+
+    The conflict key of assessment_history, so the same CardinalityViolation
+    applies. A lot genuinely restated within one page is rare; when it happens
+    the later row is the one DOF served last.
+    """
+    deduped: dict[tuple[str, int], dict] = {}
+    for row in batch:
+        deduped[(row["bbl"], row["assessment_year"])] = row
     return list(deduped.values())
 
 
