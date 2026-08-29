@@ -1,3 +1,110 @@
+# >>> START HERE after /clear (2026-08-29, the assessment-year session) <<<
+
+**Two commands are waiting on you and they are the point of the session.** The
+code is committed and the /property copy is deployed; the data is not repaired,
+because both steps are production writes and the second one deletes rows.
+
+    venv/bin/python -m scripts.repair_assessment_years    # dry-run first with --dry-run
+    venv/bin/python -m scrapers.dof
+
+Until they run, `tests/test_assessment_year_provenance.py` is red on purpose and
+its failure message is the instruction. It is marked `needs_data`, so CI skips
+it and only the box sees it.
+
+## What was wrong, and it was public
+
+**DOF dataset w7rz-68fs is nine fiscal years, not one.** 2010/11 through
+2018/19, 608,240 rows for 72,898 lots, about 8.3 rows each. It is a frozen
+archive; DOF stopped publishing to it after 2018/19.
+
+`scrapers/dof.py` fetched all nine years, parsed the year into a local it never
+returned, and upserted every row into `parcels` keyed on bbl alone. Whichever
+year the paginator emitted last became the assessment. On a random sample of 35
+overlapping lots, **30 held a value that is exactly a DOF avtot, and the year
+varied per lot**: 2011/12, 2013/14, 2014/15, 2016/17, 2018/19. MapPLUTO could
+not correct any of it, because these are condo unit lots and MapPLUTO carries
+the billing lot. The two populations are disjoint: 300 dual-covered unit lots
+sampled, none in the DOF feed.
+
+`scrapers/pluto.py` then wrote an `assessment_history` row for every parcel
+carrying a value and dated all of them with the calendar year of the run. PLUTO
+covers 858,602 lots. 918,338 carry a value. **59,423 rows were dated by a
+scraper that had never seen the lot.** /property reads `max(tax_year)` and
+prints it as fact:
+
+    The city's Department of Finance assessed this lot at $287K
+    for the 2026 tax year.
+
+420 East 58 Street, unit 1075. That is its **2014/15** assessment. **10,197
+sitemapped pages** carry a sentence of that shape. Verified live before the fix
+and again after, through the socket.
+
+## How it was found, which is the reusable part
+
+`scheduler/alerts.py` called `mailer.send` and never imported mailer, so every
+ops email had raised NameError since the one-gate refactor the day before.
+Chasing why a green suite shipped that turned up **the repo has no linter**.
+pyflakes over 290 modules takes four seconds and names both lines.
+
+Running it repo-wide also printed `local variable 'assessment_year' is assigned
+to but never used` in `scrapers/dof.py`. That one line is the whole thing above.
+`tests/test_undefined_names.py` now runs the undefined-name check in the guard
+lane; the other 105 pyflakes findings are noise and are deliberately not
+checked.
+
+## What changed
+
+- **dof.py** files one row per (bbl, fiscal year) into `assessment_history`,
+  whose primary key is exactly that pair, so pagination order stops mattering.
+  The parcel write is DO NOTHING; the value is chosen once after the walk by
+  `_sync_parcel_assessments`, DISTINCT ON newest year, and only for lots with no
+  newer assessment on file. The year ceiling is **the newest year the run read**,
+  not a pinned 2018.
+- **pluto.py** snapshots only the lots the run refreshed, and upserts. A
+  snapshot may only date what it looked at.
+- **The spike signal pairs per lot and requires consecutive years.** Global year
+  selection would have paired 2026 against 2018 the moment DOF files real years,
+  and called eight years of drift a spike. Clock-free: it keys off the newest
+  year in the table, so it still activates on the second annual MapPLUTO run.
+- **alerts.py** imports mailer, and `send_ops_email` now honours the "never
+  raises" contract its own docstring promised. Two callers alert from inside an
+  `except` block, where a raise loses the error being reported.
+- **The /property lede names the year.** "Most recent assessed value" is true of
+  a 2018 figure and tells the reader nothing.
+
+## Guards, and two that had to be replaced
+
+The two dormancy guards asserted on the source text of the old CTEs. Both went
+red on a rewrite that enforces their rule more strictly than before, which is
+the tell: **a guard that fails on a change it approves of is not measuring the
+rule.** They run the aggregate now against a rolled-back transaction. A rise
+counts; a NULL prior year does not; an eight-year gap does not; a fall does not.
+
+Every new guard here was verified by breaking the thing on purpose:
+
+- delete the mailer import -> 8 of 9 delivery tests red, both lines named by
+  pyflakes
+- delete the consecutive-year condition -> the gap case comes through at **4.7x**,
+  because the newest year then pairs with whatever the lot had before it
+
+`_sync_parcel_assessments` commits, so the test that runs it stubs the commit
+out. The suite committed deletes of two days of score_history once.
+
+## State
+
+- Guard lane **286**, 15s. Full suite 1,718 passed. Four reds, none from this
+  work: the `.service` deploy drift (known, needs a restart), two pre-existing
+  (`test_llc_page_carries_entity_follow`, `test_no_page_claims_the_wrong_zip_count`,
+  both red on a clean tree), and `/flips` render budget, which passes alone in
+  3.5s and only fails under concurrent load on two vCPUs.
+- **The evictions "anomaly" is a bursty feed, not a fault.** 13 records against
+  a static floor of 100, but the ingest runs 0, 0, 0, 0, 109, 343, 13 and the
+  weekly executed counts are healthy. The floor fires on small nonzero nights
+  and is suppressed on zero ones, which is the least informative pairing. The
+  DEGRADED label is display-only and feeds no email.
+- ACRIS frozen 29 days, upstream, verified. Everything else current.
+- 2 unpushed before this session; more now.
+
 # >>> START HERE after /clear (2026-08-29, the privacy-and-anchor session) <<<
 
 Working tree clean. **0 unpushed.** CI **green on both jobs** for the first time
