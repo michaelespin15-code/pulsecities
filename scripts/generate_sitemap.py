@@ -54,6 +54,8 @@ Run manually or from cron after the nightly scoring pass:
 
 import gzip
 import os
+
+from config.nyc import INDEX_MIN_VIOLATIONS
 import tempfile
 from datetime import date
 from pathlib import Path
@@ -76,7 +78,7 @@ _URLS_PER_FILE = 45_000
 # number, so it is set on what the count means rather than on the metric. One
 # violation is a fact about a building; five is a history worth a page in an
 # index.
-MIN_VIOLATIONS = 5
+
 
 # (path, changefreq, priority, lastmod or None for today)
 _CORE = [
@@ -184,7 +186,7 @@ def build() -> dict[str, str]:
                 FROM violations_raw
                 WHERE {real_date('COALESCE(nov_issued_date, inspection_date)')}
                 GROUP BY bbl
-                HAVING count(*) >= {MIN_VIOLATIONS}
+                HAVING count(*) >= {INDEX_MIN_VIOLATIONS}
             )
             SELECT p.bbl,
                    GREATEST(COALESCE(d.last_deed, DATE '1900-01-01'),

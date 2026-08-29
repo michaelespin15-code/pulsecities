@@ -72,6 +72,7 @@ LANE=(
   tests/test_citywide_trend.py
   tests/test_scoring_change_notes.py
   tests/test_assessment_dormancy.py
+  tests/test_index_gate.py
 )
 
 PYTHON="${PYTHON:-./venv/bin/python}"

@@ -86,6 +86,17 @@ DISPLACEMENT_COMPLAINT_TYPES = (
 )
 
 # Scraper row count minimums — flag WARNING if actual < 50% of these
+# The building-level record that earns a /property page a place in the index.
+#
+# One owner, because two enforcers is how the sitemap and the robots tag came to
+# admit different populations: 97,790 sitemapped against 229,286 rendering
+# "index, follow", and the largest block in the 131,496-page gap was 90,001 pages
+# whose only record was one to four violations, measuring 66.3% mean 5-gram
+# overlap with a max of 80.7%. Worse than every tier the site publishes.
+#
+# One violation is a fact about a building. Five is a history worth a page.
+INDEX_MIN_VIOLATIONS = 5
+
 SCRAPER_EXPECTED_MIN_RECORDS = {
     "311_complaints": 5000,
     # Legacy BIS. Was 50 on the assumption this was the permits feed; it is now

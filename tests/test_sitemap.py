@@ -119,8 +119,14 @@ class TestViolationTier:
             f"violation tier is {tier} of {len(_PROPERTY_TIERS)} URLs; gate looks wrong")
 
     def test_the_gate_constant_is_above_one(self):
-        from scripts.generate_sitemap import MIN_VIOLATIONS
-        assert MIN_VIOLATIONS >= 2, (
+        """
+        The floor moved to config.nyc on 2026-08-29 and this file reads it from
+        there. It had been defined here while api/routes/frontend.py carried a
+        different rule entirely, which is how the sitemap came to admit 97,790
+        pages while the robots tag admitted 229,286.
+        """
+        from config.nyc import INDEX_MIN_VIOLATIONS
+        assert INDEX_MIN_VIOLATIONS >= 2, (
             "one violation is a fact about a building, not a history")
 
     @pytest.mark.needs_data

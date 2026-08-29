@@ -24,6 +24,7 @@ from sqlalchemy.orm import Session
 
 from api.permit_kinds import (DECONVERSION_PARAMS, deconversion_sql,
                               renovation_sql)
+from config.nyc import INDEX_MIN_VIOLATIONS
 from api.person_privacy import is_natural_person, public_name
 from api.unit_privacy import strip_apartment, strip_unit
 from api.freshness import (ACRIS_THROUGH_SQL, FRESHNESS_SOURCES, db_through_sql,
@@ -1997,12 +1998,25 @@ def _build_property_page(bbl, address, zip_code, borough, score, sig, op,
     # The windowed lists above cover twelve months; robots policy should not
     # flip because a building's only eviction aged out, so the all-time facts
     # decide it.
+    # Same record the sitemap admits: a deed, an eviction, or a violation
+    # history. They were written apart and admitted different populations,
+    # 229,286 pages rendering index,follow against 97,790 sitemapped, and the
+    # largest block in the gap was 90,001 pages whose only record was one to
+    # four violations, measuring worse duplication than any tier the site
+    # publishes. INDEX_MIN_VIOLATIONS is the single owner of the floor.
+    #
+    # Dropped from this predicate deliberately: a rent-stabilization
+    # registration alone (3,531 pages carrying zero data rows), and the
+    # `owners`/`evicts`/`permits` twelve-month windows, which admitted 20,494
+    # permit-only pages and would flip robots policy as a window rolled.
+    _violation_total = sum(
+        int((v or {}).get("n", 0))
+        for v in ((facts or {}).get("violations") or {}).values()
+    )
     has_signals = bool(
         (facts or {}).get("documents")
         or ((facts or {}).get("evictions") or {}).get("n")
-        or (facts or {}).get("violations")
-        or (facts or {}).get("rs")
-        or owners or evicts or permits
+        or _violation_total >= INDEX_MIN_VIOLATIONS
     )
 
     def _section(h2, note, heads, rows):
