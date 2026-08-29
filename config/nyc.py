@@ -108,7 +108,14 @@ SCRAPER_EXPECTED_MIN_RECORDS = {
     # Phase 3 scrapers
     "acris_ownership": 200,       # deed transfers per incremental run; lower bound for watermark-based ingest
     "mappluto":        800000,    # full-refresh dataset; ~900k parcels — <400k signals upstream issue
-    "dof_assessments": 500000,    # full-refresh dataset; ~1M parcels — lower bound at 50%
+    # 72,898, measured against the live dataset on 2026-08-29, not ~1M. The
+    # feed carries 608,240 rows for 72,898 distinct BBLs (condo and easement
+    # rows repeat the parcel key) and the scraper dedupes to one upsert per
+    # BBL, so it reports ~73,168 every run. The old 500,000 floor was set
+    # against the parcels table rather than against this dataset, could never
+    # be met, and read as a broken scraper the moment pipeline_health began
+    # honouring the threshold. 60,000 is a floor this feed clears when alive.
+    "dof_assessments": 60000,
     "dcwp_licenses":   500,       # 69k total rows but incremental runs fetch new licenses only
     "dhcr_rs":         50000,     # full dataset; lower bound
 }

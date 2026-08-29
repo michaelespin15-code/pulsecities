@@ -328,8 +328,16 @@ def _aggregate_assessment_spike(db: Session) -> List[Tuple[str, float]]:
     Returns [] if fewer than 2 distinct tax years exist in assessment_history,
     keeping the signal dormant until the second annual MapPLUTO run.
     """
+    # Only years that carry an assessment count. assessment_history is shared:
+    # scripts/backfill_rs_history.py writes 197,730 rows for tax years 2018-2023
+    # holding stabilized_units with assessed_total NULL, and DOF writes the real
+    # assessment rows. Counting every tax_year returns 7, clears this guard, and
+    # then picks 2023 as the prior year, whose 32,565 joined BBLs are all
+    # discarded by `p.assessed_total > 0`. Zero rows, and a dormancy message
+    # blaming a year count that was never the problem.
     year_count = db.execute(
-        text("SELECT COUNT(DISTINCT tax_year) FROM assessment_history")
+        text("SELECT COUNT(DISTINCT tax_year) FROM assessment_history"
+             " WHERE assessed_total IS NOT NULL")
     ).scalar() or 0
 
     if year_count < 2:
@@ -340,7 +348,8 @@ def _aggregate_assessment_spike(db: Session) -> List[Tuple[str, float]]:
             WITH two_years AS (
                 SELECT tax_year,
                        ROW_NUMBER() OVER (ORDER BY tax_year DESC) AS rn
-                FROM (SELECT DISTINCT tax_year FROM assessment_history) t
+                FROM (SELECT DISTINCT tax_year FROM assessment_history
+                       WHERE assessed_total IS NOT NULL) t
             ),
             current_h AS (
                 SELECT bbl, assessed_total
@@ -739,8 +748,10 @@ def compute_scores(db: Session, as_of_date: date | None = None, force: bool = Fa
         )
     if not assessment_spike_rows:
         logger.warning(
-            "Assessment spike signal is dormant: assessment_history has <2 tax years."
-            " Signal activates after the second annual MapPLUTO run."
+            "Assessment spike signal is dormant: fewer than 2 tax years in "
+            "assessment_history carry an assessed_total. The table also holds "
+            "rent-stabilization rows (stabilized_units, no assessment), which "
+            "are not eligible. Signal activates after the second annual MapPLUTO run."
         )
     # Dormancy check: warn when prior-year DHCR data is absent (expected until 2027).
     if not rs_loss_rows:
