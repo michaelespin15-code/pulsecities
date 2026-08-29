@@ -69,6 +69,7 @@ LANE=(
   tests/test_violation_unit_privacy.py
   tests/test_person_privacy.py
   tests/test_landlord_search_gate.py
+  tests/test_citywide_trend.py
 )
 
 PYTHON="${PYTHON:-./venv/bin/python}"
@@ -80,6 +81,9 @@ DESELECT=(
   # rule and the one-owner greps in that file are what belong in a pre-commit
   # lane; the rendered sweep runs in the full suite and in CI's database job.
   --deselect "tests/test_person_privacy.py::TestNoPersonSurvivesOnAPage"
+  # Renders /displacement against the live database; the window and residential
+  # greps in that file are the pre-commit-worthy half.
+  --deselect "tests/test_citywide_trend.py::TestItRendersAnAnswer"
 )
 if [ -n "${GUARDS_NO_DB:-}" ]; then
   DESELECT+=(

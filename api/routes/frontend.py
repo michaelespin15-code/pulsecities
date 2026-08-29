@@ -5417,6 +5417,69 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
 
 
 # ---------------------------------------------------------------------------
+
+def _citywide_eviction_trend(db) -> dict:
+    """
+    The one absolute measure on the site: executed residential evictions per
+    1,000 apartments, citywide, by complete month.
+
+    Everything else here is a rank. The composite normalises each signal to the
+    5th-95th percentile of that night's spread across 177 ZIPs, so the top 5%
+    fill the top of the scale whatever the city is doing. Over 314 days of
+    score_history the mean composite moved 1.1 points while real executed
+    evictions swung 48% between their trough and their peak. That is what
+    percentile normalisation is for, and it is why a reader could not use this
+    site to ask whether things were getting worse.
+
+    **Whole months only, and the current one is excluded.** A window that runs to
+    CURRENT_DATE ends on a half-finished month and sets it against a full month a
+    year earlier, which renders as a collapse in evictions on any day before
+    month end. Same shape as the ACRIS window that once counted 1 deed instead of
+    558, and worse in consequence, because a fabricated drop in evictions is the
+    kind of number someone repeats.
+    """
+    row = db.execute(text("""
+        WITH units AS (
+            SELECT NULLIF(sum(COALESCE(units_res, 0)), 0)::numeric AS u FROM parcels
+        ),
+        w AS (
+            SELECT
+              count(*) FILTER (
+                  WHERE executed_date >= date_trunc('month', CURRENT_DATE) - INTERVAL '12 months'
+                    AND executed_date <  date_trunc('month', CURRENT_DATE)) AS recent,
+              count(*) FILTER (
+                  WHERE executed_date >= date_trunc('month', CURRENT_DATE) - INTERVAL '24 months'
+                    AND executed_date <  date_trunc('month', CURRENT_DATE) - INTERVAL '12 months') AS prior
+            FROM evictions_raw
+            WHERE eviction_type = 'Residential' AND executed_date IS NOT NULL
+        )
+        SELECT w.recent, w.prior, units.u AS units FROM w, units
+    """)).first()
+
+    months = db.execute(text("""
+        SELECT date_trunc('month', executed_date)::date AS mon, count(*) AS n
+        FROM evictions_raw
+        WHERE eviction_type = 'Residential'
+          AND executed_date >= date_trunc('month', CURRENT_DATE) - INTERVAL '24 months'
+          AND executed_date <  date_trunc('month', CURRENT_DATE)
+        GROUP BY 1 ORDER BY 1
+    """)).fetchall()
+
+    if not row or not row.recent or not row.units:
+        return {}
+    recent, prior, units = int(row.recent), int(row.prior or 0), float(row.units)
+    pct = ((recent - prior) / prior * 100.0) if prior else None
+    return {
+        "recent": recent,
+        "prior": prior,
+        "pct": pct,
+        "rate": recent * 1000.0 / units,
+        "prior_rate": (prior * 1000.0 / units) if prior else None,
+        "units": int(units),
+        "months": [(m.mon, int(m.n)) for m in months],
+    }
+
+
 # /displacement — the citywide findings showcase. One page that pulls the
 # strongest signals into a single narrative destination: hottest neighborhoods,
 # eviction-to-resale flips (approved editions only, so the human review gate
@@ -5528,6 +5591,44 @@ def displacement_page(db: Session = Depends(get_db)):
         + _stat(str(len(flips)), "renovation flips flagged")
         + _stat(str(len(clusters)), "active buying clusters")
     )
+
+    # The one absolute measure on the page. Everything above it is a rank.
+    trend = _citywide_eviction_trend(db)
+    trend_html = ""
+    if trend and trend.get("months"):
+        _pct = trend["pct"]
+        _dir = "down" if (_pct or 0) < 0 else "up"
+        _mag = f"{abs(_pct):.1f}%" if _pct is not None else ""
+        _peak = max(n for _, n in trend["months"]) or 1
+        _bars = "".join(
+            f'<span class="tb" style="height:{max(6, round(n * 100 / _peak))}%" '
+            f'title="{m.strftime("%b %Y")}: {n:,} executed"></span>'
+            for m, n in trend["months"]
+        )
+        _first = trend["months"][0][0].strftime("%b %Y")
+        _last = trend["months"][-1][0].strftime("%b %Y")
+        _verdict = (
+            f"{trend['recent']:,} executed residential evictions in the twelve months "
+            f"to {_last}, against {trend['prior']:,} in the twelve before them. "
+            f"That is {_dir} {_mag}."
+        ) if _pct is not None else f"{trend['recent']:,} executed residential evictions in the twelve months to {_last}."
+        trend_html = f"""
+<div class="section">
+<h2 class="sec-h">Is it getting worse?</h2>
+<div class="sec-sub">Every other number on this page is a rank: it says which places stand out from
+the rest of New York, and it would look much the same in a calm year or a terrible one. This one is a
+level. It is the count itself, so it can go down.</div>
+<p class="trend-verdict">{esc(_verdict)}</p>
+<p class="trend-rate">{trend['rate']:.2f} per 1,000 apartments a year, across
+{trend['units']:,} residential units on record.</p>
+<div class="trend-bars" role="img"
+     aria-label="Monthly executed residential evictions, {esc(_first)} to {esc(_last)}">{_bars}</div>
+<div class="trend-axis"><span>{esc(_first)}</span><span>{esc(_last)}</span></div>
+<div class="sec-sub" style="margin-top:14px">Whole months only. The month in progress is left out,
+because half a month set against a full one reads as a collapse that did not happen. The winter dip
+that repeats every year is seasonal, not progress.</div>
+</div>
+"""
 
     # Eviction -> flip arcs
     arc_items = ""
@@ -5685,6 +5786,14 @@ h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(
 .sec-more{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:#ed6317;white-space:nowrap}
 .sec-more:hover{text-decoration:underline}
 .sec-sub{font-size:0.86rem;color:var(--muted);margin-top:5px;margin-bottom:14px;max-width:640px;line-height:1.45}
+.trend-verdict{font-size:1.05rem;line-height:1.5;color:var(--text);margin:16px 0 4px;max-width:640px}
+.trend-rate{font-size:0.88rem;color:var(--muted);margin:0 0 18px}
+.trend-bars{display:flex;align-items:flex-end;gap:3px;height:96px;max-width:640px;
+  padding:0;margin:0;border-bottom:1px solid var(--line)}
+.trend-bars .tb{flex:1 1 0;min-width:3px;background:var(--accent);opacity:.72;border-radius:1px 1px 0 0}
+.trend-bars .tb:hover{opacity:1}
+.trend-axis{display:flex;justify-content:space-between;max-width:640px;
+  font-size:0.75rem;color:var(--dim);margin-top:6px;letter-spacing:.03em}
 ul{list-style:none}
 .arc{border-bottom:1px solid rgba(147,161,173,0.08);cursor:pointer}
 .arc:hover{background:rgba(147,161,173,0.04)}
@@ -5733,7 +5842,7 @@ footer{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px) 
 <p class="lede">What the public record shows right now. Every number below is rebuilt nightly from NYC open data: deeds, evictions, permits, violations, and complaints.</p>
 
 <div class="stats">{stats_html}</div>
-
+{trend_html}
 <div class="section">
 <h2 class="sec-h">Evicted, then flipped <a class="sec-more" href="/flips/editions" onclick="plausible('Showcase Section',{{props:{{sec:'arcs'}}}})">All editions &rarr;</a></h2>
 <div class="sec-sub">Buildings where tenants were evicted, an LLC bought in, and the building resold at a markup within a year. Reviewed before listing. Every step is a public deed.</div>
