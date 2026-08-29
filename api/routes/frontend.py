@@ -341,6 +341,23 @@ _FOOTER_HTML = """<footer>
   </div>
 </footer>"""
 
+# Interpolate as {_FOLLOW_HTML} on the publication pages, above the footer.
+#
+# Preferred Sources is a Google Search personalisation, not a ranking signal:
+# a reader ticks the box and sees more of this site in Top Stories and a badge
+# in AI Mode, and nobody else's results change. So it is worth exactly one text
+# link, on the pages a returning reader is already on, and it is not worth the
+# JavaScript button, which renders Google-styled chrome and would be the
+# loudest thing on a page built to be quiet.
+#
+# pulsecities.com is listed in the source preferences tool, confirmed
+# 2026-08-29. Google's own note there is that "sources that are not updated
+# regularly may be unavailable", which the weekly editions cover.
+_FOLLOW_HTML = """<div class="follow-line" style="font-size:12px;color:#93a1ad;text-align:center;margin:24px 0 8px;">
+  Follow this: <a href="/feed.xml" style="color:#93a1ad;">RSS</a>
+  or <a href="https://www.google.com/preferences/source?q=pulsecities.com" target="_blank" rel="noopener noreferrer" style="color:#93a1ad;">add PulseCities as a preferred source on Google</a>
+</div>"""
+
 _FOOTERS = {
     "en": _FOOTER_HTML,
     "es": (_FOOTER_HTML
@@ -5109,6 +5126,7 @@ def week_edition_page(slug: str, db: Session = Depends(get_db)):
     Counts reflect records published by NYC agencies, which can lag the events they describe. Scores are risk indicators, not claims of wrongdoing. <a href="/methodology" style="color:var(--accent);">How scores work &rarr;</a>
   </p>
 </div>
+{_FOLLOW_HTML}
 {_FOOTER_HTML}
 </body>
 </html>"""
@@ -5196,6 +5214,7 @@ def week_archive_index(db: Session = Depends(get_db)):
   <ul class="wk-idx">
 {rows_html}  </ul>
 </div>
+{_FOLLOW_HTML}
 {_FOOTER_HTML}
 </body>
 </html>"""
@@ -5437,6 +5456,7 @@ footer{{text-align:center;padding:24px 16px calc(env(safe-area-inset-bottom,0px)
     <span id="tw-note">Counts reflect records published by NYC agencies, which can lag the events they describe. Scores are risk indicators, not claims of wrongdoing.</span> <a id="tw-meth-link" href="/methodology" style="color:var(--accent);">How scores work &rarr;</a>
   </p>
 </div>
+{_FOLLOW_HTML}
 {_FOOTER_HTML}
 <script>
 (function() {{

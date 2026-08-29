@@ -126,6 +126,18 @@ def rank_norm(v):
     return rank(v) / (len(v) - 1) * 100
 
 
+def log_linear(v):
+    """Linear on a log scale, then clamped the way the live one is.
+
+    The candidate that is not a rank. Rank buys its accuracy by discarding
+    magnitude entirely: the 50th and 51st ZIP sit one unit apart whether they
+    are identical or ten times apart. That is the direction this index is
+    already criticised for going, so it is worth knowing how much of the gain
+    comes from handling the skew rather than from ranking.
+    """
+    return clamped_linear(np.log1p(v))
+
+
 class Backtest:
     def __init__(self, db):
         self.db = db
@@ -238,7 +250,8 @@ def mode_transform(bt):
     usable = min(bt.feed_end(n) for n in FEED_END) - timedelta(days=CLEAR)
     anchors = [t for t, _ in bt.anchors(usable)]
     forms = {"clamped_linear (ships)": clamped_linear,
-             "linear_minmax": linear_minmax, "rank": rank_norm}
+             "linear_minmax": linear_minmax, "log_linear": log_linear,
+             "rank": rank_norm}
     per = {k: [] for k in forms}
     for t in anchors:
         # Aggregate once per window; the transforms must see identical inputs.
