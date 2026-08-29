@@ -1,3 +1,199 @@
+# >>> START HERE after /clear (2026-08-29, the privacy-and-anchor session) <<<
+
+Working tree clean. **0 unpushed.** CI **green on both jobs** for the first time
+since at least 2026-07-15. Everything below is deployed and verified against the
+running site, not just committed. Tonight's pipeline ran clean in 370s.
+
+## Four things to know before anything else
+
+1. **`/privacy` is now a public promise, not a preference.** It states that four
+   things are withheld: individuals' names, apartment numbers, tenant names, and
+   private home addresses. Any feature that would publish one of those now
+   contradicts a page a reader relies on. Check it before building.
+2. **ACRIS `doc_date` reads 2026-08-27 and the feed is still frozen at 07-31.**
+   Do not read `max(doc_date)` as freshness: it is filer-entered. The scraper's
+   watermark is the truth and it says 29 days stale. This is the false-freshness
+   class the repo already documents, wearing a new face.
+3. **Anthropic credits work again.** The nightly precompute wrote 6 reads, 0
+   failed. A previous checkpoint says exhausted; that is out of date.
+4. **The evictions scraper flagged an anomaly tonight**: 13 records against a
+   static minimum of 100 and a 14-day average of 69. One night is not a trend.
+   Worth a look if it repeats.
+
+## The theme, and it is the useful part of this session
+
+**Five bugs, one shape: a correct rule, written down, applied at one call site
+and missed at the others.**
+
+| rule | enforcers before | now |
+|---|---|---|
+| executed evictions are not "filings" | 8 fixed, 16 missed | grep over whole files |
+| an apartment number is a household | email only | `api/unit_privacy.py` |
+| a private individual is not named | 1 of 8 sites | `api/person_privacy.py` |
+| score_history must match the map | opposite conflict policies | upsert + agreement guard |
+| what earns a page an index | sitemap ≠ robots tag | `config.nyc.INDEX_MIN_VIOLATIONS` |
+
+Every one now has a single owner module and a guard that fails when a second
+copy appears. **When you find a rule stated in a comment, grep for how many
+places implement it before trusting any of them.**
+
+## The other lesson, which cost real time
+
+**Six guards this session passed on something other than what they tested.** An
+unused import satisfied one. A helper's own docstring satisfied another. "rank"
+occurring elsewhere on the page satisfied a third. A regex bounded on the next
+top-level `def` over-captured 981 lines and would have passed with the check
+deleted; scoping it with `ast` did not help either, because the function is
+genuinely 848 lines and names the helper elsewhere inside itself.
+
+The one that finally held asserts the *statement* structurally (an `ast.If`
+whose test calls `is_natural_person` and whose body returns `_not_found`), and
+it only became trustworthy when I deleted the check and watched it go red.
+
+**A guard written against source text asserts that a word is present, and the
+bug is almost never a missing word.** Break the thing on purpose before
+believing the test.
+
+## PII: all eight exposures closed
+
+The 2026-08-28 audit found eight. All are fixed, deployed and verified live.
+
+- **`/property` named private buyers and sellers on 43,212 sitemapped pages.**
+  Seven render sites, not the three the audit listed; rendering found the rest,
+  including the DOF owner-of-record line and the FAQPage JSON-LD twin. Sweeps
+  went 16 leaks of 41 pages, then 1 of 48, then 0 of 71.
+- **Apartment numbers** on ~13,000 indexable pages and in `/eviction-case`.
+- **`/evictions` named 81 individuals** beside eviction counts across 57 pages.
+- **`/llc` printed named agents' street addresses**, often residential.
+- **`/api/search/landlord` was a people search** over 36,733 individuals
+  returning lat/long. Gated in SQL so the summary aggregate and the rows describe
+  the same population.
+- **`/llc/{person-slug}` 404s.** 40,532 dossiers, ~1,500 words each, with an FAQ
+  headed "Who owns or controls <PERSON>?".
+- **`/privacy` exists.**
+
+**Two dead ends, recorded so nobody re-derives them:**
+
+- **The portfolio threshold does not work.** The theory was that a person holding
+  many buildings is a landlord and fair to name. Of 102 person-shaped owners on
+  repeat-eviction buildings, 6 held 5+ buildings citywide and **all 6 were
+  misclassified organisations**, including four affordable-housing nonprofits.
+  Every genuine individual held one building.
+- **`_is_buyer_entity` is not a privacy gate.** It answers whether a name can be
+  linked to `/llc/{slug}`, so it is False for servicers, trustees, and every name
+  at or over 48 characters where ACRIS truncates. Ten real organisations read as
+  people under it.
+
+Cost of all this: **0.27% of impressions.** Person-name queries were 81
+impressions and 10 clicks of 29,700 and 731. `/property` ranks on the address.
+
+## The map answers the question now
+
+Michael asked whether New York is in mass displacement. The honest answer was
+that the site could not say, because **every number on it was a rank**. Step 5 of
+`scoring/compute.py` normalises each signal to the 5th-95th percentile of that
+night's spread, so the top 5% fill the top of the scale whatever the city does.
+Over 314 days the mean composite moved 1.1 points and its standard deviation did
+not move at all, while real executed evictions swung 48% between trough and peak.
+
+`/displacement` now leads with the level, and every neighbourhood page states it
+locally in both languages:
+
+    17,009 executed residential evictions in the twelve months to Jul 2026
+    against 17,334 in the twelve before. Down 1.9%.
+    4.53 per 1,000 apartments a year across 3,753,413 units.
+
+**Whole months, current one excluded.** A window running to CURRENT_DATE ends on
+a half-finished month and renders a collapse that did not happen. Guarded three
+ways, and per ZIP the artefact would be larger.
+
+## Other fixes worth knowing
+
+- **The history chart and the map disagreed for the same day.** Opposite conflict
+  policies: the map upserted, history did nothing on conflict. A manual DOB NOW
+  backfill overlapped the 02:07 nightly on 08-28, so history kept scores computed
+  against a half-loaded permits table. 156 of 177 ZIPs differed, 8 across band
+  lines. The nightly cron takes a `flock` now.
+- **The assessment dormancy log lied every night.** It said "<2 tax years" and
+  there are seven. `assessment_history` holds two populations: 197,730
+  rent-stabilization rows from `backfill_rs_history.py` with `assessed_total`
+  NULL, and 917,978 real 2026 assessments. Prior-year resolved to 2023, so of
+  32,565 joined BBLs **exactly zero** satisfied the comparison.
+- **`dof_assessments` was never broken and I said it was.** The dataset carries
+  608,240 rows for **72,898 distinct BBLs**; 73,168 a run is correct. The 500,000
+  floor was set against the parcels table. Now 60,000.
+- **`/property` titles**: 100% exceeded 60 characters, so `| PulseCities` was
+  never displayed on any of 97,790 pages. Mean 77 -> 60.
+- **A guard protecting the map palette had never run**, calling `self._app()`
+  from a class that does not define it.
+
+## NEXT, in order
+
+1. **`models/database.py` should build its engine lazily.** It raises at import
+   time, so importing any module that touches it requires a DSN. That is what
+   killed CI collection, and the workaround is a dummy DSN in the workflow. This
+   is the real fix and it touches everything, so it wants daylight.
+2. **`retire_raw_data.sh archive`.** Still never run. It **deletes nothing**: it
+   writes verified archives and is the gate the `drop` phase refuses to proceed
+   without. `drop` is what frees ~9.6GB and needs a code commit removing raw_data
+   from the models, a reload, and a window, in that order. Verified: nothing
+   reads `raw_data` on complaints_raw or violations_raw; `permit_kinds.py` reads
+   it on **permits_raw**, which this script never touches.
+3. **Backlinks, still zero.** The one lever neither more pages nor better titles
+   substitutes for. You now have a finding worth pitching that did not exist
+   before: executed evictions down 1.9% year over year, newsworthy precisely
+   because it contradicts the panic framing, on a public page with denominators.
+4. **`/neighborhood` depth.** The audit measured it as the worst template: 67.6%
+   mean overlap, 41 of 190 pairs over 70%, 47.4% unique content against 66%+ for
+   every property tier. **The year-over-year sentence did not fix it** and I said
+   it would. Re-measured after: 67.1% mean, max up from 79.4 to 81.1. One
+   sentence of 45 words against 550 does not move a 5-gram metric.
+5. **`WEIGHT_PERMITS = 0.21`**, still never calibrated against a real permit
+   signal. Set when that signal was 414 rows; it is 32,786 now.
+6. **Bing.** Everything verified working on our side; bingbot crawls 200x less
+   than Google. Only Webmaster Tools can say why.
+7. **DOS follow-ons**: registered agent as a second clustering signal, Delaware
+   surfaced (663 entities), a monthly `refresh_dos_entities --all`.
+
+## NEEDS MICHAEL
+
+1. **Send the FLGSP pitch.** Unchanged, still the highest-value unsent thing.
+2. **The `.service` deploy drift.** The only remaining one, and it needs a
+   restart rather than a reload, so do it when you can watch it.
+3. **A GSC export** if you want a fresh search read. Nothing local is newer than
+   2026-08-27.
+4. **HEARTBEAT_BASE_URL, ALERT_WEBHOOK_URL, dedicated R2 creds, OPS_TOKEN
+   rotation.** Unchanged.
+
+## Traps
+
+- **Do not quote nginx logs as traffic without filtering user agents.**
+  Googlebot sends a Google referrer. Filtering to a search referrer looked like
+  14,497 property pages earning visits in a day; filtering bots gave **183**.
+  Googlebot was 98.8% of it.
+- **Do not use n-gram overlap below ~300 words.** Two ViolationScout pages that
+  are 92.6% identical token-for-token score 54.1% on 5-grams, because every
+  substituted word breaks up n-grams. Short pages score *better* as they thin.
+- **`env -u DATABASE_URL` does not reproduce CI.** The box has `.env` and
+  `load_dotenv()` finds it. Move the file to reproduce.
+- **The guard lane selects by file, not by marker.** An `integration` mark will
+  not keep a test out of it; it has to be named in the DESELECT list.
+- **`scripts/eviction_flips_editions.json` is gitignored on purpose.** It is
+  human review state. Tests that read it must skip when it is absent.
+
+## State
+
+- Guard lane **277** on the box, under 12s. Full suite green; CI green on both
+  jobs (`test` 49s, `schema-tests` 2m34s, 1,204 tests).
+- Disk 74%, 21GB free. Database 17GB, 13GB of it complaints_raw + violations_raw.
+- **Alembic still has pending revisions with their DDL already applied live. Do
+  not stamp.**
+- 21 confirmed subscribers.
+- ACRIS frozen 29 days, upstream, verified. Every other feed current.
+- The repo is public and the DB password is in pushed history. Pushing does not
+  worsen it; rotating is the fix.
+
+
 # >>> START HERE after /clear (2026-08-28 night, the relative-index session) <<<
 
 Michael asked why the map still shows Critical, High and Moderate tiles, and
