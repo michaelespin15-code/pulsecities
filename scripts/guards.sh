@@ -70,6 +70,7 @@ LANE=(
   tests/test_eviction_label.py
   tests/test_title_budget.py
   tests/test_meta_budget.py
+  tests/test_owner_disclosure.py
   tests/test_violation_unit_privacy.py
   tests/test_person_privacy.py
   tests/test_landlord_search_gate.py
@@ -111,6 +112,7 @@ if [ -n "${GUARDS_NO_DB:-}" ]; then
     # the database and api.main. The static half of that file needs neither,
     # but this lane deselects whole classes, not halves.
     --deselect "tests/test_meta_budget.py::TestEveryTemplateFitsTheSerp"
+    --deselect "tests/test_owner_disclosure.py::TestTheAddressIsNotStored"
   )
 fi
 
