@@ -70,6 +70,7 @@ LANE=(
   tests/test_person_privacy.py
   tests/test_landlord_search_gate.py
   tests/test_citywide_trend.py
+  tests/test_scoring_change_notes.py
 )
 
 PYTHON="${PYTHON:-./venv/bin/python}"

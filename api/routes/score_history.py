@@ -28,6 +28,44 @@ limiter = Limiter(key_func=get_remote_address, headers_enabled=True)
 
 
 # Registered before /{zip_code} so the literal path wins the match.
+@router.get("/notes")
+@limiter.limit("60/minute")
+def get_scoring_change_notes(
+    request: Request,
+    response: Response,
+    days: int = 90,
+    db: Session = Depends(get_db),
+):
+    """
+    Days on which the scoring algorithm itself moved, inside the given window.
+
+    A chart cannot tell a change in the city from a change in how we measure it,
+    and on 2026-08-28 those looked identical: the permit signal was recomputed
+    against DOB NOW and the mean ZIP moved 4.2 points in one night, against 0.24
+    on a normal one, with a maximum of 20.8. Rockaway Park reads 50.0 then 30.6.
+    Without this the reader sees a cliff and attributes it to the neighbourhood.
+
+    Served beside the series rather than folded into it: GET /{zip_code} returns
+    a bare array and three consumers index into it, so wrapping it in an object
+    would have broken all three silently.
+    """
+    response.headers["Cache-Control"] = "public, max-age=3600"
+    days = max(1, min(days, 365))
+    rows = db.execute(
+        text("""
+            SELECT changed_on, summary
+            FROM scoring_changes
+            WHERE changed_on >= CURRENT_DATE - :days * INTERVAL '1 day'
+            ORDER BY changed_on DESC
+        """),
+        {"days": days},
+    ).fetchall()
+    return [
+        {"date": r.changed_on.isoformat(), "summary": r.summary}
+        for r in rows
+    ]
+
+
 @router.get("/frames")
 @limiter.limit("30/minute")
 def get_score_frames(

@@ -609,6 +609,7 @@
                         <canvas id="history-chart"></canvas>
                     </div>
                     <p id="history-projection-note" class="hidden text-slate-400" style="font-size:12px;margin-top:6px;line-height:1.5;">Dashed: 14-day trend projection from recent scores. A trend read, not a prediction.</p>
+                    <p id="history-change-note" class="hidden text-slate-400" style="font-size:12px;margin-top:6px;line-height:1.5;"></p>
                 </div>
 
                 <!-- Recent activity — 3 most recent events from pulse data, no extra fetch needed -->
@@ -1123,6 +1124,30 @@
             });
 
             const projNote = document.getElementById('history-projection-note');
+
+            // A step this chart draws may be ours rather than the city's. On
+            // 2026-08-28 the permit recompute moved the mean ZIP 4.2 points in a
+            // night against 0.24 on a normal one, and Rockaway Park fell from
+            // 50.0 to 30.6. Without this the reader attributes that to the
+            // neighbourhood. Served separately because /score-history/{zip}
+            // returns a bare array that three consumers index into.
+            const changeNote = document.getElementById('history-change-note');
+            if (changeNote) {
+                changeNote.classList.add('hidden');
+                fetch(`/api/score-history/notes?days=${days}`)
+                    .then(r => r.ok ? r.json() : [])
+                    .then(notes => {
+                        if (seq !== _historySeq || !Array.isArray(notes) || !notes.length) return;
+                        const n = notes[0];
+                        const when = new Date(n.date + 'T00:00:00')
+                            .toLocaleDateString(_locale(), { month: 'long', day: 'numeric' });
+                        changeNote.textContent =
+                            `Scores moved across the whole city on ${when}: ${n.summary}. `
+                            + `That step is a change in how this is measured, not a change in the neighborhood.`;
+                        changeNote.classList.remove('hidden');
+                    })
+                    .catch(() => {});
+            }
 
             fetch(`/api/score-history/${zip}?days=${days}`)
                 .then(r => r.ok ? r.json() : [])
