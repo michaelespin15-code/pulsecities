@@ -39,13 +39,36 @@ echo "backup written: $BACKUP"
 BEFORE=$(git rev-list --all | wc -l)
 
 # --- the rewrite ------------------------------------------------------------
-# `regex:` matches any postgres DSN carrying a password and keeps the user.
+# Derive the exact strings to redact from the two files that carried them,
+# rather than matching any DSN. A broad `regex:postgresql://user:...@` also
+# rewrites .github/workflows/ci.yml, whose DSN has to keep matching the
+# throwaway service container's `ci_only_not_a_secret` or every CI run fails
+# to connect, and it rewrites the placeholders in .env.example and the
+# docstring in scripts/lib/pgenv.sh, which say nothing. Measured on this repo:
+# one real credential across both files, thirteen characters.
 REPLACE=$(mktemp)
 trap 'rm -f "$REPLACE"' EXIT
-printf '%s\n' 'regex:postgresql://([A-Za-z0-9_]+):[^@\s"'"'"']+@==>postgresql://\1:REDACTED@' > "$REPLACE"
+python3 - "$REPLACE" <<'EXTRACT'
+import subprocess, sys, re
+revs = subprocess.run(["git","rev-list","--all"],capture_output=True,text=True).stdout.split()
+found = set()
+for path in ("scripts/run_bbl_audit.py", "scripts/audit/prod_diagnostic.sh"):
+    for rev in revs:
+        blob = subprocess.run(["git","show",f"{rev}:{path}"],
+                              capture_output=True,text=True).stdout
+        for m in re.finditer(r"postgresql://[A-Za-z0-9_]+:([^@\s\"']+)@", blob):
+            pw = m.group(1)
+            if pw.lower() not in {"password","pass","secret","changeme"} and len(pw) >= 8:
+                found.add(pw)
+if not found:
+    print("nothing to redact; history is already clean", file=sys.stderr)
+    sys.exit(3)
+open(sys.argv[1], "w").write("\n".join(f"{pw}==>REDACTED" for pw in sorted(found)) + "\n")
+print(f"redacting {len(found)} distinct credential(s)", file=sys.stderr)
+EXTRACT
 
 ORIGIN=$(git remote get-url origin)
-git filter-repo --replace-text "$REPLACE" --force
+yes | git filter-repo --replace-text "$REPLACE" --force
 
 # filter-repo drops the remote on purpose; put it back.
 git remote add origin "$ORIGIN" 2>/dev/null || git remote set-url origin "$ORIGIN"
